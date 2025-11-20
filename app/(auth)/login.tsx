@@ -1,0 +1,293 @@
+import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
+import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+
+export default function LoginScreen() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { setUser } = useStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert(t('auth.error'), t('auth.fillAllFields'));
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // 模拟登录过程（实际应该调用API）
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // 模拟登录成功，创建用户对象
+      setUser({
+        id: '1',
+        name: email.split('@')[0] || 'User',
+        email: email,
+      });
+      
+      // 导航到主应用
+      router.replace('/(tabs)/today');
+    } catch (error) {
+      Alert.alert(t('auth.error'), t('auth.loginFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGuestLogin = () => {
+    setUser({
+      id: 'guest',
+      name: 'Guest',
+      email: 'guest@example.com',
+    });
+    router.replace('/(tabs)/today');
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.backgroundPrimary }}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: DIMENSIONS.CARD_PADDING }}>
+          {/* Logo/Title */}
+          <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 2 }}>
+            <View 
+              style={{ 
+                width: DIMENSIONS.SCREEN_WIDTH * 0.14,
+                height: DIMENSIONS.SCREEN_WIDTH * 0.14,
+                borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.07,
+                backgroundColor: COLORS.textPrimary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: DIMENSIONS.SPACING * 0.8,
+              }}
+            >
+              <Text 
+                style={{ 
+                  fontSize: TYPOGRAPHY.titleL,
+                  fontWeight: '900',
+                  color: COLORS.backgroundPrimary,
+                }}
+              >
+                L
+              </Text>
+            </View>
+            <Text 
+              style={{ 
+                fontSize: TYPOGRAPHY.titleL,
+                fontWeight: '900',
+                color: COLORS.textPrimary,
+                marginBottom: DIMENSIONS.SPACING * 0.3,
+              }}
+            >
+              Lock
+            </Text>
+            <Text 
+              style={{ 
+                fontSize: TYPOGRAPHY.bodyS,
+                fontWeight: '500',
+                color: COLORS.textPrimary,
+                opacity: 0.7,
+              }}
+            >
+              {t('auth.welcome')}
+            </Text>
+          </View>
+
+          {/* Login Form */}
+          <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
+            <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+              <Text 
+                style={{ 
+                  fontSize: TYPOGRAPHY.bodyXS,
+                  fontWeight: '700',
+                  color: COLORS.textPrimary,
+                  marginBottom: DIMENSIONS.SPACING * 0.3,
+                }}
+              >
+                {t('auth.email')}
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: COLORS.cardBackground,
+                  borderRadius: 12,
+                  padding: DIMENSIONS.SPACING * 0.9,
+                  color: COLORS.textPrimary,
+                  fontSize: TYPOGRAPHY.bodyS,
+                  fontWeight: '600',
+                  borderWidth: 1.5,
+                  borderColor: COLORS.borderPrimary,
+                }}
+                placeholder={t('auth.emailPlaceholder')}
+                placeholderTextColor={COLORS.textSecondary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+
+            <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+              <Text 
+                style={{ 
+                  fontSize: TYPOGRAPHY.bodyXS,
+                  fontWeight: '700',
+                  color: COLORS.textPrimary,
+                  marginBottom: DIMENSIONS.SPACING * 0.3,
+                }}
+              >
+                {t('auth.password')}
+              </Text>
+              <View style={{ position: 'relative' }}>
+                <TextInput
+                  style={{
+                    backgroundColor: COLORS.cardBackground,
+                    borderRadius: 12,
+                    padding: DIMENSIONS.SPACING * 0.9,
+                    paddingRight: DIMENSIONS.SPACING * 3,
+                    color: COLORS.textPrimary,
+                    fontSize: TYPOGRAPHY.bodyS,
+                    fontWeight: '600',
+                    borderWidth: 1.5,
+                    borderColor: COLORS.borderPrimary,
+                  }}
+                  placeholder={t('auth.passwordPlaceholder')}
+                  placeholderTextColor={COLORS.textSecondary}
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: DIMENSIONS.SPACING * 0.9,
+                    top: DIMENSIONS.SPACING * 0.9,
+                  }}
+                >
+                  <Ionicons 
+                    name={showPassword ? 'eye-off' : 'eye'} 
+                    size={TYPOGRAPHY.iconXS} 
+                    color={COLORS.textSecondary} 
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleLogin}
+              disabled={isLoading}
+              style={{
+                borderRadius: 16,
+                paddingVertical: DIMENSIONS.SPACING * 0.9,
+                backgroundColor: COLORS.textPrimary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: DIMENSIONS.SPACING * 0.8,
+                shadowColor: COLORS.shadowColor,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={COLORS.backgroundPrimary} size="small" />
+              ) : (
+                <Text 
+                  style={{ 
+                    fontSize: TYPOGRAPHY.bodyS,
+                    fontWeight: '900',
+                    color: COLORS.backgroundPrimary,
+                  }}
+                >
+                  {t('auth.login')}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleGuestLogin}
+              style={{
+                borderRadius: 16,
+                paddingVertical: DIMENSIONS.SPACING * 0.8,
+                backgroundColor: COLORS.cardBackground,
+                borderWidth: 1.5,
+                borderColor: COLORS.borderPrimary,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text 
+                style={{ 
+                  fontSize: TYPOGRAPHY.bodyS,
+                  fontWeight: '700',
+                  color: COLORS.textPrimary,
+                }}
+              >
+                {t('auth.continueAsGuest')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Social Login Options */}
+          <View style={{ alignItems: 'center' }}>
+            <Text 
+              style={{ 
+                fontSize: TYPOGRAPHY.bodyXXS,
+                fontWeight: '600',
+                color: COLORS.textPrimary,
+                opacity: 0.5,
+                marginBottom: DIMENSIONS.SPACING * 0.8,
+              }}
+            >
+              {t('auth.orContinueWith')}
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
+              <TouchableOpacity
+                style={{
+                  width: DIMENSIONS.SCREEN_WIDTH * 0.1,
+                  height: DIMENSIONS.SCREEN_WIDTH * 0.1,
+                  borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
+                  backgroundColor: COLORS.cardBackground,
+                  borderWidth: 1.5,
+                  borderColor: COLORS.borderPrimary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="logo-apple" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  width: DIMENSIONS.SCREEN_WIDTH * 0.1,
+                  height: DIMENSIONS.SCREEN_WIDTH * 0.1,
+                  borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
+                  backgroundColor: COLORS.cardBackground,
+                  borderWidth: 1.5,
+                  borderColor: COLORS.borderPrimary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="logo-google" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
