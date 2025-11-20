@@ -22,4 +22,8 @@ web-build/
 .vscode/
 .idea/
 
+# Project documentation (private)
+README.md
+QUICKSTART.md
+PROJECT_SUMMARY.md
 
