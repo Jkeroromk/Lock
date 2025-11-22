@@ -4,10 +4,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // 暂时禁用API调用，等待后端就绪
 // import { fetchTodayData, fetchWeeklyData } from '@/services/api';
 
+export type Gender = 'male' | 'female' | 'other';
+export type Goal = 'lose_weight' | 'lose_fat' | 'gain_muscle';
+export type ExerciseFrequency = 'never' | 'rarely' | '1-2' | '3-4' | '5-6' | 'daily';
+export type ExpectedTimeframe = '1_month' | '2-3_months' | '4-6_months' | '6-12_months' | '1_year_plus';
+
 interface User {
   id: string;
   name: string;
   email: string;
+  // 问卷调查数据
+  height?: number; // 身高 (cm)
+  age?: number; // 年龄
+  weight?: number; // 体重 (kg)
+  gender?: Gender; // 性别
+  goal?: Goal; // 目标
+  exerciseFrequency?: ExerciseFrequency; // 运动频率
+  expectedTimeframe?: ExpectedTimeframe; // 期望见效时间
+  hasCompletedOnboarding?: boolean; // 是否完成问卷调查
 }
 
 interface Meal {
@@ -36,8 +50,10 @@ interface StoreState {
   todayMeals: Meal[];
   weeklyData: WeeklyData;
   language: LanguageCode;
+  hasSelectedLanguage?: boolean; // 标记是否已选择语言
   setUser: (user: User | null) => void;
   setLanguage: (language: LanguageCode) => void;
+  setHasSelectedLanguage: (hasSelected: boolean) => void;
   refreshToday: () => Promise<void>;
   fetchWeeklyData: () => Promise<void>;
 }
@@ -55,8 +71,10 @@ export const useStore = create<StoreState>()(
     fat: [],
   },
       language: 'zh-CN',
+      hasSelectedLanguage: false,
   setUser: (user) => set({ user }),
-      setLanguage: (language) => set({ language }),
+      setLanguage: (language) => set({ language, hasSelectedLanguage: true }),
+      setHasSelectedLanguage: (hasSelected) => set({ hasSelectedLanguage: hasSelected }),
   refreshToday: async () => {
         // 暂时禁用API调用，等待后端就绪
         // try {
@@ -82,7 +100,11 @@ export const useStore = create<StoreState>()(
     {
       name: 'lock-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ language: state.language, user: state.user }),
+      partialize: (state) => ({ 
+        language: state.language, 
+        user: state.user,
+        hasSelectedLanguage: state.hasSelectedLanguage,
+      }),
     }
   )
 );

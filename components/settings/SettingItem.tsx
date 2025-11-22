@@ -1,6 +1,7 @@
-import { View, Text, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import CustomSwitch from './CustomSwitch';
 
 interface SettingItemProps {
   icon: string;
@@ -81,12 +82,9 @@ export default function SettingItem({
         </View>
       </View>
       {showSwitch ? (
-        <Switch
-          trackColor={{ false: COLORS.switchOff, true: COLORS.switchOn }}
-          thumbColor={switchValue ? COLORS.textPrimary : COLORS.textSecondary}
-          ios_backgroundColor={COLORS.switchOff}
-          onValueChange={onSwitchChange}
-          value={switchValue}
+        <CustomSwitch
+          value={switchValue ?? false}
+          onValueChange={onSwitchChange || (() => {})}
         />
       ) : showChevron && (
         <Ionicons name="chevron-forward" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} opacity={0.7} />

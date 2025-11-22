@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,33 +13,30 @@ export async function GET(request: NextRequest) {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     // 查询过去7天的餐食
-    const { data: meals, error } = await supabaseAdmin
-      .from('meals')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('created_at', sevenDaysAgo.toISOString())
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { error: '获取周数据失败' },
-        { status: 500 }
-      );
-    }
+    const meals = await prisma.meal.findMany({
+      where: {
+        userId: userId,
+        createdAt: {
+          gte: sevenDaysAgo,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
 
     // 按日期分组并计算每日数据
     const dailyData: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
 
-    meals?.forEach((meal) => {
-      const date = new Date(meal.created_at).toISOString().split('T')[0];
+    meals.forEach((meal) => {
+      const date = new Date(meal.createdAt).toISOString().split('T')[0];
       if (!dailyData[date]) {
         dailyData[date] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
       }
-      dailyData[date].calories += meal.calories || 0;
-      dailyData[date].protein += meal.protein || 0;
-      dailyData[date].carbs += meal.carbs || 0;
-      dailyData[date].fat += meal.fat || 0;
+      dailyData[date].calories += Number(meal.calories || 0);
+      dailyData[date].protein += Number(meal.protein || 0);
+      dailyData[date].carbs += Number(meal.carbs || 0);
+      dailyData[date].fat += Number(meal.fat || 0);
     });
 
     // 转换为数组格式

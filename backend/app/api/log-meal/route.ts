@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,27 +19,17 @@ export async function POST(request: NextRequest) {
     const userId = request.headers.get('x-user-id') || 'default-user-id';
 
     // 插入餐食记录
-    const { data, error } = await supabaseAdmin
-      .from('meals')
-      .insert({
-        user_id: userId,
-        food_name,
+    const data = await prisma.meal.create({
+      data: {
+        userId: userId,
+        foodName: food_name,
         calories: Number(calories),
         protein: Number(protein) || 0,
         carbs: Number(carbs) || 0,
         fat: Number(fat) || 0,
-        image_url: image_url || null,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { error: '保存餐食失败' },
-        { status: 500 }
-      );
-    }
+        imageUrl: image_url || null,
+      },
+    });
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {

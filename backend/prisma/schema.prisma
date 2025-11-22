@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  name      String?
+  height    Int?     // 身高 (cm)
+  age       Int?     // 年龄
+  weight    Decimal? @db.Decimal(5, 2) // 体重 (kg)
+  gender    String?  // 性别: male, female, other
+  goal      String?   // 目标: lose_weight, lose_fat, gain_muscle
+  hasCompletedOnboarding Boolean @default(false) @map("has_completed_onboarding")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  meals       Meal[]
+  healthSyncs HealthSync[]
+
+  @@map("users")
+}
+
+model Meal {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  foodName  String   @map("food_name")
+  calories  Decimal  @default(0) @db.Decimal(10, 2)
+  protein   Decimal? @default(0) @db.Decimal(10, 2)
+  carbs     Decimal? @default(0) @db.Decimal(10, 2)
+  fat       Decimal? @default(0) @db.Decimal(10, 2)
+  imageUrl  String?  @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("meals")
+}
+
+model HealthSync {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  date        DateTime @db.Date
+  steps       Int      @default(0)
+  activeEnergy Decimal  @default(0) @map("active_energy") @db.Decimal(10, 2)
+  heartRate   Int      @default(0) @map("heart_rate")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+  @@map("health_sync")
+}
+

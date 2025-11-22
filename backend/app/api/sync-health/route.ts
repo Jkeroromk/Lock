@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,33 +12,29 @@ export async function POST(request: NextRequest) {
     // 获取今天的日期（只保存日期部分，不包含时间）
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const dateOnly = today.toISOString().split('T')[0];
 
     // 使用 upsert 来更新或插入健康数据
-    const { data, error } = await supabaseAdmin
-      .from('health_sync')
-      .upsert(
-        {
-          user_id: userId,
-          date: today.toISOString().split('T')[0],
-          steps: Number(steps) || 0,
-          active_energy: Number(active_energy) || 0,
-          heart_rate: Number(heart_rate) || 0,
-          updated_at: new Date().toISOString(),
+    const data = await prisma.healthSync.upsert({
+      where: {
+        userId_date: {
+          userId: userId,
+          date: new Date(dateOnly),
         },
-        {
-          onConflict: 'user_id,date',
-        }
-      )
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { error: '同步健康数据失败' },
-        { status: 500 }
-      );
-    }
+      },
+      update: {
+        steps: Number(steps) || 0,
+        activeEnergy: Number(active_energy) || 0,
+        heartRate: Number(heart_rate) || 0,
+      },
+      create: {
+        userId: userId,
+        date: new Date(dateOnly),
+        steps: Number(steps) || 0,
+        activeEnergy: Number(active_energy) || 0,
+        heartRate: Number(heart_rate) || 0,
+      },
+    });
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {

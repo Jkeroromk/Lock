@@ -9,13 +9,57 @@ export const useTranslation = () => {
     const keys = key.split('.');
     let value: any = translations[language];
     
-    for (const k of keys) {
-      value = value?.[k];
-      if (value === undefined) {
-        // 如果找不到翻译，尝试使用中文作为fallback
+    // 先尝试按路径查找（如 onboarding.gender.male）
+    for (let i = 0; i < keys.length; i++) {
+      const currentKey = keys[i];
+      
+      if (value?.[currentKey] !== undefined) {
+        value = value[currentKey];
+      } else {
+        // 如果按路径查找失败，尝试查找带点的键名
+        // 例如：onboarding.gender.male -> 查找 onboarding['gender.male']
+        if (i > 0 && i < keys.length) {
+          const parentPath = keys.slice(0, i);
+          const remainingPath = keys.slice(i).join('.');
+          
+          // 重新获取父对象
+          let parent: any = translations[language];
+          for (const k of parentPath) {
+            parent = parent?.[k];
+            if (parent === undefined) break;
+          }
+          
+          // 在父对象中查找带点的键名
+          if (parent && parent[remainingPath] !== undefined) {
+            value = parent[remainingPath];
+            break;
+          }
+        }
+        
+        // 如果都找不到，尝试使用 fallback
         value = translations['zh-CN'];
-        for (const k2 of keys) {
-          value = value?.[k2];
+        for (let j = 0; j < keys.length; j++) {
+          const k = keys[j];
+          if (value?.[k] !== undefined) {
+            value = value[k];
+          } else {
+            // 在 fallback 中也尝试查找带点的键名
+            if (j > 0 && j < keys.length) {
+              const parentPath = keys.slice(0, j);
+              const remainingPath = keys.slice(j).join('.');
+              let parent: any = translations['zh-CN'];
+              for (const pk of parentPath) {
+                parent = parent?.[pk];
+                if (parent === undefined) break;
+              }
+              if (parent && parent[remainingPath] !== undefined) {
+                value = parent[remainingPath];
+                break;
+              }
+            }
+            value = undefined;
+            break;
+          }
         }
         break;
       }

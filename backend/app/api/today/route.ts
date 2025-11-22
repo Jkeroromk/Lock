@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,24 +13,24 @@ export async function GET(request: NextRequest) {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     // 查询今日餐食
-    const { data: meals, error } = await supabaseAdmin
-      .from('meals')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('created_at', today.toISOString())
-      .lt('created_at', tomorrow.toISOString())
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json(
-        { error: '获取今日数据失败' },
-        { status: 500 }
-      );
-    }
+    const meals = await prisma.meal.findMany({
+      where: {
+        userId: userId,
+        createdAt: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
 
     // 计算总卡路里
-    const totalCalories = meals?.reduce((sum, meal) => sum + (meal.calories || 0), 0) || 0;
+    const totalCalories = meals.reduce(
+      (sum, meal) => sum + Number(meal.calories || 0),
+      0
+    );
 
     return NextResponse.json({
       totalCalories,

@@ -4,7 +4,7 @@ import { useStore } from '@/store/useStore';
 import LoadingScreen from '@/components/auth/LoadingScreen';
 
 export default function Index() {
-  const { user } = useStore();
+  const { user, language } = useStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -20,8 +20,16 @@ export default function Index() {
     return <LoadingScreen />;
   }
 
-  // 如果用户已登录，跳转到主应用
+  // 如果用户已登录，检查是否需要完成问卷调查
   if (user) {
+    if (!user.hasCompletedOnboarding) {
+      // 检查是否已选择语言
+      const { hasSelectedLanguage } = useStore.getState();
+      if (!hasSelectedLanguage) {
+        return <Redirect href="/(auth)/language-selection" />;
+      }
+      return <Redirect href="/(auth)/onboarding" />;
+    }
     return <Redirect href="/(tabs)/today" />;
   }
 

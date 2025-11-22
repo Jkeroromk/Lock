@@ -12,6 +12,7 @@ import SettingItem from '@/components/settings/SettingItem';
 import GoalsModal from '@/components/settings/GoalsModal';
 import LanguageModal from '@/components/settings/LanguageModal';
 import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoadingModal';
+import EditProfileModal from '@/components/settings/EditProfileModal';
 
 export default function SettingsScreen() {
   const { user, language, setLanguage: setStoreLanguage, setUser } = useStore();
@@ -23,6 +24,7 @@ export default function SettingsScreen() {
   const [dailySteps, setDailySteps] = useState('10000');
   const [showGoalsModal, setShowGoalsModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
   const [tempCalories, setTempCalories] = useState('2000');
   const [tempSteps, setTempSteps] = useState('10000');
@@ -76,9 +78,89 @@ export default function SettingsScreen() {
           <UserProfileCard 
             user={user} 
             onEdit={() => {
-              Alert.alert(t('settings.editProfile'), t('settings.editProfileMessage'));
+              setShowEditProfileModal(true);
             }}
           />
+
+          {/* User Profile Information */}
+          {user?.hasCompletedOnboarding && (
+            <View 
+              style={{ 
+                borderRadius: 16,
+                marginBottom: DIMENSIONS.SPACING,
+                backgroundColor: COLORS.cardBackground,
+                borderWidth: 2,
+                borderColor: COLORS.borderPrimary,
+                padding: DIMENSIONS.SPACING,
+              }}
+            >
+              <Text 
+                style={{ 
+                  fontSize: TYPOGRAPHY.bodyM,
+                  fontWeight: '900',
+                  color: COLORS.textPrimary,
+                  marginBottom: DIMENSIONS.SPACING * 0.8,
+                }}
+              >
+                {t('settings.profileInfo')}
+              </Text>
+              
+              {user.height && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
+                    {t('settings.height')}
+                  </Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
+                    {user.height} {t('settings.cm')}
+                  </Text>
+                </View>
+              )}
+              
+              {user.age && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
+                    {t('settings.age')}
+                  </Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
+                    {user.age} {t('settings.years')}
+                  </Text>
+                </View>
+              )}
+              
+              {user.weight && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
+                    {t('settings.weight')}
+                  </Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
+                    {user.weight} {t('settings.kg')}
+                  </Text>
+                </View>
+              )}
+              
+              {user.gender && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
+                    {t('settings.gender')}
+                  </Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
+                    {t(`settings.gender.${user.gender}`)}
+                  </Text>
+                </View>
+              )}
+              
+              {user.goal && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
+                    {t('settings.goal')}
+                  </Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
+                    {t(`settings.goal.${user.goal}`)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Goals */}
           <SettingItem
@@ -239,7 +321,9 @@ export default function SettingsScreen() {
                   text: t('settings.logoutConfirm'), 
                   style: 'destructive', 
                   onPress: () => {
+                    const { setHasSelectedLanguage } = useStore.getState();
                     setUser(null);
+                    setHasSelectedLanguage(false); // 重置语言选择状态
                     router.replace('/(auth)/login');
                   }
                 },
@@ -311,6 +395,18 @@ export default function SettingsScreen() {
 
       {/* Language Change Loading Modal */}
       <LanguageChangeLoadingModal visible={isChangingLanguage} />
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        visible={showEditProfileModal}
+        user={user}
+        onSave={(name, email) => {
+          setUser({ ...user, name, email } as any);
+          setShowEditProfileModal(false);
+          Alert.alert(t('settings.success'), t('settings.profileUpdated'));
+        }}
+        onCancel={() => setShowEditProfileModal(false)}
+      />
     </SafeAreaView>
   );
 }

@@ -29,14 +29,17 @@ export default function LoginScreen() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // 模拟登录成功，创建用户对象
+      const { setHasSelectedLanguage } = useStore.getState();
+      setHasSelectedLanguage(false); // 重置语言选择状态
       setUser({
         id: '1',
         name: email.split('@')[0] || 'User',
         email: email,
+        hasCompletedOnboarding: false, // 新用户需要完成问卷调查
       });
       
-      // 导航到主应用
-      router.replace('/(tabs)/today');
+      // 导航到语言选择页面
+      router.replace('/(auth)/language-selection');
     } catch (error) {
       Alert.alert(t('auth.error'), t('auth.loginFailed'));
     } finally {
@@ -45,12 +48,15 @@ export default function LoginScreen() {
   };
 
   const handleGuestLogin = () => {
+    const { setHasSelectedLanguage } = useStore.getState();
+    setHasSelectedLanguage(false); // 重置语言选择状态
     setUser({
       id: 'guest',
       name: 'Guest',
       email: 'guest@example.com',
+      hasCompletedOnboarding: false,
     });
-    router.replace('/(tabs)/today');
+    router.replace('/(auth)/language-selection');
   };
 
   return (
