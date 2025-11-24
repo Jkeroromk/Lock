@@ -3,7 +3,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS } from '@/constants';
+import { DIMENSIONS } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import CaloriesCard from '@/components/today/CaloriesCard';
 import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
@@ -15,6 +16,7 @@ import { getHealthData } from '@/services/health';
 export default function TodayScreen() {
   const { todayCalories, todayMeals, refreshToday } = useStore();
   const { t, language } = useTranslation();
+  const colors = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [healthData, setHealthData] = useState({
     steps: 0,
@@ -52,13 +54,13 @@ export default function TodayScreen() {
   const remainingCalories = Math.max(2000 - todayCalories, 0);
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: COLORS.backgroundPrimary }}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 30 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.textPrimary} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />
         }
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8, paddingBottom: DIMENSIONS.SPACING }}>

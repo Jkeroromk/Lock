@@ -1,8 +1,10 @@
 import { View, Text, Animated, Easing } from 'react-native';
 import { useEffect, useRef } from 'react';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function LoadingScreen() {
+  const colors = useTheme();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -55,7 +57,7 @@ export default function LoadingScreen() {
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center',
-        backgroundColor: COLORS.backgroundPrimary,
+        backgroundColor: colors.backgroundPrimary,
       }}
     >
       {/* 现代化的加载动画 */}
@@ -65,11 +67,11 @@ export default function LoadingScreen() {
             width: DIMENSIONS.SCREEN_WIDTH * 0.15,
             height: DIMENSIONS.SCREEN_WIDTH * 0.15,
             borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.075,
-            backgroundColor: COLORS.textPrimary,
+            backgroundColor: colors.textPrimary,
             alignItems: 'center',
             justifyContent: 'center',
             transform: [{ scale: pulseAnim }],
-            shadowColor: COLORS.textPrimary,
+            shadowColor: colors.textPrimary,
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.5,
             shadowRadius: 20,
@@ -82,7 +84,7 @@ export default function LoadingScreen() {
               height: DIMENSIONS.SCREEN_WIDTH * 0.12,
               borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.06,
               borderWidth: 3,
-              borderColor: COLORS.backgroundPrimary,
+              borderColor: colors.backgroundPrimary,
               borderTopColor: 'transparent',
               transform: [{ rotate: rotateInterpolate }],
             }}
@@ -93,7 +95,7 @@ export default function LoadingScreen() {
           style={{ 
             fontSize: TYPOGRAPHY.bodyS,
             fontWeight: '600',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             marginTop: DIMENSIONS.SPACING * 1.5,
             opacity: 0.8,
             letterSpacing: 1,

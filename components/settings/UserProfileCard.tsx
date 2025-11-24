@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface User {
   name?: string;
@@ -17,6 +18,7 @@ interface UserProfileCardProps {
 
 export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange }: UserProfileCardProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
   const isLightMode = themeMode === 'light';
   const nextTheme = isLightMode ? 'dark' : 'light';
   const themeIcon = isLightMode ? 'sunny' : 'moon';
@@ -27,10 +29,10 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
         borderRadius: 20,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
-        shadowColor: COLORS.shadowColor,
+        borderColor: colors.borderPrimary,
+        shadowColor: colors.shadowColor,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
@@ -45,14 +47,14 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
             width: DIMENSIONS.SCREEN_WIDTH * 0.08,
             height: DIMENSIONS.SCREEN_WIDTH * 0.08,
             borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
-          <Ionicons name={themeIcon as any} size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+          <Ionicons name={themeIcon as any} size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -62,14 +64,14 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
             width: DIMENSIONS.SCREEN_WIDTH * 0.08,
             height: DIMENSIONS.SCREEN_WIDTH * 0.08,
             borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
-          <Ionicons name="create-outline" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+          <Ionicons name="pencil-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -82,18 +84,18 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: DIMENSIONS.SPACING * 0.6,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             borderWidth: 2,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
-          <Ionicons name="person" size={TYPOGRAPHY.iconL} color={COLORS.textPrimary} />
+          <Ionicons name="person" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
         </View>
         <Text 
           style={{ 
             fontSize: TYPOGRAPHY.bodyL,
             fontWeight: '900',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             marginBottom: DIMENSIONS.SPACING * 0.3,
           }}
         >
@@ -103,7 +105,7 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
           style={{ 
             fontSize: TYPOGRAPHY.bodyXS,
             fontWeight: '600',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             opacity: 0.7,
           }}
         >

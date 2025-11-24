@@ -5,12 +5,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal } from '@/services/api';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function LogScreen() {
   const { t } = useTranslation();
+  const colors = useTheme();
   const params = useLocalSearchParams();
   const [image, setImage] = useState<string | null>(null);
   
@@ -155,11 +157,11 @@ export default function LogScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background }} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'left', 'right']}>
       <View 
         style={{ 
           flex: 1,
-          backgroundColor: COLORS.background,
+          backgroundColor: colors.background,
           paddingHorizontal: DIMENSIONS.CARD_PADDING,
           paddingTop: DIMENSIONS.SPACING * 0.8,
           paddingBottom: Platform.OS === 'ios' ? 20 : 30,
@@ -174,7 +176,7 @@ export default function LogScreen() {
                   overflow: 'hidden',
                   marginBottom: DIMENSIONS.SPACING,
                   borderWidth: 1,
-                  borderColor: COLORS.borderPrimary,
+                  borderColor: colors.borderPrimary,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.3,
@@ -199,7 +201,7 @@ export default function LogScreen() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     minHeight: 56,
-                    backgroundColor: COLORS.textPrimary,
+                    backgroundColor: colors.textPrimary,
                     shadowColor: '#000',
                   shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.2,
@@ -208,15 +210,15 @@ export default function LogScreen() {
                 }}
               >
                 {analyzing ? (
-                    <ActivityIndicator color={COLORS.background} size="large" />
+                    <ActivityIndicator color={colors.background} size="large" />
                 ) : (
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="sparkles" size={TYPOGRAPHY.iconM} color={COLORS.background} />
+                      <Ionicons name="sparkles" size={TYPOGRAPHY.iconM} color={colors.background} />
                       <Text 
                         style={{ 
                           fontSize: TYPOGRAPHY.body,
                           fontWeight: '900',
-                          color: COLORS.background,
+                          color: colors.background,
                           marginLeft: DIMENSIONS.SPACING * 0.6,
                         }}
                       >
@@ -236,9 +238,9 @@ export default function LogScreen() {
                 borderRadius: 24,
                 padding: DIMENSIONS.SPACING * 1.4,
                 marginBottom: DIMENSIONS.SPACING * 1.2,
-                backgroundColor: COLORS.cardBackground,
+                backgroundColor: colors.cardBackground,
                 borderWidth: 1,
-                borderColor: COLORS.borderPrimary,
+                borderColor: colors.borderPrimary,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
@@ -256,10 +258,10 @@ export default function LogScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: DIMENSIONS.SPACING * 0.8,
-                      backgroundColor: COLORS.cardBackgroundSecondary,
+                      backgroundColor: colors.cardBackgroundSecondary,
                     }}
               >
-                    <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+                    <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
               </View>
                   <View style={{ flex: 1 }}>
                     {isEditing ? (
@@ -269,8 +271,8 @@ export default function LogScreen() {
                         style={{
                           fontSize: TYPOGRAPHY.title,
                           fontWeight: '900',
-                          color: COLORS.textPrimary,
-                          backgroundColor: COLORS.cardBackgroundSecondary,
+                          color: colors.textPrimary,
+                          backgroundColor: colors.cardBackgroundSecondary,
                           borderRadius: 8,
                           padding: DIMENSIONS.SPACING * 0.4,
                           borderWidth: 1,
@@ -285,7 +287,7 @@ export default function LogScreen() {
                           fontSize: TYPOGRAPHY.title,
                           fontWeight: '900',
                           marginBottom: DIMENSIONS.SPACING * 0.3,
-                          color: COLORS.textPrimary,
+                          color: colors.textPrimary,
                           lineHeight: TYPOGRAPHY.title * 1.2,
                         }}
                       >
@@ -296,7 +298,7 @@ export default function LogScreen() {
                       style={{ 
                         fontSize: TYPOGRAPHY.bodyXS,
                         fontWeight: '600',
-                        color: COLORS.textPrimary,
+                        color: colors.textPrimary,
                       }}
                     >
                       {t('log.confidence')}：{(result.confidence * 100).toFixed(0)}%
@@ -309,12 +311,12 @@ export default function LogScreen() {
                     style={{
                       padding: DIMENSIONS.SPACING * 0.4,
                       borderRadius: 8,
-                    backgroundColor: COLORS.cardBackgroundSecondary,
+                    backgroundColor: colors.cardBackgroundSecondary,
                     borderWidth: 1,
-                    borderColor: COLORS.borderSecondary,
+                    borderColor: colors.borderSecondary,
                     }}
                   >
-                    <Ionicons name="create-outline" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+                    <Ionicons name="create-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
                   </TouchableOpacity>
                 )}
             </View>
@@ -324,9 +326,9 @@ export default function LogScreen() {
                   borderRadius: 16,
                   padding: DIMENSIONS.SPACING * 1.2,
                   marginBottom: DIMENSIONS.SPACING * 1.2,
-                    backgroundColor: COLORS.cardBackgroundSecondary,
+                    backgroundColor: colors.cardBackgroundSecondary,
                     borderWidth: 1,
-                    borderColor: COLORS.borderSecondary,
+                    borderColor: colors.borderSecondary,
                 }}
               >
                 {isEditing ? (
@@ -338,7 +340,7 @@ export default function LogScreen() {
                       fontSize: TYPOGRAPHY.numberL,
                       fontWeight: '900',
                       color: '#FFFFFF',
-                      backgroundColor: COLORS.cardBackground,
+                      backgroundColor: colors.cardBackground,
                       borderRadius: 8,
                       padding: DIMENSIONS.SPACING * 0.4,
                       borderWidth: 1,
@@ -365,7 +367,7 @@ export default function LogScreen() {
                   style={{ 
                     fontSize: TYPOGRAPHY.body,
                     fontWeight: '700',
-                    color: COLORS.textPrimary,
+                    color: colors.textPrimary,
                   }}
                 >
                   {t('log.calories')}
@@ -382,17 +384,17 @@ export default function LogScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: DIMENSIONS.SPACING * 0.6,
-                      backgroundColor: COLORS.cardBackgroundSecondary,
+                      backgroundColor: colors.cardBackgroundSecondary,
                     }}
                 >
-                    <Ionicons name="barbell" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+                    <Ionicons name="barbell" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
                   </View>
                   <Text 
                     style={{ 
                       fontSize: TYPOGRAPHY.bodyXXS,
                       fontWeight: '700',
                       marginBottom: DIMENSIONS.SPACING * 0.3,
-                      color: COLORS.textPrimary,
+                      color: colors.textPrimary,
                     }}
                   >
                     {t('log.protein')}
@@ -405,12 +407,12 @@ export default function LogScreen() {
                       style={{
                         fontSize: TYPOGRAPHY.bodyL,
                         fontWeight: '900',
-                        color: COLORS.textPrimary,
-                        backgroundColor: COLORS.cardBackground,
+                        color: colors.textPrimary,
+                        backgroundColor: colors.cardBackground,
                         borderRadius: 8,
                         padding: DIMENSIONS.SPACING * 0.3,
                         borderWidth: 1,
-                        borderColor: COLORS.borderSecondary,
+                        borderColor: colors.borderSecondary,
                         textAlign: 'center',
                         minWidth: DIMENSIONS.SCREEN_WIDTH * 0.2,
                       }}
@@ -421,7 +423,7 @@ export default function LogScreen() {
                       style={{ 
                         fontSize: TYPOGRAPHY.bodyL,
                         fontWeight: '900',
-                        color: COLORS.textPrimary,
+                        color: colors.textPrimary,
                       }}
                     >
                       {result.protein}g
@@ -437,17 +439,17 @@ export default function LogScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: DIMENSIONS.SPACING * 0.6,
-                      backgroundColor: COLORS.cardBackgroundSecondary,
+                      backgroundColor: colors.cardBackgroundSecondary,
                     }}
                   >
-                    <Ionicons name="nutrition" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+                    <Ionicons name="nutrition" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
                   </View>
                   <Text 
                     style={{ 
                       fontSize: TYPOGRAPHY.bodyXXS,
                       fontWeight: '700',
                       marginBottom: DIMENSIONS.SPACING * 0.3,
-                      color: COLORS.textPrimary,
+                      color: colors.textPrimary,
                     }}
                   >
                     {t('log.carbs')}
@@ -460,12 +462,12 @@ export default function LogScreen() {
                       style={{
                         fontSize: TYPOGRAPHY.bodyL,
                         fontWeight: '900',
-                        color: COLORS.textPrimary,
-                        backgroundColor: COLORS.cardBackground,
+                        color: colors.textPrimary,
+                        backgroundColor: colors.cardBackground,
                         borderRadius: 8,
                         padding: DIMENSIONS.SPACING * 0.3,
                         borderWidth: 1,
-                        borderColor: COLORS.borderSecondary,
+                        borderColor: colors.borderSecondary,
                         textAlign: 'center',
                         minWidth: DIMENSIONS.SCREEN_WIDTH * 0.2,
                       }}
@@ -476,7 +478,7 @@ export default function LogScreen() {
                       style={{ 
                         fontSize: TYPOGRAPHY.bodyL,
                         fontWeight: '900',
-                        color: COLORS.textPrimary,
+                        color: colors.textPrimary,
                       }}
                     >
                   {result.carbs}g
@@ -492,17 +494,17 @@ export default function LogScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: DIMENSIONS.SPACING * 0.6,
-                      backgroundColor: COLORS.cardBackgroundSecondary,
+                      backgroundColor: colors.cardBackgroundSecondary,
                     }}
                   >
-                    <Ionicons name="water" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+                    <Ionicons name="water" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
                   </View>
                   <Text 
                     style={{ 
                       fontSize: TYPOGRAPHY.bodyXXS,
                       fontWeight: '700',
                       marginBottom: DIMENSIONS.SPACING * 0.3,
-                      color: COLORS.textPrimary,
+                      color: colors.textPrimary,
                     }}
                   >
                     {t('log.fat')}
@@ -515,12 +517,12 @@ export default function LogScreen() {
                       style={{
                         fontSize: TYPOGRAPHY.bodyL,
                         fontWeight: '900',
-                        color: COLORS.textPrimary,
-                        backgroundColor: COLORS.cardBackground,
+                        color: colors.textPrimary,
+                        backgroundColor: colors.cardBackground,
                         borderRadius: 8,
                         padding: DIMENSIONS.SPACING * 0.3,
                         borderWidth: 1,
-                        borderColor: COLORS.borderSecondary,
+                        borderColor: colors.borderSecondary,
                         textAlign: 'center',
                         minWidth: DIMENSIONS.SCREEN_WIDTH * 0.2,
                       }}
@@ -531,7 +533,7 @@ export default function LogScreen() {
                       style={{ 
                         fontSize: TYPOGRAPHY.bodyL,
                         fontWeight: '900',
-                        color: COLORS.textPrimary,
+                        color: colors.textPrimary,
                       }}
                     >
                   {result.fat}g
@@ -552,19 +554,19 @@ export default function LogScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       minHeight: 56,
-                      backgroundColor: COLORS.cardBackground,
+                      backgroundColor: colors.cardBackground,
                       borderWidth: 2,
                       borderColor: '#2A2A2A',
                       marginRight: DIMENSIONS.SPACING * 0.6,
                     }}
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="close-circle" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+                      <Ionicons name="close-circle" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
                       <Text 
                         style={{ 
                           fontSize: TYPOGRAPHY.body,
                           fontWeight: '900',
-                          color: COLORS.textPrimary,
+                          color: colors.textPrimary,
                           marginLeft: DIMENSIONS.SPACING * 0.6,
                         }}
                       >
@@ -582,7 +584,7 @@ export default function LogScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       minHeight: 56,
-                      backgroundColor: COLORS.textPrimary,
+                      backgroundColor: colors.textPrimary,
                       shadowColor: '#000',
                 shadowOffset: { width: 0, height: 4 },
                       shadowOpacity: 0.2,
@@ -591,12 +593,12 @@ export default function LogScreen() {
               }}
             >
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={COLORS.background} />
+                      <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={colors.background} />
                       <Text 
                         style={{ 
                           fontSize: TYPOGRAPHY.body,
                           fontWeight: '900',
-                          color: COLORS.background,
+                          color: colors.background,
                           marginLeft: DIMENSIONS.SPACING * 0.6,
                         }}
                       >
@@ -615,7 +617,7 @@ export default function LogScreen() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     minHeight: 56,
-                    backgroundColor: COLORS.textPrimary,
+                    backgroundColor: colors.textPrimary,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.2,
@@ -624,12 +626,12 @@ export default function LogScreen() {
                   }}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={COLORS.background} />
+                    <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={colors.background} />
                     <Text 
                       style={{ 
                         fontSize: TYPOGRAPHY.body,
                         fontWeight: '900',
-                        color: COLORS.background,
+                        color: colors.background,
                         marginLeft: DIMENSIONS.SPACING * 0.6,
                       }}
                     >
@@ -647,7 +649,7 @@ export default function LogScreen() {
               flex: 1,
               justifyContent: 'center', 
               alignItems: 'center',
-              backgroundColor: COLORS.background,
+              backgroundColor: colors.background,
             }}>
               <View 
                 style={{ 
@@ -657,19 +659,19 @@ export default function LogScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginBottom: DIMENSIONS.SPACING * 2,
-                  backgroundColor: COLORS.cardBackground,
+                  backgroundColor: colors.cardBackground,
                   borderWidth: 2,
-                  borderColor: COLORS.borderPrimary,
+                  borderColor: colors.borderPrimary,
                 }}
               >
-                <Ionicons name="camera-outline" size={TYPOGRAPHY.iconXL} color={COLORS.textPrimary} />
+                <Ionicons name="camera-outline" size={TYPOGRAPHY.iconXL} color={colors.textPrimary} />
               </View>
               
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyL,
                   fontWeight: '900',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   marginBottom: DIMENSIONS.SPACING * 0.4,
                   textAlign: 'center',
                 }}
@@ -680,7 +682,7 @@ export default function LogScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '500',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   marginBottom: DIMENSIONS.SPACING * 2,
                   textAlign: 'center',
                   paddingHorizontal: DIMENSIONS.SPACING * 2,
@@ -702,7 +704,7 @@ export default function LogScreen() {
                   marginBottom: DIMENSIONS.SPACING * 0.8,
                   minHeight: 64,
                   width: '100%',
-                  backgroundColor: COLORS.textPrimary,
+                  backgroundColor: colors.textPrimary,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 6 },
                   shadowOpacity: 0.25,
@@ -711,12 +713,12 @@ export default function LogScreen() {
               }}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="camera" size={TYPOGRAPHY.titleM} color={COLORS.background} />
+                  <Ionicons name="camera" size={TYPOGRAPHY.titleM} color={colors.background} />
                   <Text 
                     style={{ 
                       fontSize: TYPOGRAPHY.bodyM,
                       fontWeight: '900',
-                      color: COLORS.background,
+                      color: colors.background,
                       marginLeft: DIMENSIONS.SPACING * 0.6,
                     }}
                   >
@@ -736,18 +738,18 @@ export default function LogScreen() {
                   justifyContent: 'center',
                   minHeight: 64,
                   width: '100%',
-                  backgroundColor: COLORS.cardBackground,
+                  backgroundColor: colors.cardBackground,
                 borderWidth: 2,
-                  borderColor: COLORS.borderPrimary,
+                  borderColor: colors.borderPrimary,
               }}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="images" size={TYPOGRAPHY.titleM} color={COLORS.textPrimary} />
+                  <Ionicons name="images" size={TYPOGRAPHY.titleM} color={colors.textPrimary} />
                   <Text 
                     style={{ 
                       fontSize: TYPOGRAPHY.bodyM,
                       fontWeight: '900',
-                      color: COLORS.textPrimary,
+                      color: colors.textPrimary,
                       marginLeft: DIMENSIONS.SPACING * 0.6,
                     }}
                   >
@@ -771,16 +773,16 @@ export default function LogScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 minHeight: 48,
-                backgroundColor: COLORS.cardBackground,
+                backgroundColor: colors.cardBackground,
               borderWidth: 2,
-                borderColor: COLORS.borderPrimary,
+                borderColor: colors.borderPrimary,
             }}
           >
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyM,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('log.selectOtherPhoto')}

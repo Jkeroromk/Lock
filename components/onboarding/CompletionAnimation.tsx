@@ -2,7 +2,8 @@ import { View, Text } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface CompletionAnimationProps {
   containerAnimatedStyle: any;
@@ -18,6 +19,7 @@ export default function CompletionAnimation({
   closedLockAnimatedStyle,
 }: CompletionAnimationProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <Animated.View
@@ -28,7 +30,7 @@ export default function CompletionAnimation({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: COLORS.backgroundPrimary,
+          backgroundColor: colors.backgroundPrimary,
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 1000,
@@ -49,11 +51,11 @@ export default function CompletionAnimation({
               width: DIMENSIONS.SCREEN_WIDTH * 0.2,
               height: DIMENSIONS.SCREEN_WIDTH * 0.2,
               borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.1,
-              backgroundColor: COLORS.textPrimary,
+              backgroundColor: colors.textPrimary,
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: DIMENSIONS.SPACING * 1.5,
-              shadowColor: COLORS.textPrimary,
+              shadowColor: colors.textPrimary,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.5,
               shadowRadius: 20,
@@ -72,7 +74,7 @@ export default function CompletionAnimation({
             ]}
             pointerEvents="none"
           >
-            <Ionicons name="lock-open" size={DIMENSIONS.SCREEN_WIDTH * 0.12} color={COLORS.backgroundPrimary} />
+            <Ionicons name="lock-open" size={DIMENSIONS.SCREEN_WIDTH * 0.12} color={colors.backgroundPrimary} />
           </Animated.View>
           
           {/* 锁上图标 */}
@@ -85,7 +87,7 @@ export default function CompletionAnimation({
             ]}
             pointerEvents="none"
           >
-            <Ionicons name="lock-closed" size={DIMENSIONS.SCREEN_WIDTH * 0.12} color={COLORS.backgroundPrimary} />
+            <Ionicons name="lock-closed" size={DIMENSIONS.SCREEN_WIDTH * 0.12} color={colors.backgroundPrimary} />
           </Animated.View>
         </Animated.View>
         
@@ -94,7 +96,7 @@ export default function CompletionAnimation({
           style={{
             fontSize: TYPOGRAPHY.title,
             fontWeight: '900',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             marginBottom: DIMENSIONS.SPACING * 0.4,
             textAlign: 'center',
           }}
@@ -105,7 +107,7 @@ export default function CompletionAnimation({
           style={{
             fontSize: TYPOGRAPHY.bodyS,
             fontWeight: '500',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             opacity: 0.7,
             textAlign: 'center',
           }}

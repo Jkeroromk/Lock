@@ -6,7 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
 import { LanguageCode, languageNames } from '@/i18n/locales';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
 import GoalsModal from '@/components/settings/GoalsModal';
@@ -15,11 +16,11 @@ import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoad
 import EditProfileModal from '@/components/settings/EditProfileModal';
 
 export default function SettingsScreen() {
-  const { user, language, setLanguage: setStoreLanguage, setUser } = useStore();
+  const { user, language, setLanguage: setStoreLanguage, setUser, themeMode, setThemeMode } = useStore();
   const { t } = useTranslation();
+  const colors = useTheme();
   const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [dailyCalories, setDailyCalories] = useState('2000');
   const [dailySteps, setDailySteps] = useState('10000');
   const [showGoalsModal, setShowGoalsModal] = useState(false);
@@ -66,7 +67,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: COLORS.backgroundPrimary }}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView 
         className="flex-1" 
         showsVerticalScrollIndicator={false}
@@ -130,9 +131,9 @@ export default function SettingsScreen() {
             style={{ 
               borderRadius: 16,
               marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: COLORS.cardBackground,
+              backgroundColor: colors.cardBackground,
               borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
+              borderColor: colors.borderPrimary,
             }}
           >
             <TouchableOpacity 
@@ -143,22 +144,22 @@ export default function SettingsScreen() {
                 justifyContent: 'space-between',
                 padding: DIMENSIONS.SPACING,
                 borderBottomWidth: 1,
-                borderBottomColor: COLORS.borderPrimary,
+                borderBottomColor: colors.borderPrimary,
               }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="download" size={TYPOGRAPHY.body} color={COLORS.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
+                <Ionicons name="download" size={TYPOGRAPHY.body} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
                 <Text 
                   style={{ 
                     fontSize: TYPOGRAPHY.bodyS,
                     fontWeight: '700',
-                    color: COLORS.textPrimary,
+                    color: colors.textPrimary,
                   }}
                 >
                   {t('settings.exportData')}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={COLORS.textPrimary} />
+              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity 
               activeOpacity={0.7}
@@ -170,18 +171,18 @@ export default function SettingsScreen() {
               }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="information-circle" size={TYPOGRAPHY.body} color={COLORS.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
+                <Ionicons name="information-circle" size={TYPOGRAPHY.body} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
                 <Text 
                   style={{ 
                     fontSize: TYPOGRAPHY.bodyS,
                     fontWeight: '700',
-                    color: COLORS.textPrimary,
+                    color: colors.textPrimary,
                   }}
                 >
                   {t('settings.about')}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={COLORS.textPrimary} />
+              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
 
@@ -190,9 +191,9 @@ export default function SettingsScreen() {
             style={{ 
               borderRadius: 16,
               marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: COLORS.cardBackground,
+              backgroundColor: colors.cardBackground,
               borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
+              borderColor: colors.borderPrimary,
             }}
           >
             <TouchableOpacity 
@@ -203,19 +204,19 @@ export default function SettingsScreen() {
                 justifyContent: 'space-between',
                 padding: DIMENSIONS.SPACING,
                 borderBottomWidth: 1,
-                borderBottomColor: COLORS.borderPrimary,
+                borderBottomColor: colors.borderPrimary,
               }}
             >
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('settings.privacyPolicy')}
               </Text>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={COLORS.textPrimary} />
+              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity 
               activeOpacity={0.7}
@@ -230,12 +231,12 @@ export default function SettingsScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('settings.termsOfService')}
               </Text>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={COLORS.textPrimary} />
+              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
 
@@ -265,19 +266,19 @@ export default function SettingsScreen() {
               marginTop: DIMENSIONS.SPACING * 0.4,
               marginBottom: DIMENSIONS.SPACING * 1.2,
               minHeight: 56,
-              backgroundColor: COLORS.cardBackground,
+              backgroundColor: colors.cardBackground,
               borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
+              borderColor: colors.borderPrimary,
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="log-out" size={TYPOGRAPHY.title} color={COLORS.textPrimary} />
+              <Ionicons name="log-out" size={TYPOGRAPHY.title} color={colors.textPrimary} />
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyM,
                   fontWeight: '900',
                   marginLeft: DIMENSIONS.SPACING * 0.4,
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('settings.logout')}
@@ -290,7 +291,7 @@ export default function SettingsScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >

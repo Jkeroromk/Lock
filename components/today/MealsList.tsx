@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Meal {
   id?: string;
@@ -18,6 +19,7 @@ interface MealsListProps {
 
 export default function MealsList({ meals }: MealsListProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View style={{ marginBottom: DIMENSIONS.SPACING }}>
@@ -31,18 +33,18 @@ export default function MealsList({ meals }: MealsListProps) {
               alignItems: 'center',
               justifyContent: 'center',
               marginRight: DIMENSIONS.SPACING * 0.6,
-              backgroundColor: COLORS.cardBackground,
+              backgroundColor: colors.cardBackground,
               borderWidth: 1,
-              borderColor: COLORS.borderPrimary,
+              borderColor: colors.borderPrimary,
             }}
           >
-            <Ionicons name="restaurant" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+            <Ionicons name="restaurant" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
           </View>
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.titleM,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {t('today.meals')}
@@ -55,17 +57,17 @@ export default function MealsList({ meals }: MealsListProps) {
             paddingHorizontal: DIMENSIONS.SPACING * 0.8,
             paddingVertical: DIMENSIONS.SPACING * 0.4,
             borderRadius: 20,
-            backgroundColor: COLORS.cardBackground,
+            backgroundColor: colors.cardBackground,
             borderWidth: 2,
-            borderColor: COLORS.borderPrimary,
+            borderColor: colors.borderPrimary,
           }}
         >
-          <Ionicons name="checkmark-circle" size={TYPOGRAPHY.bodyS} color={COLORS.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3 }} />
+          <Ionicons name="checkmark-circle" size={TYPOGRAPHY.bodyS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3 }} />
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '700',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {t('today.recorded')} {meals.length}
@@ -79,9 +81,9 @@ export default function MealsList({ meals }: MealsListProps) {
             borderRadius: 16,
             padding: DIMENSIONS.SPACING * 2.4,
             alignItems: 'center',
-            backgroundColor: COLORS.cardBackground,
+            backgroundColor: colors.cardBackground,
             borderWidth: 1,
-            borderColor: COLORS.borderPrimary,
+            borderColor: colors.borderPrimary,
           }}
         >
           <View 
@@ -92,17 +94,17 @@ export default function MealsList({ meals }: MealsListProps) {
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: DIMENSIONS.SPACING * 0.8,
-              backgroundColor: COLORS.cardBackgroundSecondary,
+              backgroundColor: colors.cardBackgroundSecondary,
             }}
           >
-            <Ionicons name="restaurant-outline" size={TYPOGRAPHY.iconL} color={COLORS.textPrimary} />
+            <Ionicons name="restaurant-outline" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
           </View>
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.body,
               fontWeight: '700',
               marginBottom: DIMENSIONS.SPACING * 0.4,
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {t('today.noMeals')}
@@ -111,7 +113,7 @@ export default function MealsList({ meals }: MealsListProps) {
             style={{ 
               fontSize: TYPOGRAPHY.bodyS,
               textAlign: 'center',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               lineHeight: TYPOGRAPHY.bodyS * 1.5,
             }}
           >
@@ -128,10 +130,10 @@ export default function MealsList({ meals }: MealsListProps) {
               marginBottom: DIMENSIONS.SPACING * 0.6,
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: COLORS.cardBackground,
+              backgroundColor: colors.cardBackground,
               borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
-              shadowColor: COLORS.shadowColor,
+              borderColor: colors.borderPrimary,
+              shadowColor: colors.shadowColor,
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.15,
               shadowRadius: 6,
@@ -146,12 +148,12 @@ export default function MealsList({ meals }: MealsListProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginRight: DIMENSIONS.SPACING * 0.8,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
             >
-              <Ionicons name="fast-food" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+              <Ionicons name="fast-food" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text 
@@ -159,7 +161,7 @@ export default function MealsList({ meals }: MealsListProps) {
                   fontSize: TYPOGRAPHY.bodyM,
                   fontWeight: '700',
                   marginBottom: DIMENSIONS.SPACING * 0.3,
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {meal.food_name}
@@ -168,7 +170,7 @@ export default function MealsList({ meals }: MealsListProps) {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '500',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   lineHeight: TYPOGRAPHY.bodyXS * 1.4,
                 }}
               >
@@ -180,7 +182,7 @@ export default function MealsList({ meals }: MealsListProps) {
                 style={{ 
                   fontSize: TYPOGRAPHY.body,
                   fontWeight: '900',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {meal.calories}
@@ -189,7 +191,7 @@ export default function MealsList({ meals }: MealsListProps) {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXXS,
                   fontWeight: '600',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('today.kcal')}

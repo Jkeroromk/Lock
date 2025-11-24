@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import Constants from 'expo-constants';
 import { useTranslation } from '@/i18n';
+import { useTheme } from '@/hooks/useTheme';
 
 function LogTabButton(props: any) {
   const pathname = usePathname();
@@ -13,6 +14,7 @@ function LogTabButton(props: any) {
   const { onPress, accessibilityState } = props;
   const [isOpeningCamera, setIsOpeningCamera] = useState(false);
   const { t } = useTranslation();
+  const colors = useTheme();
   
   // 检测是否在log页面
   const isOnLogPage = pathname?.includes('/log') || segments?.includes('log') || false;
@@ -21,11 +23,11 @@ function LogTabButton(props: any) {
   // 检测是否为iOS模拟器（模拟器上Constants.isDevice为false）
   const isIOSSimulator = Platform.OS === 'ios' && !Constants.isDevice;
   
-  // 选中时：白色按钮 + 黑色边框 + 黑色图标
-  // 未选中时：深灰按钮 + 白色边框 + 白色图标
-  const buttonBgColor = isSelected ? '#FFFFFF' : '#1A1A1A';
-  const borderColor = isSelected ? '#000000' : '#FFFFFF';
-  const iconColor = isSelected ? '#000000' : '#FFFFFF';
+  // 选中时：主题文字色按钮 + 主题背景色边框 + 主题背景色图标
+  // 未选中时：主题卡片背景色按钮 + 主题文字色边框 + 主题文字色图标
+  const buttonBgColor = isSelected ? colors.textPrimary : colors.cardBackground;
+  const borderColor = isSelected ? colors.backgroundPrimary : colors.textPrimary;
+  const iconColor = isSelected ? colors.backgroundPrimary : colors.textPrimary;
   
   const handlePress = async () => {
     // 如果是iOS模拟器，只导航不打开相机
@@ -104,7 +106,7 @@ function LogTabButton(props: any) {
           backgroundColor: buttonBgColor,
           alignItems: 'center',
           justifyContent: 'center',
-          shadowColor: '#000',
+          shadowColor: colors.shadowColor,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: isSelected ? 0.3 : 0.2,
           shadowRadius: 8,
@@ -125,7 +127,7 @@ function LogTabButton(props: any) {
         style={{
           fontSize: 11,
           fontWeight: '700',
-          color: '#FFFFFF',
+          color: colors.textPrimary,
           marginTop: 0,
         }}
       >
@@ -137,23 +139,24 @@ function LogTabButton(props: any) {
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  const colors = useTheme();
   
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#FFFFFF',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: colors.textPrimary,
+        tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#000000',
+          backgroundColor: colors.backgroundPrimary,
           borderTopWidth: 1,
-          borderTopColor: '#1F1F1F',
+          borderTopColor: colors.borderPrimary,
           height: 100,
           paddingBottom: 28,
           paddingTop: 12,
           paddingHorizontal: 18,
           elevation: 20,
-          shadowColor: '#000',
+          shadowColor: colors.shadowColor,
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.5,
           shadowRadius: 12,

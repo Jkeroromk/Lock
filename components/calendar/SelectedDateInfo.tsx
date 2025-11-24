@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import { useStore } from '@/store/useStore';
 
 interface SelectedDateInfoProps {
@@ -16,6 +17,7 @@ interface SelectedDateInfoProps {
 export default function SelectedDateInfo({ selectedDate, selectedDateData, getProgressColor }: SelectedDateInfoProps) {
   const { t } = useTranslation();
   const { language } = useStore();
+  const colors = useTheme();
 
   return (
     <View 
@@ -23,9 +25,9 @@ export default function SelectedDateInfo({ selectedDate, selectedDateData, getPr
         borderRadius: 20,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
+        borderColor: colors.borderPrimary,
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
@@ -37,17 +39,17 @@ export default function SelectedDateInfo({ selectedDate, selectedDateData, getPr
             alignItems: 'center',
             justifyContent: 'center',
             marginRight: DIMENSIONS.SPACING * 0.6,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
           }}
         >
-          <Ionicons name="calendar" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+          <Ionicons name="calendar" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
         </View>
         <View style={{ flex: 1 }}>
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.body,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               marginBottom: DIMENSIONS.SPACING * 0.2,
             }}
           >
@@ -71,7 +73,7 @@ export default function SelectedDateInfo({ selectedDate, selectedDateData, getPr
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >
@@ -85,9 +87,9 @@ export default function SelectedDateInfo({ selectedDate, selectedDateData, getPr
         style={{ 
           borderRadius: 16,
           padding: DIMENSIONS.SPACING * 1.2,
-          backgroundColor: COLORS.cardBackgroundSecondary,
+          backgroundColor: colors.cardBackgroundSecondary,
           borderWidth: 1,
-          borderColor: COLORS.borderSecondary,
+          borderColor: colors.borderSecondary,
         }}
       >
         <Text 
@@ -95,7 +97,7 @@ export default function SelectedDateInfo({ selectedDate, selectedDateData, getPr
             fontSize: TYPOGRAPHY.numberL,
             fontWeight: '900',
             marginBottom: DIMENSIONS.SPACING * 0.4,
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             lineHeight: TYPOGRAPHY.numberL * 1.1,
           }}
         >
@@ -105,7 +107,7 @@ export default function SelectedDateInfo({ selectedDate, selectedDateData, getPr
           style={{ 
             fontSize: TYPOGRAPHY.body,
             fontWeight: '700',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
           }}
         >
           {t('today.kcal')}

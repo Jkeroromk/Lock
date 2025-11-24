@@ -5,7 +5,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { LanguageCode } from '@/i18n/locales';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import LanguageWheelPicker from '@/components/onboarding/LanguageWheelPicker';
 import { useCallback } from 'react';
 
@@ -13,6 +14,7 @@ export default function LanguageSelectionScreen() {
   const router = useRouter();
   const { language, setLanguage, setHasSelectedLanguage } = useStore();
   const { t } = useTranslation();
+  const colors = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>(language);
   const [pickerKey, setPickerKey] = useState(0); // 用于强制重新渲染 picker
 
@@ -45,7 +47,7 @@ export default function LanguageSelectionScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.backgroundPrimary }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -65,7 +67,7 @@ export default function LanguageSelectionScreen() {
                 width: DIMENSIONS.SCREEN_WIDTH * 0.1,
                 height: DIMENSIONS.SCREEN_WIDTH * 0.1,
                 borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
-                backgroundColor: COLORS.textPrimary,
+                backgroundColor: colors.textPrimary,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: DIMENSIONS.SPACING * 0.6,
@@ -75,7 +77,7 @@ export default function LanguageSelectionScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.title,
                   fontWeight: '900',
-                  color: COLORS.backgroundPrimary,
+                  color: colors.backgroundPrimary,
                 }}
               >
                 L
@@ -85,7 +87,7 @@ export default function LanguageSelectionScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.title,
                 fontWeight: '900',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 marginBottom: DIMENSIONS.SPACING * 0.2,
               }}
             >
@@ -95,7 +97,7 @@ export default function LanguageSelectionScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
                 textAlign: 'center',
               }}
@@ -119,7 +121,7 @@ export default function LanguageSelectionScreen() {
             style={{
               width: '100%',
               paddingVertical: DIMENSIONS.SPACING * 0.8,
-              backgroundColor: COLORS.textPrimary,
+              backgroundColor: colors.textPrimary,
               borderRadius: 16,
               alignItems: 'center',
               justifyContent: 'center',
@@ -129,7 +131,7 @@ export default function LanguageSelectionScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '700',
-                color: COLORS.backgroundPrimary,
+                color: colors.backgroundPrimary,
               }}
             >
               {t('languageSelection.continue')}

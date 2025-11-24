@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import CompletionAnimation from '@/components/onboarding/CompletionAnimation';
 import OnboardingSteps from '@/components/onboarding/OnboardingSteps';
 import { useOnboardingData } from '@/hooks/useOnboardingData';
 import { useOnboardingAnimation } from '@/hooks/useOnboardingAnimation';
 
 const STEPS = [
+  'theme',
   'height',
   'age',
   'weight',
@@ -23,7 +25,8 @@ const STEPS = [
 export default function OnboardingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { user, setUser } = useStore();
+  const { user, setUser, setThemeMode } = useStore();
+  const colors = useTheme();
   
   const [currentStep, setCurrentStep] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -31,6 +34,12 @@ export default function OnboardingScreen() {
 
   // 使用数据管理 hook
   const onboardingData = useOnboardingData();
+
+  // 当用户选择主题时，立即更新 store，使主题立即生效
+  const handleThemeChange = (themeMode: 'light' | 'dark' | 'auto') => {
+    onboardingData.setThemeMode(themeMode);
+    setThemeMode(themeMode); // 立即更新 store，使主题立即生效
+  };
 
   // 使用动画 hook
   const {
@@ -70,6 +79,8 @@ export default function OnboardingScreen() {
 
   const canProceed = () => {
     switch (STEPS[currentStep]) {
+      case 'theme':
+        return onboardingData.themeMode !== null;
       case 'height':
         return onboardingData.height > 0;
       case 'age':
@@ -91,9 +102,14 @@ export default function OnboardingScreen() {
 
   const handleComplete = () => {
     // 验证所有字段
-    if (!onboardingData.gender || !onboardingData.goal || !onboardingData.exerciseFrequency || !onboardingData.expectedTimeframe) {
+    if (!onboardingData.gender || !onboardingData.goal || !onboardingData.exerciseFrequency || !onboardingData.expectedTimeframe || !onboardingData.themeMode) {
       Alert.alert(t('onboarding.error'), t('onboarding.fillAllFields'));
       return;
+    }
+
+    // 设置主题模式
+    if (onboardingData.themeMode) {
+      setThemeMode(onboardingData.themeMode);
     }
 
     setLockState('open');
@@ -102,7 +118,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.backgroundPrimary }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       {isCompleting && (
         <CompletionAnimation
           containerAnimatedStyle={containerAnimatedStyle}
@@ -126,7 +142,7 @@ export default function OnboardingScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >
@@ -136,19 +152,19 @@ export default function OnboardingScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >
               {Math.round(((currentStep + 1) / STEPS.length) * 100)}%
             </Text>
           </View>
-          <View style={{ height: 4, backgroundColor: COLORS.cardBackgroundSecondary, borderRadius: 2, overflow: 'hidden' }}>
+          <View style={{ height: 4, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 2, overflow: 'hidden' }}>
             <View 
               style={{ 
                 height: '100%', 
                 width: `${((currentStep + 1) / STEPS.length) * 100}%`, 
-                backgroundColor: COLORS.textPrimary,
+                backgroundColor: colors.textPrimary,
                 borderRadius: 2,
               }} 
             />
@@ -183,6 +199,8 @@ export default function OnboardingScreen() {
             setExerciseFrequency={onboardingData.setExerciseFrequency}
             expectedTimeframe={onboardingData.expectedTimeframe}
             setExpectedTimeframe={onboardingData.setExpectedTimeframe}
+            themeMode={onboardingData.themeMode}
+            setThemeMode={handleThemeChange}
           />
         </View>
 
@@ -201,10 +219,10 @@ export default function OnboardingScreen() {
               style={{
                 flex: 1,
                 paddingVertical: DIMENSIONS.SPACING * 0.9,
-                backgroundColor: COLORS.cardBackground,
+                backgroundColor: colors.cardBackground,
                 borderRadius: 16,
                 borderWidth: 2,
-                borderColor: COLORS.borderPrimary,
+                borderColor: colors.borderPrimary,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
@@ -213,7 +231,7 @@ export default function OnboardingScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('onboarding.back')}
@@ -226,7 +244,7 @@ export default function OnboardingScreen() {
             style={{
               flex: 1,
               paddingVertical: DIMENSIONS.SPACING * 0.9,
-              backgroundColor: canProceed() ? COLORS.textPrimary : COLORS.cardBackgroundSecondary,
+              backgroundColor: canProceed() ? colors.textPrimary : colors.cardBackgroundSecondary,
               borderRadius: 16,
               alignItems: 'center',
               justifyContent: 'center',
@@ -237,7 +255,7 @@ export default function OnboardingScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '700',
-                color: canProceed() ? COLORS.backgroundPrimary : COLORS.textSecondary,
+                color: canProceed() ? colors.backgroundPrimary : colors.textSecondary,
               }}
             >
               {currentStep === STEPS.length - 1 ? t('onboarding.complete') : t('onboarding.next')}

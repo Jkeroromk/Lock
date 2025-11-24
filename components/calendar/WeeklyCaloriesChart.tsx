@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryArea, VictoryAxis, VictoryTheme } from 'victory-native';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface WeeklyCaloriesChartProps {
   chartData: Array<{ day: string; calories: number }>;
@@ -9,6 +10,7 @@ interface WeeklyCaloriesChartProps {
 
 export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View 
@@ -16,10 +18,10 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
         borderRadius: 24,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
-        shadowColor: COLORS.shadowColor,
+        borderColor: colors.borderPrimary,
+        shadowColor: colors.shadowColor,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 12,
@@ -31,7 +33,7 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
           style={{ 
             fontSize: TYPOGRAPHY.title,
             fontWeight: '900',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
           }}
         >
           {t('calendar.weeklyCalories')}
@@ -43,9 +45,9 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
             paddingHorizontal: DIMENSIONS.SPACING * 0.6,
             paddingVertical: DIMENSIONS.SPACING * 0.3,
             borderRadius: 20,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             borderWidth: 1,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
           <View 
@@ -54,14 +56,14 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
               height: DIMENSIONS.SCREEN_WIDTH * 0.015,
               borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.015 / 2,
               marginRight: DIMENSIONS.SPACING * 0.4,
-              backgroundColor: COLORS.textPrimary,
+              backgroundColor: colors.textPrimary,
             }} 
           />
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '700',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {t('calendar.thisWeek')}
@@ -78,17 +80,17 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
           <VictoryAxis
             tickFormat={(t) => t}
             style={{
-              tickLabels: { fontSize: 11, fill: COLORS.textPrimary, fontFamily: 'System', fontWeight: '600' },
-              axis: { stroke: COLORS.borderPrimary },
-              grid: { stroke: COLORS.borderPrimary, strokeDasharray: '4,4' },
+              tickLabels: { fontSize: 11, fill: colors.textPrimary, fontFamily: 'System', fontWeight: '600' },
+              axis: { stroke: colors.borderPrimary },
+              grid: { stroke: colors.borderPrimary, strokeDasharray: '4,4' },
             }}
           />
           <VictoryAxis
             dependentAxis
             style={{
-              tickLabels: { fontSize: 11, fill: COLORS.textPrimary, fontFamily: 'System', fontWeight: '600' },
-              axis: { stroke: COLORS.borderPrimary },
-              grid: { stroke: COLORS.borderPrimary, strokeDasharray: '4,4' },
+              tickLabels: { fontSize: 11, fill: colors.textPrimary, fontFamily: 'System', fontWeight: '600' },
+              axis: { stroke: colors.borderPrimary },
+              grid: { stroke: colors.borderPrimary, strokeDasharray: '4,4' },
             }}
           />
           <VictoryArea
@@ -97,9 +99,9 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
             y="calories"
             style={{
               data: { 
-                fill: COLORS.textPrimary,
+                fill: colors.textPrimary,
                 fillOpacity: 0.2,
-                stroke: COLORS.textPrimary,
+                stroke: colors.textPrimary,
                 strokeWidth: 3,
               },
             }}
@@ -110,7 +112,7 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
             y="calories"
             style={{
               data: { 
-                stroke: COLORS.textPrimary,
+                stroke: colors.textPrimary,
                 strokeWidth: 3,
               },
             }}

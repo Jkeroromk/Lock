@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import WheelPicker from '@/components/onboarding/WheelPicker';
 import StepHeader from '@/components/onboarding/StepHeader';
 import UnitToggle from '@/components/onboarding/UnitToggle';
@@ -32,6 +33,7 @@ export default function HeightSelection({
   setHeightInches,
 }: HeightSelectionProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View style={{ width: '100%' }}>
@@ -66,7 +68,7 @@ export default function HeightSelection({
                 style={{
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '600',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   opacity: 0.7,
                   textAlign: 'center',
                   marginBottom: DIMENSIONS.SPACING * 0.4,
@@ -88,7 +90,7 @@ export default function HeightSelection({
                 style={{
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '600',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   opacity: 0.7,
                   textAlign: 'center',
                   marginBottom: DIMENSIONS.SPACING * 0.4,

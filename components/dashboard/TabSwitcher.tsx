@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface TabSwitcherProps {
   activeTab: 'friends' | 'challenges';
@@ -9,6 +10,7 @@ interface TabSwitcherProps {
 
 export default function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View 
@@ -17,9 +19,9 @@ export default function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps
         borderRadius: 16,
         padding: DIMENSIONS.SPACING * 0.3,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
+        borderColor: colors.borderPrimary,
       }}
     >
       <TouchableOpacity
@@ -28,7 +30,7 @@ export default function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps
           flex: 1,
           paddingVertical: DIMENSIONS.SPACING * 0.6,
           borderRadius: 12,
-          backgroundColor: activeTab === 'friends' ? COLORS.textPrimary : 'transparent',
+          backgroundColor: activeTab === 'friends' ? colors.textPrimary : 'transparent',
           alignItems: 'center',
         }}
       >
@@ -36,7 +38,7 @@ export default function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps
           style={{ 
             fontSize: TYPOGRAPHY.bodyM,
             fontWeight: '900',
-            color: activeTab === 'friends' ? COLORS.backgroundPrimary : COLORS.textPrimary,
+            color: activeTab === 'friends' ? colors.backgroundPrimary : colors.textPrimary,
           }}
         >
           {t('dashboard.leaderboard')}
@@ -48,7 +50,7 @@ export default function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps
           flex: 1,
           paddingVertical: DIMENSIONS.SPACING * 0.6,
           borderRadius: 12,
-          backgroundColor: activeTab === 'challenges' ? COLORS.textPrimary : 'transparent',
+          backgroundColor: activeTab === 'challenges' ? colors.textPrimary : 'transparent',
           alignItems: 'center',
         }}
       >
@@ -56,7 +58,7 @@ export default function TabSwitcher({ activeTab, onTabChange }: TabSwitcherProps
           style={{ 
             fontSize: TYPOGRAPHY.bodyM,
             fontWeight: '900',
-            color: activeTab === 'challenges' ? COLORS.backgroundPrimary : COLORS.textPrimary,
+            color: activeTab === 'challenges' ? colors.backgroundPrimary : colors.textPrimary,
           }}
         >
           {t('dashboard.challenges')}

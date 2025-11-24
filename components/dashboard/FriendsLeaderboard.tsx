@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Friend {
   id: string;
@@ -18,6 +19,7 @@ interface FriendsLeaderboardProps {
 
 export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View 
@@ -25,9 +27,9 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
         borderRadius: 24,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
+        borderColor: colors.borderPrimary,
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
@@ -39,16 +41,16 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
             alignItems: 'center',
             justifyContent: 'center',
             marginRight: DIMENSIONS.SPACING * 0.6,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
           }}
         >
-          <Ionicons name="people" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+          <Ionicons name="people" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
         </View>
         <Text 
           style={{ 
             fontSize: TYPOGRAPHY.bodyL,
             fontWeight: '900',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             flex: 1,
             flexShrink: 1,
           }}
@@ -66,25 +68,25 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
             alignItems: 'center',
             paddingVertical: DIMENSIONS.SPACING * 0.8,
             borderBottomWidth: index < friends.length - 1 ? 1 : 0,
-            borderBottomColor: COLORS.borderPrimary,
+            borderBottomColor: colors.borderPrimary,
           }}
         >
           <View style={{ width: DIMENSIONS.SCREEN_WIDTH * 0.1, alignItems: 'center' }}>
             {friend.rank === 1 && (
-              <Ionicons name="trophy" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+              <Ionicons name="trophy" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
             )}
             {friend.rank === 2 && (
-              <Ionicons name="medal" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+              <Ionicons name="medal" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
             )}
             {friend.rank === 3 && (
-              <Ionicons name="medal-outline" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+              <Ionicons name="medal-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
             )}
             {friend.rank > 3 && (
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyM,
                   fontWeight: '900',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {friend.rank}
@@ -99,14 +101,14 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
               alignItems: 'center',
               justifyContent: 'center',
               marginRight: DIMENSIONS.SPACING * 0.8,
-              backgroundColor: COLORS.cardBackgroundSecondary,
+              backgroundColor: colors.cardBackgroundSecondary,
             }}
           >
             <Text 
               style={{ 
                 fontSize: TYPOGRAPHY.numberS,
                 fontWeight: '900',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
               }}
             >
               {friend.avatar}
@@ -117,7 +119,7 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
               style={{ 
                 fontSize: TYPOGRAPHY.bodyM,
                 fontWeight: '900',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 marginBottom: DIMENSIONS.SPACING * 0.2,
               }}
               numberOfLines={1}
@@ -126,12 +128,12 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
               {friend.name}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
-              <Ionicons name="flame" size={TYPOGRAPHY.bodyS} color={COLORS.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.7 }} />
+              <Ionicons name="flame" size={TYPOGRAPHY.bodyS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.7 }} />
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '600',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   opacity: 0.7,
                 }}
                 numberOfLines={1}
@@ -142,7 +144,7 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '600',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   opacity: 0.5,
                   marginLeft: DIMENSIONS.SPACING * 0.6,
                 }}

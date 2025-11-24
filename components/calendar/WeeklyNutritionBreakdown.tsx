@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface NutritionStat {
   label: string;
@@ -14,6 +15,7 @@ interface WeeklyNutritionBreakdownProps {
 
 export default function WeeklyNutritionBreakdown({ stats }: WeeklyNutritionBreakdownProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View 
@@ -21,10 +23,10 @@ export default function WeeklyNutritionBreakdown({ stats }: WeeklyNutritionBreak
         borderRadius: 24,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
-        shadowColor: COLORS.shadowColor,
+        borderColor: colors.borderPrimary,
+        shadowColor: colors.shadowColor,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 12,
@@ -36,7 +38,7 @@ export default function WeeklyNutritionBreakdown({ stats }: WeeklyNutritionBreak
           fontSize: TYPOGRAPHY.title,
           fontWeight: '900',
           marginBottom: DIMENSIONS.SPACING * 1.2,
-          color: COLORS.textPrimary,
+          color: colors.textPrimary,
         }}
       >
         {t('calendar.weeklyNutrition')}
@@ -59,7 +61,7 @@ export default function WeeklyNutritionBreakdown({ stats }: WeeklyNutritionBreak
                   style={{ 
                     fontSize: TYPOGRAPHY.bodyS,
                     fontWeight: '700',
-                    color: COLORS.textPrimary,
+                    color: colors.textPrimary,
                   }}
                 >
                   {stat.label}
@@ -69,7 +71,7 @@ export default function WeeklyNutritionBreakdown({ stats }: WeeklyNutritionBreak
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '900',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {stat.value}g
@@ -79,10 +81,10 @@ export default function WeeklyNutritionBreakdown({ stats }: WeeklyNutritionBreak
               style={{ 
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 overflow: 'hidden',
                 borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
             >
               <View 

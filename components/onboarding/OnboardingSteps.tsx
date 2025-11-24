@@ -1,4 +1,4 @@
-import { Gender, Goal, ExerciseFrequency, ExpectedTimeframe } from '@/store/useStore';
+import { Gender, Goal, ExerciseFrequency, ExpectedTimeframe, ThemeMode } from '@/store/useStore';
 import HeightSelection from './steps/HeightSelection';
 import AgeSelection from './steps/AgeSelection';
 import WeightSelection from './steps/WeightSelection';
@@ -6,6 +6,7 @@ import GenderSelection from './steps/GenderSelection';
 import GoalSelection from './steps/GoalSelection';
 import ExerciseFrequencySelection from './steps/ExerciseFrequencySelection';
 import ExpectedTimeframeSelection from './steps/ExpectedTimeframeSelection';
+import ThemeSelection from './steps/ThemeSelection';
 
 interface OnboardingStepsProps {
   step: string;
@@ -40,6 +41,9 @@ interface OnboardingStepsProps {
   // Expected Timeframe
   expectedTimeframe: ExpectedTimeframe | null;
   setExpectedTimeframe: (value: ExpectedTimeframe) => void;
+  // Theme
+  themeMode: ThemeMode | null;
+  setThemeMode: (value: ThemeMode) => void;
 }
 
 export default function OnboardingSteps({
@@ -68,6 +72,8 @@ export default function OnboardingSteps({
   setExerciseFrequency,
   expectedTimeframe,
   setExpectedTimeframe,
+  themeMode,
+  setThemeMode,
 }: OnboardingStepsProps) {
   switch (step) {
     case 'height':
@@ -133,6 +139,14 @@ export default function OnboardingSteps({
         <ExpectedTimeframeSelection
           expectedTimeframe={expectedTimeframe}
           setExpectedTimeframe={setExpectedTimeframe}
+        />
+      );
+
+    case 'theme':
+      return (
+        <ThemeSelection
+          themeMode={themeMode}
+          setThemeMode={setThemeMode}
         />
       );
 

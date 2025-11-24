@@ -1,16 +1,18 @@
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { setUser } = useStore();
+  const colors = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +62,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.backgroundPrimary }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -73,7 +75,7 @@ export default function LoginScreen() {
                 width: DIMENSIONS.SCREEN_WIDTH * 0.14,
                 height: DIMENSIONS.SCREEN_WIDTH * 0.14,
                 borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.07,
-                backgroundColor: COLORS.textPrimary,
+                backgroundColor: colors.textPrimary,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: DIMENSIONS.SPACING * 0.8,
@@ -83,7 +85,7 @@ export default function LoginScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.titleL,
                   fontWeight: '900',
-                  color: COLORS.backgroundPrimary,
+                  color: colors.backgroundPrimary,
                 }}
               >
                 L
@@ -93,7 +95,7 @@ export default function LoginScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.titleL,
                 fontWeight: '900',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 marginBottom: DIMENSIONS.SPACING * 0.3,
               }}
             >
@@ -103,7 +105,7 @@ export default function LoginScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '500',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >
@@ -118,7 +120,7 @@ export default function LoginScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   marginBottom: DIMENSIONS.SPACING * 0.3,
                 }}
               >
@@ -126,17 +128,17 @@ export default function LoginScreen() {
               </Text>
               <TextInput
                 style={{
-                  backgroundColor: COLORS.cardBackground,
+                  backgroundColor: colors.cardBackground,
                   borderRadius: 12,
                   padding: DIMENSIONS.SPACING * 0.9,
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '600',
                   borderWidth: 1.5,
-                  borderColor: COLORS.borderPrimary,
+                  borderColor: colors.borderPrimary,
                 }}
                 placeholder={t('auth.emailPlaceholder')}
-                placeholderTextColor={COLORS.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -149,7 +151,7 @@ export default function LoginScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   marginBottom: DIMENSIONS.SPACING * 0.3,
                 }}
               >
@@ -158,18 +160,18 @@ export default function LoginScreen() {
               <View style={{ position: 'relative' }}>
                 <TextInput
                   style={{
-                    backgroundColor: COLORS.cardBackground,
+                    backgroundColor: colors.cardBackground,
                     borderRadius: 12,
                     padding: DIMENSIONS.SPACING * 0.9,
                     paddingRight: DIMENSIONS.SPACING * 3,
-                    color: COLORS.textPrimary,
+                    color: colors.textPrimary,
                     fontSize: TYPOGRAPHY.bodyS,
                     fontWeight: '600',
                     borderWidth: 1.5,
-                    borderColor: COLORS.borderPrimary,
+                    borderColor: colors.borderPrimary,
                   }}
                   placeholder={t('auth.passwordPlaceholder')}
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
@@ -185,7 +187,7 @@ export default function LoginScreen() {
                   <Ionicons 
                     name={showPassword ? 'eye-off' : 'eye'} 
                     size={TYPOGRAPHY.iconXS} 
-                    color={COLORS.textSecondary} 
+                    color={colors.textSecondary} 
                   />
                 </TouchableOpacity>
               </View>
@@ -197,11 +199,11 @@ export default function LoginScreen() {
               style={{
                 borderRadius: 16,
                 paddingVertical: DIMENSIONS.SPACING * 0.9,
-                backgroundColor: COLORS.textPrimary,
+                backgroundColor: colors.textPrimary,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: DIMENSIONS.SPACING * 0.8,
-                shadowColor: COLORS.shadowColor,
+                shadowColor: colors.shadowColor,
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.2,
                 shadowRadius: 8,
@@ -209,13 +211,13 @@ export default function LoginScreen() {
               }}
             >
               {isLoading ? (
-                <ActivityIndicator color={COLORS.backgroundPrimary} size="small" />
+                <ActivityIndicator color={colors.backgroundPrimary} size="small" />
               ) : (
                 <Text 
                   style={{ 
                     fontSize: TYPOGRAPHY.bodyS,
                     fontWeight: '900',
-                    color: COLORS.backgroundPrimary,
+                    color: colors.backgroundPrimary,
                   }}
                 >
                   {t('auth.login')}
@@ -228,9 +230,9 @@ export default function LoginScreen() {
               style={{
                 borderRadius: 16,
                 paddingVertical: DIMENSIONS.SPACING * 0.8,
-                backgroundColor: COLORS.cardBackground,
+                backgroundColor: colors.cardBackground,
                 borderWidth: 1.5,
-                borderColor: COLORS.borderPrimary,
+                borderColor: colors.borderPrimary,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
@@ -239,7 +241,7 @@ export default function LoginScreen() {
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('auth.continueAsGuest')}
@@ -253,7 +255,7 @@ export default function LoginScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXXS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.5,
                 marginBottom: DIMENSIONS.SPACING * 0.8,
               }}
@@ -266,28 +268,28 @@ export default function LoginScreen() {
                   width: DIMENSIONS.SCREEN_WIDTH * 0.1,
                   height: DIMENSIONS.SCREEN_WIDTH * 0.1,
                   borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
-                  backgroundColor: COLORS.cardBackground,
+                  backgroundColor: colors.cardBackground,
                   borderWidth: 1.5,
-                  borderColor: COLORS.borderPrimary,
+                  borderColor: colors.borderPrimary,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name="logo-apple" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+                <Ionicons name="logo-apple" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={{
                   width: DIMENSIONS.SCREEN_WIDTH * 0.1,
                   height: DIMENSIONS.SCREEN_WIDTH * 0.1,
                   borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
-                  backgroundColor: COLORS.cardBackground,
+                  backgroundColor: colors.cardBackground,
                   borderWidth: 1.5,
-                  borderColor: COLORS.borderPrimary,
+                  borderColor: colors.borderPrimary,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name="logo-google" size={TYPOGRAPHY.iconM} color={COLORS.textPrimary} />
+                <Ionicons name="logo-google" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
               </TouchableOpacity>
             </View>
           </View>

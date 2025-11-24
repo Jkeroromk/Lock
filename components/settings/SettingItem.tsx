@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import CustomSwitch from './CustomSwitch';
 
 interface SettingItemProps {
@@ -26,6 +27,7 @@ export default function SettingItem({
   onSwitchChange,
   showChevron = true,
 }: SettingItemProps) {
+  const colors = useTheme();
   const content = (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
@@ -37,19 +39,19 @@ export default function SettingItem({
             alignItems: 'center',
             justifyContent: 'center',
             marginRight: DIMENSIONS.SPACING * 0.6,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             borderWidth: 1,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
-          <Ionicons name={icon as any} size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+          <Ionicons name={icon as any} size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
         </View>
         <View style={{ flex: 1 }}>
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.bodyM,
               fontWeight: '700',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               marginBottom: DIMENSIONS.SPACING * 0.1,
             }}
           >
@@ -60,7 +62,7 @@ export default function SettingItem({
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '500',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >
@@ -72,7 +74,7 @@ export default function SettingItem({
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '500',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >
@@ -87,7 +89,7 @@ export default function SettingItem({
           onValueChange={onSwitchChange || (() => {})}
         />
       ) : showChevron && (
-        <Ionicons name="chevron-forward" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} opacity={0.7} />
+        <Ionicons name="chevron-forward" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} opacity={0.7} />
       )}
     </View>
   );
@@ -101,9 +103,9 @@ export default function SettingItem({
           borderRadius: 16,
           padding: DIMENSIONS.SPACING,
           marginBottom: DIMENSIONS.SPACING,
-          backgroundColor: COLORS.cardBackground,
+          backgroundColor: colors.cardBackground,
           borderWidth: 2,
-          borderColor: COLORS.borderPrimary,
+          borderColor: colors.borderPrimary,
         }}
       >
         {content}
@@ -117,9 +119,9 @@ export default function SettingItem({
         borderRadius: 16,
         padding: DIMENSIONS.SPACING,
         marginBottom: DIMENSIONS.SPACING,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
+        borderColor: colors.borderPrimary,
       }}
     >
       {content}

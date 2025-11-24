@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface MyRankCardProps {
   user: { name?: string } | null;
@@ -11,6 +12,7 @@ interface MyRankCardProps {
 
 export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View 
@@ -18,10 +20,10 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
         borderRadius: 24,
         padding: DIMENSIONS.SPACING * 1.4,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
-        shadowColor: COLORS.shadowColor,
+        borderColor: colors.borderPrimary,
+        shadowColor: colors.shadowColor,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 12,
@@ -37,16 +39,16 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
             alignItems: 'center',
             justifyContent: 'center',
             marginRight: DIMENSIONS.SPACING * 0.8,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             borderWidth: 2,
-            borderColor: COLORS.borderPrimary,
+            borderColor: colors.borderPrimary,
           }}
         >
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.title,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {user?.name?.charAt(0) || 'U'}
@@ -57,19 +59,19 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
             style={{ 
               fontSize: TYPOGRAPHY.bodyL,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               marginBottom: DIMENSIONS.SPACING * 0.3,
             }}
           >
             {t('dashboard.myRanking')}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="trophy" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.4 }} />
+            <Ionicons name="trophy" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.4 }} />
             <Text 
               style={{ 
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '700',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
               }}
             >
               第 {rank} 名
@@ -81,7 +83,7 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
             style={{ 
               fontSize: TYPOGRAPHY.numberM,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               marginBottom: DIMENSIONS.SPACING * 0.2,
             }}
           >
@@ -91,7 +93,7 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '600',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {t('today.kcal')}

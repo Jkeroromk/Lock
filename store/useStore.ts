@@ -43,6 +43,7 @@ interface WeeklyData {
 }
 
 type LanguageCode = 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ko-KR';
+export type ThemeMode = 'light' | 'dark' | 'auto';
 
 interface StoreState {
   user: User | null;
@@ -51,9 +52,11 @@ interface StoreState {
   weeklyData: WeeklyData;
   language: LanguageCode;
   hasSelectedLanguage?: boolean; // 标记是否已选择语言
+  themeMode: ThemeMode; // 主题模式
   setUser: (user: User | null) => void;
   setLanguage: (language: LanguageCode) => void;
   setHasSelectedLanguage: (hasSelected: boolean) => void;
+  setThemeMode: (mode: ThemeMode) => void;
   refreshToday: () => Promise<void>;
   fetchWeeklyData: () => Promise<void>;
 }
@@ -72,9 +75,11 @@ export const useStore = create<StoreState>()(
   },
       language: 'zh-CN',
       hasSelectedLanguage: false,
+      themeMode: 'auto',
   setUser: (user) => set({ user }),
       setLanguage: (language) => set({ language, hasSelectedLanguage: true }),
       setHasSelectedLanguage: (hasSelected) => set({ hasSelectedLanguage: hasSelected }),
+      setThemeMode: (mode) => set({ themeMode: mode }),
   refreshToday: async () => {
         // 暂时禁用API调用，等待后端就绪
         // try {
@@ -104,6 +109,7 @@ export const useStore = create<StoreState>()(
         language: state.language, 
         user: state.user,
         hasSelectedLanguage: state.hasSelectedLanguage,
+        themeMode: state.themeMode,
       }),
     }
   )

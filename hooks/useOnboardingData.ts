@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Gender, Goal, ExerciseFrequency, ExpectedTimeframe } from '@/store/useStore';
+import { Gender, Goal, ExerciseFrequency, ExpectedTimeframe, ThemeMode } from '@/store/useStore';
 
 export function useOnboardingData() {
   const [height, setHeight] = useState(170); // 始终以 cm 存储
@@ -14,6 +14,7 @@ export function useOnboardingData() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [exerciseFrequency, setExerciseFrequency] = useState<ExerciseFrequency | null>(null);
   const [expectedTimeframe, setExpectedTimeframe] = useState<ExpectedTimeframe | null>(null);
+  const [themeMode, setThemeMode] = useState<ThemeMode | null>(null);
 
   // 初始化默认值
   useEffect(() => {
@@ -28,6 +29,9 @@ export function useOnboardingData() {
     }
     if (expectedTimeframe === null) {
       setExpectedTimeframe('2-3_months');
+    }
+    if (themeMode === null) {
+      setThemeMode('auto');
     }
   }, []);
 
@@ -123,6 +127,8 @@ export function useOnboardingData() {
     setExerciseFrequency,
     expectedTimeframe,
     setExpectedTimeframe,
+    themeMode,
+    setThemeMode,
   };
 }
 

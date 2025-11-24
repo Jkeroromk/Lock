@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface HealthStatsCardProps {
   icon: string;
@@ -12,6 +13,7 @@ interface HealthStatsCardProps {
 
 export default function HealthStatsCard({ icon, label, value, unit }: HealthStatsCardProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
   
   return (
     <View 
@@ -19,10 +21,10 @@ export default function HealthStatsCard({ icon, label, value, unit }: HealthStat
         borderRadius: 20,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 0.8,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
-        shadowColor: COLORS.shadowColor,
+        borderColor: colors.borderPrimary,
+        shadowColor: colors.shadowColor,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
@@ -38,19 +40,19 @@ export default function HealthStatsCard({ icon, label, value, unit }: HealthStat
             alignItems: 'center',
             justifyContent: 'center',
             marginRight: DIMENSIONS.SPACING * 0.6,
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             borderWidth: 1,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
-          <Ionicons name={icon as any} size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+          <Ionicons name={icon as any} size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
         </View>
         <View style={{ flex: 1 }}>
           <Text 
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '700',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               marginBottom: DIMENSIONS.SPACING * 0.2,
             }}
           >
@@ -61,7 +63,7 @@ export default function HealthStatsCard({ icon, label, value, unit }: HealthStat
               style={{ 
                 fontSize: TYPOGRAPHY.numberS,
                 fontWeight: '900',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 lineHeight: TYPOGRAPHY.numberS * 1.2,
               }}
             >
@@ -72,7 +74,7 @@ export default function HealthStatsCard({ icon, label, value, unit }: HealthStat
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXXS,
                   fontWeight: '600',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   marginLeft: DIMENSIONS.SPACING * 0.3,
                 }}
               >

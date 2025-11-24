@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface Challenge {
   id: string;
@@ -19,6 +20,7 @@ interface ChallengesListProps {
 
 export default function ChallengesList({ challenges, onCreateChallenge }: ChallengesListProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <>
@@ -29,9 +31,9 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
             borderRadius: 20,
             padding: DIMENSIONS.SPACING * 1.2,
             marginBottom: DIMENSIONS.SPACING * 1.2,
-            backgroundColor: COLORS.cardBackground,
+            backgroundColor: colors.cardBackground,
             borderWidth: 2,
-            borderColor: COLORS.borderPrimary,
+            borderColor: colors.borderPrimary,
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
@@ -40,7 +42,7 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
                 style={{ 
                   fontSize: TYPOGRAPHY.title,
                   fontWeight: '900',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   marginBottom: DIMENSIONS.SPACING * 0.3,
                 }}
               >
@@ -50,7 +52,7 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '600',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                   opacity: 0.7,
                 }}
               >
@@ -62,16 +64,16 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
                 paddingHorizontal: DIMENSIONS.SPACING * 0.8,
                 paddingVertical: DIMENSIONS.SPACING * 0.4,
                 borderRadius: 20,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
             >
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXXS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {challenge.participants} {t('dashboard.participants')}
@@ -85,7 +87,7 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('dashboard.goal')}
@@ -94,7 +96,7 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '900',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {challenge.progress} / {challenge.total} {t('dashboard.days')}
@@ -105,9 +107,9 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
                 height: 10,
                 borderRadius: 5,
                 overflow: 'hidden',
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
             >
               <View 
@@ -115,7 +117,7 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
                   height: '100%',
                   borderRadius: 5,
                   width: `${(challenge.progress / challenge.total) * 100}%`,
-                  backgroundColor: COLORS.textPrimary,
+                  backgroundColor: colors.textPrimary,
                 }}
               />
             </View>
@@ -125,7 +127,7 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
             style={{
               borderRadius: 16,
               paddingVertical: DIMENSIONS.SPACING * 0.6,
-              backgroundColor: COLORS.textPrimary,
+              backgroundColor: colors.textPrimary,
               alignItems: 'center',
             }}
           >
@@ -133,7 +135,7 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
               style={{ 
                 fontSize: TYPOGRAPHY.body,
                 fontWeight: '900',
-                color: COLORS.backgroundPrimary,
+                color: colors.backgroundPrimary,
               }}
             >
               {t('dashboard.viewDetails')}
@@ -147,21 +149,21 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
         style={{
           borderRadius: 24,
           padding: DIMENSIONS.SPACING * 1.2,
-          backgroundColor: COLORS.cardBackground,
+          backgroundColor: colors.cardBackground,
           borderWidth: 2,
-          borderColor: COLORS.borderPrimary,
+          borderColor: colors.borderPrimary,
           borderStyle: 'dashed',
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <Ionicons name="add-circle-outline" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+        <Ionicons name="add-circle-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
         <Text 
           style={{ 
             fontSize: TYPOGRAPHY.bodyM,
             fontWeight: '900',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             marginLeft: DIMENSIONS.SPACING * 0.6,
           }}
         >

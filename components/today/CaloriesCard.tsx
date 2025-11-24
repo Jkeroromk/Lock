@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface CaloriesCardProps {
   todayCalories: number;
@@ -11,6 +12,7 @@ interface CaloriesCardProps {
 
 export default function CaloriesCard({ todayCalories, calorieProgress, remainingCalories }: CaloriesCardProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   return (
     <View 
@@ -18,9 +20,9 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
         borderRadius: 24,
         padding: DIMENSIONS.SPACING * 1.4,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
+        borderColor: colors.borderPrimary,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.4,
@@ -38,7 +40,7 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
           width: DIMENSIONS.SCREEN_WIDTH * 0.4,
           height: DIMENSIONS.SCREEN_WIDTH * 0.4,
           borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.2,
-          backgroundColor: COLORS.cardBackgroundSecondary,
+          backgroundColor: colors.cardBackgroundSecondary,
           opacity: 0.3,
         }}
       />
@@ -50,7 +52,7 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
           width: DIMENSIONS.SCREEN_WIDTH * 0.3,
           height: DIMENSIONS.SCREEN_WIDTH * 0.3,
           borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.15,
-          backgroundColor: COLORS.cardBackgroundSecondary,
+          backgroundColor: colors.cardBackgroundSecondary,
           opacity: 0.2,
         }}
       />
@@ -61,7 +63,7 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '700',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               letterSpacing: 1.5,
               marginBottom: DIMENSIONS.SPACING * 0.6,
               textTransform: 'uppercase',
@@ -73,7 +75,7 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
             style={{ 
               fontSize: TYPOGRAPHY.numberXL,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               letterSpacing: -4,
               marginBottom: DIMENSIONS.SPACING * 0.4,
               lineHeight: TYPOGRAPHY.numberXL * 1.1,
@@ -85,7 +87,7 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
             style={{ 
               fontSize: TYPOGRAPHY.bodyS,
               fontWeight: '600',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {t('today.kcal')}
@@ -98,9 +100,9 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
             borderRadius: 20,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             borderWidth: 2,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
@@ -108,31 +110,31 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
             elevation: 4,
           }}
         >
-          <Ionicons name="flame" size={TYPOGRAPHY.iconL} color={COLORS.textPrimary} />
+          <Ionicons name="flame" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
         </View>
       </View>
       
       <View style={{ marginTop: DIMENSIONS.SPACING * 1.2, position: 'relative', zIndex: 1 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="flag" size={TYPOGRAPHY.bodyS} color={COLORS.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.8 }} />
+            <Ionicons name="flag" size={TYPOGRAPHY.bodyS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.8 }} />
             <Text 
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
               }}
             >
               {t('today.target')}：2000 {t('today.kcal')}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="arrow-down-circle" size={TYPOGRAPHY.bodyS} color={COLORS.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.8 }} />
+            <Ionicons name="arrow-down-circle" size={TYPOGRAPHY.bodyS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.8 }} />
             <Text 
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '700',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
               }}
             >
               {t('today.remaining')} {remainingCalories}
@@ -144,9 +146,9 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
             height: 10,
             borderRadius: 5,
             overflow: 'hidden',
-            backgroundColor: COLORS.cardBackgroundSecondary,
+            backgroundColor: colors.cardBackgroundSecondary,
             borderWidth: 1,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
           <View 
@@ -154,8 +156,8 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
               height: '100%',
               borderRadius: 5,
               width: `${calorieProgress}%`,
-              backgroundColor: COLORS.progressWhite,
-              shadowColor: COLORS.progressWhite,
+              backgroundColor: colors.progressWhite,
+              shadowColor: colors.progressWhite,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.5,
               shadowRadius: 4,

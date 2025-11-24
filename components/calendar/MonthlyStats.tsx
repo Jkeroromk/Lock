@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface MonthlyStatsProps {
   markedDates: any;
@@ -9,6 +10,7 @@ interface MonthlyStatsProps {
 
 export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyStatsProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   const completedDays = Object.values(markedDates).filter((d: any) => d.progress >= 100).length;
   const dates = Object.values(markedDates) as any[];
@@ -20,16 +22,16 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
         borderRadius: 20,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
+        borderColor: colors.borderPrimary,
       }}
     >
       <Text 
         style={{ 
           fontSize: TYPOGRAPHY.body,
           fontWeight: '900',
-          color: COLORS.textPrimary,
+          color: colors.textPrimary,
           marginBottom: DIMENSIONS.SPACING * 0.8,
         }}
       >
@@ -41,7 +43,7 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '600',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               opacity: 0.7,
               marginBottom: DIMENSIONS.SPACING * 0.3,
             }}
@@ -52,7 +54,7 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
             style={{ 
               fontSize: TYPOGRAPHY.numberS,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {completedDays}
@@ -63,7 +65,7 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '600',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               opacity: 0.7,
               marginBottom: DIMENSIONS.SPACING * 0.3,
             }}
@@ -74,7 +76,7 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
             style={{ 
               fontSize: TYPOGRAPHY.numberS,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {Math.round(avgProgress)}%
@@ -85,7 +87,7 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
             style={{ 
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '600',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
               opacity: 0.7,
               marginBottom: DIMENSIONS.SPACING * 0.3,
             }}
@@ -96,7 +98,7 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
             style={{ 
               fontSize: TYPOGRAPHY.numberS,
               fontWeight: '900',
-              color: COLORS.textPrimary,
+              color: colors.textPrimary,
             }}
           >
             {avgDailyCalories} {t('today.kcal')}

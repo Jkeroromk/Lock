@@ -2,7 +2,8 @@ import { View, Text, Modal, TextInput, TouchableOpacity, Alert, Platform } from 
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface User {
   id?: string;
@@ -24,6 +25,7 @@ export default function EditProfileModal({
   onCancel,
 }: EditProfileModalProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
@@ -63,19 +65,19 @@ export default function EditProfileModal({
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center', 
-        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundColor: colors.background === '#000000' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
         paddingHorizontal: DIMENSIONS.CARD_PADDING,
       }}>
         <View 
           style={{ 
             width: '100%',
             maxWidth: DIMENSIONS.SCREEN_WIDTH * 0.85,
-            backgroundColor: COLORS.cardBackground,
+            backgroundColor: colors.cardBackground,
             borderRadius: 20,
             padding: DIMENSIONS.SPACING * 1.5,
             borderWidth: 2,
-            borderColor: COLORS.borderPrimary,
-            shadowColor: COLORS.shadowColor,
+            borderColor: colors.borderPrimary,
+            shadowColor: colors.shadowColor,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 12,
@@ -93,7 +95,7 @@ export default function EditProfileModal({
               style={{ 
                 fontSize: TYPOGRAPHY.title,
                 fontWeight: '900',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
               }}
             >
               {t('settings.editProfile')}
@@ -104,14 +106,14 @@ export default function EditProfileModal({
                 width: 32,
                 height: 32,
                 borderRadius: 16,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
             >
-              <Ionicons name="close" size={20} color={COLORS.textPrimary} />
+              <Ionicons name="close" size={20} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
 
@@ -124,29 +126,29 @@ export default function EditProfileModal({
                 borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.1,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 borderWidth: 2,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
                 marginBottom: DIMENSIONS.SPACING * 0.6,
               }}
             >
-              <Ionicons name="person" size={TYPOGRAPHY.iconL} color={COLORS.textPrimary} />
+              <Ionicons name="person" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
             </View>
             <TouchableOpacity
               style={{
                 paddingHorizontal: DIMENSIONS.SPACING * 0.8,
                 paddingVertical: DIMENSIONS.SPACING * 0.4,
                 borderRadius: 12,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
             >
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('settings.changeAvatar')}
@@ -160,7 +162,7 @@ export default function EditProfileModal({
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '700',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 marginBottom: DIMENSIONS.SPACING * 0.4,
               }}
             >
@@ -170,16 +172,16 @@ export default function EditProfileModal({
               style={{
                 width: '100%',
                 padding: DIMENSIONS.SPACING * 0.9,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 borderRadius: 12,
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '600',
                 borderWidth: 2,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
               placeholder={t('settings.namePlaceholder')}
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
@@ -192,7 +194,7 @@ export default function EditProfileModal({
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '700',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 marginBottom: DIMENSIONS.SPACING * 0.4,
               }}
             >
@@ -202,16 +204,16 @@ export default function EditProfileModal({
               style={{
                 width: '100%',
                 padding: DIMENSIONS.SPACING * 0.9,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 borderRadius: 12,
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '600',
                 borderWidth: 2,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
               placeholder={t('settings.emailPlaceholder')}
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -228,19 +230,19 @@ export default function EditProfileModal({
                 flex: 1,
                 paddingVertical: DIMENSIONS.SPACING * 0.7,
                 borderRadius: 12,
-                backgroundColor: COLORS.cardBackgroundSecondary,
+                backgroundColor: colors.cardBackgroundSecondary,
                 marginRight: DIMENSIONS.SPACING * 0.4,
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderWidth: 2,
-                borderColor: COLORS.borderSecondary,
+                borderColor: colors.borderSecondary,
               }}
             >
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
-                  color: COLORS.textPrimary,
+                  color: colors.textPrimary,
                 }}
               >
                 {t('settings.cancel')}
@@ -252,7 +254,7 @@ export default function EditProfileModal({
                 flex: 1,
                 paddingVertical: DIMENSIONS.SPACING * 0.7,
                 borderRadius: 12,
-                backgroundColor: COLORS.textPrimary,
+                backgroundColor: colors.textPrimary,
                 marginLeft: DIMENSIONS.SPACING * 0.4,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -262,7 +264,7 @@ export default function EditProfileModal({
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
-                  color: COLORS.backgroundPrimary,
+                  color: colors.backgroundPrimary,
                 }}
               >
                 {t('common.save')}

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { DateData } from 'react-native-calendars';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 import CalendarView from '@/components/calendar/CalendarView';
 import SelectedDateInfo from '@/components/calendar/SelectedDateInfo';
 import ProgressLegend from '@/components/calendar/ProgressLegend';
@@ -12,78 +13,74 @@ import WeeklyCaloriesChart from '@/components/calendar/WeeklyCaloriesChart';
 import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreakdown';
 import MonthlyStats from '@/components/calendar/MonthlyStats';
 
-// 生成示例数据（实际应该从store或API获取）
-const generateMarkedDates = (year: number, month: number) => {
-  const markedDates: any = {};
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day);
-    const dateString = date.toISOString().split('T')[0];
+export default function CalendarScreen() {
+  const { language, themeMode } = useStore();
+  const { t } = useTranslation();
+  const colors = useTheme();
+
+  // 生成示例数据（实际应该从store或API获取）
+  const generateMarkedDates = (year: number, month: number) => {
+    const markedDates: any = {};
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
     
-    // 模拟每日卡路里数据
-    const targetCalories = 2000;
-    const consumedCalories = Math.floor(Math.random() * 2500) + 500; // 500-3000
-    const progress = Math.min((consumedCalories / targetCalories) * 100, 100);
-    
-    // 根据进度设置标记样式
-    let dotColor: string = COLORS.progressVeryDarkGray; // 默认深灰
-    let dotSize = 4; // 默认小点
-    
-    if (progress >= 100) {
-      dotColor = COLORS.progressWhite; // 完成目标 - 白色
-      dotSize = 8; // 大点
-    } else if (progress >= 80) {
-      dotColor = COLORS.progressLightGray; // 80-100% - 浅灰
-      dotSize = 7;
-    } else if (progress >= 60) {
-      dotColor = COLORS.progressMediumGray; // 60-80% - 中灰
-      dotSize = 6;
-    } else if (progress >= 40) {
-      dotColor = COLORS.progressDarkGray; // 40-60% - 深灰
-      dotSize = 5;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dateString = date.toISOString().split('T')[0];
+      
+      // 模拟每日卡路里数据
+      const targetCalories = 2000;
+      const consumedCalories = Math.floor(Math.random() * 2500) + 500; // 500-3000
+      const progress = Math.min((consumedCalories / targetCalories) * 100, 100);
+      
+      // 根据进度设置标记样式
+      let dotColor: string = colors.progressVeryDarkGray; // 默认深灰
+      let dotSize = 4; // 默认小点
+      
+      if (progress >= 100) {
+        dotColor = colors.progressWhite; // 完成目标 - 白色
+        dotSize = 8; // 大点
+      } else if (progress >= 80) {
+        dotColor = colors.progressLightGray; // 80-100% - 浅灰
+        dotSize = 7;
+      } else if (progress >= 60) {
+        dotColor = colors.progressMediumGray; // 60-80% - 中灰
+        dotSize = 6;
+      } else if (progress >= 40) {
+        dotColor = colors.progressDarkGray; // 40-60% - 深灰
+        dotSize = 5;
+      }
+      
+      const isToday = 
+        today.getFullYear() === year &&
+        today.getMonth() === month &&
+        today.getDate() === day;
+      
+      markedDates[dateString] = {
+        marked: true,
+        dotColor,
+        selected: isToday,
+        selectedColor: colors.cardBackground,
+        customStyles: {
+          container: {
+            backgroundColor: isToday ? colors.cardBackgroundSecondary : 'transparent',
+            borderRadius: 8,
+          },
+          text: {
+            color: colors.textPrimary,
+            fontWeight: isToday ? '900' : '600',
+          },
+        },
+        calories: consumedCalories,
+        progress,
+      };
     }
     
-    const isToday = 
-      today.getFullYear() === year &&
-      today.getMonth() === month &&
-      today.getDate() === day;
-    
-    markedDates[dateString] = {
-      marked: true,
-      dotColor,
-      selected: isToday,
-      selectedColor: COLORS.cardBackground,
-      customStyles: {
-        container: {
-          backgroundColor: isToday ? COLORS.cardBackgroundSecondary : 'transparent',
-          borderRadius: 8,
-        },
-        text: {
-          color: COLORS.textPrimary,
-          fontWeight: isToday ? '900' : '600',
-        },
-      },
-      calories: consumedCalories,
-      progress,
-    };
-  }
+    return markedDates;
+  };
   
-  return markedDates;
-};
-
-export default function CalendarScreen() {
-  const { language } = useStore();
-  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const markedDates = generateMarkedDates(year, month);
-  
-  const selectedDateData = markedDates[selectedDate];
   
   const onDayPress = (day: DateData) => {
     setSelectedDate(day.dateString);
@@ -94,11 +91,11 @@ export default function CalendarScreen() {
   };
   
   const getProgressColor = (progress: number) => {
-    if (progress >= 100) return COLORS.progressWhite;
-    if (progress >= 80) return COLORS.progressLightGray;
-    if (progress >= 60) return COLORS.progressMediumGray;
-    if (progress >= 40) return COLORS.progressDarkGray;
-    return COLORS.progressVeryDarkGray;
+    if (progress >= 100) return colors.progressWhite;
+    if (progress >= 80) return colors.progressLightGray;
+    if (progress >= 60) return colors.progressMediumGray;
+    if (progress >= 40) return colors.progressDarkGray;
+    return colors.progressVeryDarkGray;
   };
   
   // 生成星期名称（根据语言）
@@ -135,13 +132,19 @@ export default function CalendarScreen() {
 
   // Mock nutrition stats
   const nutritionStats = [
-    { label: t('log.protein'), value: 80, color: COLORS.proteinColor },
-    { label: t('log.carbs'), value: 150, color: COLORS.carbsColor },
-    { label: t('log.fat'), value: 50, color: COLORS.fatColor },
+    { label: t('log.protein'), value: 80, color: colors.proteinColor },
+    { label: t('log.carbs'), value: 150, color: colors.carbsColor },
+    { label: t('log.fat'), value: 50, color: colors.fatColor },
   ];
 
+  // 生成标记日期数据
+  const currentYear = currentMonth.getFullYear();
+  const currentMonthNum = currentMonth.getMonth();
+  const markedDates = generateMarkedDates(currentYear, currentMonthNum);
+  const selectedDateData = markedDates[selectedDate];
+
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: COLORS.backgroundPrimary }}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView 
         className="flex-1" 
         showsVerticalScrollIndicator={false}
@@ -154,7 +157,7 @@ export default function CalendarScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.titleL,
                 fontWeight: '900',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 letterSpacing: -2,
                 marginBottom: DIMENSIONS.SPACING * 0.3,
                 lineHeight: TYPOGRAPHY.titleL * 1.1,
@@ -166,7 +169,7 @@ export default function CalendarScreen() {
               style={{ 
                 fontSize: TYPOGRAPHY.body,
                 fontWeight: '500',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
                 opacity: 0.7,
               }}
             >

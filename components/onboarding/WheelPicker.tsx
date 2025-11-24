@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { useMemo, useEffect, useRef } from 'react';
 import WheelPicker from '@quidone/react-native-wheel-picker';
-import { COLORS } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 interface WheelPickerOption<T = string | number> {
   label: string | number;
@@ -36,6 +36,7 @@ export default function CustomWheelPicker<T extends string | number = number>({
   unit,
   itemHeight = 50,
 }: WheelPickerProps<T>) {
+  const colors = useTheme();
   // 兼容旧 API：如果提供了 items，转换为 options
   const options = useMemo(() => {
     if (optionsProp) {
@@ -120,28 +121,25 @@ export default function CustomWheelPicker<T extends string | number = number>({
         itemHeight={itemHeightToUse}
         visibleItemCount={visibleItemCount}
         width="100%"
-        style={styles.container}
-        itemTextStyle={styles.itemText}
-        overlayItemStyle={styles.overlayItem}
+        style={{
+          borderRadius: 16,
+          overflow: 'hidden',
+          backgroundColor: colors.cardBackground,
+          borderWidth: 2,
+          borderColor: colors.borderPrimary,
+        }}
+        itemTextStyle={{
+          color: colors.textPrimary,
+        }}
+        overlayItemStyle={{
+          borderTopWidth: 2,
+          borderBottomWidth: 2,
+          borderColor: colors.textPrimary,
+        }}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: COLORS.cardBackground,
-    borderWidth: 2,
-    borderColor: COLORS.borderPrimary,
-  },
-  itemText: {
-    color: COLORS.textPrimary,
-  },
-  overlayItem: {
-    borderTopWidth: 2,
-    borderBottomWidth: 2,
-    borderColor: COLORS.textPrimary,
-  },
-});
+// 注意：由于 StyleSheet.create 不支持动态值，我们需要在组件内部使用内联样式
+// 但为了保持代码结构，我们保留这个文件，实际样式在组件内部定义

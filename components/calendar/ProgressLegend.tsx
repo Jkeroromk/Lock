@@ -1,16 +1,18 @@
 import { View, Text } from 'react-native';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function ProgressLegend() {
   const { t } = useTranslation();
+  const colors = useTheme();
 
   const legendItems = [
-    { size: 8, color: COLORS.progressWhite, label: t('calendar.completed') },
-    { size: 7, color: COLORS.progressLightGray, label: t('calendar.good') },
-    { size: 6, color: COLORS.progressMediumGray, label: t('calendar.normal') },
-    { size: 5, color: COLORS.progressDarkGray, label: t('calendar.insufficient') },
-    { size: 4, color: COLORS.progressVeryDarkGray, label: t('calendar.veryLittle') },
+    { size: 8, color: colors.progressWhite, label: t('calendar.completed') },
+    { size: 7, color: colors.progressLightGray, label: t('calendar.good') },
+    { size: 6, color: colors.progressMediumGray, label: t('calendar.normal') },
+    { size: 5, color: colors.progressDarkGray, label: t('calendar.insufficient') },
+    { size: 4, color: colors.progressVeryDarkGray, label: t('calendar.veryLittle') },
   ];
 
   return (
@@ -19,16 +21,16 @@ export default function ProgressLegend() {
         borderRadius: 20,
         padding: DIMENSIONS.SPACING * 1.2,
         marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: COLORS.cardBackground,
+        backgroundColor: colors.cardBackground,
         borderWidth: 2,
-        borderColor: COLORS.borderPrimary,
+        borderColor: colors.borderPrimary,
       }}
     >
       <Text 
         style={{ 
           fontSize: TYPOGRAPHY.body,
           fontWeight: '900',
-          color: COLORS.textPrimary,
+          color: colors.textPrimary,
           marginBottom: DIMENSIONS.SPACING * 0.8,
         }}
       >
@@ -50,7 +52,7 @@ export default function ProgressLegend() {
               style={{ 
                 fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '600',
-                color: COLORS.textPrimary,
+                color: colors.textPrimary,
               }}
             >
               {item.label}
