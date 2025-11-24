@@ -148,20 +148,23 @@ export default function TabLayout() {
           backgroundColor: '#000000',
           borderTopWidth: 1,
           borderTopColor: '#1F1F1F',
-          height: 88,
+          height: 100,
           paddingBottom: 28,
           paddingTop: 12,
-          paddingHorizontal: 16,
+          paddingHorizontal: 18,
           elevation: 20,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.5,
           shadowRadius: 12,
         },
+        tabBarItemStyle: {
+          paddingHorizontal: 4,
+        },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '700',
-          marginTop: 4,
+          marginTop: 5,
         },
       }}
     >

@@ -11,10 +11,15 @@ interface User {
 interface UserProfileCardProps {
   user: User | null;
   onEdit: () => void;
+  themeMode: 'light' | 'dark';
+  onThemeChange: (mode: 'light' | 'dark') => void;
 }
 
-export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) {
+export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange }: UserProfileCardProps) {
   const { t } = useTranslation();
+  const isLightMode = themeMode === 'light';
+  const nextTheme = isLightMode ? 'dark' : 'light';
+  const themeIcon = isLightMode ? 'sunny' : 'moon';
 
   return (
     <View 
@@ -30,28 +35,44 @@ export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) 
         shadowOpacity: 0.2,
         shadowRadius: 8,
         elevation: 4,
-        position: 'relative',
       }}
     >
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onEdit}
-        style={{
-          position: 'absolute',
-          top: DIMENSIONS.SPACING * 0.4,
-          right: DIMENSIONS.SPACING * 0.4,
-          width: DIMENSIONS.SCREEN_WIDTH * 0.08,
-          height: DIMENSIONS.SCREEN_WIDTH * 0.08,
-          borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04,
-          backgroundColor: COLORS.cardBackgroundSecondary,
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderWidth: 1,
-          borderColor: COLORS.borderSecondary,
-        }}
-      >
-        <Ionicons name="create-outline" size={TYPOGRAPHY.iconXXS} color={COLORS.textPrimary} />
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => onThemeChange(nextTheme)}
+          style={{
+            width: DIMENSIONS.SCREEN_WIDTH * 0.08,
+            height: DIMENSIONS.SCREEN_WIDTH * 0.08,
+            borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04,
+            backgroundColor: COLORS.cardBackgroundSecondary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: COLORS.borderSecondary,
+          }}
+        >
+          <Ionicons name={themeIcon as any} size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onEdit}
+          style={{
+            width: DIMENSIONS.SCREEN_WIDTH * 0.08,
+            height: DIMENSIONS.SCREEN_WIDTH * 0.08,
+            borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04,
+            backgroundColor: COLORS.cardBackgroundSecondary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: COLORS.borderSecondary,
+          }}
+        >
+          <Ionicons name="create-outline" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
+        </TouchableOpacity>
+      </View>
+
       <View style={{ alignItems: 'center' }}>
         <View 
           style={{ 

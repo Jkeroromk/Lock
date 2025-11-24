@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -111,16 +111,13 @@ export default function OnboardingScreen() {
           closedLockAnimatedStyle={closedLockAnimatedStyle}
         />
       )}
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
+      <View
+        style={{
+          flex: 1,
           paddingHorizontal: DIMENSIONS.CARD_PADDING,
           paddingTop: DIMENSIONS.SPACING * 2,
           paddingBottom: DIMENSIONS.SPACING * 3,
         }}
-        showsVerticalScrollIndicator={false}
-        nestedScrollEnabled={true}
-        scrollEnabled={true}
       >
         {/* Progress Indicator */}
         <View style={{ marginBottom: DIMENSIONS.SPACING * 2 }}>
@@ -174,6 +171,10 @@ export default function OnboardingScreen() {
             setAge={onboardingData.setAge}
             weight={onboardingData.weight}
             setWeight={onboardingData.setWeight}
+            weightUnit={onboardingData.weightUnit}
+            setWeightUnit={onboardingData.setWeightUnit}
+            weightLb={onboardingData.weightLb}
+            setWeightLb={onboardingData.setWeightLb}
             gender={onboardingData.gender}
             setGender={onboardingData.setGender}
             goal={onboardingData.goal}
@@ -191,13 +192,8 @@ export default function OnboardingScreen() {
             <TouchableOpacity
               onPress={() => {
                 if (currentStep === 0) {
-                  // 如果是第一步，导航到语言选择
-                  try {
-                    router.back();
-                  } catch (error) {
-                    // 如果不能返回，导航到语言选择页面
-                    router.push('/(auth)/language-selection');
-                  }
+                  // 如果是第一步，导航到语言选择页面
+                  router.push('/(auth)/language-selection');
                 } else {
                   handleBack();
                 }
@@ -248,7 +244,7 @@ export default function OnboardingScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

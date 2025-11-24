@@ -19,7 +19,7 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [healthSyncEnabled, setHealthSyncEnabled] = useState(true);
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('light');
   const [dailyCalories, setDailyCalories] = useState('2000');
   const [dailySteps, setDailySteps] = useState('10000');
   const [showGoalsModal, setShowGoalsModal] = useState(false);
@@ -31,7 +31,6 @@ export default function SettingsScreen() {
   
   const languages: LanguageCode[] = ['zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR'];
   const currentLanguageName = languageNames[language];
-
   const handleSaveGoals = () => {
     setDailyCalories(tempCalories);
     setDailySteps(tempSteps);
@@ -77,90 +76,12 @@ export default function SettingsScreen() {
           {/* User Profile Card */}
           <UserProfileCard 
             user={user} 
+            themeMode={themeMode}
+            onThemeChange={setThemeMode}
             onEdit={() => {
               setShowEditProfileModal(true);
             }}
           />
-
-          {/* User Profile Information */}
-          {user?.hasCompletedOnboarding && (
-            <View 
-              style={{ 
-                borderRadius: 16,
-                marginBottom: DIMENSIONS.SPACING,
-                backgroundColor: COLORS.cardBackground,
-                borderWidth: 2,
-                borderColor: COLORS.borderPrimary,
-                padding: DIMENSIONS.SPACING,
-              }}
-            >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyM,
-                  fontWeight: '900',
-                  color: COLORS.textPrimary,
-                  marginBottom: DIMENSIONS.SPACING * 0.8,
-                }}
-              >
-                {t('settings.profileInfo')}
-              </Text>
-              
-              {user.height && (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
-                    {t('settings.height')}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
-                    {user.height} {t('settings.cm')}
-                  </Text>
-                </View>
-              )}
-              
-              {user.age && (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
-                    {t('settings.age')}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
-                    {user.age} {t('settings.years')}
-                  </Text>
-                </View>
-              )}
-              
-              {user.weight && (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
-                    {t('settings.weight')}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
-                    {user.weight} {t('settings.kg')}
-                  </Text>
-                </View>
-              )}
-              
-              {user.gender && (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5, borderBottomWidth: 1, borderBottomColor: COLORS.borderPrimary }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
-                    {t('settings.gender')}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
-                    {t(`settings.gender.${user.gender}`)}
-                  </Text>
-                </View>
-              )}
-              
-              {user.goal && (
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: DIMENSIONS.SPACING * 0.5 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: COLORS.textPrimary, opacity: 0.7 }}>
-                    {t('settings.goal')}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary }}>
-                    {t(`settings.goal.${user.goal}`)}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
 
           {/* Goals */}
           <SettingItem
@@ -188,14 +109,20 @@ export default function SettingsScreen() {
             showChevron={false}
           />
 
-          {/* Health Data */}
+          {/* Account & Security */}
           <SettingItem
-            icon="heart-circle"
-            title={t('settings.healthData')}
-            showSwitch={true}
-            switchValue={healthSyncEnabled}
-            onSwitchChange={setHealthSyncEnabled}
-            showChevron={false}
+            icon="shield-checkmark"
+            title={t('settings.accountSecurity')}
+            description={t('settings.accountSecurityDescription')}
+            onPress={() => router.push('/(tabs)/settings/account-security')}
+          />
+
+          {/* Subscription */}
+          <SettingItem
+            icon="card-outline"
+            title={t('settings.subscriptionPlan')}
+            description={t('settings.subscriptionPlanDescription')}
+            onPress={() => Alert.alert(t('settings.subscriptionPlan'), t('settings.subscriptionPlanDescription'))}
           />
 
           {/* About Section */}

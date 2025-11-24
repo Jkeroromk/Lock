@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { 
   useSharedValue, 
@@ -82,36 +82,38 @@ export function useOnboardingAnimation({
   }, []);
 
   // 导航到主页
-  const navigateToHome = () => {
+  const navigateToHome = useCallback(() => {
     try {
       router.replace('/(tabs)/today');
     } catch (error) {
       console.error('Navigation error:', error);
     }
-  };
+  }, [router]);
 
   // 完成动画后的处理
-  const handleAnimationComplete = () => {
+  const handleAnimationComplete = useCallback(() => {
     setLockState('closed');
     
-    setUser({
-      ...user!,
-      height: onboardingData.height,
-      age: onboardingData.age,
-      weight: onboardingData.weight,
-      gender: onboardingData.gender || undefined,
-      goal: onboardingData.goal || undefined,
-      exerciseFrequency: onboardingData.exerciseFrequency || undefined,
-      expectedTimeframe: onboardingData.expectedTimeframe || undefined,
-      hasCompletedOnboarding: true,
-    });
+    if (user) {
+      setUser({
+        ...user,
+        height: onboardingData.height,
+        age: onboardingData.age,
+        weight: onboardingData.weight,
+        gender: onboardingData.gender || undefined,
+        goal: onboardingData.goal || undefined,
+        exerciseFrequency: onboardingData.exerciseFrequency || undefined,
+        expectedTimeframe: onboardingData.expectedTimeframe || undefined,
+        hasCompletedOnboarding: true,
+      });
+    }
 
     // 立即跳转，动画已经完成
     navigateToHome();
-  };
+  }, [user, onboardingData, setUser, setLockState, navigateToHome]);
 
   // 启动 lock in 动画（在 JS 线程中执行）
-  const startLockInAnimation = () => {
+  const startLockInAnimation = useCallback(() => {
     // 3. 执行 lock in 动画 - 总时长约 600ms
     lockRotation.value = withSequence(
       // 旋转到15度 (200ms)
@@ -134,7 +136,15 @@ export function useOnboardingAnimation({
       duration: 500, 
       easing: Easing.inOut(Easing.ease) 
     }));
-  };
+  }, [lockRotation, openLockOpacity, closedLockOpacity, handleAnimationComplete]);
+
+  // 调度 lock in 动画（在 JS 线程中执行）
+  const scheduleLockIn = useCallback(() => {
+    const timeout2 = setTimeout(() => {
+      startLockInAnimation();
+    }, 200); // 短暂延迟，让用户看到锁图标
+    timeoutRefs.current.push(timeout2);
+  }, [startLockInAnimation]);
 
   // 启动完成动画 - 总时长控制在 1.5 秒
   const startCompletionAnimation = () => {
@@ -155,13 +165,6 @@ export function useOnboardingAnimation({
     const timeout1 = setTimeout(() => {
       lockScale.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.ease) }, () => {
         // worklet 回调中不能直接修改 ref，使用 runOnJS 在 JS 线程中执行
-        // 创建一个函数来处理 timeout2 的设置
-        const scheduleLockIn = () => {
-          const timeout2 = setTimeout(() => {
-            startLockInAnimation();
-          }, 200); // 短暂延迟，让用户看到锁图标
-          timeoutRefs.current.push(timeout2);
-        };
         runOnJS(scheduleLockIn)();
       });
     }, 200); // 延迟显示锁图标

@@ -7,7 +7,9 @@ export function useOnboardingData() {
   const [heightFeet, setHeightFeet] = useState(5); // 英尺
   const [heightInches, setHeightInches] = useState(7); // 英寸
   const [age, setAge] = useState(25);
-  const [weight, setWeight] = useState(70);
+  const [weight, setWeight] = useState(70); // 始终以 kg 存储
+  const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
+  const [weightLb, setWeightLb] = useState(154); // 磅
   const [gender, setGender] = useState<Gender | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [exerciseFrequency, setExerciseFrequency] = useState<ExerciseFrequency | null>(null);
@@ -42,6 +44,16 @@ export function useOnboardingData() {
     return { feet, inches };
   };
 
+  // 磅转公斤：1 lb = 0.453592 kg
+  const convertLbToKg = (lb: number): number => {
+    return Math.round(lb * 0.453592);
+  };
+
+  // 公斤转磅
+  const convertKgToLb = (kg: number): number => {
+    return Math.round(kg / 0.453592);
+  };
+
   // 当使用英尺英寸时，实时转换为厘米
   useEffect(() => {
     if (heightUnit === 'ft') {
@@ -61,6 +73,31 @@ export function useOnboardingData() {
     previousHeightUnit.current = heightUnit;
   }, [heightUnit, height]);
 
+  // 当从 kg 切换到 lb 时，转换当前值（只在切换时执行一次）
+  const previousWeightUnit = useRef<'kg' | 'lb'>('kg');
+  const weightRef = useRef(weight);
+  
+  // 保持 weightRef 与 weight 同步
+  useEffect(() => {
+    weightRef.current = weight;
+  }, [weight]);
+
+  useEffect(() => {
+    if (weightUnit === 'lb' && previousWeightUnit.current === 'kg' && weightRef.current > 0) {
+      const lb = convertKgToLb(weightRef.current);
+      setWeightLb(lb);
+    }
+    previousWeightUnit.current = weightUnit;
+  }, [weightUnit]);
+
+  // 当使用磅时，实时转换为公斤（只在 weightUnit 为 lb 时执行，与身高逻辑一致）
+  useEffect(() => {
+    if (weightUnit === 'lb' && weightLb > 0) {
+      const kg = convertLbToKg(weightLb);
+      setWeight(kg);
+    }
+  }, [weightLb, weightUnit]);
+
   return {
     height,
     setHeight,
@@ -74,6 +111,10 @@ export function useOnboardingData() {
     setAge,
     weight,
     setWeight,
+    weightUnit,
+    setWeightUnit,
+    weightLb,
+    setWeightLb,
     gender,
     setGender,
     goal,
