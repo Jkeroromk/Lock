@@ -7,6 +7,7 @@ import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { signIn, signUp, signInAnonymously, resetPassword } from '@/services/auth';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -17,30 +18,51 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleLogin = async () => {
+  const handleAuth = async () => {
     if (!email || !password) {
       Alert.alert(t('auth.error'), t('auth.fillAllFields'));
       return;
     }
 
+    if (password.length < 6) {
+      Alert.alert(t('auth.error'), t('auth.passwordTooShort'));
+      return;
+    }
+
     setIsLoading(true);
-    
-    // 模拟登录过程（实际应该调用API）
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 模拟登录成功，创建用户对象
+      const result = isSignUp
+        ? await signUp(email, password)
+        : await signIn(email, password);
+
+      if (!result.success) {
+        Alert.alert(t('auth.error'), result.error || t('auth.loginFailed'));
+        return;
+      }
+
+      if (isSignUp && !result.session) {
+        // 注册成功但需要邮箱验证
+        Alert.alert(
+          t('auth.checkEmail'),
+          t('auth.verificationSent'),
+          [{ text: t('auth.ok'), onPress: () => setIsSignUp(false) }]
+        );
+        return;
+      }
+
+      const supabaseUser = result.user;
       const { setHasSelectedLanguage } = useStore.getState();
-      setHasSelectedLanguage(false); // 重置语言选择状态
+      setHasSelectedLanguage(false);
       setUser({
-        id: '1',
-        name: email.split('@')[0] || 'User',
+        id: supabaseUser?.id || '',
+        name: supabaseUser?.user_metadata?.name || email.split('@')[0] || 'User',
         email: email,
-        hasCompletedOnboarding: false, // 新用户需要完成问卷调查
+        hasCompletedOnboarding: false,
       });
-      
-      // 导航到语言选择页面
+
       router.replace('/(auth)/language-selection');
     } catch (error) {
       Alert.alert(t('auth.error'), t('auth.loginFailed'));
@@ -49,29 +71,57 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGuestLogin = () => {
-    const { setHasSelectedLanguage } = useStore.getState();
-    setHasSelectedLanguage(false); // 重置语言选择状态
-    setUser({
-      id: 'guest',
-      name: 'Guest',
-      email: 'guest@example.com',
-      hasCompletedOnboarding: false,
-    });
-    router.replace('/(auth)/language-selection');
+  const handleGuestLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await signInAnonymously();
+
+      if (!result.success) {
+        Alert.alert(t('auth.error'), result.error || t('auth.loginFailed'));
+        return;
+      }
+
+      const { setHasSelectedLanguage } = useStore.getState();
+      setHasSelectedLanguage(false);
+      setUser({
+        id: result.user?.id || '',
+        name: 'Guest',
+        email: '',
+        hasCompletedOnboarding: false,
+      });
+      router.replace('/(auth)/language-selection');
+    } catch (error) {
+      Alert.alert(t('auth.error'), t('auth.loginFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert(t('auth.error'), t('auth.enterEmailFirst'));
+      return;
+    }
+
+    const result = await resetPassword(email);
+    if (result.success) {
+      Alert.alert(t('auth.checkEmail'), t('auth.resetPasswordSent'));
+    } else {
+      Alert.alert(t('auth.error'), result.error || t('auth.resetFailed'));
+    }
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: DIMENSIONS.CARD_PADDING }}>
           {/* Logo/Title */}
           <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 2 }}>
-            <View 
-              style={{ 
+            <View
+              style={{
                 width: DIMENSIONS.SCREEN_WIDTH * 0.14,
                 height: DIMENSIONS.SCREEN_WIDTH * 0.14,
                 borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.07,
@@ -81,8 +131,8 @@ export default function LoginScreen() {
                 marginBottom: DIMENSIONS.SPACING * 0.8,
               }}
             >
-              <Text 
-                style={{ 
+              <Text
+                style={{
                   fontSize: TYPOGRAPHY.titleL,
                   fontWeight: '900',
                   color: colors.backgroundPrimary,
@@ -91,8 +141,8 @@ export default function LoginScreen() {
                 L
               </Text>
             </View>
-            <Text 
-              style={{ 
+            <Text
+              style={{
                 fontSize: TYPOGRAPHY.titleL,
                 fontWeight: '900',
                 color: colors.textPrimary,
@@ -101,8 +151,8 @@ export default function LoginScreen() {
             >
               Lock
             </Text>
-            <Text 
-              style={{ 
+            <Text
+              style={{
                 fontSize: TYPOGRAPHY.bodyS,
                 fontWeight: '500',
                 color: colors.textPrimary,
@@ -116,8 +166,8 @@ export default function LoginScreen() {
           {/* Login Form */}
           <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
             <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-              <Text 
-                style={{ 
+              <Text
+                style={{
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '700',
                   color: colors.textPrimary,
@@ -146,9 +196,9 @@ export default function LoginScreen() {
               />
             </View>
 
-            <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-              <Text 
-                style={{ 
+            <View style={{ marginBottom: DIMENSIONS.SPACING * 0.4 }}>
+              <Text
+                style={{
                   fontSize: TYPOGRAPHY.bodyXS,
                   fontWeight: '700',
                   color: colors.textPrimary,
@@ -184,17 +234,38 @@ export default function LoginScreen() {
                     top: DIMENSIONS.SPACING * 0.9,
                   }}
                 >
-                  <Ionicons 
-                    name={showPassword ? 'eye-off' : 'eye'} 
-                    size={TYPOGRAPHY.iconXS} 
-                    color={colors.textSecondary} 
+                  <Ionicons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={TYPOGRAPHY.iconXS}
+                    color={colors.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
             </View>
 
+            {/* Forgot Password */}
+            {!isSignUp && (
+              <TouchableOpacity
+                onPress={handleForgotPassword}
+                style={{ alignSelf: 'flex-end', marginBottom: DIMENSIONS.SPACING * 0.8 }}
+              >
+                <Text
+                  style={{
+                    fontSize: TYPOGRAPHY.bodyXXS,
+                    fontWeight: '600',
+                    color: colors.textPrimary,
+                    opacity: 0.6,
+                  }}
+                >
+                  {t('auth.forgotPassword')}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {isSignUp && <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }} />}
+
             <TouchableOpacity
-              onPress={handleLogin}
+              onPress={handleAuth}
               disabled={isLoading}
               style={{
                 borderRadius: 16,
@@ -213,20 +284,38 @@ export default function LoginScreen() {
               {isLoading ? (
                 <ActivityIndicator color={colors.backgroundPrimary} size="small" />
               ) : (
-                <Text 
-                  style={{ 
+                <Text
+                  style={{
                     fontSize: TYPOGRAPHY.bodyS,
                     fontWeight: '900',
                     color: colors.backgroundPrimary,
                   }}
                 >
-                  {t('auth.login')}
+                  {isSignUp ? t('auth.signUp') : t('auth.login')}
                 </Text>
               )}
             </TouchableOpacity>
 
+            {/* Toggle Login/SignUp */}
+            <TouchableOpacity
+              onPress={() => setIsSignUp(!isSignUp)}
+              style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}
+            >
+              <Text
+                style={{
+                  fontSize: TYPOGRAPHY.bodyXXS,
+                  fontWeight: '600',
+                  color: colors.textPrimary,
+                  opacity: 0.7,
+                }}
+              >
+                {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               onPress={handleGuestLogin}
+              disabled={isLoading}
               style={{
                 borderRadius: 16,
                 paddingVertical: DIMENSIONS.SPACING * 0.8,
@@ -237,8 +326,8 @@ export default function LoginScreen() {
                 justifyContent: 'center',
               }}
             >
-              <Text 
-                style={{ 
+              <Text
+                style={{
                   fontSize: TYPOGRAPHY.bodyS,
                   fontWeight: '700',
                   color: colors.textPrimary,
@@ -251,8 +340,8 @@ export default function LoginScreen() {
 
           {/* Social Login Options */}
           <View style={{ alignItems: 'center' }}>
-            <Text 
-              style={{ 
+            <Text
+              style={{
                 fontSize: TYPOGRAPHY.bodyXXS,
                 fontWeight: '600',
                 color: colors.textPrimary,
@@ -264,6 +353,7 @@ export default function LoginScreen() {
             </Text>
             <View style={{ flexDirection: 'row', justifyContent: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
               <TouchableOpacity
+                onPress={() => Alert.alert('Apple Sign In', t('auth.socialLoginComingSoon'))}
                 style={{
                   width: DIMENSIONS.SCREEN_WIDTH * 0.1,
                   height: DIMENSIONS.SCREEN_WIDTH * 0.1,
@@ -278,6 +368,7 @@ export default function LoginScreen() {
                 <Ionicons name="logo-apple" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
               </TouchableOpacity>
               <TouchableOpacity
+                onPress={() => Alert.alert('Google Sign In', t('auth.socialLoginComingSoon'))}
                 style={{
                   width: DIMENSIONS.SCREEN_WIDTH * 0.1,
                   height: DIMENSIONS.SCREEN_WIDTH * 0.1,
@@ -298,4 +389,3 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
-

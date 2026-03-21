@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    // 验证用户身份
+    const authResult = await authenticateRequest(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
     const body = await request.json();
     const { food_name, calories, protein, carbs, fat, image_url } = body;
 
@@ -13,10 +19,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // 获取用户 ID（这里简化处理，实际应该从认证中获取）
-    // 暂时使用固定用户 ID，实际应用中应该从 JWT token 中获取
-    const userId = request.headers.get('x-user-id') || 'default-user-id';
 
     // 插入餐食记录
     const data = await prisma.meal.create({
@@ -40,5 +42,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-

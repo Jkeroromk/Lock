@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    // 获取用户 ID
-    const userId = request.headers.get('x-user-id') || 'default-user-id';
+    // 验证用户身份
+    const authResult = await authenticateRequest(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
 
     // 获取过去7天的开始时间
     const today = new Date();
@@ -56,5 +59,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-
