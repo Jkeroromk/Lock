@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
+import { getAccessToken } from './auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-nextjs-app.vercel.app';
 
@@ -10,12 +11,11 @@ const api = axios.create({
   },
 });
 
-// 添加用户 ID 到请求头（实际应用中应该从认证中获取）
-api.interceptors.request.use((config) => {
-  // 这里可以从 AsyncStorage 或其他地方获取用户 ID
-  const userId = 'default-user-id'; // 临时使用固定值
-  if (userId) {
-    config.headers['x-user-id'] = userId;
+// 自动附加 Supabase JWT token 到每个请求
+api.interceptors.request.use(async (config) => {
+  const token = await getAccessToken();
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
   }
   return config;
 });

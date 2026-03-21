@@ -8,6 +8,7 @@ import { LanguageCode, languageNames } from '@/i18n/locales';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { signOut } from '@/services/auth';
 import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
 import GoalsModal from '@/components/settings/GoalsModal';
@@ -248,10 +249,10 @@ export default function SettingsScreen() {
                 { 
                   text: t('settings.logoutConfirm'), 
                   style: 'destructive', 
-                  onPress: () => {
-                    const { setHasSelectedLanguage } = useStore.getState();
-                    setUser(null);
-                    setHasSelectedLanguage(false); // 重置语言选择状态
+                  onPress: async () => {
+                    await signOut();
+                    const { clearSession } = useStore.getState();
+                    clearSession();
                     router.replace('/(auth)/login');
                   }
                 },

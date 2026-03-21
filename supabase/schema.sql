@@ -3,6 +3,12 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   name TEXT,
+  height INTEGER, -- 身高 (cm)
+  age INTEGER, -- 年龄
+  weight DECIMAL(5, 2), -- 体重 (kg)
+  gender TEXT, -- 性别: male, female, other
+  goal TEXT, -- 目标: lose_weight, lose_fat, gain_muscle
+  has_completed_onboarding BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -45,15 +51,52 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE meals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE health_sync ENABLE ROW LEVEL SECURITY;
 
--- 创建策略（允许所有操作，实际应用中应该根据用户身份限制）
-CREATE POLICY "Allow all operations on users" ON users
-  FOR ALL USING (true) WITH CHECK (true);
+-- ============================================================
+-- RLS 策略：基于 Supabase Auth 的 auth.uid() 进行数据隔离
+-- 每个用户只能访问自己的数据
+-- ============================================================
 
-CREATE POLICY "Allow all operations on meals" ON meals
-  FOR ALL USING (true) WITH CHECK (true);
+-- Users 表策略
+-- 用户只能查看和更新自己的资料
+CREATE POLICY "users_select_own" ON users
+  FOR SELECT USING (id = auth.uid());
 
-CREATE POLICY "Allow all operations on health_sync" ON health_sync
-  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "users_insert_own" ON users
+  FOR INSERT WITH CHECK (id = auth.uid());
+
+CREATE POLICY "users_update_own" ON users
+  FOR UPDATE USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+
+CREATE POLICY "users_delete_own" ON users
+  FOR DELETE USING (id = auth.uid());
+
+-- Meals 表策略
+-- 用户只能操作自己的餐食记录
+CREATE POLICY "meals_select_own" ON meals
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "meals_insert_own" ON meals
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "meals_update_own" ON meals
+  FOR UPDATE USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "meals_delete_own" ON meals
+  FOR DELETE USING (user_id = auth.uid());
+
+-- Health Sync 表策略
+-- 用户只能操作自己的健康数据
+CREATE POLICY "health_sync_select_own" ON health_sync
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "health_sync_insert_own" ON health_sync
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "health_sync_update_own" ON health_sync
+  FOR UPDATE USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "health_sync_delete_own" ON health_sync
+  FOR DELETE USING (user_id = auth.uid());
 
 -- 创建更新时间触发器函数
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -73,5 +116,3 @@ CREATE TRIGGER update_meals_updated_at BEFORE UPDATE ON meals
 
 CREATE TRIGGER update_health_sync_updated_at BEFORE UPDATE ON health_sync
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-

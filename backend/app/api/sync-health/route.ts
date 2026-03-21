@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    // 验证用户身份
+    const authResult = await authenticateRequest(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
     const body = await request.json();
     const { steps, active_energy, heart_rate } = body;
-
-    // 获取用户 ID
-    const userId = request.headers.get('x-user-id') || 'default-user-id';
 
     // 获取今天的日期（只保存日期部分，不包含时间）
     const today = new Date();
@@ -45,5 +48,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-

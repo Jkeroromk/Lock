@@ -1,16 +1,17 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  withSpring, 
+import {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
   withSequence,
   withDelay,
   Easing,
   runOnJS
 } from 'react-native-reanimated';
 import { useStore, Gender, Goal, ExerciseFrequency, ExpectedTimeframe } from '@/store/useStore';
+import { supabase } from '@/services/supabase';
 
 interface OnboardingData {
   height: number;
@@ -95,7 +96,7 @@ export function useOnboardingAnimation({
     setLockState('closed');
     
     if (user) {
-      setUser({
+      const updatedUser = {
         ...user,
         height: onboardingData.height,
         age: onboardingData.age,
@@ -105,7 +106,23 @@ export function useOnboardingAnimation({
         exerciseFrequency: onboardingData.exerciseFrequency || undefined,
         expectedTimeframe: onboardingData.expectedTimeframe || undefined,
         hasCompletedOnboarding: true,
-      });
+      };
+      setUser(updatedUser);
+
+      // 同步 onboarding 数据到 Supabase user_metadata
+      supabase.auth.updateUser({
+        data: {
+          name: user.name,
+          hasCompletedOnboarding: true,
+          height: onboardingData.height,
+          age: onboardingData.age,
+          weight: onboardingData.weight,
+          gender: onboardingData.gender,
+          goal: onboardingData.goal,
+          exerciseFrequency: onboardingData.exerciseFrequency,
+          expectedTimeframe: onboardingData.expectedTimeframe,
+        },
+      }).catch((err) => console.error('Failed to sync onboarding data:', err));
     }
 
     // 立即跳转，动画已经完成

@@ -22,6 +22,7 @@ interface User {
   exerciseFrequency?: ExerciseFrequency; // 运动频率
   expectedTimeframe?: ExpectedTimeframe; // 期望见效时间
   hasCompletedOnboarding?: boolean; // 是否完成问卷调查
+  isAnonymous?: boolean; // 是否为匿名（游客）用户
 }
 
 interface Meal {
@@ -59,28 +60,29 @@ interface StoreState {
   setThemeMode: (mode: ThemeMode) => void;
   refreshToday: () => Promise<void>;
   fetchWeeklyData: () => Promise<void>;
+  clearSession: () => void;
 }
 
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
-  user: null,
-  todayCalories: 0,
-  todayMeals: [],
-  weeklyData: {
-    calories: [],
-    protein: [],
-    carbs: [],
-    fat: [],
-  },
+      user: null,
+      todayCalories: 0,
+      todayMeals: [],
+      weeklyData: {
+        calories: [],
+        protein: [],
+        carbs: [],
+        fat: [],
+      },
       language: 'zh-CN',
       hasSelectedLanguage: false,
       themeMode: 'auto',
-  setUser: (user) => set({ user }),
+      setUser: (user) => set({ user }),
       setLanguage: (language) => set({ language, hasSelectedLanguage: true }),
       setHasSelectedLanguage: (hasSelected) => set({ hasSelectedLanguage: hasSelected }),
       setThemeMode: (mode) => set({ themeMode: mode }),
-  refreshToday: async () => {
+      refreshToday: async () => {
         // 暂时禁用API调用，等待后端就绪
         // try {
         //   const data = await fetchTodayData();
@@ -91,8 +93,8 @@ export const useStore = create<StoreState>()(
         // } catch (error) {
         //   console.error('Failed to fetch today data:', error);
         // }
-  },
-  fetchWeeklyData: async () => {
+      },
+      fetchWeeklyData: async () => {
         // 暂时禁用API调用，等待后端就绪
         // try {
         //   const data = await fetchWeeklyData();
@@ -100,13 +102,22 @@ export const useStore = create<StoreState>()(
         // } catch (error) {
         //   console.error('Failed to fetch weekly data:', error);
         // }
-  },
+      },
+      clearSession: () => {
+        set({
+          user: null,
+          todayCalories: 0,
+          todayMeals: [],
+          weeklyData: { calories: [], protein: [], carbs: [], fat: [] },
+          hasSelectedLanguage: false,
+        });
+      },
     }),
     {
       name: 'lock-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ 
-        language: state.language, 
+      partialize: (state) => ({
+        language: state.language,
         user: state.user,
         hasSelectedLanguage: state.hasSelectedLanguage,
         themeMode: state.themeMode,
@@ -114,5 +125,3 @@ export const useStore = create<StoreState>()(
     }
   )
 );
-
-

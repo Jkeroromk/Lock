@@ -1,19 +1,44 @@
 import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
 import { useStore } from '@/store/useStore';
+import { getSession } from '@/services/auth';
 import LoadingScreen from '@/components/auth/LoadingScreen';
 
 export default function Index() {
-  const { user, language } = useStore();
+  const { user, setUser } = useStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 模拟检查登录状态的延迟（实际应用中可能需要检查 token 等）
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+    const checkSession = async () => {
+      try {
+        const session = await getSession();
 
-    return () => clearTimeout(timer);
+        if (session?.user) {
+          // 有有效 session，但本地可能没有 user 数据（app 被杀掉重启的情况）
+          const localUser = useStore.getState().user;
+          if (!localUser) {
+            // 从 session 恢复基本用户信息
+            setUser({
+              id: session.user.id,
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              email: session.user.email || '',
+              hasCompletedOnboarding: session.user.user_metadata?.hasCompletedOnboarding || false,
+            });
+          }
+        } else {
+          // 没有有效 session，清除本地用户数据
+          if (useStore.getState().user) {
+            setUser(null);
+          }
+        }
+      } catch (error) {
+        console.error('Session check failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
   }, []);
 
   if (isLoading) {
