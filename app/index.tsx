@@ -30,7 +30,9 @@ export default function Index() {
             hasCompletedOnboarding: profile.hasCompletedOnboarding,
           });
         })
-        .catch(() => {})
+        .catch(() => {
+          // Keep any cached user state — don't overwrite with null on network errors
+        })
         .finally(() => setProfileLoaded(true));
     } else {
       setUser(null);

@@ -1,9 +1,10 @@
 import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSignIn, useSignUp, useOAuth } from '@clerk/clerk-expo';
+import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
+import { setTokenGetter } from '@/services/tokenStore';
 import * as Linking from 'expo-linking';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
@@ -17,6 +18,7 @@ export default function LoginScreen() {
   const { setUser } = useStore();
   const colors = useTheme();
 
+  const { getToken } = useAuth();
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
   const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
@@ -29,6 +31,11 @@ export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [pendingPasswordReset, setPendingPasswordReset] = useState(false);
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const newPasswordRef = useRef<TextInput>(null);
 
   // After Clerk auth succeeds — load profile from our DB and route
   const onAuthSuccess = async () => {
@@ -79,6 +86,7 @@ export default function LoginScreen() {
       } else {
         const result = await signIn.create({ identifier: email, password });
         await setSignInActive({ session: result.createdSessionId });
+        setTokenGetter(getToken);
         await onAuthSuccess();
       }
     } catch (err: any) {
@@ -94,6 +102,7 @@ export default function LoginScreen() {
     try {
       const result = await signUp.attemptEmailAddressVerification({ code: verificationCode });
       await setSignUpActive({ session: result.createdSessionId });
+      setTokenGetter(getToken);
       await onAuthSuccess();
     } catch (err: any) {
       Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
@@ -110,6 +119,7 @@ export default function LoginScreen() {
       });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
+        setTokenGetter(getToken);
         await onAuthSuccess();
       }
     } catch (err: any) {
@@ -130,6 +140,7 @@ export default function LoginScreen() {
       });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
+        setTokenGetter(getToken);
         await onAuthSuccess();
       }
     } catch (err: any) {
@@ -149,11 +160,138 @@ export default function LoginScreen() {
     if (!signInLoaded) return;
     try {
       await signIn.create({ strategy: 'reset_password_email_code', identifier: email });
-      Alert.alert(t('auth.checkEmail'), t('auth.resetPasswordSent'));
+      setResetCode('');
+      setNewPassword('');
+      setPendingPasswordReset(true);
     } catch (err: any) {
       Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.resetFailed'));
     }
   };
+
+  const handlePasswordReset = async () => {
+    if (!signInLoaded) return;
+    if (resetCode.length < 6) {
+      Alert.alert(t('auth.error'), t('auth.enterCode') || '请输入验证码');
+      return;
+    }
+    if (newPassword.length < 8) {
+      Alert.alert(t('auth.error'), t('auth.passwordTooShort'));
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const result = await signIn.attemptFirstFactor({
+        strategy: 'reset_password_email_code',
+        code: resetCode,
+      });
+      if (result.status === 'needs_new_password') {
+        const resetResult = await signIn.resetPassword({ password: newPassword });
+        if (resetResult.status === 'complete') {
+          await setSignInActive({ session: resetResult.createdSessionId });
+          setTokenGetter(getToken);
+          setPendingPasswordReset(false);
+          await onAuthSuccess();
+        }
+      }
+    } catch (err: any) {
+      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Password reset step
+  if (pendingPasswordReset) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: DIMENSIONS.CARD_PADDING }}>
+          <Text style={{ fontSize: TYPOGRAPHY.titleL, fontWeight: '900', color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.3 }}>
+            {t('auth.resetPassword')}
+          </Text>
+          <Text style={{ fontSize: TYPOGRAPHY.bodyS, color: colors.textPrimary, opacity: 0.6, marginBottom: DIMENSIONS.SPACING * 1.5 }}>
+            {t('auth.resetPasswordSent')}
+          </Text>
+
+          {/* Verification code */}
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.3 }}>
+            {t('auth.verificationCode')}
+          </Text>
+          <TextInput
+            style={{
+              backgroundColor: colors.cardBackground, borderRadius: 12,
+              padding: DIMENSIONS.SPACING * 0.9, color: colors.textPrimary,
+              fontSize: TYPOGRAPHY.title, fontWeight: '700',
+              borderWidth: 1.5, borderColor: colors.borderPrimary,
+              marginBottom: DIMENSIONS.SPACING,
+              textAlign: 'center', letterSpacing: 12,
+            }}
+            placeholder="— — — — — —"
+            placeholderTextColor={colors.textSecondary}
+            keyboardType="number-pad"
+            value={resetCode}
+            onChangeText={(text) => {
+              setResetCode(text);
+              if (text.length === 6) newPasswordRef.current?.focus();
+            }}
+            maxLength={6}
+            returnKeyType="next"
+            onSubmitEditing={() => newPasswordRef.current?.focus()}
+          />
+
+          {/* New password */}
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.3 }}>
+            {t('auth.newPassword')}
+          </Text>
+          <View style={{ position: 'relative', marginBottom: DIMENSIONS.SPACING }}>
+            <TextInput
+              ref={newPasswordRef}
+              style={{
+                backgroundColor: colors.cardBackground, borderRadius: 12,
+                padding: DIMENSIONS.SPACING * 0.9, paddingRight: DIMENSIONS.SPACING * 3,
+                color: colors.textPrimary, fontSize: TYPOGRAPHY.bodyS, fontWeight: '600',
+                borderWidth: 1.5, borderColor: colors.borderPrimary,
+              }}
+              placeholder={t('auth.passwordPlaceholder')}
+              placeholderTextColor={colors.textSecondary}
+              secureTextEntry={!showNewPassword}
+              value={newPassword}
+              onChangeText={setNewPassword}
+              returnKeyType="done"
+              onSubmitEditing={handlePasswordReset}
+            />
+            <TouchableOpacity
+              onPress={() => setShowNewPassword(!showNewPassword)}
+              style={{ position: 'absolute', right: DIMENSIONS.SPACING * 0.9, top: DIMENSIONS.SPACING * 0.9 }}
+            >
+              <Ionicons name={showNewPassword ? 'eye-off' : 'eye'} size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            onPress={handlePasswordReset}
+            disabled={isLoading || resetCode.length < 6 || newPassword.length < 8}
+            style={{
+              borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9,
+              backgroundColor: colors.textPrimary, alignItems: 'center',
+              marginBottom: DIMENSIONS.SPACING,
+              opacity: (resetCode.length < 6 || newPassword.length < 8) ? 0.5 : 1,
+            }}
+          >
+            {isLoading
+              ? <ActivityIndicator color={colors.backgroundPrimary} />
+              : <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.backgroundPrimary }}>{t('auth.ok')}</Text>
+            }
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setPendingPasswordReset(false)} style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.6 }}>
+              {t('auth.back')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Email verification step
   if (pendingVerification) {

@@ -12,6 +12,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { steps, active_energy, heart_rate } = body;
 
+    // Ensure user row exists (new users may not have hit /api/auth/profile yet)
+    await prisma.user.upsert({
+      where: { id: userId },
+      create: { id: userId },
+      update: {},
+    });
+
     // 获取今天的日期（只保存日期部分，不包含时间）
     const today = new Date();
     today.setHours(0, 0, 0, 0);

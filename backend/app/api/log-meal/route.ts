@@ -20,6 +20,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure user row exists (new users may not have hit /api/auth/profile yet)
+    await prisma.user.upsert({
+      where: { id: userId },
+      create: { id: userId },
+      update: {},
+    });
+
     // 插入餐食记录
     const data = await prisma.meal.create({
       data: {

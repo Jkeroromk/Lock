@@ -55,9 +55,6 @@ interface StoreState {
   themeMode: ThemeMode;
   dailyCalorieGoal: number;
   dailyStepGoal: number;
-  // Clerk token bridge — set by ClerkTokenBridge component in _layout.tsx
-  getToken: (() => Promise<string | null>) | null;
-  setGetToken: (fn: (() => Promise<string | null>) | null) => void;
   setUser: (user: User | null) => void;
   setLanguage: (language: LanguageCode) => void;
   setHasSelectedLanguage: (hasSelected: boolean) => void;
@@ -81,8 +78,6 @@ export const useStore = create<StoreState>()(
       themeMode: 'auto',
       dailyCalorieGoal: 2000,
       dailyStepGoal: 10000,
-      getToken: null,
-      setGetToken: (fn) => set({ getToken: fn }),
       setUser: (user) => set({ user }),
       setLanguage: (language) => set({ language, hasSelectedLanguage: true }),
       setHasSelectedLanguage: (hasSelected) => set({ hasSelectedLanguage: hasSelected }),

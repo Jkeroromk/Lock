@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
-import { useStore } from '@/store/useStore';
+import { getStoredToken } from './tokenStore';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-nextjs-app.vercel.app';
 
@@ -12,11 +12,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const getToken = useStore.getState().getToken;
-  if (getToken) {
-    const token = await getToken();
-    if (token) config.headers['Authorization'] = `Bearer ${token}`;
-  }
+  const token = await getStoredToken();
+  if (token) config.headers['Authorization'] = `Bearer ${token}`;
   return config;
 });
 

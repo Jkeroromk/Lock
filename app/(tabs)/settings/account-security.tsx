@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { useUser, useOAuth } from '@clerk/clerk-expo';
+import { useUser, useOAuth, useAuth } from '@clerk/clerk-expo';
 import * as Linking from 'expo-linking';
 
 export default function AccountSecurityScreen() {
@@ -14,8 +14,10 @@ export default function AccountSecurityScreen() {
   const router = useRouter();
   const colors = useTheme();
   const { user, isLoaded } = useUser();
+  const { signOut } = useAuth();
   const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
   const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const externalAccounts = user?.externalAccounts ?? [];
   const isLinked = (provider: string) =>
@@ -65,6 +67,36 @@ export default function AccountSecurityScreen() {
               Alert.alert(t('settings.error'), t('settings.linkFailed'));
             } finally {
               setLinkingProvider(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const formatDate = (date: Date | null | undefined) => {
+    if (!date) return t('settings.never');
+    return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).format(date);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t('settings.deleteAccount'),
+      t('settings.deleteAccountConfirm'),
+      [
+        { text: t('settings.cancel'), style: 'cancel' },
+        {
+          text: t('settings.deleteAccount'),
+          style: 'destructive',
+          onPress: async () => {
+            setDeletingAccount(true);
+            try {
+              await user?.delete();
+              await signOut();
+            } catch {
+              Alert.alert(t('settings.error'), t('settings.deleteAccountWarning'));
+            } finally {
+              setDeletingAccount(false);
             }
           },
         },
@@ -170,35 +202,6 @@ export default function AccountSecurityScreen() {
               <ActivityIndicator color={colors.textPrimary} />
             ) : (
               <>
-                {/* Email row — always shown */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-                  <View style={iconBoxStyle}>
-                    <Ionicons name="mail-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                      {t('settings.emailPassword')}
-                    </Text>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
-                      {isLinked('email') ? t('settings.linked') : t('settings.notLinked')}
-                    </Text>
-                  </View>
-                  {isLinked('email') && (
-                    <View style={{
-                      paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
-                      backgroundColor: colors.cardBackgroundSecondary,
-                      borderWidth: 1, borderColor: colors.borderSecondary,
-                    }}>
-                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary }}>
-                        {t('settings.linked')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Divider */}
-                <View style={{ height: 1, backgroundColor: colors.borderSecondary, marginBottom: DIMENSIONS.SPACING * 0.8 }} />
-
                 {/* Google row */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
                   <View style={iconBoxStyle}>
@@ -332,6 +335,92 @@ export default function AccountSecurityScreen() {
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Login Activity */}
+          <Text style={{
+            fontSize: TYPOGRAPHY.bodyXS,
+            fontWeight: '700',
+            color: colors.textPrimary,
+            opacity: 0.5,
+            marginBottom: DIMENSIONS.SPACING * 0.6,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}>
+            {t('settings.loginHistory')}
+          </Text>
+
+          <View style={cardStyle}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+              <View style={iconBoxStyle}>
+                <Ionicons name="time-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
+                  {t('settings.lastSignIn')}
+                </Text>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                  {formatDate(user?.lastSignInAt)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ height: 1, backgroundColor: colors.borderSecondary, marginBottom: DIMENSIONS.SPACING * 0.8 }} />
+
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={iconBoxStyle}>
+                <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
+                  {t('settings.accountCreated')}
+                </Text>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                  {formatDate(user?.createdAt)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Danger Zone */}
+          <Text style={{
+            fontSize: TYPOGRAPHY.bodyXS,
+            fontWeight: '700',
+            color: '#ef4444',
+            opacity: 0.8,
+            marginBottom: DIMENSIONS.SPACING * 0.6,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}>
+            {t('settings.dangerZone')}
+          </Text>
+
+          <View style={{ ...cardStyle, borderColor: '#ef444440' }}>
+            <TouchableOpacity
+              onPress={handleDeleteAccount}
+              activeOpacity={0.7}
+              disabled={deletingAccount}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                <View style={{ ...iconBoxStyle, backgroundColor: '#ef444420', borderColor: '#ef444440' }}>
+                  {deletingAccount ? (
+                    <ActivityIndicator color="#ef4444" size="small" />
+                  ) : (
+                    <Ionicons name="trash-outline" size={TYPOGRAPHY.iconS} color="#ef4444" />
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: '#ef4444', marginBottom: 4 }}>
+                    {t('settings.deleteAccount')}
+                  </Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                    {t('settings.deleteAccountDescription')}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color="#ef4444" />
             </TouchableOpacity>
           </View>
         </View>

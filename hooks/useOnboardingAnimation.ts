@@ -94,34 +94,32 @@ export function useOnboardingAnimation({
   // 完成动画后的处理
   const handleAnimationComplete = useCallback(() => {
     setLockState('closed');
-    
-    if (user) {
-      const updatedUser = {
-        ...user,
-        height: onboardingData.height,
-        age: onboardingData.age,
-        weight: onboardingData.weight,
-        gender: onboardingData.gender || undefined,
-        goal: onboardingData.goal || undefined,
-        exerciseFrequency: onboardingData.exerciseFrequency || undefined,
-        expectedTimeframe: onboardingData.expectedTimeframe || undefined,
-        hasCompletedOnboarding: true,
-      };
-      setUser(updatedUser);
 
-      // 保存 onboarding 数据到后端数据库
-      updateProfile({
-        name: user.name,
-        hasCompletedOnboarding: true,
-        height: onboardingData.height,
-        age: onboardingData.age,
-        weight: onboardingData.weight,
-        gender: onboardingData.gender ?? undefined,
-        goal: onboardingData.goal ?? undefined,
-        exerciseFrequency: onboardingData.exerciseFrequency ?? undefined,
-        expectedTimeframe: onboardingData.expectedTimeframe ?? undefined,
-      }).catch((err) => console.error('Failed to sync onboarding data:', err));
-    }
+    // Always update store and persist to backend, even if user object is null
+    setUser({
+      ...(user || {}),
+      height: onboardingData.height,
+      age: onboardingData.age,
+      weight: onboardingData.weight,
+      gender: onboardingData.gender || undefined,
+      goal: onboardingData.goal || undefined,
+      exerciseFrequency: onboardingData.exerciseFrequency || undefined,
+      expectedTimeframe: onboardingData.expectedTimeframe || undefined,
+      hasCompletedOnboarding: true,
+    } as any);
+
+    // 保存 onboarding 数据到后端数据库
+    updateProfile({
+      name: user?.name ?? undefined,
+      hasCompletedOnboarding: true,
+      height: onboardingData.height,
+      age: onboardingData.age,
+      weight: onboardingData.weight,
+      gender: onboardingData.gender ?? undefined,
+      goal: onboardingData.goal ?? undefined,
+      exerciseFrequency: onboardingData.exerciseFrequency ?? undefined,
+      expectedTimeframe: onboardingData.expectedTimeframe ?? undefined,
+    }).catch((err) => console.error('Failed to sync onboarding data:', err));
 
     // 立即跳转，动画已经完成
     navigateToHome();

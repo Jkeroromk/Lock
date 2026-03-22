@@ -74,8 +74,9 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
         gender: gender || undefined,
         goal: goal || undefined,
       });
-    } catch {
-      Alert.alert(t('settings.error'), t('settings.error'));
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || t('settings.error');
+      Alert.alert(t('settings.error'), msg);
     } finally {
       setSaving(false);
     }
