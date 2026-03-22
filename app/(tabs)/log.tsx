@@ -149,8 +149,7 @@ export default function LogScreen() {
       setImage(null);
       setResult(null);
       setIsEditing(false);
-      // 暂时禁用API调用，等待后端就绪
-      // refreshToday();
+      refreshToday();
     } catch (error: any) {
       Alert.alert(t('log.saveFailed'), error.message || t('log.saveFailed'));
     }

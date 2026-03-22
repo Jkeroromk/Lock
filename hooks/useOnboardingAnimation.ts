@@ -11,7 +11,7 @@ import {
   runOnJS
 } from 'react-native-reanimated';
 import { useStore, Gender, Goal, ExerciseFrequency, ExpectedTimeframe } from '@/store/useStore';
-import { supabase } from '@/services/supabase';
+import { updateProfile } from '@/services/api';
 
 interface OnboardingData {
   height: number;
@@ -109,19 +109,17 @@ export function useOnboardingAnimation({
       };
       setUser(updatedUser);
 
-      // 同步 onboarding 数据到 Supabase user_metadata
-      supabase.auth.updateUser({
-        data: {
-          name: user.name,
-          hasCompletedOnboarding: true,
-          height: onboardingData.height,
-          age: onboardingData.age,
-          weight: onboardingData.weight,
-          gender: onboardingData.gender,
-          goal: onboardingData.goal,
-          exerciseFrequency: onboardingData.exerciseFrequency,
-          expectedTimeframe: onboardingData.expectedTimeframe,
-        },
+      // 保存 onboarding 数据到后端数据库
+      updateProfile({
+        name: user.name,
+        hasCompletedOnboarding: true,
+        height: onboardingData.height,
+        age: onboardingData.age,
+        weight: onboardingData.weight,
+        gender: onboardingData.gender ?? undefined,
+        goal: onboardingData.goal ?? undefined,
+        exerciseFrequency: onboardingData.exerciseFrequency ?? undefined,
+        expectedTimeframe: onboardingData.expectedTimeframe ?? undefined,
       }).catch((err) => console.error('Failed to sync onboarding data:', err));
     }
 

@@ -1,11 +1,14 @@
 import { View, Text, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import Skeleton from '@/components/ui/Skeleton';
 import { DateData } from 'react-native-calendars';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { fetchMonthlyData, fetchWeeklyData, MonthlyData } from '@/services/api';
 import CalendarView from '@/components/calendar/CalendarView';
 import SelectedDateInfo from '@/components/calendar/SelectedDateInfo';
 import ProgressLegend from '@/components/calendar/ProgressLegend';
@@ -14,50 +17,114 @@ import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreak
 import MonthlyStats from '@/components/calendar/MonthlyStats';
 
 export default function CalendarScreen() {
-  const { language, themeMode } = useStore();
+  const { language, themeMode, dailyCalorieGoal } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
 
-  // 生成示例数据（实际应该从store或API获取）
-  const generateMarkedDates = (year: number, month: number) => {
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [monthlyData, setMonthlyData] = useState<MonthlyData>({});
+  const [chartData, setChartData] = useState<{ day: string; calories: number }[]>([]);
+  const [nutritionStats, setNutritionStats] = useState([
+    { label: t('log.protein'), value: 0, color: colors.proteinColor },
+    { label: t('log.carbs'), value: 0, color: colors.carbsColor },
+    { label: t('log.fat'), value: 0, color: colors.fatColor },
+  ]);
+
+  const getProgressColor = (progress: number) => {
+    if (progress >= 100) return colors.progressWhite;
+    if (progress >= 80) return colors.progressLightGray;
+    if (progress >= 60) return colors.progressMediumGray;
+    if (progress >= 40) return colors.progressDarkGray;
+    return colors.progressVeryDarkGray;
+  };
+
+  const getWeekdayLabel = (dateStr: string) => {
+    try {
+      const formatter = new Intl.DateTimeFormat(language, { weekday: 'short' });
+      return formatter.format(new Date(dateStr));
+    } catch {
+      return dateStr.slice(5); // MM-DD fallback
+    }
+  };
+
+  const loadMonthlyData = useCallback(async (year: number, month: number) => {
+    try {
+      const data = await fetchMonthlyData(year, month);
+      setMonthlyData(data);
+    } catch (error) {
+      console.error('Failed to load monthly data:', error);
+    }
+  }, []);
+
+  const loadWeeklyData = useCallback(async () => {
+    try {
+      const days = await fetchWeeklyData();
+      setChartData(days.map((d) => ({ day: getWeekdayLabel(d.date), calories: d.calories })));
+      // Weekly totals averaged
+      const count = days.filter((d) => d.calories > 0).length || 1;
+      const avgProtein = Math.round(days.reduce((s, d) => s + d.protein, 0) / count);
+      const avgCarbs = Math.round(days.reduce((s, d) => s + d.carbs, 0) / count);
+      const avgFat = Math.round(days.reduce((s, d) => s + d.fat, 0) / count);
+      setNutritionStats([
+        { label: t('log.protein'), value: avgProtein, color: colors.proteinColor },
+        { label: t('log.carbs'), value: avgCarbs, color: colors.carbsColor },
+        { label: t('log.fat'), value: avgFat, color: colors.fatColor },
+      ]);
+    } catch (error) {
+      console.error('Failed to load weekly data:', error);
+    }
+  }, [language]);
+
+  useEffect(() => {
+    Promise.all([
+      loadMonthlyData(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
+      loadWeeklyData(),
+    ]).finally(() => setLoading(false));
+  }, []);
+
+  const onDayPress = (day: DateData) => {
+    setSelectedDate(day.dateString);
+  };
+
+  const onMonthChange = (month: DateData) => {
+    const newMonth = new Date(month.year, month.month - 1, 1);
+    setCurrentMonth(newMonth);
+    loadMonthlyData(month.year, month.month);
+  };
+
+  // Build markedDates from real monthly data
+  const buildMarkedDates = () => {
     const markedDates: any = {};
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
-    
+    const year = currentMonth.getFullYear();
+    const monthNum = currentMonth.getMonth();
+    const daysInMonth = new Date(year, monthNum + 1, 0).getDate();
+
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const dateString = date.toISOString().split('T')[0];
-      
-      // 模拟每日卡路里数据
-      const targetCalories = 2000;
-      const consumedCalories = Math.floor(Math.random() * 2500) + 500; // 500-3000
-      const progress = Math.min((consumedCalories / targetCalories) * 100, 100);
-      
-      // 根据进度设置标记样式
-      let dotColor: string = colors.progressVeryDarkGray; // 默认深灰
-      let dotSize = 4; // 默认小点
-      
-      if (progress >= 100) {
-        dotColor = colors.progressWhite; // 完成目标 - 白色
-        dotSize = 8; // 大点
-      } else if (progress >= 80) {
-        dotColor = colors.progressLightGray; // 80-100% - 浅灰
-        dotSize = 7;
-      } else if (progress >= 60) {
-        dotColor = colors.progressMediumGray; // 60-80% - 中灰
-        dotSize = 6;
-      } else if (progress >= 40) {
-        dotColor = colors.progressDarkGray; // 40-60% - 深灰
-        dotSize = 5;
-      }
-      
-      const isToday = 
+      const date = new Date(year, monthNum, day);
+      const dateStr = date.toISOString().split('T')[0];
+      const dayData = monthlyData[dateStr];
+      const calories = dayData?.calories || 0;
+      const progress = calories > 0 ? Math.min((calories / dailyCalorieGoal) * 100, 100) : 0;
+
+      const isToday =
         today.getFullYear() === year &&
-        today.getMonth() === month &&
+        today.getMonth() === monthNum &&
         today.getDate() === day;
-      
-      markedDates[dateString] = {
-        marked: true,
+
+      let dotColor: string = colors.progressVeryDarkGray;
+      let dotSize = 4;
+      if (calories > 0) {
+        if (progress >= 100) { dotColor = colors.progressWhite; dotSize = 8; }
+        else if (progress >= 80) { dotColor = colors.progressLightGray; dotSize = 7; }
+        else if (progress >= 60) { dotColor = colors.progressMediumGray; dotSize = 6; }
+        else if (progress >= 40) { dotColor = colors.progressDarkGray; dotSize = 5; }
+      }
+
+      markedDates[dateStr] = {
+        marked: calories > 0,
         dotColor,
         selected: isToday,
         selectedColor: colors.cardBackground,
@@ -71,90 +138,34 @@ export default function CalendarScreen() {
             fontWeight: isToday ? '900' : '600',
           },
         },
-        calories: consumedCalories,
+        calories,
         progress,
       };
     }
-    
     return markedDates;
   };
-  
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  
-  const onDayPress = (day: DateData) => {
-    setSelectedDate(day.dateString);
-  };
-  
-  const onMonthChange = (month: DateData) => {
-    setCurrentMonth(new Date(month.year, month.month - 1, 1));
-  };
-  
-  const getProgressColor = (progress: number) => {
-    if (progress >= 100) return colors.progressWhite;
-    if (progress >= 80) return colors.progressLightGray;
-    if (progress >= 60) return colors.progressMediumGray;
-    if (progress >= 40) return colors.progressDarkGray;
-    return colors.progressVeryDarkGray;
-  };
-  
-  // 生成星期名称（根据语言）
-  const getWeekdayNames = () => {
-    const locale = language;
-    const baseDate = new Date(2024, 0, 1);
-    const weekdays = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(baseDate);
-      date.setDate(baseDate.getDate() + i);
-      try {
-        const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-        weekdays.push(formatter.format(date));
-      } catch (error) {
-        const defaultNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        weekdays.push(defaultNames[i]);
-      }
-    }
-    return weekdays;
-  };
-  
-  const weekdayNames = getWeekdayNames();
-  
-  // 生成图表数据
-  const chartData = [
-    { day: weekdayNames[0], calories: 1800 },
-    { day: weekdayNames[1], calories: 2200 },
-    { day: weekdayNames[2], calories: 1900 },
-    { day: weekdayNames[3], calories: 2100 },
-    { day: weekdayNames[4], calories: 2000 },
-    { day: weekdayNames[5], calories: 2300 },
-    { day: weekdayNames[6], calories: 1950 },
-  ];
 
-  // Mock nutrition stats
-  const nutritionStats = [
-    { label: t('log.protein'), value: 80, color: colors.proteinColor },
-    { label: t('log.carbs'), value: 150, color: colors.carbsColor },
-    { label: t('log.fat'), value: 50, color: colors.fatColor },
-  ];
-
-  // 生成标记日期数据
-  const currentYear = currentMonth.getFullYear();
-  const currentMonthNum = currentMonth.getMonth();
-  const markedDates = generateMarkedDates(currentYear, currentMonthNum);
+  const markedDates = buildMarkedDates();
   const selectedDateData = markedDates[selectedDate];
+
+  // Monthly stats: average daily calories from real data
+  const daysWithData = Object.values(monthlyData).filter((d) => d.calories > 0);
+  const avgDailyCalories = daysWithData.length > 0
+    ? Math.round(daysWithData.reduce((s, d) => s + d.calories, 0) / daysWithData.length)
+    : 0;
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 30 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
           {/* Header */}
           <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-            <Text 
-              style={{ 
+            <Text
+              style={{
                 fontSize: TYPOGRAPHY.titleL,
                 fontWeight: '900',
                 color: colors.textPrimary,
@@ -165,8 +176,8 @@ export default function CalendarScreen() {
             >
               {t('tabs.calendar')}
             </Text>
-            <Text 
-              style={{ 
+            <Text
+              style={{
                 fontSize: TYPOGRAPHY.body,
                 fontWeight: '500',
                 color: colors.textPrimary,
@@ -177,35 +188,41 @@ export default function CalendarScreen() {
             </Text>
           </View>
 
-          {/* Calendar */}
-          <CalendarView
-            currentMonth={currentMonth}
-            markedDates={markedDates}
-            selectedDate={selectedDate}
-            onDayPress={onDayPress}
-            onMonthChange={onMonthChange}
-          />
+          {loading ? (
+            <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
+              <Skeleton height={320} borderRadius={24} />
+              <Skeleton height={80} borderRadius={18} />
+              <Skeleton height={200} borderRadius={24} />
+              <Skeleton height={160} borderRadius={24} />
+              <Skeleton height={120} borderRadius={20} />
+            </View>
+          ) : (
+            <Animated.View entering={FadeIn.duration(400)}>
+              <CalendarView
+                currentMonth={currentMonth}
+                markedDates={markedDates}
+                selectedDate={selectedDate}
+                onDayPress={onDayPress}
+                onMonthChange={onMonthChange}
+              />
 
-          {/* Selected Date Info */}
-          {selectedDateData && (
-            <SelectedDateInfo 
-              selectedDate={selectedDate}
-              selectedDateData={selectedDateData}
-              getProgressColor={getProgressColor}
-            />
+              {selectedDateData && (
+                <SelectedDateInfo
+                  selectedDate={selectedDate}
+                  selectedDateData={selectedDateData}
+                  getProgressColor={getProgressColor}
+                />
+              )}
+
+              <ProgressLegend />
+
+              <WeeklyCaloriesChart chartData={chartData} />
+
+              <WeeklyNutritionBreakdown stats={nutritionStats} />
+
+              <MonthlyStats markedDates={markedDates} avgDailyCalories={avgDailyCalories} />
+            </Animated.View>
           )}
-
-          {/* Legend */}
-          <ProgressLegend />
-
-          {/* Weekly Calories Chart */}
-          <WeeklyCaloriesChart chartData={chartData} />
-
-          {/* Weekly Nutrition Breakdown */}
-          <WeeklyNutritionBreakdown stats={nutritionStats} />
-
-          {/* Monthly Stats */}
-          <MonthlyStats markedDates={markedDates} avgDailyCalories={2036} />
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -8,16 +8,20 @@ export async function GET(request: NextRequest) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    // Build array for the past 7 days (today + 6 before)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    const { searchParams } = new URL(request.url);
+    const year = parseInt(searchParams.get('year') || String(new Date().getFullYear()));
+    const month = parseInt(searchParams.get('month') || String(new Date().getMonth() + 1));
+
+    const startOfMonth = new Date(year, month - 1, 1);
+    const startOfNextMonth = new Date(year, month, 1);
 
     const meals = await prisma.meal.findMany({
       where: {
         userId,
-        createdAt: { gte: sevenDaysAgo },
+        createdAt: {
+          gte: startOfMonth,
+          lt: startOfNextMonth,
+        },
       },
     });
 
@@ -34,23 +38,11 @@ export async function GET(request: NextRequest) {
       dailyMap[date].fat += Number(meal.fat || 0);
     });
 
-    // Build a full 7-day array with zeros for missing days
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      days.push({
-        date: dateStr,
-        ...(dailyMap[dateStr] || { calories: 0, protein: 0, carbs: 0, fat: 0 }),
-      });
-    }
-
-    return NextResponse.json(days);
+    return NextResponse.json(dailyMap);
   } catch (error: any) {
-    console.error('Weekly API error:', error);
+    console.error('Monthly API error:', error);
     return NextResponse.json(
-      { error: error.message || '获取周数据失败' },
+      { error: error.message || '获取月度数据失败' },
       { status: 500 }
     );
   }

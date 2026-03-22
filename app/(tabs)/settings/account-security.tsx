@@ -1,22 +1,113 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
+import { useUser, useOAuth } from '@clerk/clerk-expo';
+import * as Linking from 'expo-linking';
 
 export default function AccountSecurityScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [dataSharingEnabled, setDataSharingEnabled] = useState(true);
-  const [healthConnectionStatus, setHealthConnectionStatus] = useState<'connected' | 'disconnected'>('connected');
-  const healthSourceLabel = Platform.OS === 'ios' ? 'Apple Health' : 'Google Fit';
+  const colors = useTheme();
+  const { user, isLoaded } = useUser();
+  const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
+  const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
+
+  const externalAccounts = user?.externalAccounts ?? [];
+  const isLinked = (provider: string) =>
+    externalAccounts.some((a) => a.provider === provider);
+
+  const handleLinkGoogle = async () => {
+    setLinkingProvider('google');
+    try {
+      const { createdSessionId } = await googleOAuth({
+        redirectUrl: Linking.createURL('/', { scheme: 'lock' }),
+      });
+      if (createdSessionId) {
+        await user?.reload();
+        Alert.alert(t('settings.success'), t('settings.linkSuccess'));
+      }
+    } catch (err: any) {
+      if (err.message !== 'cancelled') {
+        Alert.alert(t('settings.error'), t('settings.linkFailed'));
+      }
+    } finally {
+      setLinkingProvider(null);
+    }
+  };
+
+  const handleUnlink = (provider: string) => {
+    const account = externalAccounts.find((a) => a.provider === provider);
+    if (!account) return;
+    const totalAuth = externalAccounts.length + (user?.passwordEnabled ? 1 : 0);
+    if (totalAuth <= 1) {
+      Alert.alert(t('settings.error'), t('settings.cannotUnlinkLast'));
+      return;
+    }
+    Alert.alert(
+      t('settings.unlinkAccount'),
+      t('settings.unlinkConfirm', { provider: providerLabel(provider) }),
+      [
+        { text: t('settings.cancel'), style: 'cancel' },
+        {
+          text: t('settings.unlinkConfirmBtn'),
+          style: 'destructive',
+          onPress: async () => {
+            setLinkingProvider(provider);
+            try {
+              await account.destroy();
+              await user?.reload();
+            } catch {
+              Alert.alert(t('settings.error'), t('settings.linkFailed'));
+            } finally {
+              setLinkingProvider(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const providerLabel = (provider: string) => {
+    if (provider === 'google') return 'Google';
+    if (provider === 'apple') return 'Apple';
+    if (provider === 'email') return t('settings.emailPassword');
+    return provider;
+  };
+
+  const providerIcon = (provider: string): any => {
+    if (provider === 'google') return 'logo-google';
+    if (provider === 'apple') return 'logo-apple';
+    return 'mail-outline';
+  };
+
+  const cardStyle = {
+    borderRadius: 16,
+    marginBottom: DIMENSIONS.SPACING,
+    backgroundColor: colors.cardBackground,
+    borderWidth: 2,
+    borderColor: colors.borderPrimary,
+    padding: DIMENSIONS.SPACING,
+  };
+
+  const iconBoxStyle = {
+    width: DIMENSIONS.SCREEN_WIDTH * 0.11,
+    height: DIMENSIONS.SCREEN_WIDTH * 0.11,
+    borderRadius: 12,
+    backgroundColor: colors.cardBackgroundSecondary,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginRight: DIMENSIONS.SPACING * 0.8,
+    borderWidth: 1,
+    borderColor: colors.borderSecondary,
+  };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: COLORS.backgroundPrimary }}>
-      {/* 返回按钮 */}
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
       <View
         style={{
           flexDirection: 'row',
@@ -27,26 +118,26 @@ export default function AccountSecurityScreen() {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/settings')}
+          onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
             width: DIMENSIONS.SCREEN_WIDTH * 0.1,
             height: DIMENSIONS.SCREEN_WIDTH * 0.1,
             borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
-            backgroundColor: COLORS.cardBackground,
+            backgroundColor: colors.cardBackground,
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
-            borderColor: COLORS.borderSecondary,
+            borderColor: colors.borderSecondary,
           }}
         >
-          <Ionicons name="arrow-back" size={TYPOGRAPHY.body} color={COLORS.textPrimary} />
+          <Ionicons name="arrow-back" size={TYPOGRAPHY.body} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text
           style={{
             fontSize: TYPOGRAPHY.title,
             fontWeight: '900',
-            color: COLORS.textPrimary,
+            color: colors.textPrimary,
             marginLeft: DIMENSIONS.SPACING * 0.6,
           }}
         >
@@ -57,259 +148,190 @@ export default function AccountSecurityScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ 
-          paddingBottom: Platform.OS === 'ios' ? 20 : 30,
-          flexGrow: 1,
-          backgroundColor: COLORS.backgroundPrimary,
-        }}
-        style={{ backgroundColor: COLORS.backgroundPrimary }}
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 30 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.4 }}>
+
+          {/* Linked Accounts */}
+          <Text style={{
+            fontSize: TYPOGRAPHY.bodyXS,
+            fontWeight: '700',
+            color: colors.textPrimary,
+            opacity: 0.5,
+            marginBottom: DIMENSIONS.SPACING * 0.6,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}>
+            {t('settings.linkedAccounts')}
+          </Text>
+
+          <View style={cardStyle}>
+            {!isLoaded ? (
+              <ActivityIndicator color={colors.textPrimary} />
+            ) : (
+              <>
+                {/* Email row — always shown */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+                  <View style={iconBoxStyle}>
+                    <Ionicons name="mail-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
+                      {t('settings.emailPassword')}
+                    </Text>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                      {isLinked('email') ? t('settings.linked') : t('settings.notLinked')}
+                    </Text>
+                  </View>
+                  {isLinked('email') && (
+                    <View style={{
+                      paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
+                      backgroundColor: colors.cardBackgroundSecondary,
+                      borderWidth: 1, borderColor: colors.borderSecondary,
+                    }}>
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary }}>
+                        {t('settings.linked')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Divider */}
+                <View style={{ height: 1, backgroundColor: colors.borderSecondary, marginBottom: DIMENSIONS.SPACING * 0.8 }} />
+
+                {/* Google row */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+                  <View style={iconBoxStyle}>
+                    <Ionicons name="logo-google" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
+                      Google
+                    </Text>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                      {isLinked('google') ? t('settings.linked') : t('settings.notLinked')}
+                    </Text>
+                  </View>
+                  {linkingProvider === 'google' ? (
+                    <ActivityIndicator color={colors.textPrimary} size="small" />
+                  ) : isLinked('google') ? (
+                    <TouchableOpacity
+                      onPress={() => handleUnlink('google')}
+                      style={{
+                        paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
+                        borderWidth: 1, borderColor: colors.borderSecondary,
+                      }}
+                    >
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.6 }}>
+                        {t('settings.unlink')}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleLinkGoogle}
+                      style={{
+                        paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
+                        backgroundColor: colors.textPrimary,
+                      }}
+                    >
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.backgroundPrimary }}>
+                        {t('settings.link')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Apple row — iOS only */}
+                {Platform.OS === 'ios' && (
+                  <>
+                    <View style={{ height: 1, backgroundColor: colors.borderSecondary, marginBottom: DIMENSIONS.SPACING * 0.8 }} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={iconBoxStyle}>
+                        <Ionicons name="logo-apple" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
+                          Apple
+                        </Text>
+                        <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                          {isLinked('apple') ? t('settings.linked') : t('settings.notLinked')}
+                        </Text>
+                      </View>
+                      {isLinked('apple') ? (
+                        <TouchableOpacity
+                          onPress={() => handleUnlink('apple')}
+                          style={{
+                            paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
+                            borderWidth: 1, borderColor: colors.borderSecondary,
+                          }}
+                        >
+                          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.6 }}>
+                            {t('settings.unlink')}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <View style={{
+                          paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
+                          backgroundColor: colors.cardBackgroundSecondary,
+                          borderWidth: 1, borderColor: colors.borderSecondary,
+                        }}>
+                          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>
+                            {t('settings.notLinked')}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </>
+                )}
+              </>
+            )}
+          </View>
+
+          {/* Separator */}
+          <Text style={{
+            fontSize: TYPOGRAPHY.bodyXXS,
+            fontWeight: '600',
+            color: colors.textPrimary,
+            opacity: 0.4,
+            marginBottom: DIMENSIONS.SPACING,
+            lineHeight: TYPOGRAPHY.bodyXXS * 1.6,
+          }}>
+            {t('settings.linkedAccountsHint')}
+          </Text>
+
           {/* Change Password */}
-          <View
-            style={{
-              borderRadius: 16,
-              marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: COLORS.cardBackground,
-              borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
-              padding: DIMENSIONS.SPACING,
-            }}
-          >
+          <Text style={{
+            fontSize: TYPOGRAPHY.bodyXS,
+            fontWeight: '700',
+            color: colors.textPrimary,
+            opacity: 0.5,
+            marginBottom: DIMENSIONS.SPACING * 0.6,
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+          }}>
+            {t('settings.security')}
+          </Text>
+
+          <View style={cardStyle}>
             <TouchableOpacity
-              onPress={() => Alert.alert(t('settings.changePassword'), t('settings.accountSecurityDescription'))}
+              onPress={() => Alert.alert(t('settings.changePassword'), t('settings.changePasswordDescription'))}
               activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <View
-                  style={{
-                    width: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                    height: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                    borderRadius: 12,
-                    backgroundColor: COLORS.cardBackgroundSecondary,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: DIMENSIONS.SPACING * 0.8,
-                    borderWidth: 1,
-                    borderColor: COLORS.borderSecondary,
-                  }}
-                >
-                  <Ionicons name="key-outline" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
+                <View style={iconBoxStyle}>
+                  <Ionicons name="key-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 }}>
                     {t('settings.changePassword')}
                   </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: COLORS.textSecondary }}>
-                    {t('settings.accountSecurityDescription')}
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                    {t('settings.changePasswordDescription')}
                   </Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={COLORS.textPrimary} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Two-Factor Authentication */}
-          <View
-            style={{
-              borderRadius: 16,
-              marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: COLORS.cardBackground,
-              borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
-              padding: DIMENSIONS.SPACING,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <View
-                style={{
-                  width: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                  height: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                  borderRadius: 12,
-                  backgroundColor: COLORS.cardBackgroundSecondary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: DIMENSIONS.SPACING * 0.8,
-                  borderWidth: 1,
-                  borderColor: COLORS.borderSecondary,
-                }}
-              >
-                <Ionicons name="finger-print-outline" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 }}>
-                  {t('settings.enableTwoFactor')}
-                </Text>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: COLORS.textSecondary }}>
-                  {twoFactorEnabled ? t('settings.twoFactorEnabled') : t('settings.twoFactorDisabled')}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => {
-                  const newValue = !twoFactorEnabled;
-                  setTwoFactorEnabled(newValue);
-                  Alert.alert(t('settings.enableTwoFactor'), newValue ? t('settings.twoFactorEnabled') : t('settings.twoFactorDisabled'));
-                }}
-                style={{
-                  width: 50,
-                  height: 30,
-                  borderRadius: 15,
-                  backgroundColor: twoFactorEnabled ? COLORS.textPrimary : COLORS.cardBackgroundSecondary,
-                  justifyContent: 'center',
-                  alignItems: twoFactorEnabled ? 'flex-end' : 'flex-start',
-                  paddingHorizontal: 4,
-                  borderWidth: 1,
-                  borderColor: COLORS.borderSecondary,
-                }}
-              >
-                <View
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    backgroundColor: twoFactorEnabled ? COLORS.backgroundPrimary : COLORS.textSecondary,
-                  }}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Privacy Controls */}
-          <View
-            style={{
-              borderRadius: 16,
-              marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: COLORS.cardBackground,
-              borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
-              padding: DIMENSIONS.SPACING,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <View
-                style={{
-                  width: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                  height: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                  borderRadius: 12,
-                  backgroundColor: COLORS.cardBackgroundSecondary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: DIMENSIONS.SPACING * 0.8,
-                  borderWidth: 1,
-                  borderColor: COLORS.borderSecondary,
-                }}
-              >
-                <Ionicons name="lock-closed" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 }}>
-                  {t('settings.privacyControls')}
-                </Text>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: COLORS.textSecondary }}>
-                  {t('settings.privacyControlsDescription')}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => {
-                  const newValue = !dataSharingEnabled;
-                  setDataSharingEnabled(newValue);
-                }}
-                style={{
-                  width: 50,
-                  height: 30,
-                  borderRadius: 15,
-                  backgroundColor: dataSharingEnabled ? COLORS.textPrimary : COLORS.cardBackgroundSecondary,
-                  justifyContent: 'center',
-                  alignItems: dataSharingEnabled ? 'flex-end' : 'flex-start',
-                  paddingHorizontal: 4,
-                  borderWidth: 1,
-                  borderColor: COLORS.borderSecondary,
-                }}
-              >
-                <View
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    backgroundColor: dataSharingEnabled ? COLORS.backgroundPrimary : COLORS.textSecondary,
-                  }}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Health Data */}
-          <View
-            style={{
-              borderRadius: 16,
-              marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: COLORS.cardBackground,
-              borderWidth: 2,
-              borderColor: COLORS.borderPrimary,
-              padding: DIMENSIONS.SPACING,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => {
-                const nextStatus = healthConnectionStatus === 'connected' ? 'disconnected' : 'connected';
-                setHealthConnectionStatus(nextStatus);
-                Alert.alert(
-                  t('settings.healthConnections'),
-                  nextStatus === 'connected'
-                    ? t('settings.connectionEnabled')
-                    : t('settings.connectionDisabled')
-                );
-              }}
-              activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <View
-                  style={{
-                    width: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                    height: DIMENSIONS.SCREEN_WIDTH * 0.11,
-                    borderRadius: 12,
-                    backgroundColor: COLORS.cardBackgroundSecondary,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: DIMENSIONS.SPACING * 0.8,
-                    borderWidth: 1,
-                    borderColor: COLORS.borderSecondary,
-                  }}
-                >
-                  <Ionicons name="fitness" size={TYPOGRAPHY.iconS} color={COLORS.textPrimary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 }}>
-                    {t('settings.healthConnections')}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: COLORS.textSecondary }}>
-                    {healthConnectionStatus === 'connected'
-                      ? `${t('settings.connectedTo')} ${healthSourceLabel}`
-                      : t('settings.notConnected')}
-                  </Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={COLORS.textPrimary} />
+              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -317,4 +339,3 @@ export default function AccountSecurityScreen() {
     </SafeAreaView>
   );
 }
-
