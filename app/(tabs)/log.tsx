@@ -163,7 +163,7 @@ export default function LogScreen() {
           backgroundColor: colors.background,
           paddingHorizontal: DIMENSIONS.CARD_PADDING,
           paddingTop: DIMENSIONS.SPACING * 0.8,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 30,
+          paddingBottom: Platform.OS === 'ios' ? 120 : 110,
         }}
       >
         {/* Image Preview */}

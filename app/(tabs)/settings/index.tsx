@@ -109,7 +109,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
+    <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}

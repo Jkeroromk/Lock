@@ -6,6 +6,7 @@ import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
+import { setTokenGetter } from '@/services/tokenStore';
 import '../global.css';
 
 const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
@@ -23,13 +24,12 @@ const tokenCache = {
   },
 };
 
-// Bridges Clerk's getToken into the Zustand store so services/api.ts can use it
+// Bridges Clerk's getToken into the token store so services/api.ts can use it
 function ClerkTokenBridge() {
   const { getToken, isSignedIn } = useAuth();
-  const setGetToken = useStore((s) => s.setGetToken);
 
   useEffect(() => {
-    setGetToken(isSignedIn ? getToken : null);
+    setTokenGetter(isSignedIn ? getToken : null);
   }, [isSignedIn, getToken]);
 
   return null;

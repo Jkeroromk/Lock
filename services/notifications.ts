@@ -1,19 +1,24 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+const isExpoGo = Constants.appOwnership === 'expo';
+
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 export const requestNotificationPermissions = async (): Promise<boolean> => {
-  if (!Device.isDevice) {
+  if (!Device.isDevice || isExpoGo) {
     return false;
   }
 
@@ -89,7 +94,7 @@ export const cancelAllNotifications = async (): Promise<void> => {
 };
 
 export const getNotificationPermissionStatus = async (): Promise<boolean> => {
-  if (!Device.isDevice) return false;
+  if (!Device.isDevice || isExpoGo) return false;
   const { status } = await Notifications.getPermissionsAsync();
   return status === 'granted';
 };

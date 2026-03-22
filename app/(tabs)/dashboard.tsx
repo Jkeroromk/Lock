@@ -59,11 +59,11 @@ export default function DashboardScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
+    <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView 
         className="flex-1" 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 30 }}
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 120 : 110 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
