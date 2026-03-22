@@ -1,63 +1,56 @@
 import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
+import { useAuth } from '@clerk/clerk-expo';
 import { useStore } from '@/store/useStore';
-import { getSession } from '@/services/auth';
+import { fetchProfile } from '@/services/api';
 import LoadingScreen from '@/components/auth/LoadingScreen';
 
 export default function Index() {
+  const { isSignedIn, isLoaded } = useAuth();
   const { user, setUser } = useStore();
-  const [isLoading, setIsLoading] = useState(true);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const session = await getSession();
+    if (!isLoaded) return;
 
-        if (session?.user) {
-          // 有有效 session，但本地可能没有 user 数据（app 被杀掉重启的情况）
-          const localUser = useStore.getState().user;
-          if (!localUser) {
-            // 从 session 恢复基本用户信息
-            setUser({
-              id: session.user.id,
-              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email || '',
-              hasCompletedOnboarding: session.user.user_metadata?.hasCompletedOnboarding || false,
-            });
-          }
-        } else {
-          // 没有有效 session，清除本地用户数据
-          if (useStore.getState().user) {
-            setUser(null);
-          }
-        }
-      } catch (error) {
-        console.error('Session check failed:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (isSignedIn) {
+      fetchProfile()
+        .then((profile) => {
+          setUser({
+            id: profile.id,
+            name: profile.name || 'User',
+            email: profile.email || '',
+            height: profile.height ?? undefined,
+            age: profile.age ?? undefined,
+            weight: profile.weight ?? undefined,
+            gender: profile.gender as any,
+            goal: profile.goal as any,
+            exerciseFrequency: profile.exerciseFrequency as any,
+            expectedTimeframe: profile.expectedTimeframe as any,
+            hasCompletedOnboarding: profile.hasCompletedOnboarding,
+          });
+        })
+        .catch(() => {})
+        .finally(() => setProfileLoaded(true));
+    } else {
+      setUser(null);
+      setProfileLoaded(true);
+    }
+  }, [isSignedIn, isLoaded]);
 
-    checkSession();
-  }, []);
-
-  if (isLoading) {
+  if (!isLoaded || (isSignedIn && !profileLoaded)) {
     return <LoadingScreen />;
   }
 
-  // 如果用户已登录，检查是否需要完成问卷调查
-  if (user) {
-    if (!user.hasCompletedOnboarding) {
-      // 检查是否已选择语言
-      const { hasSelectedLanguage } = useStore.getState();
-      if (!hasSelectedLanguage) {
-        return <Redirect href="/(auth)/language-selection" />;
-      }
-      return <Redirect href="/(auth)/onboarding" />;
-    }
-    return <Redirect href="/(tabs)/today" />;
+  if (!isSignedIn) {
+    return <Redirect href="/(auth)/login" />;
   }
 
-  // 如果用户未登录，跳转到登录页面
-  return <Redirect href="/(auth)/login" />;
+  if (!user?.hasCompletedOnboarding) {
+    const { hasSelectedLanguage } = useStore.getState();
+    if (!hasSelectedLanguage) return <Redirect href="/(auth)/language-selection" />;
+    return <Redirect href="/(auth)/onboarding" />;
+  }
+
+  return <Redirect href="/(tabs)/today" />;
 }

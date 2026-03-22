@@ -1,6 +1,8 @@
 import { View, ScrollView, RefreshControl, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import Skeleton from '@/components/ui/Skeleton';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS } from '@/constants';
@@ -9,14 +11,13 @@ import CaloriesCard from '@/components/today/CaloriesCard';
 import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
 import MealsList from '@/components/today/MealsList';
-// 暂时禁用API调用，等待后端就绪
-// import { fetchTodayData } from '@/services/api';
-import { getHealthData } from '@/services/health';
+import { getHealthData, requestHealthPermissions, syncHealthData } from '@/services/health';
 
 export default function TodayScreen() {
-  const { todayCalories, todayMeals, refreshToday } = useStore();
+  const { todayCalories, todayMeals, refreshToday, dailyCalorieGoal } = useStore();
   const { t, language } = useTranslation();
   const colors = useTheme();
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [healthData, setHealthData] = useState({
     steps: 0,
@@ -28,6 +29,8 @@ export default function TodayScreen() {
     try {
       const data = await getHealthData();
       setHealthData(data);
+      // Sync to backend in background
+      syncHealthData().catch(() => {});
     } catch (error) {
       console.error('Failed to load health data:', error);
     }
@@ -36,22 +39,19 @@ export default function TodayScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      // 暂时禁用API调用，等待后端就绪
-      // await Promise.all([refreshToday(), loadHealthData()]);
-      await loadHealthData();
+      await Promise.all([refreshToday(), loadHealthData()]);
     } finally {
       setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    // 暂时禁用API调用，等待后端就绪
-    // refreshToday();
-    loadHealthData();
+    requestHealthPermissions();
+    Promise.all([refreshToday(), loadHealthData()]).finally(() => setLoading(false));
   }, []);
 
-  const calorieProgress = Math.min((todayCalories / 2000) * 100, 100);
-  const remainingCalories = Math.max(2000 - todayCalories, 0);
+  const calorieProgress = Math.min((todayCalories / dailyCalorieGoal) * 100, 100);
+  const remainingCalories = Math.max(dailyCalorieGoal - todayCalories, 0);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
@@ -66,37 +66,46 @@ export default function TodayScreen() {
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8, paddingBottom: DIMENSIONS.SPACING }}>
           <DateHeader language={language} />
 
-          {/* Calories Card */}
-          <CaloriesCard 
-            todayCalories={todayCalories}
-            calorieProgress={calorieProgress}
-            remainingCalories={remainingCalories}
-          />
+          {loading ? (
+            <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
+              <Skeleton height={180} borderRadius={24} />
+              <Skeleton height={70} borderRadius={18} />
+              <Skeleton height={70} borderRadius={18} />
+              <Skeleton height={70} borderRadius={18} />
+              <Skeleton height={120} borderRadius={18} />
+            </View>
+          ) : (
+            <Animated.View entering={FadeIn.duration(400)}>
+              <CaloriesCard
+                todayCalories={todayCalories}
+                calorieProgress={calorieProgress}
+                remainingCalories={remainingCalories}
+              />
 
-          {/* Health Stats */}
-          <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-            <HealthStatsCard 
-              icon="footsteps" 
-              label={t('today.steps')} 
-              value={healthData.steps} 
-              unit={t('today.stepsUnit')}
-            />
-            <HealthStatsCard 
-              icon="battery-charging" 
-              label={t('today.energy')} 
-              value={healthData.activeEnergy} 
-              unit={t('today.kcal')}
-            />
-            <HealthStatsCard 
-              icon="heart" 
-              label={t('today.heartRate')} 
-              value={healthData.heartRate || '--'} 
-              unit={t('today.bpm')}
-            />
-          </View>
+              <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
+                <HealthStatsCard
+                  icon="footsteps"
+                  label={t('today.steps')}
+                  value={healthData.steps}
+                  unit={t('today.stepsUnit')}
+                />
+                <HealthStatsCard
+                  icon="battery-charging"
+                  label={t('today.energy')}
+                  value={healthData.activeEnergy}
+                  unit={t('today.kcal')}
+                />
+                <HealthStatsCard
+                  icon="heart"
+                  label={t('today.heartRate')}
+                  value={healthData.heartRate || '--'}
+                  unit={t('today.bpm')}
+                />
+              </View>
 
-          {/* Meals Section */}
-          <MealsList meals={todayMeals} />
+              <MealsList meals={todayMeals} />
+            </Animated.View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

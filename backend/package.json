@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
@@ -12,12 +12,12 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "next": "14.0.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@clerk/backend": "^3.2.2",
     "@prisma/client": "^5.7.1",
     "axios": "^1.6.5",
-    "fireworks-ai": "^0.1.0"
+    "next": "14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
@@ -27,5 +27,3 @@
     "typescript": "^5.3.3"
   }
 }
-
-

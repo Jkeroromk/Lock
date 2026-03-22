@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
@@ -8,7 +8,13 @@ import { LanguageCode, languageNames } from '@/i18n/locales';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { signOut } from '@/services/auth';
+import { useAuth } from '@clerk/clerk-expo';
+import {
+  requestNotificationPermissions,
+  scheduleDailyMealReminders,
+  cancelAllNotifications,
+  getNotificationPermissionStatus,
+} from '@/services/notifications';
 import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
 import GoalsModal from '@/components/settings/GoalsModal';
@@ -17,33 +23,68 @@ import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoad
 import EditProfileModal from '@/components/settings/EditProfileModal';
 
 export default function SettingsScreen() {
-  const { user, language, setLanguage: setStoreLanguage, setUser, themeMode, setThemeMode } = useStore();
+  const {
+    user,
+    language,
+    setLanguage: setStoreLanguage,
+    setUser,
+    themeMode,
+    setThemeMode,
+    dailyCalorieGoal,
+    dailyStepGoal,
+    setDailyCalorieGoal,
+    setDailyStepGoal,
+  } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
   const router = useRouter();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [dailyCalories, setDailyCalories] = useState('2000');
-  const [dailySteps, setDailySteps] = useState('10000');
+  const { signOut } = useAuth();
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
-  const [tempCalories, setTempCalories] = useState('2000');
-  const [tempSteps, setTempSteps] = useState('10000');
-  
+  const [tempCalories, setTempCalories] = useState(String(dailyCalorieGoal));
+  const [tempSteps, setTempSteps] = useState(String(dailyStepGoal));
+
   const languages: LanguageCode[] = ['zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR'];
   const currentLanguageName = languageNames[language];
+
+  // Check notification permission on mount
+  useEffect(() => {
+    getNotificationPermissionStatus().then(setNotificationsEnabled);
+  }, []);
+
   const handleSaveGoals = () => {
-    setDailyCalories(tempCalories);
-    setDailySteps(tempSteps);
+    const calories = parseInt(tempCalories) || 2000;
+    const steps = parseInt(tempSteps) || 10000;
+    setDailyCalorieGoal(calories);
+    setDailyStepGoal(steps);
     setShowGoalsModal(false);
     Alert.alert(t('settings.success'), t('settings.goalsUpdated'));
   };
 
   const openGoalsModal = () => {
-    setTempCalories(dailyCalories);
-    setTempSteps(dailySteps);
+    setTempCalories(String(dailyCalorieGoal));
+    setTempSteps(String(dailyStepGoal));
     setShowGoalsModal(true);
+  };
+
+  const handleNotificationsToggle = async (value: boolean) => {
+    if (value) {
+      const granted = await requestNotificationPermissions();
+      if (granted) {
+        await scheduleDailyMealReminders();
+        setNotificationsEnabled(true);
+        Alert.alert(t('settings.success'), '已开启每日餐食提醒（早8点、午12点、晚7点）');
+      } else {
+        Alert.alert('权限不足', '请在系统设置中允许通知权限');
+      }
+    } else {
+      await cancelAllNotifications();
+      setNotificationsEnabled(false);
+    }
   };
 
   const handleLanguageChange = async (langCode: LanguageCode) => {
@@ -54,12 +95,12 @@ export default function SettingsScreen() {
 
     setIsChangingLanguage(true);
     setShowLanguageModal(false);
-    
+
     await new Promise(resolve => setTimeout(resolve, 800));
-    
+
     setStoreLanguage(langCode);
     setIsChangingLanguage(false);
-    
+
     const newTranslations = require('@/i18n/locales').translations[langCode];
     Alert.alert(
       newTranslations.settings.languageChanged || '语言已切换',
@@ -69,31 +110,26 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 30 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
-          {/* User Profile Card */}
-          <UserProfileCard 
-            user={user} 
-            themeMode={themeMode}
-            onThemeChange={setThemeMode}
-            onEdit={() => {
-              setShowEditProfileModal(true);
-            }}
+          <UserProfileCard
+            user={user}
+            themeMode={themeMode === 'auto' ? 'dark' : themeMode}
+            onThemeChange={(mode) => setThemeMode(mode)}
+            onEdit={() => setShowEditProfileModal(true)}
           />
 
-          {/* Goals */}
           <SettingItem
             icon="flag"
             title={t('settings.goals')}
-            description={t('settings.dailyGoalsSummary', { calories: dailyCalories, steps: dailySteps })}
+            description={t('settings.dailyGoalsSummary', { calories: String(dailyCalorieGoal), steps: String(dailyStepGoal) })}
             onPress={openGoalsModal}
           />
 
-          {/* Language */}
           <SettingItem
             icon="language"
             title={t('settings.language')}
@@ -101,17 +137,15 @@ export default function SettingsScreen() {
             onPress={() => setShowLanguageModal(true)}
           />
 
-          {/* Notifications */}
           <SettingItem
             icon="notifications"
             title={t('settings.notifications')}
             showSwitch={true}
             switchValue={notificationsEnabled}
-            onSwitchChange={setNotificationsEnabled}
+            onSwitchChange={handleNotificationsToggle}
             showChevron={false}
           />
 
-          {/* Account & Security */}
           <SettingItem
             icon="shield-checkmark"
             title={t('settings.accountSecurity')}
@@ -119,7 +153,6 @@ export default function SettingsScreen() {
             onPress={() => router.push('/(tabs)/settings/account-security')}
           />
 
-          {/* Subscription */}
           <SettingItem
             icon="card-outline"
             title={t('settings.subscriptionPlan')}
@@ -128,8 +161,8 @@ export default function SettingsScreen() {
           />
 
           {/* About Section */}
-          <View 
-            style={{ 
+          <View
+            style={{
               borderRadius: 16,
               marginBottom: DIMENSIONS.SPACING,
               backgroundColor: colors.cardBackground,
@@ -137,9 +170,9 @@ export default function SettingsScreen() {
               borderColor: colors.borderPrimary,
             }}
           >
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.7}
-              style={{ 
+              style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -150,21 +183,15 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name="download" size={TYPOGRAPHY.body} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
-                <Text 
-                  style={{ 
-                    fontSize: TYPOGRAPHY.bodyS,
-                    fontWeight: '700',
-                    color: colors.textPrimary,
-                  }}
-                >
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
                   {t('settings.exportData')}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.7}
-              style={{ 
+              style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -173,13 +200,7 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name="information-circle" size={TYPOGRAPHY.body} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
-                <Text 
-                  style={{ 
-                    fontSize: TYPOGRAPHY.bodyS,
-                    fontWeight: '700',
-                    color: colors.textPrimary,
-                  }}
-                >
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
                   {t('settings.about')}
                 </Text>
               </View>
@@ -188,8 +209,8 @@ export default function SettingsScreen() {
           </View>
 
           {/* Legal */}
-          <View 
-            style={{ 
+          <View
+            style={{
               borderRadius: 16,
               marginBottom: DIMENSIONS.SPACING,
               backgroundColor: colors.cardBackground,
@@ -197,9 +218,9 @@ export default function SettingsScreen() {
               borderColor: colors.borderPrimary,
             }}
           >
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.7}
-              style={{ 
+              style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -208,33 +229,21 @@ export default function SettingsScreen() {
                 borderBottomColor: colors.borderPrimary,
               }}
             >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '700',
-                  color: colors.textPrimary,
-                }}
-              >
+              <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
                 {t('settings.privacyPolicy')}
               </Text>
               <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.7}
-              style={{ 
+              style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: DIMENSIONS.SPACING,
               }}
             >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '700',
-                  color: colors.textPrimary,
-                }}
-              >
+              <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
                 {t('settings.termsOfService')}
               </Text>
               <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
@@ -246,20 +255,20 @@ export default function SettingsScreen() {
             onPress={() => {
               Alert.alert(t('settings.logout'), t('settings.confirmLogout'), [
                 { text: t('settings.cancel'), style: 'cancel' },
-                { 
-                  text: t('settings.logoutConfirm'), 
-                  style: 'destructive', 
+                {
+                  text: t('settings.logoutConfirm'),
+                  style: 'destructive',
                   onPress: async () => {
                     await signOut();
                     const { clearSession } = useStore.getState();
                     clearSession();
                     router.replace('/(auth)/login');
-                  }
+                  },
                 },
               ]);
             }}
             activeOpacity={0.7}
-            style={{ 
+            style={{
               borderRadius: 24,
               paddingVertical: DIMENSIONS.SPACING,
               alignItems: 'center',
@@ -274,35 +283,20 @@ export default function SettingsScreen() {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Ionicons name="log-out" size={TYPOGRAPHY.title} color={colors.textPrimary} />
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyM,
-                  fontWeight: '900',
-                  marginLeft: DIMENSIONS.SPACING * 0.4,
-                  color: colors.textPrimary,
-                }}
-              >
+              <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', marginLeft: DIMENSIONS.SPACING * 0.4, color: colors.textPrimary }}>
                 {t('settings.logout')}
               </Text>
             </View>
           </TouchableOpacity>
 
           <View style={{ paddingVertical: DIMENSIONS.SPACING * 1.2, alignItems: 'center' }}>
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '600',
-                color: colors.textPrimary,
-                opacity: 0.7,
-              }}
-            >
+            <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.7 }}>
               Lock v1.0.0
             </Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Goals Modal */}
       <GoalsModal
         visible={showGoalsModal}
         calories={tempCalories}
@@ -313,7 +307,6 @@ export default function SettingsScreen() {
         onCancel={() => setShowGoalsModal(false)}
       />
 
-      {/* Language Modal */}
       <LanguageModal
         visible={showLanguageModal}
         currentLanguage={language}
@@ -322,15 +315,13 @@ export default function SettingsScreen() {
         onClose={() => setShowLanguageModal(false)}
       />
 
-      {/* Language Change Loading Modal */}
       <LanguageChangeLoadingModal visible={isChangingLanguage} />
 
-      {/* Edit Profile Modal */}
       <EditProfileModal
         visible={showEditProfileModal}
         user={user}
-        onSave={(name, email) => {
-          setUser({ ...user, name, email } as any);
+        onSave={(updated) => {
+          setUser({ ...user, ...updated } as any);
           setShowEditProfileModal(false);
           Alert.alert(t('settings.success'), t('settings.profileUpdated'));
         }}

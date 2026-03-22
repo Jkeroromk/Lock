@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// 暂时禁用API调用，等待后端就绪
-// import { fetchTodayData, fetchWeeklyData } from '@/services/api';
+import { fetchTodayData, fetchWeeklyData } from '@/services/api';
 
 export type Gender = 'male' | 'female' | 'other';
 export type Goal = 'lose_weight' | 'lose_fat' | 'gain_muscle';
@@ -13,16 +12,15 @@ interface User {
   id: string;
   name: string;
   email: string;
-  // 问卷调查数据
-  height?: number; // 身高 (cm)
-  age?: number; // 年龄
-  weight?: number; // 体重 (kg)
-  gender?: Gender; // 性别
-  goal?: Goal; // 目标
-  exerciseFrequency?: ExerciseFrequency; // 运动频率
-  expectedTimeframe?: ExpectedTimeframe; // 期望见效时间
-  hasCompletedOnboarding?: boolean; // 是否完成问卷调查
-  isAnonymous?: boolean; // 是否为匿名（游客）用户
+  height?: number;
+  age?: number;
+  weight?: number;
+  gender?: Gender;
+  goal?: Goal;
+  exerciseFrequency?: ExerciseFrequency;
+  expectedTimeframe?: ExpectedTimeframe;
+  hasCompletedOnboarding?: boolean;
+  isAnonymous?: boolean;
 }
 
 interface Meal {
@@ -36,11 +34,12 @@ interface Meal {
   created_at: string;
 }
 
-interface WeeklyData {
-  calories: number[];
-  protein: number[];
-  carbs: number[];
-  fat: number[];
+export interface WeeklyDay {
+  date: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
 }
 
 type LanguageCode = 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ko-KR';
@@ -50,14 +49,21 @@ interface StoreState {
   user: User | null;
   todayCalories: number;
   todayMeals: Meal[];
-  weeklyData: WeeklyData;
+  weeklyDays: WeeklyDay[];
   language: LanguageCode;
-  hasSelectedLanguage?: boolean; // 标记是否已选择语言
-  themeMode: ThemeMode; // 主题模式
+  hasSelectedLanguage?: boolean;
+  themeMode: ThemeMode;
+  dailyCalorieGoal: number;
+  dailyStepGoal: number;
+  // Clerk token bridge — set by ClerkTokenBridge component in _layout.tsx
+  getToken: (() => Promise<string | null>) | null;
+  setGetToken: (fn: (() => Promise<string | null>) | null) => void;
   setUser: (user: User | null) => void;
   setLanguage: (language: LanguageCode) => void;
   setHasSelectedLanguage: (hasSelected: boolean) => void;
   setThemeMode: (mode: ThemeMode) => void;
+  setDailyCalorieGoal: (goal: number) => void;
+  setDailyStepGoal: (goal: number) => void;
   refreshToday: () => Promise<void>;
   fetchWeeklyData: () => Promise<void>;
   clearSession: () => void;
@@ -65,50 +71,49 @@ interface StoreState {
 
 export const useStore = create<StoreState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       todayCalories: 0,
       todayMeals: [],
-      weeklyData: {
-        calories: [],
-        protein: [],
-        carbs: [],
-        fat: [],
-      },
+      weeklyDays: [],
       language: 'zh-CN',
       hasSelectedLanguage: false,
       themeMode: 'auto',
+      dailyCalorieGoal: 2000,
+      dailyStepGoal: 10000,
+      getToken: null,
+      setGetToken: (fn) => set({ getToken: fn }),
       setUser: (user) => set({ user }),
       setLanguage: (language) => set({ language, hasSelectedLanguage: true }),
       setHasSelectedLanguage: (hasSelected) => set({ hasSelectedLanguage: hasSelected }),
       setThemeMode: (mode) => set({ themeMode: mode }),
+      setDailyCalorieGoal: (goal) => set({ dailyCalorieGoal: goal }),
+      setDailyStepGoal: (goal) => set({ dailyStepGoal: goal }),
       refreshToday: async () => {
-        // 暂时禁用API调用，等待后端就绪
-        // try {
-        //   const data = await fetchTodayData();
-        //   set({
-        //     todayCalories: data.totalCalories,
-        //     todayMeals: data.meals,
-        //   });
-        // } catch (error) {
-        //   console.error('Failed to fetch today data:', error);
-        // }
+        try {
+          const data = await fetchTodayData();
+          set({
+            todayCalories: data.totalCalories,
+            todayMeals: data.meals,
+          });
+        } catch (error) {
+          console.error('Failed to fetch today data:', error);
+        }
       },
       fetchWeeklyData: async () => {
-        // 暂时禁用API调用，等待后端就绪
-        // try {
-        //   const data = await fetchWeeklyData();
-        //   set({ weeklyData: data });
-        // } catch (error) {
-        //   console.error('Failed to fetch weekly data:', error);
-        // }
+        try {
+          const data = await fetchWeeklyData();
+          set({ weeklyDays: data });
+        } catch (error) {
+          console.error('Failed to fetch weekly data:', error);
+        }
       },
       clearSession: () => {
         set({
           user: null,
           todayCalories: 0,
           todayMeals: [],
-          weeklyData: { calories: [], protein: [], carbs: [], fat: [] },
+          weeklyDays: [],
           hasSelectedLanguage: false,
         });
       },
@@ -121,6 +126,8 @@ export const useStore = create<StoreState>()(
         user: state.user,
         hasSelectedLanguage: state.hasSelectedLanguage,
         themeMode: state.themeMode,
+        dailyCalorieGoal: state.dailyCalorieGoal,
+        dailyStepGoal: state.dailyStepGoal,
       }),
     }
   )
