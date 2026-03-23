@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Platform } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -13,11 +13,11 @@ import CalendarView from '@/components/calendar/CalendarView';
 import SelectedDateInfo from '@/components/calendar/SelectedDateInfo';
 import ProgressLegend from '@/components/calendar/ProgressLegend';
 import WeeklyCaloriesChart from '@/components/calendar/WeeklyCaloriesChart';
-import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreakdown';
 import MonthlyStats from '@/components/calendar/MonthlyStats';
+import AiInsightsCard from '@/components/calendar/AiInsightsCard';
 
 export default function CalendarScreen() {
-  const { language, themeMode, dailyCalorieGoal } = useStore();
+  const { language, dailyCalorieGoal } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
 
@@ -26,11 +26,6 @@ export default function CalendarScreen() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [monthlyData, setMonthlyData] = useState<MonthlyData>({});
   const [chartData, setChartData] = useState<{ day: string; calories: number }[]>([]);
-  const [nutritionStats, setNutritionStats] = useState([
-    { label: t('log.protein'), value: 0, color: colors.proteinColor },
-    { label: t('log.carbs'), value: 0, color: colors.carbsColor },
-    { label: t('log.fat'), value: 0, color: colors.fatColor },
-  ]);
 
   const getProgressColor = (progress: number) => {
     if (progress >= 100) return colors.progressWhite;
@@ -62,16 +57,6 @@ export default function CalendarScreen() {
     try {
       const days = await fetchWeeklyData();
       setChartData(days.map((d) => ({ day: getWeekdayLabel(d.date), calories: d.calories })));
-      // Weekly totals averaged
-      const count = days.filter((d) => d.calories > 0).length || 1;
-      const avgProtein = Math.round(days.reduce((s, d) => s + d.protein, 0) / count);
-      const avgCarbs = Math.round(days.reduce((s, d) => s + d.carbs, 0) / count);
-      const avgFat = Math.round(days.reduce((s, d) => s + d.fat, 0) / count);
-      setNutritionStats([
-        { label: t('log.protein'), value: avgProtein, color: colors.proteinColor },
-        { label: t('log.carbs'), value: avgCarbs, color: colors.carbsColor },
-        { label: t('log.fat'), value: avgFat, color: colors.fatColor },
-      ]);
     } catch (error) {
       console.error('Failed to load weekly data:', error);
     }
@@ -159,7 +144,7 @@ export default function CalendarScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 120 : 110 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
           {/* Header */}
@@ -218,9 +203,9 @@ export default function CalendarScreen() {
 
               <WeeklyCaloriesChart chartData={chartData} />
 
-              <WeeklyNutritionBreakdown stats={nutritionStats} />
-
               <MonthlyStats markedDates={markedDates} avgDailyCalories={avgDailyCalories} />
+
+              <AiInsightsCard />
             </Animated.View>
           )}
         </View>

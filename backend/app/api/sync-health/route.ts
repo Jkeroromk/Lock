@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { userId } = authResult;
 
     const body = await request.json();
-    const { steps, active_energy, heart_rate } = body;
+    const { steps, active_energy } = body;
 
     // Ensure user row exists (new users may not have hit /api/auth/profile yet)
     await prisma.user.upsert({
@@ -35,14 +35,12 @@ export async function POST(request: NextRequest) {
       update: {
         steps: Number(steps) || 0,
         activeEnergy: Number(active_energy) || 0,
-        heartRate: Number(heart_rate) || 0,
       },
       create: {
         userId: userId,
         date: new Date(dateOnly),
         steps: Number(steps) || 0,
         activeEnergy: Number(active_energy) || 0,
-        heartRate: Number(heart_rate) || 0,
       },
     });
 

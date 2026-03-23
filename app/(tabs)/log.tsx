@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, ActivityIndicator, Alert, Platform, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Platform, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
@@ -44,7 +44,7 @@ export default function LogScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
@@ -157,14 +157,15 @@ export default function LogScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'left', 'right']}>
-      <View 
-        style={{ 
-          flex: 1,
-          backgroundColor: colors.background,
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={{
           paddingHorizontal: DIMENSIONS.CARD_PADDING,
           paddingTop: DIMENSIONS.SPACING * 0.8,
-          paddingBottom: Platform.OS === 'ios' ? 120 : 110,
+          paddingBottom: 20,
         }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Image Preview */}
         {image && (
@@ -232,413 +233,259 @@ export default function LogScreen() {
 
         {/* Analysis Result */}
         {result && (
-          <View 
-            style={{ 
-                borderRadius: 24,
-                padding: DIMENSIONS.SPACING * 1.4,
-                marginBottom: DIMENSIONS.SPACING * 1.2,
-                backgroundColor: colors.cardBackground,
-                borderWidth: 1,
-                borderColor: colors.borderPrimary,
+          <View
+            style={{
+              borderRadius: 24,
+              marginBottom: DIMENSIONS.SPACING * 1.2,
+              backgroundColor: colors.cardBackground,
+              borderWidth: 1,
+              borderColor: colors.borderPrimary,
+              overflow: 'hidden',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
+              shadowOpacity: 0.12,
               shadowRadius: 12,
-                elevation: 6,
+              elevation: 6,
             }}
           >
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-              <View 
-                    style={{ 
-                      width: DIMENSIONS.SCREEN_WIDTH * 0.12,
-                      height: DIMENSIONS.SCREEN_WIDTH * 0.12,
-                      borderRadius: 12,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: DIMENSIONS.SPACING * 0.8,
-                      backgroundColor: colors.cardBackgroundSecondary,
-                    }}
-              >
-                    <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
-              </View>
-                  <View style={{ flex: 1 }}>
-                    {isEditing ? (
-                      <TextInput
-                        value={editedData.food}
-                        onChangeText={(text) => setEditedData({ ...editedData, food: text })}
-                        style={{
-                          fontSize: TYPOGRAPHY.title,
-                          fontWeight: '900',
-                          color: colors.textPrimary,
-                          backgroundColor: colors.cardBackgroundSecondary,
-                          borderRadius: 8,
-                          padding: DIMENSIONS.SPACING * 0.4,
-                          borderWidth: 1,
-                          borderColor: '#3A3A3A',
-                          marginBottom: DIMENSIONS.SPACING * 0.3,
-                        }}
-                        placeholderTextColor="#666"
-                      />
-                    ) : (
-                      <Text 
-                        style={{ 
-                          fontSize: TYPOGRAPHY.title,
-                          fontWeight: '900',
-                          marginBottom: DIMENSIONS.SPACING * 0.3,
-                          color: colors.textPrimary,
-                          lineHeight: TYPOGRAPHY.title * 1.2,
-                        }}
-                      >
-                  {result.food}
-                </Text>
-                    )}
-                    <Text 
-                      style={{ 
-                        fontSize: TYPOGRAPHY.bodyXS,
-                        fontWeight: '600',
-                        color: colors.textPrimary,
-                      }}
-                    >
-                      {t('log.confidence')}：{(result.confidence * 100).toFixed(0)}%
-                </Text>
-              </View>
-                </View>
-                {!isEditing && (
-                  <TouchableOpacity
-                    onPress={handleEdit}
-                    style={{
-                      padding: DIMENSIONS.SPACING * 0.4,
-                      borderRadius: 8,
-                    backgroundColor: colors.cardBackgroundSecondary,
-                    borderWidth: 1,
-                    borderColor: colors.borderSecondary,
-                    }}
-                  >
-                    <Ionicons name="create-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
-                  </TouchableOpacity>
-                )}
-            </View>
-            
-            <View 
-                style={{ 
-                  borderRadius: 16,
-                  padding: DIMENSIONS.SPACING * 1.2,
-                  marginBottom: DIMENSIONS.SPACING * 1.2,
-                    backgroundColor: colors.cardBackgroundSecondary,
-                    borderWidth: 1,
-                    borderColor: colors.borderSecondary,
-                }}
-              >
+            {/* Food name header */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: DIMENSIONS.SPACING * 1.2,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.borderPrimary,
+            }}>
+              <View style={{ flex: 1 }}>
                 {isEditing ? (
                   <TextInput
-                    value={editedData.calories}
-                    onChangeText={(text) => setEditedData({ ...editedData, calories: text })}
-                    keyboardType="numeric"
+                    value={editedData.food}
+                    onChangeText={(text) => setEditedData({ ...editedData, food: text })}
                     style={{
-                      fontSize: TYPOGRAPHY.numberL,
+                      fontSize: TYPOGRAPHY.title,
                       fontWeight: '900',
-                      color: '#FFFFFF',
-                      backgroundColor: colors.cardBackground,
-                      borderRadius: 8,
-                      padding: DIMENSIONS.SPACING * 0.4,
+                      color: colors.textPrimary,
+                      backgroundColor: colors.cardBackgroundSecondary,
+                      borderRadius: 10,
+                      paddingHorizontal: DIMENSIONS.SPACING * 0.6,
+                      paddingVertical: DIMENSIONS.SPACING * 0.4,
                       borderWidth: 1,
-                      borderColor: '#3A3A3A',
-                      marginBottom: DIMENSIONS.SPACING * 0.4,
-                      textAlign: 'center',
+                      borderColor: colors.borderSecondary,
                     }}
-                    placeholderTextColor="#666"
+                    placeholderTextColor={colors.textSecondary}
                   />
                 ) : (
-                  <Text 
-                    style={{ 
-                      fontSize: TYPOGRAPHY.numberL,
-                      fontWeight: '900',
-                      marginBottom: DIMENSIONS.SPACING * 0.4,
-                      color: '#FFFFFF',
-                      lineHeight: TYPOGRAPHY.numberL * 1.1,
-                    }}
-                  >
-                {result.calories}
-              </Text>
-                )}
-                <Text 
-                  style={{ 
-                    fontSize: TYPOGRAPHY.body,
-                    fontWeight: '700',
+                  <Text style={{
+                    fontSize: TYPOGRAPHY.title,
+                    fontWeight: '900',
                     color: colors.textPrimary,
-                  }}
-                >
-                  {t('log.calories')}
+                    lineHeight: TYPOGRAPHY.title * 1.2,
+                  }}>
+                    {result.food}
+                  </Text>
+                )}
+                <Text style={{
+                  fontSize: TYPOGRAPHY.bodyXXS,
+                  fontWeight: '600',
+                  color: colors.textSecondary,
+                  marginTop: 4,
+                }}>
+                  {t('log.confidence')}：{(result.confidence * 100).toFixed(0)}%
                 </Text>
               </View>
-              
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-                <View style={{ alignItems: 'center', flex: 1 }}>
-                <View 
-                    style={{ 
-                      width: DIMENSIONS.SCREEN_WIDTH * 0.16,
-                      height: DIMENSIONS.SCREEN_WIDTH * 0.16,
-                      borderRadius: 16,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: DIMENSIONS.SPACING * 0.6,
-                      backgroundColor: colors.cardBackgroundSecondary,
-                    }}
+              {!isEditing && (
+                <TouchableOpacity
+                  onPress={handleEdit}
+                  style={{
+                    padding: DIMENSIONS.SPACING * 0.6,
+                    borderRadius: 10,
+                    backgroundColor: colors.cardBackgroundSecondary,
+                    borderWidth: 1,
+                    borderColor: colors.borderSecondary,
+                    marginLeft: DIMENSIONS.SPACING * 0.8,
+                  }}
                 >
-                    <Ionicons name="barbell" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
-                  </View>
-                  <Text 
-                    style={{ 
-                      fontSize: TYPOGRAPHY.bodyXXS,
-                      fontWeight: '700',
-                      marginBottom: DIMENSIONS.SPACING * 0.3,
-                      color: colors.textPrimary,
-                    }}
-                  >
-                    {t('log.protein')}
+                  <Ionicons name="create-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Calories */}
+            <View style={{
+              paddingHorizontal: DIMENSIONS.SPACING * 1.4,
+              paddingVertical: DIMENSIONS.SPACING * 1.2,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.borderPrimary,
+              flexDirection: 'row',
+              alignItems: 'flex-end',
+              gap: 8,
+            }}>
+              {isEditing ? (
+                <TextInput
+                  value={editedData.calories}
+                  onChangeText={(text) => setEditedData({ ...editedData, calories: text })}
+                  keyboardType="numeric"
+                  style={{
+                    fontSize: TYPOGRAPHY.numberL,
+                    fontWeight: '900',
+                    color: colors.textPrimary,
+                    backgroundColor: colors.cardBackgroundSecondary,
+                    borderRadius: 10,
+                    paddingHorizontal: DIMENSIONS.SPACING * 0.6,
+                    paddingVertical: DIMENSIONS.SPACING * 0.3,
+                    borderWidth: 1,
+                    borderColor: colors.borderSecondary,
+                    minWidth: 120,
+                  }}
+                  placeholderTextColor={colors.textSecondary}
+                />
+              ) : (
+                <Text style={{
+                  fontSize: TYPOGRAPHY.numberL,
+                  fontWeight: '900',
+                  color: colors.textPrimary,
+                  lineHeight: TYPOGRAPHY.numberL * 1.05,
+                }}>
+                  {result.calories}
+                </Text>
+              )}
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyM,
+                fontWeight: '700',
+                color: colors.textSecondary,
+                marginBottom: 6,
+              }}>
+                {t('log.calories')}
+              </Text>
+            </View>
+
+            {/* Macros */}
+            <View style={{
+              flexDirection: 'row',
+              padding: DIMENSIONS.SPACING * 1.2,
+            }}>
+              {[
+                { label: t('log.protein'), key: 'protein', color: colors.proteinColor },
+                { label: t('log.carbs'), key: 'carbs', color: colors.carbsColor },
+                { label: t('log.fat'), key: 'fat', color: colors.fatColor },
+              ].map((macro, i) => (
+                <View key={macro.key} style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  borderLeftWidth: i > 0 ? 1 : 0,
+                  borderLeftColor: colors.borderPrimary,
+                }}>
+                  <Text style={{
+                    fontSize: TYPOGRAPHY.bodyXXS,
+                    fontWeight: '700',
+                    color: colors.textSecondary,
+                    marginBottom: 6,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}>
+                    {macro.label}
                   </Text>
                   {isEditing ? (
                     <TextInput
-                      value={editedData.protein}
-                      onChangeText={(text) => setEditedData({ ...editedData, protein: text })}
+                      value={editedData[macro.key as keyof typeof editedData]}
+                      onChangeText={(text) => setEditedData({ ...editedData, [macro.key]: text })}
                       keyboardType="numeric"
                       style={{
                         fontSize: TYPOGRAPHY.bodyL,
                         fontWeight: '900',
-                        color: colors.textPrimary,
-                        backgroundColor: colors.cardBackground,
+                        color: macro.color,
+                        backgroundColor: colors.cardBackgroundSecondary,
                         borderRadius: 8,
-                        padding: DIMENSIONS.SPACING * 0.3,
+                        paddingHorizontal: DIMENSIONS.SPACING * 0.5,
+                        paddingVertical: DIMENSIONS.SPACING * 0.3,
                         borderWidth: 1,
                         borderColor: colors.borderSecondary,
                         textAlign: 'center',
-                        minWidth: DIMENSIONS.SCREEN_WIDTH * 0.2,
+                        minWidth: DIMENSIONS.SCREEN_WIDTH * 0.18,
                       }}
-                      placeholderTextColor="#666"
+                      placeholderTextColor={colors.textSecondary}
                     />
                   ) : (
-                    <Text 
-                      style={{ 
-                        fontSize: TYPOGRAPHY.bodyL,
-                        fontWeight: '900',
-                        color: colors.textPrimary,
-                      }}
-                    >
-                      {result.protein}g
+                    <Text style={{
+                      fontSize: TYPOGRAPHY.bodyL,
+                      fontWeight: '900',
+                      color: macro.color,
+                    }}>
+                      {(result as any)[macro.key]}g
                     </Text>
                   )}
                 </View>
-                <View style={{ alignItems: 'center', flex: 1 }}>
-                  <View 
-                    style={{ 
-                      width: DIMENSIONS.SCREEN_WIDTH * 0.16,
-                      height: DIMENSIONS.SCREEN_WIDTH * 0.16,
-                      borderRadius: 16,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: DIMENSIONS.SPACING * 0.6,
-                      backgroundColor: colors.cardBackgroundSecondary,
-                    }}
-                  >
-                    <Ionicons name="nutrition" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
-                  </View>
-                  <Text 
-                    style={{ 
-                      fontSize: TYPOGRAPHY.bodyXXS,
-                      fontWeight: '700',
-                      marginBottom: DIMENSIONS.SPACING * 0.3,
-                      color: colors.textPrimary,
-                    }}
-                  >
-                    {t('log.carbs')}
-                </Text>
-                  {isEditing ? (
-                    <TextInput
-                      value={editedData.carbs}
-                      onChangeText={(text) => setEditedData({ ...editedData, carbs: text })}
-                      keyboardType="numeric"
-                      style={{
-                        fontSize: TYPOGRAPHY.bodyL,
-                        fontWeight: '900',
-                        color: colors.textPrimary,
-                        backgroundColor: colors.cardBackground,
-                        borderRadius: 8,
-                        padding: DIMENSIONS.SPACING * 0.3,
-                        borderWidth: 1,
-                        borderColor: colors.borderSecondary,
-                        textAlign: 'center',
-                        minWidth: DIMENSIONS.SCREEN_WIDTH * 0.2,
-                      }}
-                      placeholderTextColor="#666"
-                    />
-                  ) : (
-                    <Text 
-                      style={{ 
-                        fontSize: TYPOGRAPHY.bodyL,
-                        fontWeight: '900',
-                        color: colors.textPrimary,
-                      }}
-                    >
-                  {result.carbs}g
-                </Text>
-                  )}
-                </View>
-                <View style={{ alignItems: 'center', flex: 1 }}>
-                  <View 
-                    style={{ 
-                      width: DIMENSIONS.SCREEN_WIDTH * 0.16,
-                      height: DIMENSIONS.SCREEN_WIDTH * 0.16,
-                      borderRadius: 16,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: DIMENSIONS.SPACING * 0.6,
-                      backgroundColor: colors.cardBackgroundSecondary,
-                    }}
-                  >
-                    <Ionicons name="water" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
-                  </View>
-                  <Text 
-                    style={{ 
-                      fontSize: TYPOGRAPHY.bodyXXS,
-                      fontWeight: '700',
-                      marginBottom: DIMENSIONS.SPACING * 0.3,
-                      color: colors.textPrimary,
-                    }}
-                  >
-                    {t('log.fat')}
-                </Text>
-                  {isEditing ? (
-                    <TextInput
-                      value={editedData.fat}
-                      onChangeText={(text) => setEditedData({ ...editedData, fat: text })}
-                      keyboardType="numeric"
-                      style={{
-                        fontSize: TYPOGRAPHY.bodyL,
-                        fontWeight: '900',
-                        color: colors.textPrimary,
-                        backgroundColor: colors.cardBackground,
-                        borderRadius: 8,
-                        padding: DIMENSIONS.SPACING * 0.3,
-                        borderWidth: 1,
-                        borderColor: colors.borderSecondary,
-                        textAlign: 'center',
-                        minWidth: DIMENSIONS.SCREEN_WIDTH * 0.2,
-                      }}
-                      placeholderTextColor="#666"
-                    />
-                  ) : (
-                    <Text 
-                      style={{ 
-                        fontSize: TYPOGRAPHY.bodyL,
-                        fontWeight: '900',
-                        color: colors.textPrimary,
-                      }}
-                    >
-                  {result.fat}g
-                </Text>
-                  )}
-                </View>
-              </View>
+              ))}
+            </View>
               
+            {/* Buttons */}
+            <View style={{
+              flexDirection: 'row',
+              gap: DIMENSIONS.SPACING * 0.6,
+              padding: DIMENSIONS.SPACING * 1.2,
+              borderTopWidth: 1,
+              borderTopColor: colors.borderPrimary,
+            }}>
               {isEditing ? (
-                <View style={{ flexDirection: 'row' }}>
+                <>
                   <TouchableOpacity
                     onPress={handleCancelEdit}
                     activeOpacity={0.8}
-                    style={{ 
+                    style={{
                       flex: 1,
-                      borderRadius: 24,
-                      paddingVertical: DIMENSIONS.SPACING,
+                      borderRadius: 16,
+                      paddingVertical: DIMENSIONS.SPACING * 0.9,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minHeight: 56,
-                      backgroundColor: colors.cardBackground,
-                      borderWidth: 2,
-                      borderColor: '#2A2A2A',
-                      marginRight: DIMENSIONS.SPACING * 0.6,
+                      backgroundColor: colors.cardBackgroundSecondary,
+                      borderWidth: 1,
+                      borderColor: colors.borderSecondary,
                     }}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="close-circle" size={TYPOGRAPHY.iconM} color={colors.textPrimary} />
-                      <Text 
-                        style={{ 
-                          fontSize: TYPOGRAPHY.body,
-                          fontWeight: '900',
-                          color: colors.textPrimary,
-                          marginLeft: DIMENSIONS.SPACING * 0.6,
-                        }}
-                      >
-                        {t('log.cancel')}
-                      </Text>
-            </View>
+                    <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '800', color: colors.textPrimary }}>
+                      {t('log.cancel')}
+                    </Text>
                   </TouchableOpacity>
-            <TouchableOpacity
+                  <TouchableOpacity
                     onPress={handleSaveEdit}
                     activeOpacity={0.8}
-              style={{ 
-                      flex: 1,
-                      borderRadius: 24,
-                      paddingVertical: DIMENSIONS.SPACING,
+                    style={{
+                      flex: 2,
+                      borderRadius: 16,
+                      paddingVertical: DIMENSIONS.SPACING * 0.9,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minHeight: 56,
                       backgroundColor: colors.textPrimary,
-                      shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 12,
-                      elevation: 6,
-              }}
-            >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={colors.background} />
-                      <Text 
-                        style={{ 
-                          fontSize: TYPOGRAPHY.body,
-                          fontWeight: '900',
-                          color: colors.background,
-                          marginLeft: DIMENSIONS.SPACING * 0.6,
-                        }}
-                      >
-                        {t('log.saveChanges')}
-                </Text>
-              </View>
-            </TouchableOpacity>
-                </View>
+                    }}
+                  >
+                    <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '800', color: colors.background }}>
+                      {t('log.saveChanges')}
+                    </Text>
+                  </TouchableOpacity>
+                </>
               ) : (
                 <TouchableOpacity
                   onPress={saveMeal}
                   activeOpacity={0.8}
-                  style={{ 
-                    borderRadius: 24,
-                    paddingVertical: DIMENSIONS.SPACING,
+                  style={{
+                    flex: 1,
+                    borderRadius: 16,
+                    paddingVertical: DIMENSIONS.SPACING * 0.9,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minHeight: 56,
                     backgroundColor: colors.textPrimary,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 12,
-                    elevation: 6,
                   }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconM} color={colors.background} />
-                    <Text 
-                      style={{ 
-                        fontSize: TYPOGRAPHY.body,
-                        fontWeight: '900',
-                        color: colors.background,
-                        marginLeft: DIMENSIONS.SPACING * 0.6,
-                      }}
-                    >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconS} color={colors.background} />
+                    <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '800', color: colors.background }}>
                       {t('log.saveMeal')}
                     </Text>
                   </View>
                 </TouchableOpacity>
               )}
+            </View>
           </View>
         )}
 
@@ -759,6 +606,31 @@ export default function LogScreen() {
           </View>
         )}
 
+        {image && result && !isEditing && (
+          <TouchableOpacity
+            onPress={() => {
+              setImage(null);
+              setResult(null);
+            }}
+            activeOpacity={0.8}
+            style={{
+              borderRadius: 16,
+              paddingVertical: DIMENSIONS.SPACING,
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: 48,
+              marginTop: DIMENSIONS.SPACING * 0.6,
+              backgroundColor: colors.cardBackground,
+              borderWidth: 2,
+              borderColor: colors.borderPrimary,
+            }}
+          >
+            <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '700', color: colors.textPrimary }}>
+              {t('log.selectOtherPhoto')}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {image && !result && (
           <TouchableOpacity
             onPress={() => {
@@ -788,7 +660,7 @@ export default function LogScreen() {
             </Text>
           </TouchableOpacity>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

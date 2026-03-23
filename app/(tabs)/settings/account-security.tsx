@@ -180,7 +180,7 @@ export default function AccountSecurityScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 30 }}
+        contentContainerStyle={{ paddingBottom: 60 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.4 }}>
 

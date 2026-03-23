@@ -1,166 +1,281 @@
-import { View, Text, Modal, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
+import { updateProfile } from '@/services/api';
+import type { Goal, ExerciseFrequency } from '@/store/useStore';
+
+interface User {
+  height?: number;
+  age?: number;
+  weight?: number;
+  gender?: string;
+  goal?: Goal;
+  exerciseFrequency?: ExerciseFrequency;
+}
 
 interface GoalsModalProps {
   visible: boolean;
-  calories: string;
-  steps: string;
-  onCaloriesChange: (value: string) => void;
-  onStepsChange: (value: string) => void;
-  onSave: () => void;
+  user: User | null;
+  dailyCalorieGoal: number;
+  dailyStepGoal: number;
+  onSave: (goals: { dailyCalorieGoal: number; dailyStepGoal: number }, body: Partial<User>) => void;
   onCancel: () => void;
 }
 
-export default function GoalsModal({
-  visible,
-  calories,
-  steps,
-  onCaloriesChange,
-  onStepsChange,
-  onSave,
-  onCancel,
-}: GoalsModalProps) {
+const FITNESS_GOALS: { value: Goal; label: string; icon: string }[] = [
+  { value: 'lose_weight', label: '减重', icon: 'trending-down' },
+  { value: 'lose_fat', label: '减脂', icon: 'flame' },
+  { value: 'gain_muscle', label: '增肌', icon: 'barbell' },
+];
+
+const EXERCISE_FREQS: { value: ExerciseFrequency; label: string }[] = [
+  { value: 'never', label: '几乎不' },
+  { value: 'rarely', label: '偶尔' },
+  { value: '1-2', label: '1-2次/周' },
+  { value: '3-4', label: '3-4次/周' },
+  { value: '5-6', label: '5-6次/周' },
+  { value: 'daily', label: '每天' },
+];
+
+const ACTIVITY_MULTIPLIER: Record<string, number> = {
+  never: 1.2, rarely: 1.375, '1-2': 1.375, '3-4': 1.55, '5-6': 1.725, daily: 1.9,
+};
+const GOAL_ADJUSTMENT: Record<string, number> = {
+  lose_weight: -500, lose_fat: -300, gain_muscle: 300,
+};
+const RECOMMENDED_STEPS: Record<string, number> = {
+  never: 6000, rarely: 7000, '1-2': 8000, '3-4': 10000, '5-6': 12000, daily: 15000,
+};
+
+function calcRecommended(
+  w: string, h: string, a: string,
+  gender: string | undefined,
+  freq: string, goalVal: string,
+): { calories: number; steps: number } | null {
+  const weight = parseFloat(w);
+  const height = parseFloat(h);
+  const age = parseInt(a);
+  if (!weight || !height || !age) return null;
+
+  const bmrM = 10 * weight + 6.25 * height - 5 * age + 5;
+  const bmrF = 10 * weight + 6.25 * height - 5 * age - 161;
+  const bmr = gender === 'male' ? bmrM : gender === 'female' ? bmrF : (bmrM + bmrF) / 2;
+
+  const tdee = bmr * (ACTIVITY_MULTIPLIER[freq] || 1.375);
+  const adjustment = GOAL_ADJUSTMENT[goalVal] || 0;
+  const recommended = Math.round(tdee + adjustment);
+  const steps = RECOMMENDED_STEPS[freq] || 8000;
+  return { calories: recommended, steps };
+}
+
+export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepGoal, onSave, onCancel }: GoalsModalProps) {
   const { t } = useTranslation();
+  const colors = useTheme();
+
+  const [calories, setCalories] = useState('');
+  const [steps, setSteps] = useState('');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [age, setAge] = useState('');
+  const [goal, setGoal] = useState<Goal | ''>('');
+  const [exerciseFreq, setExerciseFreq] = useState<ExerciseFrequency | ''>('');
+  const [saving, setSaving] = useState(false);
+
+  const recommended = calcRecommended(weight, height, age, user?.gender, exerciseFreq, goal);
+
+  useEffect(() => {
+    if (visible) {
+      setCalories(String(dailyCalorieGoal));
+      setSteps(String(dailyStepGoal));
+      setHeight(user?.height ? String(user.height) : '');
+      setWeight(user?.weight ? String(user.weight) : '');
+      setAge(user?.age ? String(user.age) : '');
+      setGoal(user?.goal || '');
+      setExerciseFreq(user?.exerciseFrequency || '');
+    }
+  }, [visible, user, dailyCalorieGoal, dailyStepGoal]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const body: Partial<User> = {
+        height: height ? parseInt(height) : undefined,
+        weight: weight ? parseFloat(weight) : undefined,
+        age: age ? parseInt(age) : undefined,
+        goal: goal || undefined,
+        exerciseFrequency: exerciseFreq || undefined,
+      };
+      await updateProfile({ ...body });
+      onSave(
+        { dailyCalorieGoal: parseInt(calories) || 2000, dailyStepGoal: parseInt(steps) || 10000 },
+        body,
+      );
+    } catch (err: any) {
+      // still save local goals even if API fails
+      onSave(
+        { dailyCalorieGoal: parseInt(calories) || 2000, dailyStepGoal: parseInt(steps) || 10000 },
+        {},
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const sectionLabel = (text: string) => (
+    <Text style={{
+      fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary,
+      textTransform: 'uppercase', letterSpacing: 1,
+      marginBottom: DIMENSIONS.SPACING * 0.6, marginTop: DIMENSIONS.SPACING * 1.2,
+    }}>
+      {text}
+    </Text>
+  );
+
+  const inputStyle = {
+    flex: 1, padding: DIMENSIONS.SPACING * 0.85, backgroundColor: colors.cardBackground,
+    borderRadius: 14, color: colors.textPrimary, fontSize: TYPOGRAPHY.bodyM,
+    fontWeight: '600' as const, borderWidth: 2, borderColor: colors.borderPrimary,
+  };
 
   return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onCancel}
-    >
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
-        <View 
-          style={{ 
-            width: DIMENSIONS.SCREEN_WIDTH * 0.75,
-            backgroundColor: COLORS.cardBackground,
-            borderRadius: 16,
-            padding: DIMENSIONS.SPACING * 1.2,
-            alignItems: 'center',
-            borderWidth: 2,
-            borderColor: COLORS.borderPrimary,
-          }}
-        >
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.bodyM,
-              fontWeight: '900',
-              color: COLORS.textPrimary,
-              marginBottom: DIMENSIONS.SPACING * 1.0,
-            }}
-          >
-            {t('settings.editGoals')}
-          </Text>
-          <View style={{ width: '100%', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '700',
-                color: COLORS.textPrimary,
-                marginBottom: DIMENSIONS.SPACING * 0.4,
-              }}
-            >
-              {t('settings.kcalPerDay')}
-            </Text>
-            <TextInput
-              style={{
-                width: '100%',
-                padding: DIMENSIONS.SPACING * 0.8,
-                backgroundColor: COLORS.cardBackgroundSecondary,
-                borderRadius: 12,
-                color: COLORS.textPrimary,
-                fontSize: TYPOGRAPHY.bodyS,
-                fontWeight: '700',
-                borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
-              }}
-              placeholder={t('settings.dailyCaloriesPlaceholder')}
-              placeholderTextColor={COLORS.textSecondary}
-              keyboardType="numeric"
-              value={calories}
-              onChangeText={onCaloriesChange}
-            />
-          </View>
-          <View style={{ width: '100%', marginBottom: DIMENSIONS.SPACING * 1.0 }}>
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '700',
-                color: COLORS.textPrimary,
-                marginBottom: DIMENSIONS.SPACING * 0.4,
-              }}
-            >
-              {t('settings.stepsPerDay')}
-            </Text>
-            <TextInput
-              style={{
-                width: '100%',
-                padding: DIMENSIONS.SPACING * 0.8,
-                backgroundColor: COLORS.cardBackgroundSecondary,
-                borderRadius: 12,
-                color: COLORS.textPrimary,
-                fontSize: TYPOGRAPHY.bodyS,
-                fontWeight: '700',
-                borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
-              }}
-              placeholder={t('settings.dailyStepsPlaceholder')}
-              placeholderTextColor={COLORS.textSecondary}
-              keyboardType="numeric"
-              value={steps}
-              onChangeText={onStepsChange}
-            />
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-            <TouchableOpacity
-              onPress={onCancel}
-              style={{
-                flex: 1,
-                paddingVertical: DIMENSIONS.SPACING * 0.6,
-                borderRadius: 12,
-                backgroundColor: COLORS.cardBackgroundSecondary,
-                marginRight: DIMENSIONS.SPACING * 0.4,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: COLORS.borderSecondary,
-              }}
-            >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '700',
-                  color: COLORS.textPrimary,
-                }}
-              >
-                {t('common.cancel')}
+    <Modal animationType="fade" transparent visible={visible} onRequestClose={onCancel}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{
+            backgroundColor: colors.backgroundPrimary,
+            borderTopLeftRadius: 32, borderTopRightRadius: 32, maxHeight: '92%',
+            borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 2, borderColor: colors.borderPrimary,
+          }}>
+            <View style={{ alignItems: 'center', paddingTop: DIMENSIONS.SPACING * 0.8 }}>
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.borderPrimary }} />
+            </View>
+            <View style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+              paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingVertical: DIMENSIONS.SPACING,
+            }}>
+              <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
+                目标与身体数据
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onSave}
-              style={{
-                flex: 1,
-                paddingVertical: DIMENSIONS.SPACING * 0.6,
-                borderRadius: 12,
-                backgroundColor: COLORS.textPrimary,
-                marginLeft: DIMENSIONS.SPACING * 0.4,
-                alignItems: 'center',
-              }}
-            >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '700',
-                  color: COLORS.backgroundPrimary,
-                }}
-              >
-                {t('common.save')}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity onPress={onCancel} style={{
+                width: 32, height: 32, borderRadius: 16,
+                backgroundColor: colors.cardBackgroundSecondary,
+                alignItems: 'center', justifyContent: 'center',
+                borderWidth: 1, borderColor: colors.borderPrimary,
+              }}>
+                <Ionicons name="close" size={18} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}>
+
+              {/* Daily goals */}
+              {sectionLabel('每日目标')}
+              <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>卡路里 (kcal)</Text>
+                  <TextInput style={inputStyle} placeholder="2000" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={calories} onChangeText={setCalories} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>步数</Text>
+                  <TextInput style={inputStyle} placeholder="10000" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={steps} onChangeText={setSteps} />
+                </View>
+              </View>
+              {recommended && (
+                <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5, marginTop: DIMENSIONS.SPACING * 0.6 }}>
+                  <TouchableOpacity
+                    onPress={() => setCalories(String(recommended.calories))}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: DIMENSIONS.SPACING * 0.7, paddingVertical: DIMENSIONS.SPACING * 0.35, borderRadius: 20, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}
+                  >
+                    <Ionicons name="sparkles" size={11} color={colors.textSecondary} />
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>推荐 {recommended.calories} kcal</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setSteps(String(recommended.steps))}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: DIMENSIONS.SPACING * 0.7, paddingVertical: DIMENSIONS.SPACING * 0.35, borderRadius: 20, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}
+                  >
+                    <Ionicons name="sparkles" size={11} color={colors.textSecondary} />
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>推荐 {recommended.steps.toLocaleString()} 步</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Body stats */}
+              {sectionLabel('身体数据')}
+              <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>身高 (cm)</Text>
+                  <TextInput style={inputStyle} placeholder="170" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={height} onChangeText={setHeight} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>体重 (kg)</Text>
+                  <TextInput style={inputStyle} placeholder="65" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={weight} onChangeText={setWeight} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>年龄</Text>
+                  <TextInput style={inputStyle} placeholder="25" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={age} onChangeText={setAge} />
+                </View>
+              </View>
+
+
+              {/* Fitness goal */}
+              {sectionLabel('健身目标')}
+              <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5 }}>
+                {FITNESS_GOALS.map((g) => (
+                  <TouchableOpacity key={g.value} onPress={() => setGoal(g.value)} style={{
+                    flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.8, borderRadius: 14, alignItems: 'center',
+                    backgroundColor: goal === g.value ? colors.textPrimary : colors.cardBackground,
+                    borderWidth: 2, borderColor: goal === g.value ? colors.textPrimary : colors.borderPrimary,
+                    gap: 4,
+                  }}>
+                    <Ionicons name={g.icon as any} size={TYPOGRAPHY.iconXS} color={goal === g.value ? colors.backgroundPrimary : colors.textPrimary} />
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '900', color: goal === g.value ? colors.backgroundPrimary : colors.textPrimary }}>
+                      {g.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Exercise frequency */}
+              {sectionLabel('运动频率')}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: DIMENSIONS.SPACING * 0.5, marginBottom: DIMENSIONS.SPACING * 1.5 }}>
+                {EXERCISE_FREQS.map((f) => (
+                  <TouchableOpacity key={f.value} onPress={() => setExerciseFreq(f.value)} style={{
+                    paddingHorizontal: DIMENSIONS.SPACING * 0.9, paddingVertical: DIMENSIONS.SPACING * 0.5,
+                    borderRadius: 20, borderWidth: 2,
+                    backgroundColor: exerciseFreq === f.value ? colors.textPrimary : colors.cardBackground,
+                    borderColor: exerciseFreq === f.value ? colors.textPrimary : colors.borderPrimary,
+                  }}>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: exerciseFreq === f.value ? colors.backgroundPrimary : colors.textPrimary }}>
+                      {f.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Buttons */}
+              <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6 }}>
+                <TouchableOpacity onPress={onCancel} style={{
+                  flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9, borderRadius: 14, alignItems: 'center',
+                  backgroundColor: colors.cardBackground, borderWidth: 2, borderColor: colors.borderPrimary,
+                }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>取消</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleSave} disabled={saving} style={{
+                  flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9, borderRadius: 14, alignItems: 'center',
+                  backgroundColor: colors.textPrimary, opacity: saving ? 0.6 : 1,
+                }}>
+                  {saving ? <ActivityIndicator color={colors.backgroundPrimary} /> : (
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>保存</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
-

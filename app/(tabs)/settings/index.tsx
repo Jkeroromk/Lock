@@ -1,6 +1,6 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Platform, Linking, AppState } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
@@ -15,6 +15,7 @@ import {
   cancelAllNotifications,
   getNotificationPermissionStatus,
 } from '@/services/notifications';
+import { requestHealthPermissions, syncHealthData } from '@/services/health';
 import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
 import GoalsModal from '@/components/settings/GoalsModal';
@@ -41,34 +42,43 @@ export default function SettingsScreen() {
   const { signOut } = useAuth();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [healthConnected, setHealthConnected] = useState(false);
+  const [healthSyncing, setHealthSyncing] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
-  const [tempCalories, setTempCalories] = useState(String(dailyCalorieGoal));
-  const [tempSteps, setTempSteps] = useState(String(dailyStepGoal));
 
   const languages: LanguageCode[] = ['zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR'];
   const currentLanguageName = languageNames[language];
 
-  // Check notification permission on mount
+  const appState = useRef(AppState.currentState);
+
+  // Check notification permission on mount and when app returns to foreground
   useEffect(() => {
     getNotificationPermissionStatus().then(setNotificationsEnabled);
+
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        getNotificationPermissionStatus().then(setNotificationsEnabled);
+      }
+      appState.current = nextState;
+    });
+
+    return () => sub.remove();
   }, []);
 
-  const handleSaveGoals = () => {
-    const calories = parseInt(tempCalories) || 2000;
-    const steps = parseInt(tempSteps) || 10000;
-    setDailyCalorieGoal(calories);
-    setDailyStepGoal(steps);
+  const handleSaveGoals = (
+    goals: { dailyCalorieGoal: number; dailyStepGoal: number },
+    body: Partial<{ height?: number; weight?: number; age?: number; gender?: string; goal?: string; exerciseFrequency?: string }>,
+  ) => {
+    setDailyCalorieGoal(goals.dailyCalorieGoal);
+    setDailyStepGoal(goals.dailyStepGoal);
+    if (Object.keys(body).length > 0) {
+      setUser({ ...user, ...body } as any);
+    }
     setShowGoalsModal(false);
     Alert.alert(t('settings.success'), t('settings.goalsUpdated'));
-  };
-
-  const openGoalsModal = () => {
-    setTempCalories(String(dailyCalorieGoal));
-    setTempSteps(String(dailyStepGoal));
-    setShowGoalsModal(true);
   };
 
   const handleNotificationsToggle = async (value: boolean) => {
@@ -79,11 +89,45 @@ export default function SettingsScreen() {
         setNotificationsEnabled(true);
         Alert.alert(t('settings.success'), '已开启每日餐食提醒（早8点、午12点、晚7点）');
       } else {
-        Alert.alert('权限不足', '请在系统设置中允许通知权限');
+        Alert.alert(
+          '需要通知权限',
+          '请前往系统设置开启通知权限',
+          [
+            { text: '取消', style: 'cancel' },
+            { text: '去设置', onPress: () => Linking.openSettings() },
+          ]
+        );
       }
     } else {
       await cancelAllNotifications();
       setNotificationsEnabled(false);
+    }
+  };
+
+  const handleHealthConnect = async () => {
+    if (Platform.OS !== 'ios') {
+      Alert.alert('Apple Health', '仅支持 iOS 设备');
+      return;
+    }
+    setHealthSyncing(true);
+    try {
+      const granted = await requestHealthPermissions();
+      if (granted) {
+        await syncHealthData();
+        setHealthConnected(true);
+        Alert.alert('已连接', 'Apple Health 数据已同步');
+      } else {
+        Alert.alert(
+          '需要权限',
+          '请前往系统设置开启健康权限',
+          [
+            { text: '取消', style: 'cancel' },
+            { text: '去设置', onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+    } finally {
+      setHealthSyncing(false);
     }
   };
 
@@ -113,7 +157,7 @@ export default function SettingsScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 20 : 30 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
           <UserProfileCard
@@ -127,7 +171,7 @@ export default function SettingsScreen() {
             icon="flag"
             title={t('settings.goals')}
             description={t('settings.dailyGoalsSummary', { calories: String(dailyCalorieGoal), steps: String(dailyStepGoal) })}
-            onPress={openGoalsModal}
+            onPress={() => setShowGoalsModal(true)}
           />
 
           <SettingItem
@@ -145,6 +189,16 @@ export default function SettingsScreen() {
             onSwitchChange={handleNotificationsToggle}
             showChevron={false}
           />
+
+          {Platform.OS === 'ios' && (
+            <SettingItem
+              icon="heart"
+              title="Apple Health"
+              description={healthConnected ? '已连接 · 步数、消耗热量同步中' : '连接后可同步步数和运动数据'}
+              onPress={healthSyncing ? undefined : handleHealthConnect}
+              value={healthConnected ? '已连接' : undefined}
+            />
+          )}
 
           <SettingItem
             icon="shield-checkmark"
@@ -282,14 +336,14 @@ export default function SettingsScreen() {
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="log-out" size={TYPOGRAPHY.title} color={colors.textPrimary} />
-              <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', marginLeft: DIMENSIONS.SPACING * 0.4, color: colors.textPrimary }}>
+              <Ionicons name="log-out" size={TYPOGRAPHY.title} color="#EF4444" />
+              <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', marginLeft: DIMENSIONS.SPACING * 0.4, color: "#EF4444" }}>
                 {t('settings.logout')}
               </Text>
             </View>
           </TouchableOpacity>
 
-          <View style={{ paddingVertical: DIMENSIONS.SPACING * 1.2, alignItems: 'center' }}>
+          <View style={{ paddingVertical: DIMENSIONS.SPACING * 0.8, alignItems: 'center' }}>
             <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.7 }}>
               Lock v1.0.0
             </Text>
@@ -299,10 +353,9 @@ export default function SettingsScreen() {
 
       <GoalsModal
         visible={showGoalsModal}
-        calories={tempCalories}
-        steps={tempSteps}
-        onCaloriesChange={setTempCalories}
-        onStepsChange={setTempSteps}
+        user={user}
+        dailyCalorieGoal={dailyCalorieGoal}
+        dailyStepGoal={dailyStepGoal}
         onSave={handleSaveGoals}
         onCancel={() => setShowGoalsModal(false)}
       />
@@ -323,7 +376,6 @@ export default function SettingsScreen() {
         onSave={(updated) => {
           setUser({ ...user, ...updated } as any);
           setShowEditProfileModal(false);
-          Alert.alert(t('settings.success'), t('settings.profileUpdated'));
         }}
         onCancel={() => setShowEditProfileModal(false)}
       />
