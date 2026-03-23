@@ -15,38 +15,38 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
   const colors = useTheme();
 
   return (
-    <View 
-      style={{ 
-        borderRadius: 24,
-        padding: DIMENSIONS.SPACING * 1.4,
-        marginBottom: DIMENSIONS.SPACING * 1.2,
+    <View
+      style={{
+        borderRadius: 16,
+        padding: DIMENSIONS.SPACING * 0.8,
+        marginBottom: DIMENSIONS.SPACING * 0.8,
         backgroundColor: colors.cardBackground,
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: colors.borderPrimary,
         shadowColor: colors.shadowColor,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        elevation: 6,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+        elevation: 3,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-        <View 
-          style={{ 
-            width: DIMENSIONS.SCREEN_WIDTH * 0.12,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.12,
-            borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.06,
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View
+          style={{
+            width: DIMENSIONS.SCREEN_WIDTH * 0.09,
+            height: DIMENSIONS.SCREEN_WIDTH * 0.09,
+            borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.045,
             alignItems: 'center',
             justifyContent: 'center',
-            marginRight: DIMENSIONS.SPACING * 0.8,
+            marginRight: DIMENSIONS.SPACING * 0.6,
             backgroundColor: colors.cardBackgroundSecondary,
-            borderWidth: 2,
+            borderWidth: 1,
             borderColor: colors.borderPrimary,
           }}
         >
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.title,
+          <Text
+            style={{
+              fontSize: TYPOGRAPHY.bodyL,
               fontWeight: '900',
               color: colors.textPrimary,
             }}
@@ -55,21 +55,21 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
           </Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.bodyL,
+          <Text
+            style={{
+              fontSize: TYPOGRAPHY.bodyS,
               fontWeight: '900',
               color: colors.textPrimary,
-              marginBottom: DIMENSIONS.SPACING * 0.3,
+              marginBottom: 2,
             }}
           >
             {t('dashboard.myRanking')}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="trophy" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.4 }} />
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyS,
+            <Ionicons name="trophy" size={TYPOGRAPHY.bodyXS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3 }} />
+            <Text
+              style={{
+                fontSize: TYPOGRAPHY.bodyXS,
                 fontWeight: '700',
                 color: colors.textPrimary,
               }}
@@ -79,18 +79,18 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
           </View>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.numberM,
+          <Text
+            style={{
+              fontSize: TYPOGRAPHY.numberS,
               fontWeight: '900',
               color: colors.textPrimary,
-              marginBottom: DIMENSIONS.SPACING * 0.2,
+              marginBottom: 1,
             }}
           >
             {todayCalories}
           </Text>
-          <Text 
-            style={{ 
+          <Text
+            style={{
               fontSize: TYPOGRAPHY.bodyXXS,
               fontWeight: '600',
               color: colors.textPrimary,
