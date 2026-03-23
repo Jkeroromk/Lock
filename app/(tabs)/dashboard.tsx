@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, Platform, TouchableOpacity, RefreshControl } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
@@ -11,59 +12,93 @@ import MyRankCard from '@/components/dashboard/MyRankCard';
 import FriendsLeaderboard from '@/components/dashboard/FriendsLeaderboard';
 import ChallengesList from '@/components/dashboard/ChallengesList';
 import RefreshLoadingAnimation from '@/components/dashboard/RefreshLoadingAnimation';
+import AddFriendModal from '@/components/dashboard/AddFriendModal';
+import FriendRequestsCard from '@/components/dashboard/FriendRequestsCard';
+import CreateChallengeModal from '@/components/dashboard/CreateChallengeModal';
+import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import {
+  fetchLeaderboard, fetchFriendRequests, fetchChallenges, fetchFeed, fetchInviteCode,
+  LeaderboardEntry, FriendRequest, ChallengeData, FeedItem,
+} from '@/services/api';
 
-// 模拟好友数据
-const mockFriends = [
-  { id: '1', name: '小明', avatar: 'M', calories: 2150, rank: 1, streak: 7 },
-  { id: '2', name: '小红', avatar: 'H', calories: 1980, rank: 2, streak: 5 },
-  { id: '3', name: '小李', avatar: 'L', calories: 1850, rank: 3, streak: 3 },
-];
+type Tab = 'friends' | 'challenges' | 'feed';
 
 export default function DashboardScreen() {
   const { todayCalories, user } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
-  const [activeTab, setActiveTab] = useState<'friends' | 'challenges'>('friends');
-  const [refreshing, setRefreshing] = useState(false);
-  const [friends, setFriends] = useState(mockFriends);
-  
-  // 模拟挑战数据（使用翻译）
-  const mockChallenges = [
-    { id: '1', title: t('dashboard.weeklyChallenge'), description: t('dashboard.completeDaysGoal', { days: 7 }), progress: 5, total: 7, participants: 12 },
-    { id: '2', title: t('dashboard.monthlyChallenge'), description: t('dashboard.completeDaysGoal', { days: 20 }), progress: 15, total: 20, participants: 8 },
-  ];
 
-  // 刷新排行榜数据
+  const [activeTab, setActiveTab] = useState<Tab>('friends');
+  const [refreshing, setRefreshing] = useState(false);
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [challenges, setChallenges] = useState<ChallengeData[]>([]);
+  const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [inviteCode, setInviteCode] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCode = async () => {
+    if (!inviteCode) return;
+    await Clipboard.setStringAsync(inviteCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const myEntry = leaderboard.find((e) => e.isMe);
+  const myRank = myEntry?.rank ?? 0;
+
+  const loadAll = useCallback(async () => {
+    const [lb, reqs, ch, fd, ic] = await Promise.allSettled([
+      fetchLeaderboard(),
+      fetchFriendRequests(),
+      fetchChallenges(),
+      fetchFeed(),
+      fetchInviteCode(),
+    ]);
+    if (lb.status === 'fulfilled') setLeaderboard(lb.value);
+    if (reqs.status === 'fulfilled') setRequests(reqs.value);
+    if (ch.status === 'fulfilled') setChallenges(ch.value);
+    if (fd.status === 'fulfilled') setFeed(fd.value);
+    if (ic.status === 'fulfilled') setInviteCode(ic.value);
+    else console.warn('fetchInviteCode failed:', ic.reason);
+  }, []);
+
+  useEffect(() => { loadAll(); }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
-    try {
-      // TODO: 替换为实际的 API 调用
-      // const response = await fetchLeaderboard();
-      // setFriends(response.data);
-      
-      // 模拟 API 调用延迟
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 模拟刷新后的数据（实际应用中应该从 API 获取）
-      // 这里可以随机更新一些数据来模拟刷新效果
-      setFriends([
-        { id: '1', name: '小明', avatar: 'M', calories: 2200, rank: 1, streak: 8 },
-        { id: '2', name: '小红', avatar: 'H', calories: 2000, rank: 2, streak: 6 },
-        { id: '3', name: '小李', avatar: 'L', calories: 1900, rank: 3, streak: 4 },
-      ]);
-    } catch (error) {
-      console.error('刷新排行榜失败:', error);
-    } finally {
-      setRefreshing(false);
-    }
+    await loadAll();
+    setRefreshing(false);
   };
+
+  const friends = leaderboard.filter((e) => !e.isMe);
+  const friendsForLeaderboard = friends.map((f) => ({
+    id: f.id,
+    name: f.name,
+    avatar: f.avatar,
+    calories: f.calories,
+    rank: f.rank,
+    streak: f.streak,
+  }));
+
+  const challengesForList = challenges.map((c) => ({
+    id: c.id,
+    title: c.title,
+    description: c.description || '',
+    progress: c.progress,
+    total: c.goalValue,
+    participants: c.participants,
+  }));
 
   return (
     <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 120 : 110 }}
+        contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -77,85 +112,189 @@ export default function DashboardScreen() {
         }
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
-          {/* Refresh Loading Animation */}
           <RefreshLoadingAnimation visible={refreshing} />
 
           {/* Header */}
           <View style={{ marginBottom: DIMENSIONS.SPACING * 1.5 }}>
-            <Text 
-            style={{ 
-                fontSize: TYPOGRAPHY.titleL,
-                fontWeight: '900',
-                color: colors.textPrimary,
-                letterSpacing: -2,
-                marginBottom: DIMENSIONS.SPACING * 0.3,
-                lineHeight: TYPOGRAPHY.titleL * 1.1,
-            }}
-          >
+            <Text style={{
+              fontSize: TYPOGRAPHY.titleL, fontWeight: '900',
+              color: colors.textPrimary, letterSpacing: -2,
+              marginBottom: DIMENSIONS.SPACING * 0.3,
+              lineHeight: TYPOGRAPHY.titleL * 1.1,
+            }}>
               {t('dashboard.social')}
-              </Text>
-            <Text 
-                  style={{
-                fontSize: TYPOGRAPHY.bodyM,
-                fontWeight: '500',
-                color: colors.textPrimary,
-                opacity: 0.7,
-                  }}
-            >
+            </Text>
+            <Text style={{
+              fontSize: TYPOGRAPHY.bodyM, fontWeight: '500',
+              color: colors.textPrimary, opacity: 0.7,
+            }}>
               {t('dashboard.withFriends')}
             </Text>
           </View>
 
-          {/* Tab Switcher */}
-          <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
-
-          {activeTab === 'friends' ? (
-            <>
-              {/* My Rank Card */}
-              <MyRankCard user={user} todayCalories={todayCalories} rank={4} />
-
-              {/* Friends Leaderboard */}
-              <FriendsLeaderboard friends={friends} />
-
-              {/* Add Friend Button */}
-              <TouchableOpacity
-                style={{ 
-                  borderRadius: 24,
-                  padding: DIMENSIONS.SPACING * 1.2,
-                  backgroundColor: colors.cardBackground,
-                  borderWidth: 2,
-                  borderColor: colors.borderPrimary,
-                  borderStyle: 'dashed',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: DIMENSIONS.SPACING * 1.2,
-                }}
-              >
-                <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
-                <Text 
-                  style={{ 
-                    fontSize: TYPOGRAPHY.bodyM,
-                    fontWeight: '900',
-                    color: colors.textPrimary,
-                    marginLeft: DIMENSIONS.SPACING * 0.6,
+          {/* Tab Switcher — now 3 tabs */}
+          <View style={{
+            flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5,
+            marginBottom: DIMENSIONS.SPACING * 1.2,
+          }}>
+            {(['friends', 'challenges', 'feed'] as Tab[]).map((tab) => {
+              const labels: Record<Tab, string> = { friends: '好友', challenges: '挑战', feed: '动态' };
+              const icons: Record<Tab, string> = { friends: 'people', challenges: 'flag', feed: 'newspaper' };
+              const active = activeTab === tab;
+              return (
+                <TouchableOpacity
+                  key={tab}
+                  onPress={() => setActiveTab(tab)}
+                  style={{
+                    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                    paddingVertical: DIMENSIONS.SPACING * 0.7,
+                    borderRadius: 14, borderWidth: 2,
+                    backgroundColor: active ? colors.textPrimary : colors.cardBackground,
+                    borderColor: active ? colors.textPrimary : colors.borderPrimary,
+                    gap: 4,
                   }}
                 >
-                  {t('dashboard.addFriend')}
+                  <Ionicons
+                    name={icons[tab] as any}
+                    size={TYPOGRAPHY.iconXS}
+                    color={active ? colors.backgroundPrimary : colors.textPrimary}
+                  />
+                  <Text style={{
+                    fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
+                    color: active ? colors.backgroundPrimary : colors.textPrimary,
+                  }}>
+                    {labels[tab]}
+                  </Text>
+                  {tab === 'friends' && requests.length > 0 && (
+                    <View style={{
+                      width: 8, height: 8, borderRadius: 4,
+                      backgroundColor: '#EF4444',
+                    }} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {activeTab === 'friends' && (
+            <>
+              {requests.length > 0 && (
+                <FriendRequestsCard requests={requests} onUpdate={loadAll} />
+              )}
+
+              <MyRankCard user={user} todayCalories={todayCalories} rank={myRank} />
+
+              {friends.length > 0 ? (
+                <FriendsLeaderboard friends={friendsForLeaderboard} />
+              ) : (
+                <View style={{
+                  borderRadius: 24, padding: DIMENSIONS.SPACING * 2,
+                  backgroundColor: colors.cardBackground,
+                  borderWidth: 2, borderColor: colors.borderPrimary,
+                  alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.2,
+                }}>
+                  <Ionicons name="people-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
+                  <Text style={{
+                    fontSize: TYPOGRAPHY.bodyM, fontWeight: '900',
+                    color: colors.textPrimary, marginTop: DIMENSIONS.SPACING * 0.8,
+                    marginBottom: DIMENSIONS.SPACING * 0.4,
+                  }}>
+                    还没有好友
+                  </Text>
+                  <Text style={{
+                    fontSize: TYPOGRAPHY.bodyS, fontWeight: '500',
+                    color: colors.textSecondary, textAlign: 'center',
+                    lineHeight: TYPOGRAPHY.bodyS * 1.5,
+                  }}>
+                    分享你的邀请码邀请朋友，或通过用户名添加好友一起打卡
+                  </Text>
+                </View>
+              )}
+
+              {/* Invite code card */}
+              <View style={{
+                borderRadius: 24, padding: DIMENSIONS.SPACING * 1.2,
+                backgroundColor: colors.cardBackground,
+                borderWidth: 2, borderColor: colors.borderPrimary,
+                marginBottom: DIMENSIONS.SPACING * 1.2,
+              }}>
+                <Text style={{
+                  fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
+                  color: colors.textSecondary, textTransform: 'uppercase',
+                  letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.8,
+                }}>
+                  我的邀请码
                 </Text>
-              </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <TouchableOpacity
+                    onPress={handleCopyCode}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center',
+                      backgroundColor: colors.cardBackgroundSecondary,
+                      borderRadius: 12, paddingHorizontal: DIMENSIONS.SPACING * 1,
+                      paddingVertical: DIMENSIONS.SPACING * 0.6,
+                      gap: 8, borderWidth: 1, borderColor: colors.borderPrimary,
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: TYPOGRAPHY.bodyL, fontWeight: '900',
+                      color: colors.textPrimary, letterSpacing: 4,
+                    }}>
+                      {inviteCode || '------'}
+                    </Text>
+                    <Ionicons
+                      name={copied ? 'checkmark' : 'copy-outline'}
+                      size={TYPOGRAPHY.iconXS}
+                      color={copied ? '#10B981' : colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setShowAddFriend(true)}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center',
+                      backgroundColor: colors.textPrimary,
+                      borderRadius: 12, paddingHorizontal: DIMENSIONS.SPACING * 0.9,
+                      paddingVertical: DIMENSIONS.SPACING * 0.5,
+                      gap: 4,
+                    }}
+                  >
+                    <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
+                    <Text style={{
+                      fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
+                      color: colors.backgroundPrimary,
+                    }}>
+                      添加好友
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </>
-          ) : (
-            <ChallengesList 
-              challenges={mockChallenges} 
-              onCreateChallenge={() => {
-                // TODO: 实现创建挑战功能
-                console.log('Create challenge');
-              }}
+          )}
+
+          {activeTab === 'challenges' && (
+            <ChallengesList
+              challenges={challengesForList}
+              onCreateChallenge={() => setShowCreateChallenge(true)}
             />
+          )}
+
+          {activeTab === 'feed' && (
+            <ActivityFeed items={feed} />
           )}
         </View>
       </ScrollView>
+
+      <AddFriendModal
+        visible={showAddFriend}
+        onClose={() => setShowAddFriend(false)}
+        onSuccess={loadAll}
+      />
+
+      <CreateChallengeModal
+        visible={showCreateChallenge}
+        onClose={() => setShowCreateChallenge(false)}
+        onSuccess={() => { loadAll(); }}
+      />
     </SafeAreaView>
   );
 }

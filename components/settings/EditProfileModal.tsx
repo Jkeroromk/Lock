@@ -1,30 +1,35 @@
 import {
-  View, Text, Modal, TextInput, TouchableOpacity,
+  View, Text, Modal, TextInput, TouchableOpacity, Image,
   Alert, Platform, ScrollView, KeyboardAvoidingView,
 } from 'react-native';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { updateProfile } from '@/services/api';
-import type { Gender, Goal } from '@/store/useStore';
+
+const GENDER_LABELS: Record<string, string> = { male: '男', female: '女', other: '其他' };
+
+const AVATAR_OPTIONS = [
+  '🏃','🧘','💪','🔥','😎','🚀',
+];
 
 interface User {
-  id?: string;
   name?: string;
-  email?: string;
-  height?: number;
-  age?: number;
-  weight?: number;
-  gender?: Gender;
-  goal?: Goal;
+  username?: string;
+  bio?: string;
+  avatarEmoji?: string;
+  avatarImage?: string;
+  gender?: string;
+  showGender?: boolean;
 }
 
 interface EditProfileModalProps {
   visible: boolean;
   user: User | null;
-  onSave: (updated: Partial<User>) => void;
+  onSave: (updated: { name: string; username?: string; bio?: string; avatarEmoji?: string; avatarImage?: string; showGender?: boolean }) => void;
   onCancel: () => void;
 }
 
@@ -32,127 +37,92 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
   const { t } = useTranslation();
   const colors = useTheme();
 
-  const [name, setName] = useState('');
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState<Gender | ''>('');
-  const [goal, setGoal] = useState<Goal | ''>('');
+  const [username, setUsername] = useState('');
+  const [bio, setBio] = useState('');
+  const [avatarEmoji, setAvatarEmoji] = useState('🏃');
+  const [avatarImage, setAvatarImage] = useState<string | undefined>(undefined);
+  const [showGender, setShowGender] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (visible && user) {
-      setName(user.name || '');
-      setHeight(user.height ? String(user.height) : '');
-      setWeight(user.weight ? String(user.weight) : '');
-      setAge(user.age ? String(user.age) : '');
-      setGender(user.gender || '');
-      setGoal(user.goal || '');
+      setUsername(user.username || user.name || '');
+      setBio(user.bio || '');
+      setAvatarEmoji(user.avatarEmoji || '🏃');
+      setAvatarImage(user.avatarImage);
+      setShowGender(user.showGender ?? false);
     }
   }, [visible, user]);
 
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('需要权限', '请允许访问相册');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.6,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setAvatarImage(result.assets[0].uri);
+      setAvatarEmoji('');
+    }
+  };
+
   const handleSave = async () => {
-    if (!name.trim()) {
-      Alert.alert(t('settings.error'), t('settings.nameRequired'));
+    if (!username.trim()) {
+      Alert.alert('', '请填写用户名');
       return;
     }
     setSaving(true);
+    const uname = username.trim();
     try {
       await updateProfile({
-        name: name.trim(),
-        height: height ? parseInt(height) : undefined,
-        weight: weight ? parseFloat(weight) : undefined,
-        age: age ? parseInt(age) : undefined,
-        gender: gender || undefined,
-        goal: goal || undefined,
+        name: uname,
+        username: uname,
+        bio: bio.trim() || undefined,
+        avatarEmoji: avatarImage ? undefined : avatarEmoji,
       });
-      onSave({
-        name: name.trim(),
-        height: height ? parseInt(height) : undefined,
-        weight: weight ? parseFloat(weight) : undefined,
-        age: age ? parseInt(age) : undefined,
-        gender: gender || undefined,
-        goal: goal || undefined,
-      });
+      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage, showGender });
     } catch (err: any) {
-      const msg = err?.response?.data?.error || err?.message || t('settings.error');
-      Alert.alert(t('settings.error'), msg);
+      Alert.alert('保存失败', err?.response?.data?.error || err?.message || '请重试');
     } finally {
       setSaving(false);
     }
   };
 
-  const genders: { value: Gender; label: string }[] = [
-    { value: 'male', label: t('settings.genderOptions.male') },
-    { value: 'female', label: t('settings.genderOptions.female') },
-    { value: 'other', label: t('settings.genderOptions.other') },
-  ];
-
-  const goals: { value: Goal; label: string }[] = [
-    { value: 'lose_weight', label: t('settings.goalOptions.lose_weight') },
-    { value: 'lose_fat', label: t('settings.goalOptions.lose_fat') },
-    { value: 'gain_muscle', label: t('settings.goalOptions.gain_muscle') },
-  ];
-
-  const inputStyle = {
-    width: '100%' as const,
-    padding: DIMENSIONS.SPACING * 0.9,
-    backgroundColor: colors.cardBackgroundSecondary,
-    borderRadius: 12,
-    color: colors.textPrimary,
-    fontSize: TYPOGRAPHY.bodyS,
-    fontWeight: '600' as const,
-    borderWidth: 2,
-    borderColor: colors.borderSecondary,
-  };
-
-  const labelStyle = {
-    fontSize: TYPOGRAPHY.bodyXS,
-    fontWeight: '700' as const,
-    color: colors.textPrimary,
-    marginBottom: DIMENSIONS.SPACING * 0.4,
-  };
-
   return (
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={onCancel}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={{
-          flex: 1,
-          justifyContent: 'flex-end',
-          backgroundColor: 'rgba(0,0,0,0.5)',
-        }}>
+    <Modal animationType="fade" transparent visible={visible} onRequestClose={onCancel}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <View style={{
-            backgroundColor: colors.cardBackground,
-            borderTopLeftRadius: 28,
-            borderTopRightRadius: 28,
-            maxHeight: '90%',
-            borderWidth: 2,
+            backgroundColor: colors.backgroundPrimary,
+            borderTopLeftRadius: 32, borderTopRightRadius: 32,
+            maxHeight: '92%',
+            borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 2,
             borderColor: colors.borderPrimary,
           }}>
-            {/* Handle bar */}
+            {/* Handle */}
             <View style={{ alignItems: 'center', paddingTop: DIMENSIONS.SPACING * 0.8 }}>
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.borderPrimary }} />
             </View>
 
             {/* Header */}
             <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: DIMENSIONS.CARD_PADDING,
-              paddingVertical: DIMENSIONS.SPACING,
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+              paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingVertical: DIMENSIONS.SPACING,
             }}>
               <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
-                {t('settings.editProfile')}
+                编辑资料
               </Text>
               <TouchableOpacity onPress={onCancel} style={{
                 width: 32, height: 32, borderRadius: 16,
                 backgroundColor: colors.cardBackgroundSecondary,
                 alignItems: 'center', justifyContent: 'center',
-                borderWidth: 1, borderColor: colors.borderSecondary,
+                borderWidth: 1, borderColor: colors.borderPrimary,
               }}>
                 <Ionicons name="close" size={18} color={colors.textPrimary} />
               </TouchableOpacity>
@@ -162,150 +132,175 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}
             >
-              {/* Name */}
-              <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-                <Text style={labelStyle}>{t('settings.name')}</Text>
-                <TextInput
-                  style={inputStyle}
-                  placeholder={t('settings.namePlaceholder')}
-                  placeholderTextColor={colors.textSecondary}
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                />
-              </View>
-
-              {/* Height + Weight side by side */}
-              <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={labelStyle}>{t('settings.height')} ({t('settings.cm')})</Text>
-                  <TextInput
-                    style={inputStyle}
-                    placeholder="170"
-                    placeholderTextColor={colors.textSecondary}
-                    value={height}
-                    onChangeText={setHeight}
-                    keyboardType="numeric"
-                  />
+              {/* Avatar picker */}
+              <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.5 }}>
+                <View style={{
+                  width: 80, height: 80, borderRadius: 24,
+                  backgroundColor: colors.cardBackground,
+                  borderWidth: 2, borderColor: colors.borderPrimary,
+                  alignItems: 'center', justifyContent: 'center',
+                  marginBottom: DIMENSIONS.SPACING * 0.8,
+                  overflow: 'hidden',
+                }}>
+                  {avatarImage ? (
+                    <Image source={{ uri: avatarImage }} style={{ width: 80, height: 80 }} />
+                  ) : (
+                    <Text style={{ fontSize: 40 }}>{avatarEmoji || '🏃'}</Text>
+                  )}
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={labelStyle}>{t('settings.weight')} ({t('settings.kg')})</Text>
-                  <TextInput
-                    style={inputStyle}
-                    placeholder="65"
-                    placeholderTextColor={colors.textSecondary}
-                    value={weight}
-                    onChangeText={setWeight}
-                    keyboardType="decimal-pad"
-                  />
-                </View>
-              </View>
-
-              {/* Age */}
-              <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-                <Text style={labelStyle}>{t('settings.age')} ({t('settings.years')})</Text>
-                <TextInput
-                  style={inputStyle}
-                  placeholder="25"
-                  placeholderTextColor={colors.textSecondary}
-                  value={age}
-                  onChangeText={setAge}
-                  keyboardType="numeric"
-                />
-              </View>
-
-              {/* Gender */}
-              <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-                <Text style={labelStyle}>{t('settings.gender')}</Text>
-                <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5 }}>
-                  {genders.map((g) => (
+                {/* Upload button */}
+                <TouchableOpacity onPress={handlePickImage} style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                  paddingHorizontal: DIMENSIONS.SPACING * 0.9, paddingVertical: DIMENSIONS.SPACING * 0.4,
+                  borderRadius: 20, borderWidth: 1.5, borderColor: colors.borderPrimary,
+                  backgroundColor: colors.cardBackground, marginBottom: DIMENSIONS.SPACING * 0.8,
+                }}>
+                  <Ionicons name="image-outline" size={14} color={colors.textPrimary} />
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary }}>上传照片</Text>
+                </TouchableOpacity>
+                <Text style={{
+                  fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700',
+                  color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1,
+                  marginBottom: DIMENSIONS.SPACING * 0.5,
+                }}>
+                  或选择 Emoji
+                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, paddingHorizontal: DIMENSIONS.SPACING * 1.5 }}>
+                  {AVATAR_OPTIONS.map((emoji) => (
                     <TouchableOpacity
-                      key={g.value}
-                      onPress={() => setGender(g.value)}
+                      key={emoji}
+                      onPress={() => { setAvatarEmoji(emoji); setAvatarImage(undefined); }}
                       style={{
-                        flex: 1,
-                        paddingVertical: DIMENSIONS.SPACING * 0.7,
-                        borderRadius: 12,
-                        alignItems: 'center',
-                        backgroundColor: gender === g.value ? colors.textPrimary : colors.cardBackgroundSecondary,
+                        width: 40, height: 40, borderRadius: 10,
+                        backgroundColor: !avatarImage && avatarEmoji === emoji ? colors.textPrimary : colors.cardBackground,
                         borderWidth: 2,
-                        borderColor: gender === g.value ? colors.textPrimary : colors.borderSecondary,
+                        borderColor: !avatarImage && avatarEmoji === emoji ? colors.textPrimary : colors.borderPrimary,
+                        alignItems: 'center', justifyContent: 'center',
                       }}
                     >
-                      <Text style={{
-                        fontSize: TYPOGRAPHY.bodyXS,
-                        fontWeight: '700',
-                        color: gender === g.value ? colors.backgroundPrimary : colors.textPrimary,
-                      }}>
-                        {g.label}
-                      </Text>
+                      <Text style={{ fontSize: 20 }}>{emoji}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               </View>
 
-              {/* Goal */}
+              {/* Username */}
+              <View style={{ marginBottom: DIMENSIONS.SPACING * 1 }}>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.4 }}>
+                  用户名
+                </Text>
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center',
+                  backgroundColor: colors.cardBackground, borderRadius: 14,
+                  borderWidth: 2, borderColor: colors.borderPrimary,
+                  paddingHorizontal: DIMENSIONS.SPACING * 0.9,
+                }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyM, color: colors.textSecondary, fontWeight: '600' }}>@</Text>
+                  <TextInput
+                    style={{
+                      flex: 1, padding: DIMENSIONS.SPACING * 0.9,
+                      color: colors.textPrimary, fontSize: TYPOGRAPHY.bodyM, fontWeight: '600',
+                    }}
+                    placeholder="username"
+                    placeholderTextColor={colors.textSecondary}
+                    value={username}
+                    onChangeText={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, marginTop: 4, marginLeft: 2 }}>
+                  好友可通过用户名添加你
+                </Text>
+              </View>
+
+              {/* Bio */}
               <View style={{ marginBottom: DIMENSIONS.SPACING * 1.5 }}>
-                <Text style={labelStyle}>{t('settings.goal')}</Text>
-                <View style={{ gap: DIMENSIONS.SPACING * 0.5 }}>
-                  {goals.map((g) => (
-                    <TouchableOpacity
-                      key={g.value}
-                      onPress={() => setGoal(g.value)}
-                      style={{
-                        paddingVertical: DIMENSIONS.SPACING * 0.8,
-                        paddingHorizontal: DIMENSIONS.SPACING,
-                        borderRadius: 12,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        backgroundColor: goal === g.value ? colors.textPrimary : colors.cardBackgroundSecondary,
-                        borderWidth: 2,
-                        borderColor: goal === g.value ? colors.textPrimary : colors.borderSecondary,
-                      }}
-                    >
-                      <Text style={{
-                        fontSize: TYPOGRAPHY.bodyS,
-                        fontWeight: '700',
-                        color: goal === g.value ? colors.backgroundPrimary : colors.textPrimary,
-                      }}>
-                        {g.label}
-                      </Text>
-                      {goal === g.value && (
-                        <Ionicons name="checkmark" size={18} color={colors.backgroundPrimary} />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.4 }}>
+                  个人简介
+                </Text>
+                <TextInput
+                  style={{
+                    padding: DIMENSIONS.SPACING * 0.9, backgroundColor: colors.cardBackground,
+                    borderRadius: 14, color: colors.textPrimary, fontSize: TYPOGRAPHY.bodyS,
+                    fontWeight: '500', borderWidth: 2, borderColor: colors.borderPrimary,
+                    height: 90, textAlignVertical: 'top',
+                  }}
+                  placeholder="介绍一下自己..."
+                  placeholderTextColor={colors.textSecondary}
+                  value={bio}
+                  onChangeText={(v) => v.length <= 100 && setBio(v)}
+                  multiline
+                  maxLength={100}
+                />
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, marginTop: 4, textAlign: 'right' }}>
+                  {bio.length}/100
+                </Text>
               </View>
+
+              {/* Gender visibility */}
+              {user?.gender && (
+                <TouchableOpacity
+                  onPress={() => setShowGender((v) => !v)}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    paddingHorizontal: DIMENSIONS.SPACING * 0.9, paddingVertical: DIMENSIONS.SPACING * 0.7,
+                    backgroundColor: colors.cardBackground, borderRadius: 14,
+                    borderWidth: 2, borderColor: colors.borderPrimary,
+                    marginBottom: DIMENSIONS.SPACING * 1.5,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name={showGender ? 'eye' : 'eye-off'} size={16} color={colors.textPrimary} />
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
+                      显示性别
+                    </Text>
+                    {showGender && (
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary, fontWeight: '600' }}>
+                        ({GENDER_LABELS[user.gender] || user.gender})
+                      </Text>
+                    )}
+                  </View>
+                  <View style={{
+                    width: 40, height: 22, borderRadius: 11,
+                    backgroundColor: showGender ? colors.textPrimary : colors.cardBackgroundSecondary,
+                    borderWidth: 1.5, borderColor: colors.borderPrimary,
+                    justifyContent: 'center', paddingHorizontal: 2,
+                  }}>
+                    <View style={{
+                      width: 16, height: 16, borderRadius: 8,
+                      backgroundColor: showGender ? colors.backgroundPrimary : colors.textSecondary,
+                      alignSelf: showGender ? 'flex-end' : 'flex-start',
+                    }} />
+                  </View>
+                </TouchableOpacity>
+              )}
 
               {/* Buttons */}
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6 }}>
                 <TouchableOpacity
                   onPress={onCancel}
                   style={{
-                    flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9,
-                    borderRadius: 14, alignItems: 'center',
-                    backgroundColor: colors.cardBackgroundSecondary,
-                    borderWidth: 2, borderColor: colors.borderSecondary,
+                    flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9, borderRadius: 14,
+                    alignItems: 'center', backgroundColor: colors.cardBackground,
+                    borderWidth: 2, borderColor: colors.borderPrimary,
                   }}
                 >
                   <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                    {t('settings.cancel')}
+                    取消
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleSave}
                   disabled={saving}
                   style={{
-                    flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9,
-                    borderRadius: 14, alignItems: 'center',
-                    backgroundColor: colors.textPrimary,
+                    flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9, borderRadius: 14,
+                    alignItems: 'center', backgroundColor: colors.textPrimary,
                     opacity: saving ? 0.6 : 1,
                   }}
                 >
                   <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>
-                    {saving ? '...' : t('common.save')}
+                    {saving ? '保存中...' : '保存'}
                   </Text>
                 </TouchableOpacity>
               </View>

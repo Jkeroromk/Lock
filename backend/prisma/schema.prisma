@@ -11,6 +11,11 @@ model User {
   id        String   @id           // Clerk user ID: "user_2xxx"
   email     String?  @unique
   name      String?
+  username   String?  @unique
+  bio        String?
+  avatarEmoji String? @map("avatar_emoji")
+  inviteCode String? @unique @map("invite_code")
+  streak    Int      @default(0)
   height    Int?
   age       Int?
   weight    Decimal? @db.Decimal(5, 2)
@@ -22,8 +27,13 @@ model User {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  meals       Meal[]
-  healthSyncs HealthSync[]
+  meals                 Meal[]
+  healthSyncs           HealthSync[]
+  sentFriendRequests    Friendship[] @relation("FriendshipRequester")
+  receivedFriendRequests Friendship[] @relation("FriendshipAddressee")
+  challenges            ChallengeParticipant[]
+  createdChallenges     Challenge[]
+  activityFeed          ActivityFeed[]
 
   @@map("users")
 }
@@ -45,6 +55,73 @@ model Meal {
   @@index([userId])
   @@index([createdAt])
   @@map("meals")
+}
+
+model Friendship {
+  id          String   @id @default(uuid()) @db.Uuid
+  requesterId String   @map("requester_id")
+  addresseeId String   @map("addressee_id")
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  requester User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee User @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([requesterId])
+  @@index([addresseeId])
+  @@map("friendships")
+}
+
+model Challenge {
+  id          String   @id @default(uuid()) @db.Uuid
+  creatorId   String   @map("creator_id")
+  title       String
+  description String?
+  type        String   @default("CALORIES") // CALORIES, STREAK, STEPS
+  goalValue   Int      @map("goal_value")
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  status      String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator      User                   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  participants ChallengeParticipant[]
+
+  @@index([creatorId])
+  @@map("challenges")
+}
+
+model ChallengeParticipant {
+  id          String   @id @default(uuid()) @db.Uuid
+  challengeId String   @map("challenge_id") @db.Uuid
+  userId      String   @map("user_id")
+  progress    Int      @default(0)
+  joinedAt    DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId])
+  @@index([challengeId])
+  @@index([userId])
+  @@map("challenge_participants")
+}
+
+model ActivityFeed {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id")
+  type      String   // MEAL_LOGGED, GOAL_REACHED, STREAK_MILESTONE, CHALLENGE_JOINED, CHALLENGE_COMPLETED
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("activity_feed")
 }
 
 model HealthSync {

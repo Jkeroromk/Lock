@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
-const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY;
+const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY?.trim();
 const FIREWORKS_API_URL = 'https://api.fireworks.ai/inference/v1/chat/completions';
 
 interface VisionResponse {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const response = await axios.post(
       FIREWORKS_API_URL,
       {
-        model: 'accounts/fireworks/models/qwen2-vl-7b-instruct',
+        model: 'accounts/fireworks/models/qwen3-vl-30b-a3b-instruct',
         messages: [
           {
             role: 'user',

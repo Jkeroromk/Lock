@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { getStoredToken } from './tokenStore';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-nextjs-app.vercel.app';
@@ -109,6 +109,9 @@ export interface UserProfile {
   id: string;
   email?: string | null;
   name?: string | null;
+  username?: string | null;
+  bio?: string | null;
+  avatarEmoji?: string | null;
   height?: number | null;
   age?: number | null;
   weight?: number | null;
@@ -129,14 +132,127 @@ export const updateProfile = async (data: Partial<Omit<UserProfile, 'id'>>): Pro
   return response.data;
 };
 
-export const syncHealthDataToBackend = async (steps: number, activeEnergy: number, heartRate: number): Promise<void> => {
+export const syncHealthDataToBackend = async (steps: number, activeEnergy: number): Promise<void> => {
   try {
     await api.post('/api/sync-health', {
       steps,
       active_energy: activeEnergy,
-      heart_rate: heartRate,
     });
   } catch (error: any) {
     console.error('Failed to sync health data:', error);
   }
+};
+
+// ─── Social ───────────────────────────────────────────────────────────────────
+
+export interface LeaderboardEntry {
+  id: string;
+  name: string;
+  username: string | null;
+  avatar: string;
+  calories: number;
+  streak: number;
+  rank: number;
+  isMe: boolean;
+  friendshipId?: string;
+}
+
+export interface FriendRequest {
+  id: string;
+  from: { id: string; name: string; username: string | null; avatar: string };
+  createdAt: string;
+}
+
+export interface ChallengeData {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string;
+  goalValue: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+  progress: number;
+  participants: number;
+  creatorName: string;
+}
+
+export interface FeedItem {
+  id: string;
+  type: string;
+  metadata: any;
+  createdAt: string;
+  isMe: boolean;
+  user: { id: string; name: string; avatar: string };
+}
+
+export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
+  const res = await api.get<LeaderboardEntry[]>('/api/social/leaderboard');
+  return res.data;
+};
+
+export const fetchFriends = async (): Promise<LeaderboardEntry[]> => {
+  const res = await api.get<LeaderboardEntry[]>('/api/social/friends');
+  return res.data;
+};
+
+export const sendFriendRequest = async (identifier: string): Promise<void> => {
+  await api.post('/api/social/friends', { identifier });
+};
+
+export const fetchFriendRequests = async (): Promise<FriendRequest[]> => {
+  const res = await api.get<FriendRequest[]>('/api/social/friends/requests');
+  return res.data;
+};
+
+export const respondFriendRequest = async (id: string, action: 'accept' | 'reject'): Promise<void> => {
+  await api.patch(`/api/social/friends/${id}`, { action });
+};
+
+export const removeFriend = async (friendshipId: string): Promise<void> => {
+  await api.delete(`/api/social/friends/${friendshipId}`);
+};
+
+export const fetchInviteCode = async (): Promise<string> => {
+  const res = await api.get<{ inviteCode: string }>('/api/social/invite-code');
+  return res.data.inviteCode;
+};
+
+export const fetchChallenges = async (): Promise<ChallengeData[]> => {
+  const res = await api.get<ChallengeData[]>('/api/social/challenges');
+  return res.data;
+};
+
+export const createChallenge = async (data: {
+  title: string;
+  description?: string;
+  type: string;
+  goalValue: number;
+  startDate: string;
+  endDate: string;
+}): Promise<void> => {
+  await api.post('/api/social/challenges', data);
+};
+
+export const joinChallenge = async (challengeId: string): Promise<void> => {
+  await api.post(`/api/social/challenges/${challengeId}/join`);
+};
+
+export const fetchFeed = async (): Promise<FeedItem[]> => {
+  const res = await api.get<FeedItem[]>('/api/social/feed');
+  return res.data;
+};
+
+// ─── AI ───────────────────────────────────────────────────────────────────────
+
+export interface DietAnalysis {
+  summary: string;
+  suggestions: string[];
+  exercise: string;
+  score: number;
+}
+
+export const fetchDietAnalysis = async (): Promise<DietAnalysis> => {
+  const res = await api.get<DietAnalysis>('/api/ai/diet-analysis');
+  return res.data;
 };

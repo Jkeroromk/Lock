@@ -104,8 +104,8 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
             barRatio={0.6}
             style={{
               data: {
-                fill: ({ datum }: { datum: { calories: number } }) => getBarColor(datum.calories),
-                opacity: ({ datum }: { datum: { calories: number } }) => datum.calories === 0 ? 0.3 : 1,
+                fill: ({ datum }: any) => getBarColor(datum.calories),
+                opacity: ({ datum }: any) => datum.calories === 0 ? 0.3 : 1,
               },
             }}
           />

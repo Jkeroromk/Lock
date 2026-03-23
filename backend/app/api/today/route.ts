@@ -37,7 +37,16 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       totalCalories,
-      meals: meals || [],
+      meals: meals.map((m) => ({
+        id: m.id,
+        food_name: m.foodName,
+        calories: Number(m.calories),
+        protein: Number(m.protein || 0),
+        carbs: Number(m.carbs || 0),
+        fat: Number(m.fat || 0),
+        image_url: m.imageUrl,
+        created_at: m.createdAt,
+      })),
     });
   } catch (error: any) {
     console.error('Today API error:', error);

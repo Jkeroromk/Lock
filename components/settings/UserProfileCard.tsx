@@ -1,12 +1,20 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 
+const GENDER_LABELS: Record<string, string> = { male: '男', female: '女', other: '其他' };
+
 interface User {
   name?: string;
   email?: string;
+  username?: string;
+  bio?: string;
+  avatarEmoji?: string;
+  avatarImage?: string;
+  gender?: string;
+  showGender?: boolean;
 }
 
 interface UserProfileCardProps {
@@ -76,11 +84,11 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
       </View>
 
       <View style={{ alignItems: 'center' }}>
-        <View 
-          style={{ 
-            width: DIMENSIONS.SCREEN_WIDTH * 0.16,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.16,
-            borderRadius: 16,
+        <View
+          style={{
+            width: DIMENSIONS.SCREEN_WIDTH * 0.18,
+            height: DIMENSIONS.SCREEN_WIDTH * 0.18,
+            borderRadius: 20,
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: DIMENSIONS.SPACING * 0.6,
@@ -89,28 +97,36 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
             borderColor: colors.borderSecondary,
           }}
         >
-          <Ionicons name="person" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
+          {user?.avatarImage ? (
+            <Image source={{ uri: user.avatarImage }} style={{ width: '100%', height: '100%', borderRadius: 18 }} />
+          ) : user?.avatarEmoji ? (
+            <Text style={{ fontSize: DIMENSIONS.SCREEN_WIDTH * 0.09 }}>{user.avatarEmoji}</Text>
+          ) : (
+            <Ionicons name="person" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
+          )}
         </View>
-        <Text 
-          style={{ 
+        <Text
+          style={{
             fontSize: TYPOGRAPHY.bodyL,
             fontWeight: '900',
             color: colors.textPrimary,
-            marginBottom: DIMENSIONS.SPACING * 0.3,
+            marginBottom: DIMENSIONS.SPACING * 0.15,
           }}
         >
-          {user?.name || t('settings.userName')}
+          {user?.username ? `@${user.username}` : user?.name || t('settings.userName')}
         </Text>
-        <Text 
-          style={{ 
-            fontSize: TYPOGRAPHY.bodyXS,
-            fontWeight: '600',
-            color: colors.textPrimary,
-            opacity: 0.7,
-          }}
-        >
-          {user?.email || 'user@example.com'}
-        </Text>
+        {user?.bio && (
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '500', color: colors.textPrimary, opacity: 0.7, textAlign: 'center', marginTop: DIMENSIONS.SPACING * 0.2 }}>
+            {user.bio}
+          </Text>
+        )}
+        {user?.showGender && user?.gender && (
+          <View style={{ marginTop: DIMENSIONS.SPACING * 0.4, paddingHorizontal: DIMENSIONS.SPACING * 0.6, paddingVertical: 2, borderRadius: 10, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}>
+            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>
+              {GENDER_LABELS[user.gender] || user.gender}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );

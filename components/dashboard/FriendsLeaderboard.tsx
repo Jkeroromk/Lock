@@ -128,7 +128,7 @@ export default function FriendsLeaderboard({ friends }: FriendsLeaderboardProps)
               {friend.name}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
-              <Ionicons name="flame" size={TYPOGRAPHY.bodyS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.7 }} />
+              <Ionicons name="flame" size={TYPOGRAPHY.bodyS} color="#F97316" style={{ marginRight: DIMENSIONS.SPACING * 0.3 }} />
               <Text 
                 style={{ 
                   fontSize: TYPOGRAPHY.bodyXS,

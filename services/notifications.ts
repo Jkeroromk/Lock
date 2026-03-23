@@ -94,7 +94,7 @@ export const cancelAllNotifications = async (): Promise<void> => {
 };
 
 export const getNotificationPermissionStatus = async (): Promise<boolean> => {
-  if (!Device.isDevice || isExpoGo) return false;
+  if (!Device.isDevice) return false;
   const { status } = await Notifications.getPermissionsAsync();
   return status === 'granted';
 };

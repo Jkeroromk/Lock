@@ -31,7 +31,6 @@ interface HealthKitPermissions {
 export interface HealthData {
   steps: number;
   activeEnergy: number;
-  heartRate: number;
 }
 
 export const requestHealthPermissions = async (): Promise<boolean> => {
@@ -45,7 +44,6 @@ export const requestHealthPermissions = async (): Promise<boolean> => {
         read: [
           AppleHealthKit.Constants.Permissions.Steps,
           AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
-          AppleHealthKit.Constants.Permissions.HeartRate,
         ],
       },
     };
@@ -72,12 +70,12 @@ export const getHealthData = async (): Promise<HealthData> => {
   } else if (Platform.OS === 'android') {
     return await getGoogleFitData();
   }
-  return { steps: 0, activeEnergy: 0, heartRate: 0 };
+  return { steps: 0, activeEnergy: 0 };
 };
 
 const getAppleHealthData = async (): Promise<HealthData> => {
   if (!AppleHealthKit) {
-    return { steps: 0, activeEnergy: 0, heartRate: 0 };
+    return { steps: 0, activeEnergy: 0 };
   }
 
   try {
@@ -88,13 +86,12 @@ const getAppleHealthData = async (): Promise<HealthData> => {
     return new Promise((resolve) => {
       let steps = 0;
       let activeEnergy = 0;
-      let heartRate = 0;
       let completed = 0;
 
       const checkComplete = () => {
         completed++;
-        if (completed === 3) {
-          resolve({ steps, activeEnergy, heartRate });
+        if (completed === 2) {
+          resolve({ steps, activeEnergy });
         }
       };
 
@@ -113,31 +110,23 @@ const getAppleHealthData = async (): Promise<HealthData> => {
           checkComplete();
         }
       );
-
-      AppleHealthKit.getHeartRateSamples(
-        { startDate: startOfDay.toISOString(), endDate: endOfDay.toISOString(), ascending: false, limit: 1 },
-        (err: Object, results: HealthValue[]) => {
-          if (!err && results && results.length > 0) heartRate = results[0].value || 0;
-          checkComplete();
-        }
-      );
     });
   } catch (error) {
     console.error('Failed to get Apple Health data:', error);
-    return { steps: 0, activeEnergy: 0, heartRate: 0 };
+    return { steps: 0, activeEnergy: 0 };
   }
 };
 
 const getGoogleFitData = async (): Promise<HealthData> => {
   if (!GoogleFit || !Scopes) {
-    return { steps: 0, activeEnergy: 0, heartRate: 0 };
+    return { steps: 0, activeEnergy: 0 };
   }
 
   try {
     const isAuthorized = await GoogleFit.checkIsAuthorized();
     if (!isAuthorized) {
       await GoogleFit.authorize({
-        scopes: [Scopes.FITNESS_ACTIVITY_READ, Scopes.FITNESS_HEART_RATE_READ],
+        scopes: [Scopes.FITNESS_ACTIVITY_READ],
       });
     }
 
@@ -145,24 +134,22 @@ const getGoogleFitData = async (): Promise<HealthData> => {
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
     const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
 
-    const [stepsData, caloriesData, heartRateData] = await Promise.all([
+    const [stepsData, caloriesData] = await Promise.all([
       GoogleFit.getDailyStepCountSamples({ startDate: startOfDay.toISOString(), endDate: endOfDay.toISOString() }),
       GoogleFit.getDailyCalorieSamples({ startDate: startOfDay.toISOString(), endDate: endOfDay.toISOString() }),
-      GoogleFit.getHeartRateSamples({ startDate: startOfDay.toISOString(), endDate: endOfDay.toISOString() }),
     ]);
 
     return {
       steps: stepsData?.[0]?.steps?.[0]?.value || 0,
       activeEnergy: caloriesData?.[0]?.calorie || 0,
-      heartRate: heartRateData?.[0]?.value || 0,
     };
   } catch (error) {
     console.error('Failed to get Google Fit data:', error);
-    return { steps: 0, activeEnergy: 0, heartRate: 0 };
+    return { steps: 0, activeEnergy: 0 };
   }
 };
 
 export const syncHealthData = async (): Promise<void> => {
   const healthData = await getHealthData();
-  await syncHealthDataToBackend(healthData.steps, healthData.activeEnergy, healthData.heartRate);
+  await syncHealthDataToBackend(healthData.steps, healthData.activeEnergy);
 };

@@ -12,6 +12,11 @@ interface User {
   id: string;
   name: string;
   email: string;
+  username?: string;
+  bio?: string;
+  avatarEmoji?: string;
+  avatarImage?: string;
+  showGender?: boolean;
   height?: number;
   age?: number;
   weight?: number;
