@@ -8,11 +8,11 @@ export async function GET(request: NextRequest) {
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 
-    // Build array for the past 7 days (today + 6 before)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    // Build array for the past 7 days based on user's local timezone
+    const dateParam = request.nextUrl.searchParams.get('date') || new Date().toISOString().split('T')[0];
+    const tzOffset = parseInt(request.nextUrl.searchParams.get('tzOffset') || '0');
+    const today = new Date(new Date(dateParam + 'T00:00:00Z').getTime() + tzOffset * 60 * 1000);
+    const sevenDaysAgo = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
 
     const meals = await prisma.meal.findMany({
       where: {
@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
     // Sum meals per date string
     const dailyMap: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
     meals.forEach((meal) => {
-      const date = new Date(meal.createdAt).toISOString().split('T')[0];
+      // 转换为用户本地日期字符串
+      const date = new Date(new Date(meal.createdAt).getTime() - tzOffset * 60 * 1000).toISOString().split('T')[0];
       if (!dailyMap[date]) {
         dailyMap[date] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
       }
@@ -37,8 +38,7 @@ export async function GET(request: NextRequest) {
     // Build a full 7-day array with zeros for missing days
     const days = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
+      const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
       const dateStr = d.toISOString().split('T')[0];
       days.push({
         date: dateStr,

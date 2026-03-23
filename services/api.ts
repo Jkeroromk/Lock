@@ -76,9 +76,18 @@ export const logMeal = async (meal: MealData): Promise<void> => {
   }
 };
 
+// 获取本地日期字符串 (YYYY-MM-DD) 和时区偏移（分钟，如 UTC+8 返回 -480）
+const getLocalDateParams = () => {
+  const now = new Date();
+  const date = now.toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+  const tzOffset = now.getTimezoneOffset();
+  return { date, tzOffset };
+};
+
 export const fetchTodayData = async (): Promise<{ totalCalories: number; meals: any[] }> => {
   try {
-    const response = await api.get('/api/today');
+    const { date, tzOffset } = getLocalDateParams();
+    const response = await api.get(`/api/today?date=${date}&tzOffset=${tzOffset}`);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || '获取今日数据失败');
@@ -87,7 +96,8 @@ export const fetchTodayData = async (): Promise<{ totalCalories: number; meals: 
 
 export const fetchWeeklyData = async (): Promise<WeeklyDay[]> => {
   try {
-    const response = await api.get<WeeklyDay[]>('/api/weekly');
+    const { date, tzOffset } = getLocalDateParams();
+    const response = await api.get<WeeklyDay[]>(`/api/weekly?date=${date}&tzOffset=${tzOffset}`);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || '获取周数据失败');
@@ -96,8 +106,9 @@ export const fetchWeeklyData = async (): Promise<WeeklyDay[]> => {
 
 export const fetchMonthlyData = async (year: number, month: number): Promise<MonthlyData> => {
   try {
+    const { tzOffset } = getLocalDateParams();
     const response = await api.get<MonthlyData>('/api/monthly', {
-      params: { year, month },
+      params: { year, month, tzOffset },
     });
     return response.data;
   } catch (error: any) {
