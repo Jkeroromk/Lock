@@ -86,7 +86,6 @@ export default function TodayScreen() {
                     label={t('today.steps')}
                     value={healthData.steps}
                     unit={t('today.stepsUnit')}
-                    accentColor="#6366F1"
                     goal={10000}
                   />
                   <HealthStatsCard
@@ -94,7 +93,6 @@ export default function TodayScreen() {
                     label={t('today.energy')}
                     value={healthData.activeEnergy}
                     unit={t('today.kcal')}
-                    accentColor="#F97316"
                     goal={500}
                   />
                 </View>

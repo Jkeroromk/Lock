@@ -164,14 +164,6 @@ export default function CaloriesCard({ todayCalories, calorieProgress, remaining
         </View>
       </View>
 
-      {/* Bottom progress bar */}
-      <View style={{ height: 4, backgroundColor: colors.cardBackgroundSecondary }}>
-        <View style={{
-          height: '100%',
-          width: `${Math.min(calorieProgress, 100)}%`,
-          backgroundColor: done ? '#10B981' : colors.textPrimary,
-        }} />
-      </View>
     </View>
   );
 }
