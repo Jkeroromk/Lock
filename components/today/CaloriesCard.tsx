@@ -1,8 +1,9 @@
 import { View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { useStore } from '@/store/useStore';
 
 interface CaloriesCardProps {
   todayCalories: number;
@@ -10,163 +11,167 @@ interface CaloriesCardProps {
   remainingCalories: number;
 }
 
-export default function CaloriesCard({ todayCalories, calorieProgress, remainingCalories }: CaloriesCardProps) {
-  const { t } = useTranslation();
+function SvgRing({ progress, size }: { progress: number; size: number }) {
   const colors = useTheme();
+  const strokeWidth = size * 0.09;
+  const radius = (size - strokeWidth) / 2;
+  const cx = size / 2;
+  const cy = size / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clampedPct = Math.min(Math.max(progress / 100, 0), 1);
+  const dashOffset = circumference * (1 - clampedPct);
+  const done = progress >= 100;
+  const ringColor = done ? '#10B981' : colors.textPrimary;
 
   return (
-    <View 
-      style={{ 
-        borderRadius: 24,
-        padding: DIMENSIONS.SPACING * 1.4,
-        marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 2,
-        borderColor: colors.borderPrimary,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 16,
-        elevation: 8,
-        overflow: 'hidden',
-      }}
-    >
-      {/* Decorative background elements */}
-      <View 
-        style={{ 
-          position: 'absolute',
-          top: -DIMENSIONS.SCREEN_WIDTH * 0.15,
-          right: -DIMENSIONS.SCREEN_WIDTH * 0.1,
-          width: DIMENSIONS.SCREEN_WIDTH * 0.4,
-          height: DIMENSIONS.SCREEN_WIDTH * 0.4,
-          borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.2,
-          backgroundColor: colors.cardBackgroundSecondary,
-          opacity: 0.3,
-        }}
-      />
-      <View 
-        style={{ 
-          position: 'absolute',
-          bottom: -DIMENSIONS.SCREEN_WIDTH * 0.1,
-          left: -DIMENSIONS.SCREEN_WIDTH * 0.08,
-          width: DIMENSIONS.SCREEN_WIDTH * 0.3,
-          height: DIMENSIONS.SCREEN_WIDTH * 0.3,
-          borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.15,
-          backgroundColor: colors.cardBackgroundSecondary,
-          opacity: 0.2,
-        }}
-      />
-      
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-        <View style={{ flex: 1 }}>
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.bodyXXS,
-              fontWeight: '700',
-              color: colors.textPrimary,
-              letterSpacing: 1.5,
-              marginBottom: DIMENSIONS.SPACING * 0.6,
-              textTransform: 'uppercase',
-            }}
-          >
-            {t('today.todayCalories')}
-          </Text>
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.numberXL,
-              fontWeight: '900',
-              color: colors.textPrimary,
-              letterSpacing: -4,
-              marginBottom: DIMENSIONS.SPACING * 0.4,
-              lineHeight: TYPOGRAPHY.numberXL * 1.1,
-            }}
-          >
-            {todayCalories}
-          </Text>
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.bodyS,
-              fontWeight: '600',
-              color: colors.textPrimary,
-            }}
-          >
-            {t('today.kcal')}
-          </Text>
-        </View>
-        <View 
-          style={{ 
-            width: DIMENSIONS.SCREEN_WIDTH * 0.2,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.2,
-            borderRadius: 20,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: colors.cardBackgroundSecondary,
-            borderWidth: 2,
-            borderColor: colors.borderSecondary,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 4,
-          }}
-        >
-          <Ionicons name="flame" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
-        </View>
-      </View>
-      
-      <View style={{ marginTop: DIMENSIONS.SPACING * 1.2, position: 'relative', zIndex: 1 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="flag" size={TYPOGRAPHY.bodyS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.8 }} />
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '600',
-                color: colors.textPrimary,
-              }}
-            >
-              {t('today.target')}：2000 {t('today.kcal')}
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="arrow-down-circle" size={TYPOGRAPHY.bodyS} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.3, opacity: 0.8 }} />
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '700',
-                color: colors.textPrimary,
-              }}
-            >
-              {t('today.remaining')} {remainingCalories}
-            </Text>
-          </View>
-        </View>
-        <View 
-          style={{ 
-            height: 10,
-            borderRadius: 5,
-            overflow: 'hidden',
-            backgroundColor: colors.cardBackgroundSecondary,
-            borderWidth: 1,
-            borderColor: colors.borderSecondary,
-          }}
-        >
-          <View 
-            style={{ 
-              height: '100%',
-              borderRadius: 5,
-              width: `${calorieProgress}%`,
-              backgroundColor: colors.progressWhite,
-              shadowColor: colors.progressWhite,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.5,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
+    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+      <Svg width={size} height={size} style={{ position: 'absolute' }}>
+        {/* Background track */}
+        <Circle
+          cx={cx} cy={cy} r={radius}
+          fill="none"
+          stroke={colors.cardBackgroundSecondary}
+          strokeWidth={strokeWidth}
+        />
+        {/* Progress arc */}
+        {clampedPct > 0 && (
+          <Circle
+            cx={cx} cy={cy} r={radius}
+            fill="none"
+            stroke={ringColor}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="round"
+            rotation="-90"
+            origin={`${cx}, ${cy}`}
           />
-        </View>
+        )}
+      </Svg>
+
+      {/* Center label */}
+      <View style={{ alignItems: 'center' }}>
+        <Text style={{
+          fontSize: TYPOGRAPHY.numberS * 0.85,
+          fontWeight: '900',
+          color: ringColor,
+          letterSpacing: -1,
+          lineHeight: TYPOGRAPHY.numberS * 0.85,
+        }}>
+          {Math.round(progress)}
+        </Text>
+        <Text style={{
+          fontSize: TYPOGRAPHY.bodyXXS,
+          fontWeight: '700',
+          color: colors.textSecondary,
+          letterSpacing: 1,
+          marginTop: 2,
+        }}>
+          %
+        </Text>
       </View>
     </View>
   );
 }
 
+export default function CaloriesCard({ todayCalories, calorieProgress, remainingCalories }: CaloriesCardProps) {
+  const { t } = useTranslation();
+  const colors = useTheme();
+  const { dailyCalorieGoal } = useStore();
+
+  const ringSize = DIMENSIONS.SCREEN_WIDTH * 0.34;
+  const done = calorieProgress >= 100;
+
+  return (
+    <View style={{
+      borderRadius: 24,
+      backgroundColor: colors.cardBackground,
+      borderWidth: 1, borderColor: colors.borderPrimary,
+      marginBottom: DIMENSIONS.SPACING,
+      overflow: 'hidden',
+    }}>
+      {/* Main row */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center',
+        padding: DIMENSIONS.SPACING * 1.1,
+        gap: DIMENSIONS.SPACING * 1.0,
+      }}>
+        <SvgRing progress={calorieProgress} size={ringSize} />
+
+        {/* Right stats */}
+        <View style={{ flex: 1, gap: DIMENSIONS.SPACING * 0.65 }}>
+          {/* Calories eaten */}
+          <View>
+            <Text style={{
+              fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700',
+              color: colors.textSecondary, textTransform: 'uppercase',
+              letterSpacing: 1.2, marginBottom: 3,
+            }}>
+              {t('today.todayCalories')}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+              <Text style={{
+                fontSize: TYPOGRAPHY.numberL, fontWeight: '900',
+                color: done ? '#10B981' : colors.textPrimary,
+                letterSpacing: -3,
+                lineHeight: TYPOGRAPHY.numberL,
+              }}>
+                {todayCalories.toLocaleString()}
+              </Text>
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyS, fontWeight: '700',
+                color: colors.textSecondary,
+              }}>
+                {t('today.kcal')}
+              </Text>
+            </View>
+          </View>
+
+          {/* Divider */}
+          <View style={{ height: 1, backgroundColor: colors.borderPrimary }} />
+
+          {/* Target + Remaining */}
+          <View style={{ gap: DIMENSIONS.SPACING * 0.3 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600',
+                color: colors.textSecondary,
+              }}>
+                {t('today.target')}
+              </Text>
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800',
+                color: colors.textPrimary,
+              }}>
+                {dailyCalorieGoal.toLocaleString()} {t('today.kcal')}
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600',
+                color: colors.textSecondary,
+              }}>
+                {t('today.remaining')}
+              </Text>
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800',
+                color: done ? '#10B981' : colors.textPrimary,
+              }}>
+                {done ? '✓ Done' : `${remainingCalories.toLocaleString()} ${t('today.kcal')}`}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Bottom progress bar */}
+      <View style={{ height: 4, backgroundColor: colors.cardBackgroundSecondary }}>
+        <View style={{
+          height: '100%',
+          width: `${Math.min(calorieProgress, 100)}%`,
+          backgroundColor: done ? '#10B981' : colors.textPrimary,
+        }} />
+      </View>
+    </View>
+  );
+}

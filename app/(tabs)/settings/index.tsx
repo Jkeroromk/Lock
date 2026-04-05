@@ -211,98 +211,28 @@ export default function SettingsScreen() {
             icon="card-outline"
             title={t('settings.subscriptionPlan')}
             description={t('settings.subscriptionPlanDescription')}
-            onPress={() => Alert.alert(t('settings.subscriptionPlan'), t('settings.subscriptionPlanDescription'))}
+            onPress={() => router.push('/(tabs)/settings/pricing')}
           />
 
-          {/* About Section */}
-          <View
-            style={{
-              borderRadius: 16,
-              marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: colors.cardBackground,
-              borderWidth: 2,
-              borderColor: colors.borderPrimary,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: DIMENSIONS.SPACING,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.borderPrimary,
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="download" size={TYPOGRAPHY.body} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                  {t('settings.exportData')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: DIMENSIONS.SPACING,
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="information-circle" size={TYPOGRAPHY.body} color={colors.textPrimary} style={{ marginRight: DIMENSIONS.SPACING * 0.6 }} />
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                  {t('settings.about')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
+          <SettingItem
+            icon="download-outline"
+            title={t('settings.exportData')}
+          />
 
-          {/* Legal */}
-          <View
-            style={{
-              borderRadius: 16,
-              marginBottom: DIMENSIONS.SPACING,
-              backgroundColor: colors.cardBackground,
-              borderWidth: 2,
-              borderColor: colors.borderPrimary,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: DIMENSIONS.SPACING,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.borderPrimary,
-              }}
-            >
-              <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                {t('settings.privacyPolicy')}
-              </Text>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: DIMENSIONS.SPACING,
-              }}
-            >
-              <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                {t('settings.termsOfService')}
-              </Text>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
+          <SettingItem
+            icon="information-circle-outline"
+            title={t('settings.about')}
+          />
+
+          <SettingItem
+            icon="document-text-outline"
+            title={t('settings.privacyPolicy')}
+          />
+
+          <SettingItem
+            icon="shield-checkmark-outline"
+            title={t('settings.termsOfService')}
+          />
 
           {/* Logout */}
           <TouchableOpacity

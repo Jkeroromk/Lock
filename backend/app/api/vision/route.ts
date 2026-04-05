@@ -15,7 +15,7 @@ interface VisionResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const { image } = await request.json();
+    const { image, lang, mode } = await request.json();
 
     if (!image) {
       return NextResponse.json(
@@ -30,6 +30,47 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Build language-specific prompt
+    const langPromptMap: Record<string, string> = {
+      'zh-CN': '请用简体中文命名食物。',
+      'zh-TW': '請用繁體中文命名食物。',
+      'ja-JP': '食べ物の名前は日本語で記載してください。',
+      'ko-KR': '음식 이름을 한국어로 작성해주세요.',
+      'en-US': 'Name the food in English.',
+    };
+    const langInstruction = langPromptMap[lang] ?? langPromptMap['en-US'];
+
+    // Build prompt based on mode
+    const analysisMode = mode === 'label' ? 'label' : 'food';
+    const promptText = analysisMode === 'label'
+      ? `This image shows a nutrition facts label or nutrition information table. Extract the nutritional data and return JSON in exactly this format:
+{
+  "food": "<product name if visible on label, otherwise 'Nutrition Label'>",
+  "calories": <number — kcal per serving>,
+  "protein": <number in grams per serving>,
+  "carbs": <number in grams per serving>,
+  "fat": <number in grams per serving>,
+  "confidence": <number between 0 and 1>
+}
+
+Instructions:
+- Find the serving size first and use per-serving values (not per 100g).
+- If only per-100g values are present, use those.
+- Look for: Calories/Energy, Total Fat, Total Carbohydrate, Protein.
+- Return only the JSON, no other text.`
+      : `Analyze this food image and return JSON in exactly this format:
+{
+  "food": "<food name>",
+  "calories": <number>,
+  "protein": <number in grams>,
+  "carbs": <number in grams>,
+  "fat": <number in grams>,
+  "confidence": <number between 0 and 1>
+}
+
+${langInstruction}
+Return only the JSON, no other text.`;
 
     // 调用 Fireworks AI Vision 模型
     const response = await axios.post(
@@ -48,17 +89,7 @@ export async function POST(request: NextRequest) {
               },
               {
                 type: 'text',
-                text: `请分析这张食物图片，返回 JSON 格式：
-{
-  "food": "食物名称（中文）",
-  "calories": 卡路里数值（数字）,
-  "protein": 蛋白质克数（数字）,
-  "carbs": 碳水化合物克数（数字）,
-  "fat": 脂肪克数（数字）,
-  "confidence": 置信度（0-1之间的数字）
-}
-
-请只返回 JSON，不要其他文字。`,
+                text: promptText,
               },
             ],
           },
@@ -86,7 +117,7 @@ export async function POST(request: NextRequest) {
       // 如果解析失败，返回默认值
       console.error('Failed to parse AI response:', content);
       analysis = {
-        food: '未知食物',
+        food: 'Unknown food',
         calories: 0,
         protein: 0,
         carbs: 0,
