@@ -1,6 +1,7 @@
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Skeleton from '@/components/ui/Skeleton';
 import { useStore } from '@/store/useStore';
@@ -48,6 +49,15 @@ export default function TodayScreen() {
     requestHealthPermissions();
     Promise.all([refreshToday(), loadHealthData()]).finally(() => setLoading(false));
   }, []);
+
+  // 每次切回 today tab 时刷新数据（删除/添加餐食后立刻反映）
+  useFocusEffect(
+    useCallback(() => {
+      if (!loading) {
+        refreshToday();
+      }
+    }, [loading])
+  );
 
   const calorieProgress = Math.min((todayCalories / dailyCalorieGoal) * 100, 100);
   const remainingCalories = Math.max(dailyCalorieGoal - todayCalories, 0);
