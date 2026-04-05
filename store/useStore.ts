@@ -66,6 +66,7 @@ interface StoreState {
   setThemeMode: (mode: ThemeMode) => void;
   setDailyCalorieGoal: (goal: number) => void;
   setDailyStepGoal: (goal: number) => void;
+  removeMealOptimistic: (mealId: string) => void;
   refreshToday: () => Promise<void>;
   fetchWeeklyData: () => Promise<void>;
   clearSession: () => void;
@@ -89,6 +90,11 @@ export const useStore = create<StoreState>()(
       setThemeMode: (mode) => set({ themeMode: mode }),
       setDailyCalorieGoal: (goal) => set({ dailyCalorieGoal: goal }),
       setDailyStepGoal: (goal) => set({ dailyStepGoal: goal }),
+      removeMealOptimistic: (mealId) => set((state) => {
+        const updatedMeals = state.todayMeals.filter((m) => m.id !== mealId);
+        const updatedCalories = updatedMeals.reduce((sum, m) => sum + m.calories, 0);
+        return { todayMeals: updatedMeals, todayCalories: updatedCalories };
+      }),
       refreshToday: async () => {
         try {
           const data = await fetchTodayData();
