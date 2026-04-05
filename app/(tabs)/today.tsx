@@ -80,20 +80,24 @@ export default function TodayScreen() {
                   remainingCalories={remainingCalories}
                 />
 
-                <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'stretch', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING }}>
                   <HealthStatsCard
                     icon="footsteps"
                     label={t('today.steps')}
                     value={healthData.steps}
                     unit={t('today.stepsUnit')}
+                    accentColor="#6366F1"
+                    goal={10000}
                   />
                   <HealthStatsCard
-                    icon="battery-charging"
+                    icon="flame"
                     label={t('today.energy')}
                     value={healthData.activeEnergy}
                     unit={t('today.kcal')}
+                    accentColor="#F97316"
+                    goal={500}
                   />
-                  </View>
+                </View>
 
                 <MealsList meals={todayMeals} />
 

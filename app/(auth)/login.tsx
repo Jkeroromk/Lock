@@ -45,6 +45,9 @@ export default function LoginScreen() {
         id: profile.id,
         name: profile.name || email.split('@')[0] || 'User',
         email: profile.email || email,
+        username: profile.username ?? undefined,
+        bio: profile.bio ?? undefined,
+        avatarEmoji: profile.avatarEmoji ?? undefined,
         height: profile.height ?? undefined,
         age: profile.age ?? undefined,
         weight: profile.weight ?? undefined,
@@ -52,6 +55,7 @@ export default function LoginScreen() {
         goal: profile.goal as any,
         exerciseFrequency: profile.exerciseFrequency as any,
         expectedTimeframe: profile.expectedTimeframe as any,
+        plan: (profile.plan ?? 'FREE') as any,
         hasCompletedOnboarding: profile.hasCompletedOnboarding,
       });
       if (profile.hasCompletedOnboarding) {

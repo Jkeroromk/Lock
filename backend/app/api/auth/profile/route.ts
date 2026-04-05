@@ -28,7 +28,11 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, email, height, age, weight, gender, goal, exerciseFrequency, expectedTimeframe, hasCompletedOnboarding } = body;
+    const {
+      name, email, username, bio, avatarEmoji,
+      height, age, weight, gender, goal,
+      exerciseFrequency, expectedTimeframe, hasCompletedOnboarding,
+    } = body;
 
     const user = await prisma.user.upsert({
       where: { id: userId },
@@ -36,6 +40,9 @@ export async function PUT(request: NextRequest) {
         id: userId,
         name,
         email,
+        username,
+        bio,
+        avatarEmoji,
         height,
         age,
         weight,
@@ -48,6 +55,9 @@ export async function PUT(request: NextRequest) {
       update: {
         ...(name !== undefined && { name }),
         ...(email !== undefined && { email }),
+        ...(username !== undefined && { username }),
+        ...(bio !== undefined && { bio }),
+        ...(avatarEmoji !== undefined && { avatarEmoji }),
         ...(height !== undefined && { height }),
         ...(age !== undefined && { age }),
         ...(weight !== undefined && { weight }),

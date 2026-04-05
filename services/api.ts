@@ -52,7 +52,11 @@ export interface MonthlyData {
   };
 }
 
-export const analyzeFoodImage = async (imageUri: string): Promise<FoodAnalysis> => {
+export const analyzeFoodImage = async (
+  imageUri: string,
+  lang?: string,
+  mode: 'food' | 'label' = 'food',
+): Promise<FoodAnalysis> => {
   try {
     const base64 = await FileSystem.readAsStringAsync(imageUri, {
       encoding: 'base64' as any,
@@ -60,6 +64,8 @@ export const analyzeFoodImage = async (imageUri: string): Promise<FoodAnalysis> 
 
     const response = await api.post<FoodAnalysis>('/api/vision', {
       image: base64,
+      lang: lang ?? 'zh-CN',
+      mode,
     });
 
     return response.data;
@@ -68,9 +74,56 @@ export const analyzeFoodImage = async (imageUri: string): Promise<FoodAnalysis> 
   }
 };
 
+export const deleteMeal = async (mealId: string): Promise<void> => {
+  try {
+    await api.delete(`/api/meals/${mealId}`);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || '删除餐食失败');
+  }
+};
+
+export const updateMeal = async (
+  mealId: string,
+  data: Partial<{ food_name: string; calories: number; protein: number; carbs: number; fat: number }>,
+): Promise<void> => {
+  try {
+    await api.patch(`/api/meals/${mealId}`, data);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || '更新餐食失败');
+  }
+};
+
+export const lookupBarcode = async (barcode: string): Promise<FoodAnalysis | null> => {
+  try {
+    const response = await axios.get(
+      `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
+      { headers: { 'User-Agent': 'LockApp/1.0 (health tracking)' }, timeout: 8000 },
+    );
+    const product = response.data?.product;
+    if (!product) return null;
+
+    const n = product.nutriments ?? {};
+    const name: string =
+      product.product_name_en || product.product_name || product.abbreviated_product_name || '';
+    if (!name) return null;
+
+    return {
+      food: name,
+      calories: Math.round(n['energy-kcal_serving'] ?? n['energy-kcal_100g'] ?? 0),
+      protein: Math.round((n['proteins_serving'] ?? n['proteins_100g'] ?? 0) * 10) / 10,
+      carbs: Math.round((n['carbohydrates_serving'] ?? n['carbohydrates_100g'] ?? 0) * 10) / 10,
+      fat: Math.round((n['fat_serving'] ?? n['fat_100g'] ?? 0) * 10) / 10,
+      confidence: 0.95,
+    };
+  } catch {
+    return null;
+  }
+};
+
 export const logMeal = async (meal: MealData): Promise<void> => {
   try {
-    await api.post('/api/log-meal', meal);
+    const tzOffset = new Date().getTimezoneOffset();
+    await api.post('/api/log-meal', { ...meal, tzOffset });
   } catch (error: any) {
     throw new Error(error.response?.data?.error || '保存餐食失败');
   }
@@ -130,6 +183,7 @@ export interface UserProfile {
   goal?: string | null;
   exerciseFrequency?: string | null;
   expectedTimeframe?: string | null;
+  plan?: 'FREE' | 'PRO' | 'ENTERPRISE';
   hasCompletedOnboarding: boolean;
 }
 
@@ -252,6 +306,30 @@ export const joinChallenge = async (challengeId: string): Promise<void> => {
 export const fetchFeed = async (): Promise<FeedItem[]> => {
   const res = await api.get<FeedItem[]>('/api/social/feed');
   return res.data;
+};
+
+export interface ChallengeDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string;
+  goalValue: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+  creatorName: string;
+  participants: { userId: string; name: string; progress: number; joinedAt: string }[];
+}
+
+export const fetchChallengeDetail = async (challengeId: string): Promise<ChallengeDetail> => {
+  const res = await api.get<ChallengeDetail>(`/api/social/challenges/${challengeId}`);
+  return res.data;
+};
+
+// ─── Subscription ─────────────────────────────────────────────────────────────
+
+export const syncSubscriptionPlan = async (plan: 'FREE' | 'PRO' | 'ENTERPRISE'): Promise<void> => {
+  await api.post('/api/subscription', { plan });
 };
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
