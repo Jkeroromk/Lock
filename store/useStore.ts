@@ -7,6 +7,7 @@ export type Gender = 'male' | 'female' | 'other';
 export type Goal = 'lose_weight' | 'lose_fat' | 'gain_muscle';
 export type ExerciseFrequency = 'never' | 'rarely' | '1-2' | '3-4' | '5-6' | 'daily';
 export type ExpectedTimeframe = '1_month' | '2-3_months' | '4-6_months' | '6-12_months' | '1_year_plus';
+export type PlanTier = 'FREE' | 'PRO' | 'ENTERPRISE';
 
 interface User {
   id: string;
@@ -26,6 +27,8 @@ interface User {
   expectedTimeframe?: ExpectedTimeframe;
   hasCompletedOnboarding?: boolean;
   isAnonymous?: boolean;
+  plan?: PlanTier;
+  streak?: number;
 }
 
 interface Meal {
@@ -61,6 +64,7 @@ interface StoreState {
   dailyCalorieGoal: number;
   dailyStepGoal: number;
   setUser: (user: User | null) => void;
+  setPlan: (plan: PlanTier) => void;
   setLanguage: (language: LanguageCode) => void;
   setHasSelectedLanguage: (hasSelected: boolean) => void;
   setThemeMode: (mode: ThemeMode) => void;
@@ -85,6 +89,9 @@ export const useStore = create<StoreState>()(
       dailyCalorieGoal: 2000,
       dailyStepGoal: 10000,
       setUser: (user) => set({ user }),
+      setPlan: (plan) => set((state) => ({
+        user: state.user ? { ...state.user, plan } : state.user,
+      })),
       setLanguage: (language) => set({ language, hasSelectedLanguage: true }),
       setHasSelectedLanguage: (hasSelected) => set({ hasSelectedLanguage: hasSelected }),
       setThemeMode: (mode) => set({ themeMode: mode }),

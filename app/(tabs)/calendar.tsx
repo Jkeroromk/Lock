@@ -11,7 +11,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { fetchMonthlyData, fetchWeeklyData, MonthlyData } from '@/services/api';
 import CalendarView from '@/components/calendar/CalendarView';
 import SelectedDateInfo from '@/components/calendar/SelectedDateInfo';
-import ProgressLegend from '@/components/calendar/ProgressLegend';
 import WeeklyCaloriesChart from '@/components/calendar/WeeklyCaloriesChart';
 import MonthlyStats from '@/components/calendar/MonthlyStats';
 import AiInsightsCard from '@/components/calendar/AiInsightsCard';
@@ -198,8 +197,6 @@ export default function CalendarScreen() {
                   getProgressColor={getProgressColor}
                 />
               )}
-
-              <ProgressLegend />
 
               <WeeklyCaloriesChart chartData={chartData} />
 

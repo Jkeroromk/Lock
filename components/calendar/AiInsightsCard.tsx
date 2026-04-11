@@ -4,9 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchDietAnalysis, DietAnalysis } from '@/services/api';
+import { useTranslation } from '@/i18n';
 
 export default function AiInsightsCard() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DietAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +20,7 @@ export default function AiInsightsCard() {
       const result = await fetchDietAnalysis();
       setData(result);
     } catch (err: any) {
-      setError(err?.response?.data?.error || err?.message || '分析失败，请重试');
+      setError(err?.response?.data?.error || err?.message || t('aiInsights.analysisFailed' as any));
     } finally {
       setLoading(false);
     }
@@ -50,7 +52,7 @@ export default function AiInsightsCard() {
             <Ionicons name="sparkles" size={16} color={colors.textPrimary} />
           </View>
           <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
-            AI 饮食分析
+            {t('aiInsights.title' as any)}
           </Text>
         </View>
         {data && (
@@ -63,7 +65,7 @@ export default function AiInsightsCard() {
       {!data && !loading && (
         <>
           <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textPrimary, opacity: 0.7, marginBottom: DIMENSIONS.SPACING * 1 }}>
-            基于你的近7天饮食记录和身体目标，AI 将给出个性化建议
+            {t('aiInsights.description' as any)}
           </Text>
           <TouchableOpacity
             onPress={handleAnalyze}
@@ -75,7 +77,7 @@ export default function AiInsightsCard() {
           >
             <Ionicons name="sparkles" size={16} color={colors.backgroundPrimary} />
             <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>
-              开始分析
+              {t('aiInsights.startAnalysis' as any)}
             </Text>
           </TouchableOpacity>
         </>
@@ -85,7 +87,7 @@ export default function AiInsightsCard() {
         <View style={{ alignItems: 'center', paddingVertical: DIMENSIONS.SPACING * 1.5 }}>
           <ActivityIndicator color={colors.textPrimary} />
           <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textSecondary, marginTop: DIMENSIONS.SPACING * 0.6 }}>
-            AI 分析中...
+            {t('aiInsights.analyzing' as any)}
           </Text>
         </View>
       )}
@@ -107,7 +109,7 @@ export default function AiInsightsCard() {
               <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>/ 10</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 }}>近期状态</Text>
+              <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 }}>{t('aiInsights.recentStatus' as any)}</Text>
               <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyS * 1.4 }}>
                 {data.summary}
               </Text>
@@ -117,7 +119,7 @@ export default function AiInsightsCard() {
           {/* Diet suggestions */}
           <View>
             <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
-              饮食建议
+              {t('aiInsights.dietSuggestions' as any)}
             </Text>
             <View style={{ gap: DIMENSIONS.SPACING * 0.45 }}>
               {data.suggestions.map((s, i) => (

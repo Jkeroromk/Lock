@@ -21,7 +21,7 @@ export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyS
   const bestDay = Math.max(...dates.map((d: any) => d.calories || 0));
 
   const stats = [
-    { label: t('calendar.completedDays'), value: `${completedDays}`, sub: t('calendar.avgProgress') },
+    { label: t('calendar.completedDays'), value: `${completedDays}`, sub: t('dashboard.days') },
     { label: t('calendar.avgProgress'), value: `${Math.round(avgProgress)}%`, sub: null },
     { label: t('calendar.avgDaily'), value: `${avgDailyCalories}`, sub: 'kcal' },
     { label: t('today.target'), value: `${dailyCalorieGoal}`, sub: 'kcal' },

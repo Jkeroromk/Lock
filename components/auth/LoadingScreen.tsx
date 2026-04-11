@@ -2,9 +2,11 @@ import { View, Text, Animated, Easing } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/i18n';
 
 export default function LoadingScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -101,7 +103,7 @@ export default function LoadingScreen() {
             letterSpacing: 1,
           }}
         >
-          Loading...
+          {t('common.loading')}
         </Text>
       </View>
     </View>

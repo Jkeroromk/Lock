@@ -3,32 +3,64 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { FeedItem } from '@/services/api';
+import { useTranslation } from '@/i18n';
 
 interface ActivityFeedProps {
   items: FeedItem[];
 }
 
-const FEED_CONFIG: Record<string, { icon: string; color: string; label: (m: any, isMe: boolean, name: string) => string }> = {
-  MEAL_LOGGED: { icon: 'restaurant', color: '#10B981', label: (m, isMe, name) => isMe ? `你记录了一顿餐食` : `${name} 记录了一顿餐食` },
-  GOAL_REACHED: { icon: 'trophy', color: '#F59E0B', label: (m, isMe, name) => isMe ? '你达到了今日卡路里目标！' : `${name} 达到了今日卡路里目标！` },
-  STREAK_MILESTONE: { icon: 'flame', color: '#F97316', label: (m, isMe, name) => isMe ? `你已连续打卡 ${m?.days} 天` : `${name} 已连续打卡 ${m?.days} 天` },
-  CHALLENGE_JOINED: { icon: 'flag', color: '#6366F1', label: (m, isMe, name) => isMe ? `你加入了挑战「${m?.title}」` : `${name} 加入了挑战「${m?.title}」` },
-  CHALLENGE_COMPLETED: { icon: 'medal', color: '#EC4899', label: (m, isMe, name) => isMe ? `你完成了挑战「${m?.title}」！` : `${name} 完成了挑战「${m?.title}」！` },
-  FRIEND_ADDED: { icon: 'people', color: '#3B82F6', label: (m, isMe, name) => isMe ? '你添加了一位新好友' : `${name} 成为了你的好友` },
+const FEED_ICONS: Record<string, { icon: string; color: string }> = {
+  MEAL_LOGGED: { icon: 'restaurant', color: '#10B981' },
+  GOAL_REACHED: { icon: 'trophy', color: '#F59E0B' },
+  STREAK_MILESTONE: { icon: 'flame', color: '#F97316' },
+  CHALLENGE_JOINED: { icon: 'flag', color: '#6366F1' },
+  CHALLENGE_COMPLETED: { icon: 'medal', color: '#EC4899' },
+  FRIEND_ADDED: { icon: 'people', color: '#3B82F6' },
 };
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return '刚刚';
-  if (mins < 60) return `${mins}分钟前`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}小时前`;
-  return `${Math.floor(hours / 24)}天前`;
-}
 
 export default function ActivityFeed({ items }: ActivityFeedProps) {
   const colors = useTheme();
+  const { t } = useTranslation();
+
+  function getFeedLabel(type: string, metadata: any, isMe: boolean, name: string): string {
+    const r = (key: string, vars: Record<string, string> = {}) => {
+      let s = t(key as any) as string;
+      for (const [k, v] of Object.entries(vars)) s = s.replace(`{${k}}`, v);
+      return s;
+    };
+    switch (type) {
+      case 'MEAL_LOGGED':
+        return isMe ? r('feed.mealLogged') : r('feed.mealLoggedOther', { name });
+      case 'GOAL_REACHED':
+        return isMe ? r('feed.goalReached') : r('feed.goalReachedOther', { name });
+      case 'STREAK_MILESTONE':
+        return isMe
+          ? r('feed.streakMilestone', { days: String(metadata?.days ?? '') })
+          : r('feed.streakMilestoneOther', { name, days: String(metadata?.days ?? '') });
+      case 'CHALLENGE_JOINED':
+        return isMe
+          ? r('feed.challengeJoined', { title: metadata?.title ?? '' })
+          : r('feed.challengeJoinedOther', { name, title: metadata?.title ?? '' });
+      case 'CHALLENGE_COMPLETED':
+        return isMe
+          ? r('feed.challengeCompleted', { title: metadata?.title ?? '' })
+          : r('feed.challengeCompletedOther', { name, title: metadata?.title ?? '' });
+      case 'FRIEND_ADDED':
+        return isMe ? r('feed.friendAdded') : r('feed.friendAddedOther', { name });
+      default:
+        return type;
+    }
+  }
+
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t('feed.justNow' as any);
+    if (mins < 60) return (t('feed.minutesAgo' as any) as string).replace('{mins}', String(mins));
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return (t('feed.hoursAgo' as any) as string).replace('{hours}', String(hours));
+    return (t('feed.daysAgo' as any) as string).replace('{days}', String(Math.floor(hours / 24)));
+  }
 
   if (items.length === 0) {
     return (
@@ -44,7 +76,7 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
           color: colors.textSecondary, marginTop: DIMENSIONS.SPACING * 0.8,
           textAlign: 'center',
         }}>
-          暂无动态，添加好友后这里会显示大家的打卡记录
+          {t('feed.empty' as any)}
         </Text>
       </View>
     );
@@ -67,16 +99,13 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
           <Ionicons name="newspaper" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
         </View>
         <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
-          好友动态
+          {t('feed.title' as any)}
         </Text>
       </View>
 
       {items.map((item, i) => {
-        const config = FEED_CONFIG[item.type] ?? {
-          icon: 'ellipse', color: colors.textSecondary,
-          label: () => item.type,
-        };
-        const text = config.label(item.metadata, item.isMe, item.user.name);
+        const config = FEED_ICONS[item.type] ?? { icon: 'ellipse', color: colors.textSecondary };
+        const text = getFeedLabel(item.type, item.metadata, item.isMe, item.user.name);
         return (
           <View key={item.id} style={{
             flexDirection: 'row', alignItems: 'flex-start',
@@ -84,7 +113,6 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
             paddingVertical: DIMENSIONS.SPACING * 0.9,
             borderTopWidth: 1, borderTopColor: colors.borderPrimary,
           }}>
-            {/* Avatar */}
             <View style={{
               width: 36, height: 36, borderRadius: 18,
               backgroundColor: colors.cardBackgroundSecondary,

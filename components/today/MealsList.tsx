@@ -50,7 +50,7 @@ function EditMealModal({
       onSaved();
       onClose();
     } catch (err: any) {
-      Alert.alert('保存失败', err.message || '请重试');
+      Alert.alert(t('weightTracker.saveFailed'), err.message || t('common.retry'));
     } finally {
       setSaving(false);
     }
@@ -89,7 +89,7 @@ function EditMealModal({
             {/* Header */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING }}>
               <Text style={{ fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: colors.textPrimary }}>
-                编辑餐食
+                {t('log.edit')}
               </Text>
               <TouchableOpacity onPress={onClose} style={{
                 width: 30, height: 30, borderRadius: 15,
@@ -102,7 +102,7 @@ function EditMealModal({
 
             {/* Food name */}
             <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-              食物名称
+              {t('log.analyzeFood')}
             </Text>
             <TextInput
               value={foodName}
@@ -113,7 +113,7 @@ function EditMealModal({
 
             {/* Calories */}
             <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-              卡路里 (kcal)
+              {t('log.calories')}
             </Text>
             <TextInput
               value={calories}
@@ -125,7 +125,7 @@ function EditMealModal({
 
             {/* Macros */}
             <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-              蛋白质 / 碳水 / 脂肪 (g)
+              {t('log.protein')} / {t('log.carbs')} / {t('log.fat')} (g)
             </Text>
             <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
               {[
@@ -159,7 +159,7 @@ function EditMealModal({
                   borderWidth: 1, borderColor: colors.borderPrimary,
                 }}
               >
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>取消</Text>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSave}
@@ -172,7 +172,7 @@ function EditMealModal({
                 }}
               >
                 <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>
-                  {saving ? '保存中...' : '保存'}
+                  {saving ? t('log.saving' as any) : t('common.save')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -200,20 +200,20 @@ export default function MealsList({ meals }: MealsListProps) {
     const id = meal.id;
     setActiveMealId(null);
     Alert.alert(
-      '删除餐食',
-      `确定要删除「${meal.food_name}」吗？`,
+      t('weightTracker.deleteTitle'),
+      `${meal.food_name}?`,
       [
-        { text: '取消', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: '删除', style: 'destructive',
+          text: t('common.delete'), style: 'destructive',
           onPress: async () => {
             setDeletingId(id);
             try {
               await deleteMeal(id);
-              removeMealOptimistic(id);  // 立刻更新 UI 和卡路里
-              refreshToday();            // 后台同步服务器数据
+              removeMealOptimistic(id);
+              refreshToday();
             } catch (err: any) {
-              Alert.alert('删除失败', err.message || '请检查网络连接后重试');
+              Alert.alert(t('common.error'), err.message || t('common.retry'));
             } finally {
               setDeletingId(null);
             }
@@ -370,7 +370,7 @@ export default function MealsList({ meals }: MealsListProps) {
                     >
                       <Ionicons name="create-outline" size={TYPOGRAPHY.bodyM} color={colors.textPrimary} />
                       <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary }}>
-                        编辑
+                        {t('log.edit')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -383,7 +383,7 @@ export default function MealsList({ meals }: MealsListProps) {
                     >
                       <Ionicons name="trash-outline" size={TYPOGRAPHY.bodyM} color="#EF4444" />
                       <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: '#EF4444' }}>
-                        {isDeleting ? '删除中...' : '删除'}
+                        {isDeleting ? t('common.deleting' as any) : t('common.delete')}
                       </Text>
                     </TouchableOpacity>
                   </View>

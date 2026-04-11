@@ -1,5 +1,4 @@
 import { View, Text } from 'react-native';
-import { VictoryChart, VictoryBar, VictoryAxis, VictoryLine, VictoryTheme } from 'victory-native';
 import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
@@ -14,21 +13,19 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
   const colors = useTheme();
   const { dailyCalorieGoal } = useStore();
 
-  const maxCalories = Math.max(...chartData.map((d) => d.calories), dailyCalorieGoal * 1.1);
+  const maxCalories = Math.max(...chartData.map((d) => d.calories), dailyCalorieGoal);
+  const totalCalories = chartData.reduce((s, d) => s + d.calories, 0);
+  const activeDays = chartData.filter((d) => d.calories > 0).length;
+  const BAR_HEIGHT = 140;
 
   const getBarColor = (calories: number) => {
-    if (calories === 0) return colors.borderSecondary;
+    if (calories === 0) return colors.borderPrimary;
     const pct = calories / dailyCalorieGoal;
     if (pct >= 1.0) return colors.textPrimary;
     if (pct >= 0.8) return colors.progressLightGray;
     if (pct >= 0.6) return colors.progressMediumGray;
     return colors.progressDarkGray;
   };
-
-  const chartWidth = DIMENSIONS.SCREEN_WIDTH - DIMENSIONS.CARD_PADDING * 2 - DIMENSIONS.SPACING * 2.4;
-
-  const totalCalories = chartData.reduce((s, d) => s + d.calories, 0);
-  const activeDays = chartData.filter((d) => d.calories > 0).length;
 
   return (
     <View style={{
@@ -38,86 +35,80 @@ export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartPr
       backgroundColor: colors.cardBackground,
       borderWidth: 2,
       borderColor: colors.borderPrimary,
-      shadowColor: colors.shadowColor,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 6,
     }}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING }}>
-        <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
-          {t('calendar.weeklyCalories')}
-        </Text>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={{ fontSize: TYPOGRAPHY.numberS, fontWeight: '900', color: colors.textPrimary }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
+        <View>
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+            {t('calendar.weeklyCalories')}
+          </Text>
+          <Text style={{ fontSize: TYPOGRAPHY.titleM, fontWeight: '900', color: colors.textPrimary, lineHeight: TYPOGRAPHY.titleM * 1.1 }}>
             {totalCalories.toLocaleString()}
           </Text>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.6 }}>
-            {t('calendar.thisWeek')} · {activeDays}{t('calendar.completedDays')}
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary, marginTop: 2 }}>
+            {t('calendar.thisWeek')} · {activeDays} {t('calendar.completedDays')}
+          </Text>
+        </View>
+        {/* Goal badge */}
+        <View style={{
+          backgroundColor: colors.cardBackgroundSecondary,
+          borderRadius: 10, borderWidth: 1, borderColor: colors.borderPrimary,
+          paddingHorizontal: DIMENSIONS.SPACING * 0.7,
+          paddingVertical: DIMENSIONS.SPACING * 0.35,
+          flexDirection: 'row', alignItems: 'center', gap: 5,
+        }}>
+          <View style={{ width: 14, height: 1.5, backgroundColor: colors.textPrimary, opacity: 0.5 }} />
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>
+            {t('settings.goals')} {dailyCalorieGoal}
           </Text>
         </View>
       </View>
 
       {/* Chart */}
-      <View style={{ height: DIMENSIONS.SCREEN_WIDTH * 0.55, overflow: 'hidden' }}>
-        <VictoryChart
-          theme={VictoryTheme.material}
-          height={DIMENSIONS.SCREEN_WIDTH * 0.55}
-          width={chartWidth}
-          padding={{
-            left: DIMENSIONS.SCREEN_WIDTH * 0.1,
-            right: DIMENSIONS.SCREEN_WIDTH * 0.04,
-            top: DIMENSIONS.SCREEN_WIDTH * 0.05,
-            bottom: DIMENSIONS.SCREEN_WIDTH * 0.1,
-          }}
-          domain={{ y: [0, maxCalories] }}
-        >
-          <VictoryAxis
-            style={{
-              tickLabels: { fontSize: 11, fill: colors.textPrimary, fontFamily: 'System', fontWeight: '600', opacity: 0.8 },
-              axis: { stroke: 'transparent' },
-              grid: { stroke: 'transparent' },
-            }}
-          />
-          <VictoryAxis
-            dependentAxis
-            tickCount={4}
-            style={{
-              tickLabels: { fontSize: 10, fill: colors.textPrimary, fontFamily: 'System', fontWeight: '600', opacity: 0.6 },
-              axis: { stroke: 'transparent' },
-              grid: { stroke: colors.borderSecondary, strokeDasharray: '4,4', opacity: 0.5 },
-            }}
-          />
-          {/* Goal line */}
-          <VictoryLine
-            y={() => dailyCalorieGoal}
-            style={{
-              data: { stroke: colors.textPrimary, strokeWidth: 1.5, strokeDasharray: '6,4', opacity: 0.4 },
-            }}
-          />
-          <VictoryBar
-            data={chartData}
-            x="day"
-            y="calories"
-            cornerRadius={{ top: 6 }}
-            barRatio={0.6}
-            style={{
-              data: {
-                fill: ({ datum }: any) => getBarColor(datum.calories),
-                opacity: ({ datum }: any) => datum.calories === 0 ? 0.3 : 1,
-              },
-            }}
-          />
-        </VictoryChart>
-      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: BAR_HEIGHT + 24 }}>
+        {chartData.map((item, i) => {
+          const pct = maxCalories > 0 ? item.calories / maxCalories : 0;
+          const barH = Math.max(pct * BAR_HEIGHT, item.calories > 0 ? 6 : 3);
+          const goalLine = (dailyCalorieGoal / maxCalories) * BAR_HEIGHT;
+          const isToday = i === chartData.length - 1;
 
-      {/* Goal label */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: DIMENSIONS.SPACING * 0.4 }}>
-        <View style={{ width: 24, height: 2, backgroundColor: colors.textPrimary, opacity: 0.4, marginRight: 6, borderStyle: 'dashed' }} />
-        <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.5 }}>
-          {t('settings.goals')} {dailyCalorieGoal} kcal
-        </Text>
+          return (
+            <View key={i} style={{ flex: 1, alignItems: 'center', height: BAR_HEIGHT + 24, justifyContent: 'flex-end' }}>
+              {/* Calories label above bar */}
+              {item.calories > 0 && (
+                <Text style={{
+                  fontSize: 9, fontWeight: '700', color: colors.textSecondary,
+                  marginBottom: 3, opacity: 0.8,
+                }}>
+                  {item.calories >= 1000 ? `${(item.calories / 1000).toFixed(1)}k` : item.calories}
+                </Text>
+              )}
+              {/* Bar container with goal line */}
+              <View style={{ width: '100%', height: BAR_HEIGHT, justifyContent: 'flex-end', position: 'relative' }}>
+                {/* Goal dashed line */}
+                <View style={{
+                  position: 'absolute', bottom: goalLine, left: 0, right: 0,
+                  height: 1.5, backgroundColor: colors.textPrimary, opacity: 0.15,
+                }} />
+                {/* Bar */}
+                <View style={{
+                  width: '100%', height: barH,
+                  borderRadius: 6,
+                  backgroundColor: getBarColor(item.calories),
+                  opacity: item.calories === 0 ? 0.25 : 1,
+                }} />
+              </View>
+              {/* Day label */}
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyXXS, fontWeight: isToday ? '900' : '600',
+                color: isToday ? colors.textPrimary : colors.textSecondary,
+                marginTop: 6,
+              }}>
+                {item.day}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     </View>
   );

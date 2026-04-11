@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { FriendRequest, respondFriendRequest } from '@/services/api';
+import { useTranslation } from '@/i18n';
 
 interface FriendRequestsCardProps {
   requests: FriendRequest[];
@@ -11,6 +12,7 @@ interface FriendRequestsCardProps {
 
 export default function FriendRequestsCard({ requests, onUpdate }: FriendRequestsCardProps) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   if (requests.length === 0) return null;
 
@@ -38,7 +40,7 @@ export default function FriendRequestsCard({ requests, onUpdate }: FriendRequest
           <Ionicons name="person-add" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
         </View>
         <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
-          好友请求
+          {t('dashboard.friendRequests' as any)}
         </Text>
         <View style={{
           marginLeft: DIMENSIONS.SPACING * 0.6,

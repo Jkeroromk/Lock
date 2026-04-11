@@ -4,7 +4,6 @@ import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 
-const GENDER_LABELS: Record<string, string> = { male: '男', female: '女', other: '其他' };
 
 interface User {
   name?: string;
@@ -123,7 +122,7 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
         {user?.showGender && user?.gender && (
           <View style={{ marginTop: DIMENSIONS.SPACING * 0.4, paddingHorizontal: DIMENSIONS.SPACING * 0.6, paddingVertical: 2, borderRadius: 10, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}>
             <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>
-              {GENDER_LABELS[user.gender] || user.gender}
+              {t(`settings.genderOptions.${user.gender}` as any) || user.gender}
             </Text>
           </View>
         )}

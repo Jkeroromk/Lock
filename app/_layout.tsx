@@ -1,13 +1,19 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Text } from 'react-native';
+import { Text, Platform } from 'react-native';
 import { useEffect } from 'react';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
 import { setTokenGetter } from '@/services/tokenStore';
+import { initRevenueCat, identifyUser, resetUser } from '@/lib/revenuecat';
 import '../global.css';
+
+// 初始化 RevenueCat（App 启动时只执行一次）
+if (Platform.OS === 'ios' || Platform.OS === 'android') {
+  initRevenueCat(Platform.OS);
+}
 
 const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
@@ -24,13 +30,21 @@ const tokenCache = {
   },
 };
 
-// Bridges Clerk's getToken into the token store so services/api.ts can use it
+// Bridges Clerk's getToken into the token store, and wires RevenueCat user identity
 function ClerkTokenBridge() {
-  const { getToken, isSignedIn } = useAuth();
+  const { getToken, isSignedIn, userId } = useAuth();
 
   useEffect(() => {
     setTokenGetter(isSignedIn ? getToken : null);
   }, [isSignedIn, getToken]);
+
+  useEffect(() => {
+    if (isSignedIn && userId) {
+      identifyUser(userId);
+    } else {
+      resetUser();
+    }
+  }, [isSignedIn, userId]);
 
   return null;
 }

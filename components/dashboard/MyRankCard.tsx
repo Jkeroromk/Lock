@@ -74,7 +74,7 @@ export default function MyRankCard({ user, todayCalories, rank }: MyRankCardProp
                 color: colors.textPrimary,
               }}
             >
-              第 {rank} 名
+              {t('dashboard.rankFormat' as any).replace('{rank}', String(rank))}
             </Text>
           </View>
         </View>

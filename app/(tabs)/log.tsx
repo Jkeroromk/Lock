@@ -7,18 +7,20 @@ import { useState, useRef } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
+import { getQuota } from '@/lib/plans';
 
 type LogMode = 'photo' | 'label' | 'barcode';
 
-const MODE_CONFIG: { key: LogMode; icon: string; label: string }[] = [
-  { key: 'photo', icon: 'camera', label: '拍照识别' },
-  { key: 'label', icon: 'reader', label: '营养标签' },
-  { key: 'barcode', icon: 'barcode', label: '扫条码' },
+const MODE_CONFIG: { key: LogMode; icon: string }[] = [
+  { key: 'photo', icon: 'camera' },
+  { key: 'label', icon: 'reader' },
+  { key: 'barcode', icon: 'barcode' },
 ];
 
 const MACRO_COLORS = {
@@ -31,6 +33,7 @@ const MACRO_COLORS = {
 
 function BarcodeScanner({ onScanned }: { onScanned: (code: string) => void }) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const scannedRef = useRef(false);
 
@@ -59,10 +62,10 @@ function BarcodeScanner({ onScanned }: { onScanned: (code: string) => void }) {
           <Ionicons name="camera-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
         </View>
         <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary, marginBottom: 6 }}>
-          需要相机权限
+          {t('log.cameraPermissionTitle' as any)}
         </Text>
         <Text style={{ fontSize: TYPOGRAPHY.bodyS, color: colors.textSecondary, textAlign: 'center', marginBottom: DIMENSIONS.SPACING }}>
-          请允许相机访问以扫描条形码
+          {t('log.cameraPermissionDesc' as any)}
         </Text>
         <TouchableOpacity
           onPress={requestPermission}
@@ -73,7 +76,7 @@ function BarcodeScanner({ onScanned }: { onScanned: (code: string) => void }) {
           }}
         >
           <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '800', color: colors.backgroundPrimary }}>
-            授权相机
+            {t('log.grantCamera' as any)}
           </Text>
         </TouchableOpacity>
       </View>
@@ -119,7 +122,7 @@ function BarcodeScanner({ onScanned }: { onScanned: (code: string) => void }) {
             paddingHorizontal: 10, paddingVertical: 4,
             borderRadius: 8,
           }}>
-            将条形码对准框内
+            {t('log.aimAtBarcode' as any)}
           </Text>
         </View>
       </View>
@@ -127,7 +130,7 @@ function BarcodeScanner({ onScanned }: { onScanned: (code: string) => void }) {
         textAlign: 'center', fontSize: TYPOGRAPHY.bodyXS,
         color: colors.textSecondary, fontWeight: '600',
       }}>
-        支持 EAN-13 / UPC / Code 128 / QR
+        {t('log.supportedFormats' as any)}
       </Text>
     </View>
   );
@@ -339,7 +342,7 @@ function ResultCard({
                 : <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconS} color={colors.backgroundPrimary} />
               }
               <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '800', color: colors.backgroundPrimary }}>
-                {saving ? '保存中...' : t('log.saveMeal')}
+                {saving ? t('log.saving' as any) : t('log.saveMeal')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -354,7 +357,10 @@ function ResultCard({
 export default function LogScreen() {
   const { t, language } = useTranslation();
   const colors = useTheme();
-  const { refreshToday } = useStore();
+  const router = useRouter();
+  const { refreshToday, user } = useStore();
+  const plan = user?.plan ?? 'FREE';
+  const aiQuota = getQuota(plan, 'dailyAiCalls'); // -1 = unlimited
 
   const [mode, setMode] = useState<LogMode>('photo');
   const [image, setImage] = useState<string | null>(null);
@@ -398,7 +404,19 @@ export default function LogScreen() {
       });
       setIsEditing(false);
     } catch (error: any) {
-      Alert.alert(t('log.analysisFailed'), error.message || t('log.analysisFailed'));
+      // 免费版次数用完
+      if (error?.code === 'AI_LIMIT_REACHED' || error?.message?.includes('AI_LIMIT_REACHED')) {
+        Alert.alert(
+          t('log.aiLimitTitle' as any),
+          (t('log.aiLimitMsg' as any) as string).replace('{quota}', String(aiQuota)),
+          [
+            { text: t('log.laterBtn' as any), style: 'cancel' },
+            { text: t('log.upgradeBtn' as any), onPress: () => router.push('/(tabs)/settings/pricing') },
+          ]
+        );
+      } else {
+        Alert.alert(t('log.analysisFailed'), error.message || t('log.analysisFailed'));
+      }
     } finally {
       setAnalyzing(false);
     }
@@ -421,13 +439,13 @@ export default function LogScreen() {
         });
         setIsEditing(false);
       } else {
-        Alert.alert('未找到产品', `条码 ${code} 在数据库中未找到，您可以手动填写营养信息。`, [
-          { text: '手动填写', onPress: () => openManualEntry(code) },
-          { text: '重新扫描', style: 'cancel' },
+        Alert.alert(t('log.productNotFound' as any), (t('log.productNotFoundMsg' as any) as string).replace('{code}', code), [
+          { text: t('log.manualEntry' as any), onPress: () => openManualEntry(code) },
+          { text: t('log.rescan' as any), style: 'cancel' },
         ]);
       }
     } catch {
-      Alert.alert('查询失败', '请检查网络连接后重试');
+      Alert.alert(t('log.lookupFailed' as any), t('log.lookupFailedMsg' as any));
     } finally {
       setLookingUp(false);
     }
@@ -519,7 +537,7 @@ export default function LogScreen() {
         fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: colors.textPrimary,
         marginBottom: DIMENSIONS.SPACING * 0.4, textAlign: 'center',
       }}>
-        {mode === 'label' ? '拍摄营养标签' : t('log.startLogging')}
+        {mode === 'label' ? t('log.labelMode' as any) : t('log.startLogging')}
       </Text>
       <Text style={{
         fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textSecondary,
@@ -527,7 +545,7 @@ export default function LogScreen() {
         paddingHorizontal: DIMENSIONS.SPACING * 2, lineHeight: TYPOGRAPHY.bodyS * 1.5,
       }}>
         {mode === 'label'
-          ? '将相机对准营养成分表，AI 将自动提取每份卡路里、蛋白质、碳水和脂肪'
+          ? t('log.labelDesc' as any)
           : t('log.takeOrSelect')}
       </Text>
 
@@ -597,7 +615,7 @@ export default function LogScreen() {
             {t('tabs.log')}
           </Text>
           <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textSecondary, marginTop: 2 }}>
-            {mode === 'barcode' ? '扫描产品条形码查询营养信息' : mode === 'label' ? '拍摄营养成分表提取数据' : t('log.takeOrSelect')}
+            {mode === 'barcode' ? t('log.barcodeScanDesc' as any) : mode === 'label' ? t('log.labelScanDesc' as any) : t('log.takeOrSelect')}
           </Text>
         </View>
 
@@ -608,8 +626,9 @@ export default function LogScreen() {
           borderRadius: 16, borderWidth: 1, borderColor: colors.borderPrimary,
           padding: 4, marginBottom: DIMENSIONS.SPACING * 1.2,
         }}>
-          {MODE_CONFIG.map(({ key, icon, label }) => {
+          {MODE_CONFIG.map(({ key, icon }) => {
             const active = mode === key;
+            const modeLabel = key === 'photo' ? t('log.modePhoto' as any) : key === 'label' ? t('log.modeLabel' as any) : t('log.modeBarcode' as any);
             return (
               <TouchableOpacity
                 key={key}
@@ -631,7 +650,7 @@ export default function LogScreen() {
                   fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800',
                   color: active ? colors.backgroundPrimary : colors.textSecondary,
                 }}>
-                  {label}
+                  {modeLabel}
                 </Text>
               </TouchableOpacity>
             );
@@ -650,7 +669,7 @@ export default function LogScreen() {
               }}>
                 <ActivityIndicator size="large" color={colors.textPrimary} />
                 <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textSecondary, marginTop: DIMENSIONS.SPACING * 0.8 }}>
-                  正在查询产品信息...
+                  {t('log.lookingUp' as any)}
                 </Text>
               </View>
             ) : result ? null : (
@@ -676,7 +695,7 @@ export default function LogScreen() {
                 }}
               >
                 <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '700', color: colors.textPrimary }}>
-                  重新扫描
+                  {t('log.rescan' as any)}
                 </Text>
               </TouchableOpacity>
             )}
@@ -703,33 +722,54 @@ export default function LogScreen() {
                 </View>
 
                 {!result && (
-                  <TouchableOpacity
-                    onPress={() => analyzeImage(mode === 'label' ? 'label' : 'food')}
-                    disabled={analyzing}
-                    activeOpacity={0.8}
-                    style={{
-                      borderRadius: 24, paddingVertical: DIMENSIONS.SPACING,
-                      alignItems: 'center', justifyContent: 'center', minHeight: 56,
-                      backgroundColor: colors.textPrimary,
-                      shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.2, shadowRadius: 12, elevation: 6,
-                    }}
-                  >
-                    {analyzing ? (
-                      <ActivityIndicator color={colors.backgroundPrimary} size="large" />
-                    ) : (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
-                        <Ionicons
-                          name={mode === 'label' ? 'scan' : 'sparkles'}
-                          size={TYPOGRAPHY.iconM}
-                          color={colors.backgroundPrimary}
-                        />
-                        <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '900', color: colors.backgroundPrimary }}>
-                          {mode === 'label' ? '提取营养信息' : t('log.analyzeFood')}
+                  <>
+                    {/* 免费版剩余次数提示 */}
+                    {aiQuota !== -1 && (
+                      <TouchableOpacity
+                        onPress={() => router.push('/(tabs)/settings/pricing')}
+                        style={{
+                          flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                          gap: 6, marginBottom: DIMENSIONS.SPACING * 0.8,
+                          paddingVertical: DIMENSIONS.SPACING * 0.4,
+                          paddingHorizontal: DIMENSIONS.SPACING,
+                          backgroundColor: '#F59E0B22', borderRadius: 10,
+                          alignSelf: 'center',
+                        }}
+                      >
+                        <Ionicons name="flash" size={12} color="#F59E0B" />
+                        <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800', color: '#F59E0B' }}>
+                          {(t('log.freeQuotaBadge' as any) as string).replace('{quota}', String(aiQuota))}
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                     )}
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => analyzeImage(mode === 'label' ? 'label' : 'food')}
+                      disabled={analyzing}
+                      activeOpacity={0.8}
+                      style={{
+                        borderRadius: 24, paddingVertical: DIMENSIONS.SPACING,
+                        alignItems: 'center', justifyContent: 'center', minHeight: 56,
+                        backgroundColor: colors.textPrimary,
+                        shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.2, shadowRadius: 12, elevation: 6,
+                      }}
+                    >
+                      {analyzing ? (
+                        <ActivityIndicator color={colors.backgroundPrimary} size="large" />
+                      ) : (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
+                          <Ionicons
+                            name={mode === 'label' ? 'scan' : 'sparkles'}
+                            size={TYPOGRAPHY.iconM}
+                            color={colors.backgroundPrimary}
+                          />
+                          <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '900', color: colors.backgroundPrimary }}>
+                            {mode === 'label' ? t('log.extractNutrition' as any) : t('log.analyzeFood')}
+                          </Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             )}

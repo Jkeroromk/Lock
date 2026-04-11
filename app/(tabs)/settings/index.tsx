@@ -87,14 +87,14 @@ export default function SettingsScreen() {
       if (granted) {
         await scheduleDailyMealReminders();
         setNotificationsEnabled(true);
-        Alert.alert(t('settings.success'), '已开启每日餐食提醒（早8点、午12点、晚7点）');
+        Alert.alert(t('settings.success'), t('settings.notificationDescription'));
       } else {
         Alert.alert(
-          '需要通知权限',
-          '请前往系统设置开启通知权限',
+          t('settings.notifications'),
+          t('settings.notificationDescription'),
           [
-            { text: '取消', style: 'cancel' },
-            { text: '去设置', onPress: () => Linking.openSettings() },
+            { text: t('settings.cancel'), style: 'cancel' },
+            { text: t('settings.syncHealthData'), onPress: () => Linking.openSettings() },
           ]
         );
       }
@@ -106,7 +106,7 @@ export default function SettingsScreen() {
 
   const handleHealthConnect = async () => {
     if (Platform.OS !== 'ios') {
-      Alert.alert('Apple Health', '仅支持 iOS 设备');
+      Alert.alert('Apple Health', t('settings.healthConnectionsDescription'));
       return;
     }
     setHealthSyncing(true);
@@ -115,14 +115,14 @@ export default function SettingsScreen() {
       if (granted) {
         await syncHealthData();
         setHealthConnected(true);
-        Alert.alert('已连接', 'Apple Health 数据已同步');
+        Alert.alert(t('settings.healthConnections'), t('settings.connectionEnabled'));
       } else {
         Alert.alert(
-          '需要权限',
-          '请前往系统设置开启健康权限',
+          t('settings.healthConnections'),
+          t('settings.healthConnectionsDescription'),
           [
-            { text: '取消', style: 'cancel' },
-            { text: '去设置', onPress: () => Linking.openSettings() },
+            { text: t('settings.cancel'), style: 'cancel' },
+            { text: t('settings.syncHealthData'), onPress: () => Linking.openSettings() },
           ]
         );
       }
@@ -147,8 +147,8 @@ export default function SettingsScreen() {
 
     const newTranslations = require('@/i18n/locales').translations[langCode];
     Alert.alert(
-      newTranslations.settings.languageChanged || '语言已切换',
-      (newTranslations.settings.languageUpdated || '语言已更新为') + ' ' + languageNames[langCode]
+      newTranslations.settings.languageChanged,
+      newTranslations.settings.languageUpdated + ' ' + languageNames[langCode]
     );
   };
 
@@ -175,6 +175,13 @@ export default function SettingsScreen() {
           />
 
           <SettingItem
+            icon="scale-outline"
+            title={t('settings.weightTracker')}
+            description={t('settings.weightTrackerDescription')}
+            onPress={() => router.push('/(tabs)/settings/weight-tracker')}
+          />
+
+          <SettingItem
             icon="language"
             title={t('settings.language')}
             value={currentLanguageName}
@@ -193,10 +200,10 @@ export default function SettingsScreen() {
           {Platform.OS === 'ios' && (
             <SettingItem
               icon="heart"
-              title="Apple Health"
-              description={healthConnected ? '已连接 · 步数、消耗热量同步中' : '连接后可同步步数和运动数据'}
+              title={t('settings.healthConnections')}
+              description={healthConnected ? t('settings.connectionEnabled') : t('settings.healthConnectionsDescription')}
               onPress={healthSyncing ? undefined : handleHealthConnect}
-              value={healthConnected ? '已连接' : undefined}
+              value={healthConnected ? t('settings.connectedTo') : undefined}
             />
           )}
 
@@ -217,21 +224,15 @@ export default function SettingsScreen() {
           <SettingItem
             icon="download-outline"
             title={t('settings.exportData')}
+            description={t('settings.exportDataDescription')}
+            onPress={() => router.push('/(tabs)/settings/export-data')}
           />
 
           <SettingItem
             icon="information-circle-outline"
             title={t('settings.about')}
-          />
-
-          <SettingItem
-            icon="document-text-outline"
-            title={t('settings.privacyPolicy')}
-          />
-
-          <SettingItem
-            icon="shield-checkmark-outline"
-            title={t('settings.termsOfService')}
+            description={t('settings.aboutDescription')}
+            onPress={() => router.push('/(tabs)/settings/about')}
           />
 
           {/* Logout */}
@@ -293,7 +294,7 @@ export default function SettingsScreen() {
       <LanguageModal
         visible={showLanguageModal}
         currentLanguage={language}
-        languages={languages}
+        languages={[]}
         onLanguageSelect={handleLanguageChange}
         onClose={() => setShowLanguageModal(false)}
       />

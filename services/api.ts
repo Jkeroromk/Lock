@@ -176,6 +176,7 @@ export interface UserProfile {
   username?: string | null;
   bio?: string | null;
   avatarEmoji?: string | null;
+  showGender?: boolean | null;
   height?: number | null;
   age?: number | null;
   weight?: number | null;
@@ -184,6 +185,7 @@ export interface UserProfile {
   exerciseFrequency?: string | null;
   expectedTimeframe?: string | null;
   plan?: 'FREE' | 'PRO' | 'ENTERPRISE';
+  streak?: number;
   hasCompletedOnboarding: boolean;
 }
 
@@ -343,5 +345,43 @@ export interface DietAnalysis {
 
 export const fetchDietAnalysis = async (): Promise<DietAnalysis> => {
   const res = await api.get<DietAnalysis>('/api/ai/diet-analysis');
+  return res.data;
+};
+
+// ─── Weight ───────────────────────────────────────────────────────────────────
+
+export interface WeightRecord {
+  id: string;
+  weight: number;
+  recordedAt: string;
+  note?: string;
+}
+
+export const fetchWeightRecords = async (): Promise<WeightRecord[]> => {
+  const res = await api.get<WeightRecord[]>('/api/weight');
+  return res.data;
+};
+
+export const logWeight = async (weight: number, note?: string): Promise<WeightRecord> => {
+  const res = await api.post<WeightRecord>('/api/weight', { weight, note });
+  return res.data;
+};
+
+export const deleteWeight = async (id: string): Promise<void> => {
+  await api.delete(`/api/weight?id=${id}`);
+};
+
+export interface MealExportRecord {
+  id: string;
+  food_name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  created_at: string;
+}
+
+export const fetchAllMealsForExport = async (): Promise<MealExportRecord[]> => {
+  const res = await api.get<MealExportRecord[]>('/api/meals/export');
   return res.data;
 };

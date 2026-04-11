@@ -25,20 +25,13 @@ interface GoalsModalProps {
   onCancel: () => void;
 }
 
-const FITNESS_GOALS: { value: Goal; label: string; icon: string }[] = [
-  { value: 'lose_weight', label: '减重', icon: 'trending-down' },
-  { value: 'lose_fat', label: '减脂', icon: 'flame' },
-  { value: 'gain_muscle', label: '增肌', icon: 'barbell' },
+const FITNESS_GOAL_VALUES: { value: Goal; icon: string }[] = [
+  { value: 'lose_weight', icon: 'trending-down' },
+  { value: 'lose_fat', icon: 'flame' },
+  { value: 'gain_muscle', icon: 'barbell' },
 ];
 
-const EXERCISE_FREQS: { value: ExerciseFrequency; label: string }[] = [
-  { value: 'never', label: '几乎不' },
-  { value: 'rarely', label: '偶尔' },
-  { value: '1-2', label: '1-2次/周' },
-  { value: '3-4', label: '3-4次/周' },
-  { value: '5-6', label: '5-6次/周' },
-  { value: 'daily', label: '每天' },
-];
+const EXERCISE_FREQ_VALUES: ExerciseFrequency[] = ['never', 'rarely', '1-2', '3-4', '5-6', 'daily'];
 
 const ACTIVITY_MULTIPLIER: Record<string, number> = {
   never: 1.2, rarely: 1.375, '1-2': 1.375, '3-4': 1.55, '5-6': 1.725, daily: 1.9,
@@ -157,7 +150,7 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
               paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingVertical: DIMENSIONS.SPACING,
             }}>
               <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
-                目标与身体数据
+                {t('settings.editGoals')}
               </Text>
               <TouchableOpacity onPress={onCancel} style={{
                 width: 32, height: 32, borderRadius: 16,
@@ -172,15 +165,15 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}>
 
               {/* Daily goals */}
-              {sectionLabel('每日目标')}
+              {sectionLabel(t('settings.goals'))}
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>卡路里 (kcal)</Text>
-                  <TextInput style={inputStyle} placeholder="2000" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={calories} onChangeText={setCalories} />
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>{t('settings.dailyCalories')}</Text>
+                  <TextInput style={inputStyle} placeholder={t('settings.dailyCaloriesPlaceholder')} placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={calories} onChangeText={setCalories} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>步数</Text>
-                  <TextInput style={inputStyle} placeholder="10000" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={steps} onChangeText={setSteps} />
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>{t('settings.dailySteps')}</Text>
+                  <TextInput style={inputStyle} placeholder={t('settings.dailyStepsPlaceholder')} placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={steps} onChangeText={setSteps} />
                 </View>
               </View>
               {recommended && (
@@ -190,40 +183,39 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: DIMENSIONS.SPACING * 0.7, paddingVertical: DIMENSIONS.SPACING * 0.35, borderRadius: 20, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}
                   >
                     <Ionicons name="sparkles" size={11} color={colors.textSecondary} />
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>推荐 {recommended.calories} kcal</Text>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>{recommended.calories} {t('settings.kcalPerDay')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setSteps(String(recommended.steps))}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: DIMENSIONS.SPACING * 0.7, paddingVertical: DIMENSIONS.SPACING * 0.35, borderRadius: 20, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}
                   >
                     <Ionicons name="sparkles" size={11} color={colors.textSecondary} />
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>推荐 {recommended.steps.toLocaleString()} 步</Text>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>{recommended.steps.toLocaleString()} {t('settings.stepsPerDay')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
 
               {/* Body stats */}
-              {sectionLabel('身体数据')}
+              {sectionLabel(t('settings.profileInfo'))}
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 0.8 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>身高 (cm)</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>{t('settings.height')} (cm)</Text>
                   <TextInput style={inputStyle} placeholder="170" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={height} onChangeText={setHeight} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>体重 (kg)</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>{t('settings.weight')} (kg)</Text>
                   <TextInput style={inputStyle} placeholder="65" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={weight} onChangeText={setWeight} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>年龄</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>{t('settings.age')}</Text>
                   <TextInput style={inputStyle} placeholder="25" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={age} onChangeText={setAge} />
                 </View>
               </View>
 
-
               {/* Fitness goal */}
-              {sectionLabel('健身目标')}
+              {sectionLabel(t('settings.goal'))}
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5 }}>
-                {FITNESS_GOALS.map((g) => (
+                {FITNESS_GOAL_VALUES.map((g) => (
                   <TouchableOpacity key={g.value} onPress={() => setGoal(g.value)} style={{
                     flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.8, borderRadius: 14, alignItems: 'center',
                     backgroundColor: goal === g.value ? colors.textPrimary : colors.cardBackground,
@@ -232,24 +224,24 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
                   }}>
                     <Ionicons name={g.icon as any} size={TYPOGRAPHY.iconXS} color={goal === g.value ? colors.backgroundPrimary : colors.textPrimary} />
                     <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '900', color: goal === g.value ? colors.backgroundPrimary : colors.textPrimary }}>
-                      {g.label}
+                      {t(`settings.goalOptions.${g.value}` as any)}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
               {/* Exercise frequency */}
-              {sectionLabel('运动频率')}
+              {sectionLabel(t('onboarding.exerciseFrequencyTitle'))}
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: DIMENSIONS.SPACING * 0.5, marginBottom: DIMENSIONS.SPACING * 1.5 }}>
-                {EXERCISE_FREQS.map((f) => (
-                  <TouchableOpacity key={f.value} onPress={() => setExerciseFreq(f.value)} style={{
+                {EXERCISE_FREQ_VALUES.map((val) => (
+                  <TouchableOpacity key={val} onPress={() => setExerciseFreq(val)} style={{
                     paddingHorizontal: DIMENSIONS.SPACING * 0.9, paddingVertical: DIMENSIONS.SPACING * 0.5,
                     borderRadius: 20, borderWidth: 2,
-                    backgroundColor: exerciseFreq === f.value ? colors.textPrimary : colors.cardBackground,
-                    borderColor: exerciseFreq === f.value ? colors.textPrimary : colors.borderPrimary,
+                    backgroundColor: exerciseFreq === val ? colors.textPrimary : colors.cardBackground,
+                    borderColor: exerciseFreq === val ? colors.textPrimary : colors.borderPrimary,
                   }}>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: exerciseFreq === f.value ? colors.backgroundPrimary : colors.textPrimary }}>
-                      {f.label}
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: exerciseFreq === val ? colors.backgroundPrimary : colors.textPrimary }}>
+                      {t(`onboarding.exerciseFrequency.${val}` as any)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -261,14 +253,14 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
                   flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9, borderRadius: 14, alignItems: 'center',
                   backgroundColor: colors.cardBackground, borderWidth: 2, borderColor: colors.borderPrimary,
                 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>取消</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleSave} disabled={saving} style={{
                   flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9, borderRadius: 14, alignItems: 'center',
                   backgroundColor: colors.textPrimary, opacity: saving ? 0.6 : 1,
                 }}>
                   {saving ? <ActivityIndicator color={colors.backgroundPrimary} /> : (
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>保存</Text>
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>{t('common.save')}</Text>
                   )}
                 </TouchableOpacity>
               </View>
