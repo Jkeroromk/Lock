@@ -48,6 +48,7 @@ export default function LoginScreen() {
         username: profile.username ?? undefined,
         bio: profile.bio ?? undefined,
         avatarEmoji: profile.avatarEmoji ?? undefined,
+        showGender: profile.showGender ?? false,
         height: profile.height ?? undefined,
         age: profile.age ?? undefined,
         weight: profile.weight ?? undefined,
@@ -56,6 +57,7 @@ export default function LoginScreen() {
         exerciseFrequency: profile.exerciseFrequency as any,
         expectedTimeframe: profile.expectedTimeframe as any,
         plan: (profile.plan ?? 'FREE') as any,
+        streak: profile.streak ?? 0,
         hasCompletedOnboarding: profile.hasCompletedOnboarding,
       });
       if (profile.hasCompletedOnboarding) {
@@ -175,7 +177,7 @@ export default function LoginScreen() {
   const handlePasswordReset = async () => {
     if (!signInLoaded) return;
     if (resetCode.length < 6) {
-      Alert.alert(t('auth.error'), t('auth.enterCode') || '请输入验证码');
+      Alert.alert(t('auth.error'), t('auth.enterCode'));
       return;
     }
     if (newPassword.length < 8) {

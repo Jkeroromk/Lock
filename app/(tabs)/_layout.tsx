@@ -46,7 +46,7 @@ function LogTabButton(props: any) {
       const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
       
       if (permissionResult.granted === false) {
-        Alert.alert('需要权限', '我们需要访问相机以拍摄食物照片');
+        Alert.alert(t('log.needPermission'), t('log.cameraPermissionDesc' as any));
         setIsOpeningCamera(false);
         // 即使没有权限，也导航到log页面
         if (!isOnLogPage) {

@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      name, email, username, bio, avatarEmoji,
+      name, email, username, bio, avatarEmoji, showGender,
       height, age, weight, gender, goal,
       exerciseFrequency, expectedTimeframe, hasCompletedOnboarding,
     } = body;
@@ -43,6 +43,7 @@ export async function PUT(request: NextRequest) {
         username,
         bio,
         avatarEmoji,
+        showGender: showGender ?? false,
         height,
         age,
         weight,
@@ -58,6 +59,7 @@ export async function PUT(request: NextRequest) {
         ...(username !== undefined && { username }),
         ...(bio !== undefined && { bio }),
         ...(avatarEmoji !== undefined && { avatarEmoji }),
+        ...(showGender !== undefined && { showGender }),
         ...(height !== undefined && { height }),
         ...(age !== undefined && { age }),
         ...(weight !== undefined && { weight }),

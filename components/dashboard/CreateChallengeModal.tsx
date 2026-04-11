@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { createChallenge } from '@/services/api';
+import { useTranslation } from '@/i18n';
 
 interface CreateChallengeModalProps {
   visible: boolean;
@@ -11,20 +12,13 @@ interface CreateChallengeModalProps {
   onSuccess: () => void;
 }
 
-const TYPES = [
-  { key: 'CALORIES', label: '卡路里目标', icon: 'flame', unit: 'kcal/天' },
-  { key: 'STREAK', label: '连续打卡', icon: 'calendar', unit: '天' },
-  { key: 'STEPS', label: '步数挑战', icon: 'footsteps', unit: '步/天' },
-];
-
-const DURATIONS = [
-  { label: '7天', days: 7 },
-  { label: '14天', days: 14 },
-  { label: '30天', days: 30 },
-];
+const TYPE_KEYS = ['CALORIES', 'STREAK', 'STEPS'] as const;
+const TYPE_ICONS: Record<string, string> = { CALORIES: 'flame', STREAK: 'calendar', STEPS: 'footsteps' };
+const DURATION_DAYS = [7, 14, 30];
 
 export default function CreateChallengeModal({ visible, onClose, onSuccess }: CreateChallengeModalProps) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState('CALORIES');
@@ -35,7 +29,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
 
   const handleCreate = async () => {
     if (!title.trim() || !goalValue) {
-      setError('请填写标题和目标值');
+      setError(t('challenge.validationError' as any));
       return;
     }
     setLoading(true);
@@ -56,13 +50,14 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
       onSuccess();
       onClose();
     } catch (e: any) {
-      setError(e.response?.data?.error || '创建失败，请重试');
+      setError(e.response?.data?.error || t('challenge.createFailed' as any));
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedType = TYPES.find((t) => t.key === type)!;
+  const unitKey = type === 'CALORIES' ? 'challenge.unitCalories' : type === 'STEPS' ? 'challenge.unitSteps' : 'challenge.unitStreak';
+  const typeLabel = (key: string) => t(`challenge.type${key.charAt(0) + key.slice(1).toLowerCase()}` as any);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -89,18 +84,18 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
               fontSize: TYPOGRAPHY.bodyL, fontWeight: '900',
               color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 1.5,
             }}>
-              创建挑战
+              {t('challenge.create' as any)}
             </Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               {/* Title */}
               <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
-                挑战名称
+                {t('challenge.name' as any)}
               </Text>
               <TextInput
                 value={title}
                 onChangeText={(v) => { setTitle(v); setError(''); }}
-                placeholder="例如：本周燃脂挑战"
+                placeholder={t('challenge.namePlaceholder' as any)}
                 placeholderTextColor={colors.textSecondary}
                 style={{
                   borderRadius: 14, borderWidth: 2, borderColor: colors.borderPrimary,
@@ -113,31 +108,31 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
 
               {/* Type */}
               <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
-                挑战类型
+                {t('challenge.type' as any)}
               </Text>
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-                {TYPES.map((t) => (
+                {TYPE_KEYS.map((key) => (
                   <TouchableOpacity
-                    key={t.key}
-                    onPress={() => setType(t.key)}
+                    key={key}
+                    onPress={() => setType(key)}
                     style={{
                       flex: 1, borderRadius: 14, padding: DIMENSIONS.SPACING * 0.8,
-                      backgroundColor: type === t.key ? colors.textPrimary : colors.cardBackground,
-                      borderWidth: 2, borderColor: type === t.key ? colors.textPrimary : colors.borderPrimary,
+                      backgroundColor: type === key ? colors.textPrimary : colors.cardBackground,
+                      borderWidth: 2, borderColor: type === key ? colors.textPrimary : colors.borderPrimary,
                       alignItems: 'center',
                     }}
                   >
                     <Ionicons
-                      name={t.icon as any}
+                      name={TYPE_ICONS[key] as any}
                       size={TYPOGRAPHY.iconXS}
-                      color={type === t.key ? colors.backgroundPrimary : colors.textPrimary}
+                      color={type === key ? colors.backgroundPrimary : colors.textPrimary}
                     />
                     <Text style={{
                       fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', marginTop: 4,
-                      color: type === t.key ? colors.backgroundPrimary : colors.textPrimary,
+                      color: type === key ? colors.backgroundPrimary : colors.textPrimary,
                       textAlign: 'center',
                     }}>
-                      {t.label}
+                      {typeLabel(key)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -145,7 +140,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
 
               {/* Goal value */}
               <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
-                每日目标 ({selectedType.unit})
+                {t('challenge.dailyGoal' as any)} ({t(unitKey as any)})
               </Text>
               <TextInput
                 value={goalValue}
@@ -164,25 +159,25 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
 
               {/* Duration */}
               <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
-                持续时间
+                {t('challenge.duration' as any)}
               </Text>
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 1.5 }}>
-                {DURATIONS.map((d) => (
+                {DURATION_DAYS.map((days) => (
                   <TouchableOpacity
-                    key={d.days}
-                    onPress={() => setDurationDays(d.days)}
+                    key={days}
+                    onPress={() => setDurationDays(days)}
                     style={{
                       flex: 1, borderRadius: 14, paddingVertical: DIMENSIONS.SPACING * 0.7,
-                      backgroundColor: durationDays === d.days ? colors.textPrimary : colors.cardBackground,
-                      borderWidth: 2, borderColor: durationDays === d.days ? colors.textPrimary : colors.borderPrimary,
+                      backgroundColor: durationDays === days ? colors.textPrimary : colors.cardBackground,
+                      borderWidth: 2, borderColor: durationDays === days ? colors.textPrimary : colors.borderPrimary,
                       alignItems: 'center',
                     }}
                   >
                     <Text style={{
                       fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
-                      color: durationDays === d.days ? colors.backgroundPrimary : colors.textPrimary,
+                      color: durationDays === days ? colors.backgroundPrimary : colors.textPrimary,
                     }}>
-                      {d.label}
+                      {(t('challenge.daysCount' as any) as string).replace('{days}', String(days))}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -206,7 +201,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
                   <ActivityIndicator color={colors.backgroundPrimary} />
                 ) : (
                   <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.backgroundPrimary }}>
-                    创建挑战
+                    {t('challenge.create' as any)}
                   </Text>
                 )}
               </TouchableOpacity>

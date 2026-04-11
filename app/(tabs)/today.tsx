@@ -8,22 +8,60 @@ import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CaloriesCard from '@/components/today/CaloriesCard';
 import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
 import MealsList from '@/components/today/MealsList';
+import WaterCard from '@/components/today/WaterCard';
 import { getHealthData, requestHealthPermissions, syncHealthData } from '@/services/health';
 
+const WATER_KEY = 'lock_water_glasses';
+
 export default function TodayScreen() {
-  const { todayCalories, todayMeals, refreshToday, dailyCalorieGoal } = useStore();
+  const { todayCalories, todayMeals, refreshToday, dailyCalorieGoal, user } = useStore();
+  const streak = user?.streak ?? 0;
   const { t, language } = useTranslation();
   const colors = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [healthData, setHealthData] = useState({
-    steps: 0,
-    activeEnergy: 0,
-  });
+  const [healthData, setHealthData] = useState({ steps: 0, activeEnergy: 0 });
+  const [waterGlasses, setWaterGlasses] = useState(0);
+  const WATER_GOAL = 8;
+
+  // 水分追踪 — 持久化到 AsyncStorage，按日期重置
+  const loadWater = async () => {
+    try {
+      const today = new Date().toDateString();
+      const stored = await AsyncStorage.getItem(WATER_KEY);
+      const parsed = stored ? JSON.parse(stored) : null;
+      if (parsed?.date === today) {
+        setWaterGlasses(parsed.glasses ?? 0);
+      } else {
+        setWaterGlasses(0);
+        await AsyncStorage.setItem(WATER_KEY, JSON.stringify({ date: today, glasses: 0 }));
+      }
+    } catch {}
+  };
+
+  const saveWater = async (glasses: number) => {
+    const today = new Date().toDateString();
+    await AsyncStorage.setItem(WATER_KEY, JSON.stringify({ date: today, glasses }));
+  };
+
+  const handleAddWater = async () => {
+    if (waterGlasses >= WATER_GOAL) return;
+    const next = waterGlasses + 1;
+    setWaterGlasses(next);
+    await saveWater(next);
+  };
+
+  const handleRemoveWater = async () => {
+    if (waterGlasses <= 0) return;
+    const next = waterGlasses - 1;
+    setWaterGlasses(next);
+    await saveWater(next);
+  };
 
   const loadHealthData = async () => {
     try {
@@ -47,7 +85,7 @@ export default function TodayScreen() {
 
   useEffect(() => {
     requestHealthPermissions();
-    Promise.all([refreshToday(), loadHealthData()]).finally(() => setLoading(false));
+    Promise.all([refreshToday(), loadHealthData(), loadWater()]).finally(() => setLoading(false));
   }, []);
 
   // 每次切回 today tab 时刷新数据（删除/添加餐食后立刻反映）
@@ -72,7 +110,7 @@ export default function TodayScreen() {
           }
         >
           <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8, paddingBottom: DIMENSIONS.SPACING }}>
-            <DateHeader language={language} />
+            <DateHeader language={language} streak={streak} />
 
             {loading ? (
               <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
@@ -106,6 +144,13 @@ export default function TodayScreen() {
                     goal={500}
                   />
                 </View>
+
+                <WaterCard
+                  glasses={waterGlasses}
+                  goal={WATER_GOAL}
+                  onAdd={handleAddWater}
+                  onRemove={handleRemoveWater}
+                />
 
                 <MealsList meals={todayMeals} />
 

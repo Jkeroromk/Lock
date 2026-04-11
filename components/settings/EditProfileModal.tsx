@@ -10,7 +10,6 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { updateProfile } from '@/services/api';
 
-const GENDER_LABELS: Record<string, string> = { male: '男', female: '女', other: '其他' };
 
 const AVATAR_OPTIONS = [
   '🏃','🧘','💪','🔥','😎','🚀',
@@ -57,7 +56,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('需要权限', '请允许访问相册');
+      Alert.alert(t('log.needPermission'), t('settings.privacyControls'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -74,7 +73,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
 
   const handleSave = async () => {
     if (!username.trim()) {
-      Alert.alert('', '请填写用户名');
+      Alert.alert('', t('settings.nameRequired'));
       return;
     }
     setSaving(true);
@@ -85,10 +84,11 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
         username: uname,
         bio: bio.trim() || undefined,
         avatarEmoji: avatarImage ? undefined : avatarEmoji,
-      });
+        showGender,
+      } as any);
       onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage, showGender });
     } catch (err: any) {
-      Alert.alert('保存失败', err?.response?.data?.error || err?.message || '请重试');
+      Alert.alert(t('weightTracker.saveFailed'), err?.response?.data?.error || err?.message || t('common.retry'));
     } finally {
       setSaving(false);
     }
@@ -116,7 +116,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
               paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingVertical: DIMENSIONS.SPACING,
             }}>
               <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
-                编辑资料
+                {t('settings.editProfile')}
               </Text>
               <TouchableOpacity onPress={onCancel} style={{
                 width: 32, height: 32, borderRadius: 16,
@@ -156,14 +156,14 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                   backgroundColor: colors.cardBackground, marginBottom: DIMENSIONS.SPACING * 0.8,
                 }}>
                   <Ionicons name="image-outline" size={14} color={colors.textPrimary} />
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary }}>上传照片</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary }}>{t('settings.changeAvatar')}</Text>
                 </TouchableOpacity>
                 <Text style={{
                   fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700',
                   color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1,
                   marginBottom: DIMENSIONS.SPACING * 0.5,
                 }}>
-                  或选择 Emoji
+                  Emoji
                 </Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, paddingHorizontal: DIMENSIONS.SPACING * 1.5 }}>
                   {AVATAR_OPTIONS.map((emoji) => (
@@ -187,7 +187,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
               {/* Username */}
               <View style={{ marginBottom: DIMENSIONS.SPACING * 1 }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.4 }}>
-                  用户名
+                  {t('settings.userName')}
                 </Text>
                 <View style={{
                   flexDirection: 'row', alignItems: 'center',
@@ -210,14 +210,14 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                   />
                 </View>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, marginTop: 4, marginLeft: 2 }}>
-                  好友可通过用户名添加你
+                  {t('settings.usernameHint' as any)}
                 </Text>
               </View>
 
               {/* Bio */}
               <View style={{ marginBottom: DIMENSIONS.SPACING * 1.5 }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.4 }}>
-                  个人简介
+                  {t('settings.profileInfo')}
                 </Text>
                 <TextInput
                   style={{
@@ -226,7 +226,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                     fontWeight: '500', borderWidth: 2, borderColor: colors.borderPrimary,
                     height: 90, textAlignVertical: 'top',
                   }}
-                  placeholder="介绍一下自己..."
+                  placeholder="..."
                   placeholderTextColor={colors.textSecondary}
                   value={bio}
                   onChangeText={(v) => v.length <= 100 && setBio(v)}
@@ -253,11 +253,11 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <Ionicons name={showGender ? 'eye' : 'eye-off'} size={16} color={colors.textPrimary} />
                     <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                      显示性别
+                      {t('settings.gender')}
                     </Text>
                     {showGender && (
                       <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary, fontWeight: '600' }}>
-                        ({GENDER_LABELS[user.gender] || user.gender})
+                        ({t(`settings.genderOptions.${user.gender}` as any) || user.gender})
                       </Text>
                     )}
                   </View>
@@ -287,7 +287,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                   }}
                 >
                   <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                    取消
+                    {t('common.cancel')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -300,7 +300,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                   }}
                 >
                   <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>
-                    {saving ? '保存中...' : '保存'}
+                    {t('common.save')}
                   </Text>
                 </TouchableOpacity>
               </View>

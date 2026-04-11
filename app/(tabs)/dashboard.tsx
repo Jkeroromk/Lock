@@ -139,7 +139,7 @@ export default function DashboardScreen() {
             marginBottom: DIMENSIONS.SPACING * 1.2,
           }}>
             {(['friends', 'challenges', 'feed'] as Tab[]).map((tab) => {
-              const labels: Record<Tab, string> = { friends: '好友', challenges: '挑战', feed: '动态' };
+              const labels: Record<Tab, string> = { friends: t('dashboard.leaderboard'), challenges: t('dashboard.challenges'), feed: t('tabs.social') };
               const icons: Record<Tab, string> = { friends: 'people', challenges: 'flag', feed: 'newspaper' };
               const active = activeTab === tab;
               return (
@@ -200,14 +200,14 @@ export default function DashboardScreen() {
                     color: colors.textPrimary, marginTop: DIMENSIONS.SPACING * 0.8,
                     marginBottom: DIMENSIONS.SPACING * 0.4,
                   }}>
-                    还没有好友
+                    {t('dashboard.friendsLeaderboard')}
                   </Text>
                   <Text style={{
                     fontSize: TYPOGRAPHY.bodyS, fontWeight: '500',
                     color: colors.textSecondary, textAlign: 'center',
                     lineHeight: TYPOGRAPHY.bodyS * 1.5,
                   }}>
-                    分享你的邀请码邀请朋友，或通过用户名添加好友一起打卡
+                    {t('dashboard.withFriends')}
                   </Text>
                 </View>
               )}
@@ -224,7 +224,7 @@ export default function DashboardScreen() {
                   color: colors.textSecondary, textTransform: 'uppercase',
                   letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.8,
                 }}>
-                  我的邀请码
+                  {t('dashboard.myRank')}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <TouchableOpacity
@@ -264,7 +264,7 @@ export default function DashboardScreen() {
                       fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
                       color: colors.backgroundPrimary,
                     }}>
-                      添加好友
+                      {t('dashboard.addFriend')}
                     </Text>
                   </TouchableOpacity>
                 </View>
