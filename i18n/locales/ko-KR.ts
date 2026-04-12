@@ -57,6 +57,10 @@ const koKR = {
     sendFailed: '전송 실패, 다시 시도해주세요',
     friendRequests: '친구 요청',
     rankFormat: '{rank}위',
+    inviteCode: '초대 코드',
+    inviteHint: '코드를 친구에게 공유하면 바로 추가할 수 있어요.',
+    me: '나',
+    today: '오늘',
   },
   feed: {
     title: '친구 활동',

@@ -1,5 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, Modal, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
@@ -13,15 +13,22 @@ interface AddFriendModalProps {
   visible: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialValue?: string; // 深链接邀请码预填
 }
 
-export default function AddFriendModal({ visible, onClose, onSuccess }: AddFriendModalProps) {
+export default function AddFriendModal({ visible, onClose, onSuccess, initialValue }: AddFriendModalProps) {
   const colors = useTheme();
   const router = useRouter();
   const { user } = useStore();
   const { t } = useTranslation();
-  const [identifier, setIdentifier] = useState('');
+  const [identifier, setIdentifier] = useState(initialValue ?? '');
   const [loading, setLoading] = useState(false);
+
+  // 深链接打开时自动更新预填值
+  useEffect(() => {
+    if (initialValue) setIdentifier(initialValue);
+  }, [initialValue]);
+
   const [error, setError] = useState('');
   const [isLimitError, setIsLimitError] = useState(false);
 

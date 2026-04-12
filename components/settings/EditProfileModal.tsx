@@ -5,6 +5,7 @@ import {
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
@@ -66,7 +67,12 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
       quality: 0.6,
     });
     if (!result.canceled && result.assets[0]) {
-      setAvatarImage(result.assets[0].uri);
+      // 复制到 App 永久目录，防止设备临时 URI 重启后失效
+      const src = result.assets[0].uri;
+      const ext = src.split('.').pop()?.split('?')[0] || 'jpg';
+      const dest = `${FileSystem.documentDirectory}avatar_${Date.now()}.${ext}`;
+      await FileSystem.copyAsync({ from: src, to: dest });
+      setAvatarImage(dest);
       setAvatarEmoji('');
     }
   };

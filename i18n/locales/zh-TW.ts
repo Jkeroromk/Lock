@@ -57,6 +57,10 @@ const zhTW = {
     sendFailed: '發送失敗，請重試',
     friendRequests: '好友請求',
     rankFormat: '第 {rank} 名',
+    inviteCode: '邀請碼',
+    inviteHint: '把邀請碼分享給朋友，他們可以直接添加你。',
+    me: '我',
+    today: '今日',
   },
   feed: {
     title: '好友動態',

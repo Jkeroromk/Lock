@@ -66,6 +66,10 @@ const enUS = {
     sendFailed: 'Failed to send, please try again',
     friendRequests: 'Friend Requests',
     rankFormat: '#{rank}',
+    inviteCode: 'Invite Code',
+    inviteHint: 'Share your code so friends can add you directly.',
+    me: 'Me',
+    today: 'Today',
   },
   feed: {
     title: 'Friend Activity',
