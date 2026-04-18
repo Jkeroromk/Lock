@@ -57,6 +57,10 @@ const jaJP = {
     sendFailed: '送信に失敗しました。再試行してください',
     friendRequests: '友達リクエスト',
     rankFormat: '{rank}位',
+    inviteCode: '招待コード',
+    inviteHint: 'コードを友達に共有して直接追加してもらいましょう。',
+    me: '自分',
+    today: '今日',
   },
   feed: {
     title: '友達のアクティビティ',

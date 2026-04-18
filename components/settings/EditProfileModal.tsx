@@ -5,6 +5,7 @@ import {
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
@@ -63,10 +64,14 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.6,
+      quality: 0.5,
     });
     if (!result.canceled && result.assets[0]) {
-      setAvatarImage(result.assets[0].uri);
+      const src = result.assets[0].uri;
+      // 读取为 base64，存数据库，不依赖本地文件路径
+      const base64 = await FileSystem.readAsStringAsync(src, { encoding: FileSystem.EncodingType.Base64 });
+      const dataUri = `data:image/jpeg;base64,${base64}`;
+      setAvatarImage(dataUri);
       setAvatarEmoji('');
     }
   };
@@ -84,9 +89,10 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
         username: uname,
         bio: bio.trim() || undefined,
         avatarEmoji: avatarImage ? undefined : avatarEmoji,
+        avatarImage: avatarImage || null,
         showGender,
       } as any);
-      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage, showGender });
+      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage: avatarImage || undefined, showGender });
     } catch (err: any) {
       Alert.alert(t('weightTracker.saveFailed'), err?.response?.data?.error || err?.message || t('common.retry'));
     } finally {

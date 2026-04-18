@@ -48,6 +48,7 @@ export default function LoginScreen() {
         username: profile.username ?? undefined,
         bio: profile.bio ?? undefined,
         avatarEmoji: profile.avatarEmoji ?? undefined,
+        avatarImage: profile.avatarImage ?? undefined,
         showGender: profile.showGender ?? false,
         height: profile.height ?? undefined,
         age: profile.age ?? undefined,

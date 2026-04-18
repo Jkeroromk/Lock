@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
+import { authenticateRequest } from '@/lib/auth';
+import { checkAndIncrementAiQuota } from '@/lib/ai-rate-limit';
 
 const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY?.trim();
 const FIREWORKS_API_URL = 'https://api.fireworks.ai/inference/v1/chat/completions';
+const FIREWORKS_TIMEOUT_MS = 30_000;
+
+// base64 编码的 10MB 图片约为 13,981,013 字符
+const MAX_BASE64_LENGTH = 14_000_000;
 
 interface VisionResponse {
   food: string;
@@ -14,22 +20,30 @@ interface VisionResponse {
 }
 
 export async function POST(request: NextRequest) {
+  // 认证
+  const auth = await authenticateRequest(request);
+  if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
+
   try {
     const { image, lang, mode } = await request.json();
 
     if (!image) {
-      return NextResponse.json(
-        { error: '缺少图片数据' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: '缺少图片数据' }, { status: 400 });
+    }
+
+    if (typeof image !== 'string' || image.length > MAX_BASE64_LENGTH) {
+      return NextResponse.json({ error: '图片大小超出限制（最大 10MB）' }, { status: 413 });
     }
 
     if (!FIREWORKS_API_KEY) {
-      return NextResponse.json(
-        { error: 'Fireworks API key 未配置' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Fireworks API key 未配置' }, { status: 500 });
     }
+
+    // ── 限流检查（与 diet-analysis 共享同一计数器）──────────────────────────
+    const quota = await checkAndIncrementAiQuota(userId);
+    if (!quota.ok) return quota.response;
+    // ────────────────────────────────────────────────────────────────────────
 
     // Build language-specific prompt
     const langPromptMap: Record<string, string> = {
@@ -41,7 +55,6 @@ export async function POST(request: NextRequest) {
     };
     const langInstruction = langPromptMap[lang] ?? langPromptMap['en-US'];
 
-    // Build prompt based on mode
     const analysisMode = mode === 'label' ? 'label' : 'food';
     const promptText = analysisMode === 'label'
       ? `This image shows a nutrition facts label or nutrition information table. Extract the nutritional data and return JSON in exactly this format:
@@ -72,7 +85,6 @@ Instructions:
 ${langInstruction}
 Return only the JSON, no other text.`;
 
-    // 调用 Fireworks AI Vision 模型
     const response = await axios.post(
       FIREWORKS_API_URL,
       {
@@ -83,14 +95,9 @@ Return only the JSON, no other text.`;
             content: [
               {
                 type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${image}`,
-                },
+                image_url: { url: `data:image/jpeg;base64,${image}` },
               },
-              {
-                type: 'text',
-                text: promptText,
-              },
+              { type: 'text', text: promptText },
             ],
           },
         ],
@@ -102,46 +109,28 @@ Return only the JSON, no other text.`;
           Authorization: `Bearer ${FIREWORKS_API_KEY}`,
           'Content-Type': 'application/json',
         },
+        timeout: FIREWORKS_TIMEOUT_MS,
       }
     );
 
     const content = response.data.choices[0]?.message?.content || '';
-    
-    // 尝试解析 JSON 响应
+
     let analysis: VisionResponse;
     try {
-      // 移除可能的 markdown 代码块标记
       const jsonContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       analysis = JSON.parse(jsonContent);
-    } catch (parseError) {
-      // 如果解析失败，返回默认值
+    } catch {
       console.error('Failed to parse AI response:', content);
-      analysis = {
-        food: 'Unknown food',
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-        confidence: 0.5,
-      };
+      analysis = { food: 'Unknown food', calories: 0, protein: 0, carbs: 0, fat: 0, confidence: 0.5 };
     }
 
-    // 验证返回的数据
     if (!analysis.food || typeof analysis.calories !== 'number') {
-      return NextResponse.json(
-        { error: 'AI 返回的数据格式不正确' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'AI 返回的数据格式不正确' }, { status: 500 });
     }
 
-    return NextResponse.json(analysis);
+    return NextResponse.json({ ...analysis, remaining: quota.remaining });
   } catch (error: any) {
     console.error('Vision API error:', error);
-    return NextResponse.json(
-      { error: error.message || '分析图片失败' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '分析图片失败' }, { status: 500 });
   }
 }
-
-

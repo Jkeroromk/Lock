@@ -4,7 +4,7 @@ import { getStoredToken } from './tokenStore';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-nextjs-app.vercel.app';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -147,6 +147,16 @@ export const fetchTodayData = async (): Promise<{ totalCalories: number; meals: 
   }
 };
 
+export const fetchDayMeals = async (date: string): Promise<{ totalCalories: number; meals: any[] }> => {
+  try {
+    const { tzOffset } = getLocalDateParams();
+    const response = await api.get(`/api/today?date=${date}&tzOffset=${tzOffset}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || '获取当日数据失败');
+  }
+};
+
 export const fetchWeeklyData = async (): Promise<WeeklyDay[]> => {
   try {
     const { date, tzOffset } = getLocalDateParams();
@@ -176,6 +186,7 @@ export interface UserProfile {
   username?: string | null;
   bio?: string | null;
   avatarEmoji?: string | null;
+  avatarImage?: string | null;
   showGender?: boolean | null;
   height?: number | null;
   age?: number | null;
@@ -217,6 +228,7 @@ export interface LeaderboardEntry {
   name: string;
   username: string | null;
   avatar: string;
+  avatarImage?: string | null;
   calories: number;
   streak: number;
   rank: number;
@@ -226,7 +238,7 @@ export interface LeaderboardEntry {
 
 export interface FriendRequest {
   id: string;
-  from: { id: string; name: string; username: string | null; avatar: string };
+  from: { id: string; name: string; username: string | null; avatar: string; avatarImage?: string | null };
   createdAt: string;
 }
 
@@ -260,6 +272,15 @@ export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 
 export const fetchFriends = async (): Promise<LeaderboardEntry[]> => {
   const res = await api.get<LeaderboardEntry[]>('/api/social/friends');
+  return res.data;
+};
+
+export const searchUser = async (q: string): Promise<{
+  user: { id: string; name: string; username: string | null; avatarEmoji: string; avatarImage?: string | null; bio?: string | null } | null;
+  relationStatus?: 'none' | 'friends' | 'pending_sent' | 'pending_received';
+  self?: boolean;
+}> => {
+  const res = await api.get(`/api/social/users/search?q=${encodeURIComponent(q)}`);
   return res.data;
 };
 

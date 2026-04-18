@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { checkAndIncrementAiQuota } from '@/lib/ai-rate-limit';
 
 const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY?.trim();
 const FIREWORKS_API_URL = 'https://api.fireworks.ai/inference/v1/chat/completions';
@@ -14,6 +15,11 @@ export async function GET(request: NextRequest) {
     const authResult = await authenticateRequest(request);
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
+
+    // ── 限流检查 ────────────────────────────────────────────────────────────
+    const quota = await checkAndIncrementAiQuota(userId);
+    if (!quota.ok) return quota.response;
+    // ────────────────────────────────────────────────────────────────────────
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -103,9 +109,9 @@ export async function GET(request: NextRequest) {
     const jsonContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     const analysis = JSON.parse(jsonContent);
 
-    return NextResponse.json(analysis);
+    return NextResponse.json({ ...analysis, remaining: quota.remaining });
   } catch (error: any) {
     console.error('Diet analysis error:', error);
-    return NextResponse.json({ error: error.message || '分析失败' }, { status: 500 });
+    return NextResponse.json({ error: '分析失败' }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
@@ -61,14 +61,19 @@ export default function FriendRequestsCard({ requests, onUpdate }: FriendRequest
           borderTopColor: colors.borderPrimary,
         }}>
           <View style={{
-            width: 40, height: 40, borderRadius: 20,
+            width: 40, height: 40, borderRadius: 12,
             backgroundColor: colors.cardBackgroundSecondary,
             alignItems: 'center', justifyContent: 'center',
             marginRight: DIMENSIONS.SPACING * 0.8,
+            overflow: 'hidden',
           }}>
-            <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
-              {req.from.avatar}
-            </Text>
+            {req.from.avatarImage ? (
+              <Image source={{ uri: req.from.avatarImage }} style={{ width: 40, height: 40 }} />
+            ) : (
+              <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
+                {req.from.avatar}
+              </Text>
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>

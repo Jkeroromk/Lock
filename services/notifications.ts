@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import { api } from '@/services/api';
 
 const isExpoGo = Constants.appOwnership === 'expo';
 
@@ -97,4 +98,31 @@ export const getNotificationPermissionStatus = async (): Promise<boolean> => {
   if (!Device.isDevice) return false;
   const { status } = await Notifications.getPermissionsAsync();
   return status === 'granted';
+};
+
+/**
+ * 获取 Expo Push Token 并上传到后端，使服务端可以向该设备发送推送。
+ * 需要用户已登录（api 实例会自动携带 Auth 头）。
+ */
+export const registerAndSavePushToken = async (): Promise<void> => {
+  if (!Device.isDevice || isExpoGo) return;
+
+  const granted = await requestNotificationPermissions();
+  if (!granted) return;
+
+  try {
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId;
+
+    const { data: token } = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined
+    );
+
+    if (!token) return;
+
+    await api.post('/api/push-token', { token });
+  } catch (e) {
+    console.warn('registerAndSavePushToken failed:', e);
+  }
 };

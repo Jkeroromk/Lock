@@ -1,15 +1,14 @@
-import { View, Text, ScrollView, Platform, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Platform, TouchableOpacity, RefreshControl, Share } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import TabSwitcher from '@/components/dashboard/TabSwitcher';
-import MyRankCard from '@/components/dashboard/MyRankCard';
-import FriendsLeaderboard from '@/components/dashboard/FriendsLeaderboard';
+import LeaderboardCard from '@/components/dashboard/LeaderboardCard';
 import ChallengesList from '@/components/dashboard/ChallengesList';
 import RefreshLoadingAnimation from '@/components/dashboard/RefreshLoadingAnimation';
 import AddFriendModal from '@/components/dashboard/AddFriendModal';
@@ -27,11 +26,20 @@ export default function DashboardScreen() {
   const { todayCalories, user } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
+  const { inviteCode: deepLinkCode } = useLocalSearchParams<{ inviteCode?: string }>();
 
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   const [refreshing, setRefreshing] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [pendingInviteCode, setPendingInviteCode] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (deepLinkCode) {
+      setPendingInviteCode(deepLinkCode);
+      setShowAddFriend(true);
+    }
+  }, [deepLinkCode]);
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
@@ -47,8 +55,13 @@ export default function DashboardScreen() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const myEntry = leaderboard.find((e) => e.isMe);
-  const myRank = myEntry?.rank ?? 0;
+  const handleShareInvite = async () => {
+    if (!inviteCode) return;
+    await Share.share({
+      message: `Join me on Lock! Use invite code「${inviteCode}」👉 lock://invite/${inviteCode}`,
+      title: 'Join Lock',
+    });
+  };
 
   const loadAll = useCallback(async () => {
     const [lb, reqs, ch, fd, ic] = await Promise.allSettled([
@@ -74,15 +87,20 @@ export default function DashboardScreen() {
     setRefreshing(false);
   };
 
-  const friends = leaderboard.filter((e) => !e.isMe);
-  const friendsForLeaderboard = friends.map((f) => ({
-    id: f.id,
-    name: f.name,
-    avatar: f.avatar,
-    calories: f.calories,
-    rank: f.rank,
-    streak: f.streak,
+  // Build combined leaderboard: me + friends sorted by rank
+  const leaderboardEntries = leaderboard.map((e) => ({
+    id: e.id,
+    name: e.name,
+    avatar: e.avatar,
+    avatarImage: e.avatarImage ?? undefined,
+    calories: e.calories,
+    rank: e.rank,
+    streak: e.streak,
+    isMe: e.isMe,
+    friendshipId: e.friendshipId,
   }));
+
+  const myEntry = leaderboard.find((e) => e.isMe);
 
   const challengesForList = challenges.map((c) => ({
     id: c.id,
@@ -93,13 +111,18 @@ export default function DashboardScreen() {
     participants: c.participants,
   }));
 
+  const TAB_CONFIG: { key: Tab; label: string; icon: string }[] = [
+    { key: 'friends', label: t('dashboard.leaderboard'), icon: 'people' },
+    { key: 'challenges', label: t('dashboard.challenges'), icon: 'flag' },
+    { key: 'feed', label: t('tabs.social'), icon: 'newspaper' },
+  ];
+
   return (
-    <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
       <ScrollView
-        className="flex-1"
-        style={{ backgroundColor: colors.backgroundPrimary }}
+        style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40, flexGrow: 1, backgroundColor: colors.backgroundPrimary }}
+        contentContainerStyle={{ paddingBottom: 48 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -107,69 +130,90 @@ export default function DashboardScreen() {
             tintColor={colors.textPrimary}
             colors={Platform.OS === 'android' ? [colors.textPrimary] : undefined}
             progressBackgroundColor={Platform.OS === 'android' ? colors.backgroundPrimary : undefined}
-            title={Platform.OS === 'ios' && refreshing ? t('dashboard.refreshing') : undefined}
-            titleColor={Platform.OS === 'ios' ? colors.textPrimary : undefined}
           />
         }
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
           <RefreshLoadingAnimation visible={refreshing} />
 
-          {/* Header */}
-          <View style={{ marginBottom: DIMENSIONS.SPACING * 1.5 }}>
-            <Text style={{
-              fontSize: TYPOGRAPHY.titleL, fontWeight: '900',
-              color: colors.textPrimary, letterSpacing: -2,
-              marginBottom: DIMENSIONS.SPACING * 0.3,
-              lineHeight: TYPOGRAPHY.titleL * 1.1,
-            }}>
-              {t('dashboard.social')}
-            </Text>
-            <Text style={{
-              fontSize: TYPOGRAPHY.bodyM, fontWeight: '500',
-              color: colors.textPrimary, opacity: 0.7,
-            }}>
-              {t('dashboard.withFriends')}
-            </Text>
+          {/* ── Header ── */}
+          <View style={{
+            flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+            marginBottom: DIMENSIONS.SPACING * 1.5,
+          }}>
+            <View>
+              <Text style={{
+                fontSize: TYPOGRAPHY.titleL, fontWeight: '900',
+                color: colors.textPrimary, letterSpacing: -2,
+                lineHeight: TYPOGRAPHY.titleL * 1.05,
+              }}>
+                {t('dashboard.social')}
+              </Text>
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyS, fontWeight: '500',
+                color: colors.textSecondary, marginTop: 2,
+              }}>
+                {t('dashboard.withFriends')}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setShowAddFriend(true)}
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 6,
+                backgroundColor: colors.textPrimary,
+                borderRadius: 14, paddingHorizontal: DIMENSIONS.SPACING * 0.9,
+                paddingVertical: DIMENSIONS.SPACING * 0.55,
+              }}
+            >
+              <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
+                color: colors.backgroundPrimary,
+              }}>
+                {t('dashboard.addFriend')}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Tab Switcher — now 3 tabs */}
+          {/* ── Tab Switcher ── */}
           <View style={{
-            flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5,
-            marginBottom: DIMENSIONS.SPACING * 1.2,
+            flexDirection: 'row',
+            backgroundColor: colors.cardBackground,
+            borderRadius: 16, borderWidth: 2, borderColor: colors.borderPrimary,
+            padding: 4,
+            marginBottom: DIMENSIONS.SPACING * 1.4,
           }}>
-            {(['friends', 'challenges', 'feed'] as Tab[]).map((tab) => {
-              const labels: Record<Tab, string> = { friends: t('dashboard.leaderboard'), challenges: t('dashboard.challenges'), feed: t('tabs.social') };
-              const icons: Record<Tab, string> = { friends: 'people', challenges: 'flag', feed: 'newspaper' };
-              const active = activeTab === tab;
+            {TAB_CONFIG.map(({ key, label, icon }) => {
+              const active = activeTab === key;
+              const hasBadge = key === 'friends' && requests.length > 0;
               return (
                 <TouchableOpacity
-                  key={tab}
-                  onPress={() => setActiveTab(tab)}
+                  key={key}
+                  onPress={() => setActiveTab(key)}
                   style={{
                     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-                    paddingVertical: DIMENSIONS.SPACING * 0.7,
-                    borderRadius: 14, borderWidth: 2,
-                    backgroundColor: active ? colors.textPrimary : colors.cardBackground,
-                    borderColor: active ? colors.textPrimary : colors.borderPrimary,
-                    gap: 4,
+                    paddingVertical: DIMENSIONS.SPACING * 0.65,
+                    borderRadius: 12,
+                    backgroundColor: active ? colors.textPrimary : 'transparent',
+                    gap: 5,
                   }}
                 >
                   <Ionicons
-                    name={icons[tab] as any}
-                    size={TYPOGRAPHY.iconXS}
-                    color={active ? colors.backgroundPrimary : colors.textPrimary}
+                    name={icon as any}
+                    size={TYPOGRAPHY.iconXS * 0.85}
+                    color={active ? colors.backgroundPrimary : colors.textSecondary}
                   />
                   <Text style={{
-                    fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
-                    color: active ? colors.backgroundPrimary : colors.textPrimary,
+                    fontSize: TYPOGRAPHY.bodyXS, fontWeight: '800',
+                    color: active ? colors.backgroundPrimary : colors.textSecondary,
                   }}>
-                    {labels[tab]}
+                    {label}
                   </Text>
-                  {tab === 'friends' && requests.length > 0 && (
+                  {hasBadge && (
                     <View style={{
-                      width: 8, height: 8, borderRadius: 4,
+                      width: 7, height: 7, borderRadius: 4,
                       backgroundColor: '#EF4444',
+                      position: 'absolute', top: 6, right: 8,
                     }} />
                   )}
                 </TouchableOpacity>
@@ -177,101 +221,85 @@ export default function DashboardScreen() {
             })}
           </View>
 
+          {/* ── Friends Tab ── */}
           {activeTab === 'friends' && (
             <>
+              {/* Friend requests */}
               {requests.length > 0 && (
                 <FriendRequestsCard requests={requests} onUpdate={loadAll} />
               )}
 
-              <MyRankCard user={user} todayCalories={todayCalories} rank={myRank} />
+              {/* Unified leaderboard (me + friends) */}
+              <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
 
-              {friends.length > 0 ? (
-                <FriendsLeaderboard friends={friendsForLeaderboard} />
-              ) : (
-                <View style={{
-                  borderRadius: 24, padding: DIMENSIONS.SPACING * 2,
-                  backgroundColor: colors.cardBackground,
-                  borderWidth: 2, borderColor: colors.borderPrimary,
-                  alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.2,
-                }}>
-                  <Ionicons name="people-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
-                  <Text style={{
-                    fontSize: TYPOGRAPHY.bodyM, fontWeight: '900',
-                    color: colors.textPrimary, marginTop: DIMENSIONS.SPACING * 0.8,
-                    marginBottom: DIMENSIONS.SPACING * 0.4,
-                  }}>
-                    {t('dashboard.friendsLeaderboard')}
-                  </Text>
-                  <Text style={{
-                    fontSize: TYPOGRAPHY.bodyS, fontWeight: '500',
-                    color: colors.textSecondary, textAlign: 'center',
-                    lineHeight: TYPOGRAPHY.bodyS * 1.5,
-                  }}>
-                    {t('dashboard.withFriends')}
-                  </Text>
-                </View>
-              )}
-
-              {/* Invite code card */}
+              {/* Invite Code Card */}
               <View style={{
                 borderRadius: 24, padding: DIMENSIONS.SPACING * 1.2,
                 backgroundColor: colors.cardBackground,
                 borderWidth: 2, borderColor: colors.borderPrimary,
                 marginBottom: DIMENSIONS.SPACING * 1.2,
               }}>
+                {/* Label */}
                 <Text style={{
-                  fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
+                  fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800',
                   color: colors.textSecondary, textTransform: 'uppercase',
-                  letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.8,
+                  letterSpacing: 1.2, marginBottom: DIMENSIONS.SPACING * 0.8,
                 }}>
-                  {t('dashboard.myRank')}
+                  {t('dashboard.inviteCode') || 'Invite Code'}
                 </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <TouchableOpacity
-                    onPress={handleCopyCode}
-                    style={{
-                      flexDirection: 'row', alignItems: 'center',
-                      backgroundColor: colors.cardBackgroundSecondary,
-                      borderRadius: 12, paddingHorizontal: DIMENSIONS.SPACING * 1,
-                      paddingVertical: DIMENSIONS.SPACING * 0.6,
-                      gap: 8, borderWidth: 1, borderColor: colors.borderPrimary,
-                    }}
-                  >
+
+                {/* Code display row */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+                  {/* Code pill */}
+                  <View style={{
+                    flex: 1,
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    backgroundColor: colors.cardBackgroundSecondary,
+                    borderRadius: 14, paddingHorizontal: DIMENSIONS.SPACING * 1,
+                    paddingVertical: DIMENSIONS.SPACING * 0.7,
+                    borderWidth: 1.5, borderColor: colors.borderPrimary,
+                  }}>
                     <Text style={{
                       fontSize: TYPOGRAPHY.bodyL, fontWeight: '900',
-                      color: colors.textPrimary, letterSpacing: 4,
+                      color: colors.textPrimary, letterSpacing: 5,
                     }}>
                       {inviteCode || '------'}
                     </Text>
-                    <Ionicons
-                      name={copied ? 'checkmark' : 'copy-outline'}
-                      size={TYPOGRAPHY.iconXS}
-                      color={copied ? '#10B981' : colors.textSecondary}
-                    />
-                  </TouchableOpacity>
+                    <TouchableOpacity onPress={handleCopyCode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                      <Ionicons
+                        name={copied ? 'checkmark-circle' : 'copy-outline'}
+                        size={TYPOGRAPHY.iconXS}
+                        color={copied ? '#10B981' : colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Share button */}
                   <TouchableOpacity
-                    onPress={() => setShowAddFriend(true)}
+                    onPress={handleShareInvite}
                     style={{
-                      flexDirection: 'row', alignItems: 'center',
-                      backgroundColor: colors.textPrimary,
-                      borderRadius: 12, paddingHorizontal: DIMENSIONS.SPACING * 0.9,
-                      paddingVertical: DIMENSIONS.SPACING * 0.5,
-                      gap: 4,
+                      width: 44, height: 44, borderRadius: 14,
+                      backgroundColor: colors.cardBackgroundSecondary,
+                      alignItems: 'center', justifyContent: 'center',
+                      borderWidth: 1.5, borderColor: colors.borderPrimary,
                     }}
                   >
-                    <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
-                    <Text style={{
-                      fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
-                      color: colors.backgroundPrimary,
-                    }}>
-                      {t('dashboard.addFriend')}
-                    </Text>
+                    <Ionicons name="share-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
                   </TouchableOpacity>
                 </View>
+
+                {/* Hint text */}
+                <Text style={{
+                  fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '500',
+                  color: colors.textSecondary, lineHeight: TYPOGRAPHY.bodyXXS * 1.6,
+                }}>
+                  {t('dashboard.inviteHint') || 'Share your code with friends so they can add you.'}
+                </Text>
               </View>
             </>
           )}
 
+          {/* ── Challenges Tab ── */}
           {activeTab === 'challenges' && (
             <ChallengesList
               challenges={challengesForList}
@@ -279,6 +307,7 @@ export default function DashboardScreen() {
             />
           )}
 
+          {/* ── Feed Tab ── */}
           {activeTab === 'feed' && (
             <ActivityFeed items={feed} />
           )}
@@ -287,8 +316,9 @@ export default function DashboardScreen() {
 
       <AddFriendModal
         visible={showAddFriend}
-        onClose={() => setShowAddFriend(false)}
+        onClose={() => { setShowAddFriend(false); setPendingInviteCode(undefined); }}
         onSuccess={loadAll}
+        initialValue={pendingInviteCode}
       />
 
       <CreateChallengeModal

@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const requests = await prisma.friendship.findMany({
     where: { addresseeId: userId, status: 'PENDING' },
     include: {
-      requester: { select: { id: true, name: true, username: true } },
+      requester: { select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
         id: r.requester.id,
         name: r.requester.name || r.requester.username || '用户',
         username: r.requester.username,
-        avatar: (r.requester.name || r.requester.username || 'U').charAt(0).toUpperCase(),
+        avatar: r.requester.avatarEmoji || (r.requester.name || r.requester.username || 'U').charAt(0).toUpperCase(),
+        avatarImage: r.requester.avatarImage || null,
       },
       createdAt: r.createdAt,
     }))

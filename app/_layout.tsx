@@ -4,11 +4,17 @@ import { Text, Platform } from 'react-native';
 import { useEffect } from 'react';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
 import { setTokenGetter } from '@/services/tokenStore';
 import { initRevenueCat, identifyUser, resetUser } from '@/lib/revenuecat';
+import { registerAndSavePushToken } from '@/services/notifications';
 import '../global.css';
+
+// 启用原生屏幕管理，减少内存占用并提升导航性能
+enableScreens(true);
 
 // 初始化 RevenueCat（App 启动时只执行一次）
 if (Platform.OS === 'ios' || Platform.OS === 'android') {
@@ -41,6 +47,8 @@ function ClerkTokenBridge() {
   useEffect(() => {
     if (isSignedIn && userId) {
       identifyUser(userId);
+      // 登录后注册推送令牌（异步，不阻塞 UI）
+      registerAndSavePushToken().catch(() => {});
     } else {
       resetUser();
     }
@@ -58,18 +66,20 @@ export default function RootLayout() {
   const colors = useTheme();
 
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache}>
-      <ClerkTokenBridge />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.backgroundPrimary },
-        }}
-      >
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-      <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
-    </ClerkProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache}>
+        <ClerkTokenBridge />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.backgroundPrimary },
+          }}
+        >
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+        <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
+      </ClerkProvider>
+    </GestureHandlerRootView>
   );
 }
