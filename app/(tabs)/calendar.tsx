@@ -45,8 +45,12 @@ export default function CalendarScreen() {
 
   const getWeekdayLabel = (dateStr: string) => {
     try {
+      // new Date('YYYY-MM-DD') is parsed as UTC midnight → in UTC+8 renders as previous day
+      // Force local noon to avoid any timezone boundary issues
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const localDate = new Date(y, m - 1, d, 12, 0, 0);
       const formatter = new Intl.DateTimeFormat(language, { weekday: 'short' });
-      return formatter.format(new Date(dateStr));
+      return formatter.format(localDate);
     } catch {
       return dateStr.slice(5); // MM-DD fallback
     }
