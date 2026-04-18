@@ -13,8 +13,9 @@ model User {
   name      String?
   username   String?  @unique
   bio        String?
-  avatarEmoji String? @map("avatar_emoji")
-  showGender  Boolean @default(false) @map("show_gender")
+  avatarEmoji  String? @map("avatar_emoji")
+  avatarImage  String? @map("avatar_image") @db.Text
+  showGender   Boolean @default(false) @map("show_gender")
   inviteCode String? @unique @map("invite_code")
   streak    Int      @default(0)
   height    Int?

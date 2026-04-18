@@ -186,6 +186,7 @@ export interface UserProfile {
   username?: string | null;
   bio?: string | null;
   avatarEmoji?: string | null;
+  avatarImage?: string | null;
   showGender?: boolean | null;
   height?: number | null;
   age?: number | null;
@@ -227,6 +228,7 @@ export interface LeaderboardEntry {
   name: string;
   username: string | null;
   avatar: string;
+  avatarImage?: string | null;
   calories: number;
   streak: number;
   rank: number;
@@ -236,7 +238,7 @@ export interface LeaderboardEntry {
 
 export interface FriendRequest {
   id: string;
-  from: { id: string; name: string; username: string | null; avatar: string };
+  from: { id: string; name: string; username: string | null; avatar: string; avatarImage?: string | null };
   createdAt: string;
 }
 
@@ -274,7 +276,7 @@ export const fetchFriends = async (): Promise<LeaderboardEntry[]> => {
 };
 
 export const searchUser = async (q: string): Promise<{
-  user: { id: string; name: string; username: string | null; avatarEmoji: string; bio?: string | null } | null;
+  user: { id: string; name: string; username: string | null; avatarEmoji: string; avatarImage?: string | null; bio?: string | null } | null;
   relationStatus?: 'none' | 'friends' | 'pending_sent' | 'pending_received';
   self?: boolean;
 }> => {

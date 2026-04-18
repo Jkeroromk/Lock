@@ -16,17 +16,15 @@ export default function Index() {
     if (isSignedIn) {
       fetchProfile()
         .then((profile) => {
-          // Spread existing local user first so locally-only fields
-          // (showGender, avatarImage) survive the backend sync.
-          const existing = useStore.getState().user;
           setUser({
-            ...(existing ?? {}),
             id: profile.id,
             name: profile.name || 'User',
             email: profile.email || '',
             username: profile.username ?? undefined,
             bio: profile.bio ?? undefined,
             avatarEmoji: profile.avatarEmoji ?? undefined,
+            avatarImage: profile.avatarImage ?? undefined,
+            showGender: profile.showGender ?? false,
             height: profile.height ?? undefined,
             age: profile.age ?? undefined,
             weight: profile.weight ?? undefined,

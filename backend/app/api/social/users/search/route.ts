@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   const target = await prisma.user.findFirst({
     where: { OR: [{ username: q }, { inviteCode: q }] },
-    select: { id: true, name: true, username: true, avatarEmoji: true, bio: true },
+    select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, bio: true },
   });
 
   if (!target) return NextResponse.json({ user: null });
@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
       name: target.name || target.username || '用户',
       username: target.username,
       avatarEmoji: target.avatarEmoji || '🏃',
+      avatarImage: target.avatarImage || null,
       bio: target.bio,
     },
     relationStatus,

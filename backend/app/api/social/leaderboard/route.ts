@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   const [users, calorieSums] = await Promise.all([
     prisma.user.findMany({
       where: { id: { in: allIds } },
-      select: { id: true, name: true, username: true, avatarEmoji: true, streak: true },
+      select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, streak: true },
     }),
     // single groupBy replaces N individual aggregates
     prisma.meal.groupBy({
@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
     name: u.name || u.username || '用户',
     username: u.username,
     avatar: u.avatarEmoji || (u.name || u.username || 'U').charAt(0).toUpperCase(),
+    avatarImage: u.avatarImage || null,
     calories: calorieMap.get(u.id) ?? 0,
     streak: u.streak,
     isMe: u.id === userId,

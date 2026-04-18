@@ -92,10 +92,12 @@ export default function DashboardScreen() {
     id: e.id,
     name: e.name,
     avatar: e.avatar,
+    avatarImage: e.avatarImage ?? undefined,
     calories: e.calories,
     rank: e.rank,
     streak: e.streak,
     isMe: e.isMe,
+    friendshipId: e.friendshipId,
   }));
 
   const myEntry = leaderboard.find((e) => e.isMe);

@@ -64,15 +64,14 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.6,
+      quality: 0.5,
     });
     if (!result.canceled && result.assets[0]) {
-      // 复制到 App 永久目录，防止设备临时 URI 重启后失效
       const src = result.assets[0].uri;
-      const ext = src.split('.').pop()?.split('?')[0] || 'jpg';
-      const dest = `${FileSystem.documentDirectory}avatar_${Date.now()}.${ext}`;
-      await FileSystem.copyAsync({ from: src, to: dest });
-      setAvatarImage(dest);
+      // 读取为 base64，存数据库，不依赖本地文件路径
+      const base64 = await FileSystem.readAsStringAsync(src, { encoding: FileSystem.EncodingType.Base64 });
+      const dataUri = `data:image/jpeg;base64,${base64}`;
+      setAvatarImage(dataUri);
       setAvatarEmoji('');
     }
   };
@@ -90,9 +89,10 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
         username: uname,
         bio: bio.trim() || undefined,
         avatarEmoji: avatarImage ? undefined : avatarEmoji,
+        avatarImage: avatarImage || null,
         showGender,
       } as any);
-      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage, showGender });
+      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage: avatarImage || undefined, showGender });
     } catch (err: any) {
       Alert.alert(t('weightTracker.saveFailed'), err?.response?.data?.error || err?.message || t('common.retry'));
     } finally {
