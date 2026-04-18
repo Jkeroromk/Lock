@@ -147,6 +147,16 @@ export const fetchTodayData = async (): Promise<{ totalCalories: number; meals: 
   }
 };
 
+export const fetchDayMeals = async (date: string): Promise<{ totalCalories: number; meals: any[] }> => {
+  try {
+    const { tzOffset } = getLocalDateParams();
+    const response = await api.get(`/api/today?date=${date}&tzOffset=${tzOffset}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || '获取当日数据失败');
+  }
+};
+
 export const fetchWeeklyData = async (): Promise<WeeklyDay[]> => {
   try {
     const { date, tzOffset } = getLocalDateParams();
