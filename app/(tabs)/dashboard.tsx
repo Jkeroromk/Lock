@@ -77,7 +77,6 @@ export default function DashboardScreen() {
     if (ch.status === 'fulfilled') setChallenges(ch.value);
     if (fd.status === 'fulfilled') setFeed(fd.value);
     if (ic.status === 'fulfilled') setInviteCode(ic.value);
-    else console.warn('fetchInviteCode failed:', ic.reason);
   }, []);
 
   useEffect(() => {

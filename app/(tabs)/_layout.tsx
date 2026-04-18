@@ -75,8 +75,6 @@ function LogTabButton(props: any) {
         }
       }
     } catch (error: any) {
-      // 捕获相机错误
-      console.error('Error opening camera:', error);
       // 即使出错，也导航到log页面
       if (!isOnLogPage) {
         onPress();

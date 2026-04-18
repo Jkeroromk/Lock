@@ -42,9 +42,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(dailyMap);
   } catch (error: any) {
-    console.error('Monthly API error:', error);
     return NextResponse.json(
-      { error: error.message || '获取月度数据失败' },
+      { error: error.message || 'Failed to fetch monthly data' },
       { status: 500 }
     );
   }

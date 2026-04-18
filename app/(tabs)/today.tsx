@@ -69,9 +69,7 @@ export default function TodayScreen() {
       setHealthData(data);
       // Sync to backend in background
       syncHealthData().catch(() => {});
-    } catch (error) {
-      console.error('Failed to load health data:', error);
-    }
+    } catch {}
   };
 
   const onRefresh = async () => {

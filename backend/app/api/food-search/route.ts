@@ -18,11 +18,11 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q')?.trim();
 
     if (!query || query.length < 1) {
-      return NextResponse.json({ error: '请提供搜索关键词' }, { status: 400 });
+      return NextResponse.json({ error: 'Search query required' }, { status: 400 });
     }
 
     if (query.length > 100) {
-      return NextResponse.json({ error: '搜索关键词过长' }, { status: 400 });
+      return NextResponse.json({ error: 'Search query too long' }, { status: 400 });
     }
 
     // ── Step 1: 查本地数据库（中文食物 + 已缓存的 USDA 结果）────────────────
@@ -107,16 +107,14 @@ export async function GET(request: NextRequest) {
             });
           }
         }
-      } catch (usdaError) {
-        // USDA 查询失败不影响本地结果返回
-        console.error('USDA search failed:', usdaError);
+      } catch {
+        // USDA failure does not affect local results
       }
     }
 
     return NextResponse.json({ results: formatted, total: formatted.length });
   } catch (error: any) {
-    console.error('Food search error:', error);
-    return NextResponse.json({ error: '搜索失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
 }
 

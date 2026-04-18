@@ -11,7 +11,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   try {
     const meal = await prisma.meal.findUnique({ where: { id: params.id } });
     if (!meal || meal.userId !== userId) {
-      return NextResponse.json({ error: '未找到餐食' }, { status: 404 });
+      return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
     }
     await prisma.meal.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
@@ -29,7 +29,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   try {
     const meal = await prisma.meal.findUnique({ where: { id: params.id } });
     if (!meal || meal.userId !== userId) {
-      return NextResponse.json({ error: '未找到餐食' }, { status: 404 });
+      return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
     }
 
     const body = await request.json();

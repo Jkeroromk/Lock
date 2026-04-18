@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   const friendship = await prisma.friendship.findUnique({ where: { id: params.id } });
   if (!friendship || friendship.addresseeId !== userId) {
-    return NextResponse.json({ error: '好友请求不存在' }, { status: 404 });
+    return NextResponse.json({ error: 'Friend request not found' }, { status: 404 });
   }
 
   const updated = await prisma.friendship.update({
@@ -50,7 +50,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
   const friendship = await prisma.friendship.findUnique({ where: { id: params.id } });
   if (!friendship || (friendship.requesterId !== userId && friendship.addresseeId !== userId)) {
-    return NextResponse.json({ error: '好友关系不存在' }, { status: 404 });
+    return NextResponse.json({ error: 'Friendship not found' }, { status: 404 });
   }
 
   await prisma.friendship.delete({ where: { id: params.id } });

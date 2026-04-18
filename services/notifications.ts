@@ -122,7 +122,5 @@ export const registerAndSavePushToken = async (): Promise<void> => {
     if (!token) return;
 
     await api.post('/api/push-token', { token });
-  } catch (e) {
-    console.warn('registerAndSavePushToken failed:', e);
-  }
+  } catch {}
 };

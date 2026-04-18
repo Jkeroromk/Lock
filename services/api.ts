@@ -227,9 +227,7 @@ export const syncHealthDataToBackend = async (steps: number, activeEnergy: numbe
       steps,
       active_energy: activeEnergy,
     });
-  } catch (error: any) {
-    console.error('Failed to sync health data:', error);
-  }
+  } catch {}
 };
 
 // ─── Social ───────────────────────────────────────────────────────────────────

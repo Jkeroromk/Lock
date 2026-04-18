@@ -61,9 +61,7 @@ export default function CalendarScreen() {
     try {
       const data = await fetchMonthlyData(year, month);
       setMonthlyData(data);
-    } catch (error) {
-      console.error('Failed to load monthly data:', error);
-    }
+    } catch {}
   }, []);
 
   const loadWeeklyData = useCallback(async () => {
@@ -84,9 +82,7 @@ export default function CalendarScreen() {
         carbs: Math.round(totals.carbs),
         fat: Math.round(totals.fat),
       });
-    } catch (error) {
-      console.error('Failed to load weekly data:', error);
-    }
+    } catch {}
   }, [language]);
 
   useFocusEffect(

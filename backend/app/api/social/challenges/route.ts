@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   const { title, description, type, goalValue, startDate, endDate } = await request.json();
 
   if (!title || !goalValue || !startDate || !endDate) {
-    return NextResponse.json({ error: '请填写完整的挑战信息' }, { status: 400 });
+    return NextResponse.json({ error: 'Challenge details required' }, { status: 400 });
   }
 
   const challenge = await prisma.challenge.create({

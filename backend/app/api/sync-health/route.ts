@@ -46,14 +46,11 @@ export async function POST(request: NextRequest) {
     });
 
     // ── 同步挑战进度（STEPS 类型）──────────────────────────────────────────
-    syncChallengeProgress(userId).catch((e) =>
-      console.error('syncChallengeProgress error:', e)
-    );
+    syncChallengeProgress(userId).catch(() => {});
     // ────────────────────────────────────────────────────────────────────────
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
-    console.error('Sync health error:', error);
-    return NextResponse.json({ error: '同步健康数据失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to sync health data' }, { status: 500 });
   }
 }
