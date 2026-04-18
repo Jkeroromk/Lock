@@ -1,8 +1,9 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { removeFriend } from '@/services/api';
 
 export interface LeaderboardEntry {
   id: string;
@@ -13,17 +14,40 @@ export interface LeaderboardEntry {
   rank: number;
   streak: number;
   isMe: boolean;
+  friendshipId?: string;
 }
 
 interface LeaderboardCardProps {
   entries: LeaderboardEntry[];
+  onFriendRemoved?: () => void;
 }
 
 const RANK_MEDALS = ['🥇', '🥈', '🥉'];
 
-export default function LeaderboardCard({ entries }: LeaderboardCardProps) {
+export default function LeaderboardCard({ entries, onFriendRemoved }: LeaderboardCardProps) {
   const { t } = useTranslation();
   const colors = useTheme();
+
+  const handleLongPress = (entry: LeaderboardEntry) => {
+    if (entry.isMe || !entry.friendshipId) return;
+    Alert.alert(
+      entry.name,
+      t('dashboard.removeFriendConfirm' as any) || '确定要删除好友吗？',
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('dashboard.removeFriend' as any) || '删除好友',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await removeFriend(entry.friendshipId!);
+              onFriendRemoved?.();
+            } catch {}
+          },
+        },
+      ]
+    );
+  };
 
   if (entries.length === 0) {
     return (
@@ -90,8 +114,11 @@ export default function LeaderboardCard({ entries }: LeaderboardCardProps) {
         const medal = entry.rank <= 3 ? RANK_MEDALS[entry.rank - 1] : null;
 
         return (
-          <View
+          <TouchableOpacity
             key={entry.id}
+            activeOpacity={entry.isMe ? 1 : 0.7}
+            onLongPress={() => handleLongPress(entry)}
+            delayLongPress={500}
             style={{
               flexDirection: 'row', alignItems: 'center',
               paddingHorizontal: DIMENSIONS.SPACING * 1.2,
@@ -173,7 +200,7 @@ export default function LeaderboardCard({ entries }: LeaderboardCardProps) {
                 {t('today.kcal')}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         );
       })}
     </View>

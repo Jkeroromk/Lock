@@ -228,7 +228,7 @@ export default function DashboardScreen() {
               )}
 
               {/* Unified leaderboard (me + friends) */}
-              <LeaderboardCard entries={leaderboardEntries} />
+              <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
 
               {/* Invite Code Card */}
               <View style={{

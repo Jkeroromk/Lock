@@ -273,6 +273,15 @@ export const fetchFriends = async (): Promise<LeaderboardEntry[]> => {
   return res.data;
 };
 
+export const searchUser = async (q: string): Promise<{
+  user: { id: string; name: string; username: string | null; avatarEmoji: string; bio?: string | null } | null;
+  relationStatus?: 'none' | 'friends' | 'pending_sent' | 'pending_received';
+  self?: boolean;
+}> => {
+  const res = await api.get(`/api/social/users/search?q=${encodeURIComponent(q)}`);
+  return res.data;
+};
+
 export const sendFriendRequest = async (identifier: string): Promise<void> => {
   await api.post('/api/social/friends', { identifier });
 };
