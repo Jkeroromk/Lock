@@ -35,6 +35,17 @@ export interface MealData {
   image_url: string;
 }
 
+export interface MealRecord {
+  id: string;
+  food_name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  image_url: string;
+  created_at: string;
+}
+
 export interface WeeklyDay {
   date: string;
   calories: number;
@@ -137,7 +148,7 @@ const getLocalDateParams = () => {
   return { date, tzOffset };
 };
 
-export const fetchTodayData = async (): Promise<{ totalCalories: number; meals: any[] }> => {
+export const fetchTodayData = async (): Promise<{ totalCalories: number; meals: MealRecord[] }> => {
   try {
     const { date, tzOffset } = getLocalDateParams();
     const response = await api.get(`/api/today?date=${date}&tzOffset=${tzOffset}`);
@@ -147,7 +158,7 @@ export const fetchTodayData = async (): Promise<{ totalCalories: number; meals: 
   }
 };
 
-export const fetchDayMeals = async (date: string): Promise<{ totalCalories: number; meals: any[] }> => {
+export const fetchDayMeals = async (date: string): Promise<{ totalCalories: number; meals: MealRecord[] }> => {
   try {
     const { tzOffset } = getLocalDateParams();
     const response = await api.get(`/api/today?date=${date}&tzOffset=${tzOffset}`);
@@ -259,7 +270,7 @@ export interface ChallengeData {
 export interface FeedItem {
   id: string;
   type: string;
-  metadata: any;
+  metadata: Record<string, string | number | boolean | null>;
   createdAt: string;
   isMe: boolean;
   user: { id: string; name: string; avatar: string };

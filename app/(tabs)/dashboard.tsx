@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Platform, TouchableOpacity, RefreshControl, Share } from 'react-native';
+import { View, Text, ScrollView, Platform, TouchableOpacity, RefreshControl, Share, ActivityIndicator } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
@@ -29,6 +29,7 @@ export default function DashboardScreen() {
   const { inviteCode: deepLinkCode } = useLocalSearchParams<{ inviteCode?: string }>();
 
   const [activeTab, setActiveTab] = useState<Tab>('friends');
+  const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
@@ -79,7 +80,9 @@ export default function DashboardScreen() {
     else console.warn('fetchInviteCode failed:', ic.reason);
   }, []);
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => {
+    loadAll().finally(() => setInitialLoading(false));
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -221,8 +224,15 @@ export default function DashboardScreen() {
             })}
           </View>
 
+          {/* ── Initial Loading ── */}
+          {initialLoading && (
+            <View style={{ paddingVertical: DIMENSIONS.SPACING * 4, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={colors.textPrimary} />
+            </View>
+          )}
+
           {/* ── Friends Tab ── */}
-          {activeTab === 'friends' && (
+          {!initialLoading && activeTab === 'friends' && (
             <>
               {/* Friend requests */}
               {requests.length > 0 && (
@@ -300,7 +310,7 @@ export default function DashboardScreen() {
           )}
 
           {/* ── Challenges Tab ── */}
-          {activeTab === 'challenges' && (
+          {!initialLoading && activeTab === 'challenges' && (
             <ChallengesList
               challenges={challengesForList}
               onCreateChallenge={() => setShowCreateChallenge(true)}
@@ -308,7 +318,7 @@ export default function DashboardScreen() {
           )}
 
           {/* ── Feed Tab ── */}
-          {activeTab === 'feed' && (
+          {!initialLoading && activeTab === 'feed' && (
             <ActivityFeed items={feed} />
           )}
         </View>

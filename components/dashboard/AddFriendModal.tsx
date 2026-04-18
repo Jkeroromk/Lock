@@ -98,9 +98,9 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   };
 
   const relationLabel = (): { text: string; icon: string; color: string } | null => {
-    if (sent || relationStatus === 'pending_sent') return { text: '请求已发送', icon: 'time-outline', color: colors.textSecondary };
-    if (relationStatus === 'friends') return { text: '已是好友', icon: 'checkmark-circle', color: '#10B981' };
-    if (relationStatus === 'pending_received') return { text: '等待你同意', icon: 'person-add', color: '#F59E0B' };
+    if (sent || relationStatus === 'pending_sent') return { text: t('dashboard.requestSent' as any), icon: 'time-outline', color: colors.textSecondary };
+    if (relationStatus === 'friends') return { text: t('dashboard.alreadyFriends' as any), icon: 'checkmark-circle', color: '#10B981' };
+    if (relationStatus === 'pending_received') return { text: t('dashboard.pendingYourApproval' as any), icon: 'person-add', color: '#F59E0B' };
     return null;
   };
 
@@ -192,7 +192,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
               {notFound && query.length > 0 && !searching && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: DIMENSIONS.SPACING, backgroundColor: colors.cardBackground, borderRadius: 14, borderWidth: 1, borderColor: colors.borderPrimary, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
                   <Ionicons name="person-outline" size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textSecondary }}>未找到该用户</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textSecondary }}>{t('dashboard.userNotFound' as any)}</Text>
                 </View>
               )}
 
@@ -213,7 +213,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
               <TouchableOpacity onPress={handleSend} disabled={!canSend} style={{ borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9, backgroundColor: canSend ? colors.textPrimary : colors.cardBackgroundSecondary, alignItems: 'center' }}>
                 {sending ? <ActivityIndicator color={colors.backgroundPrimary} /> : (
                   <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: canSend ? colors.backgroundPrimary : colors.textSecondary }}>
-                    {sent ? '已发送' : t('dashboard.sendFriendRequest' as any)}
+                    {sent ? t('dashboard.sentBtn' as any) : t('dashboard.sendFriendRequest' as any)}
                   </Text>
                 )}
               </TouchableOpacity>

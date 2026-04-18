@@ -24,6 +24,30 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
 
   return (
     <>
+      {challenges.length === 0 && (
+        <View style={{
+          borderRadius: 24, padding: DIMENSIONS.SPACING * 2,
+          backgroundColor: colors.cardBackground,
+          borderWidth: 2, borderColor: colors.borderPrimary,
+          alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.2,
+        }}>
+          <Ionicons name="flag-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
+          <Text style={{
+            fontSize: TYPOGRAPHY.bodyM, fontWeight: '900',
+            color: colors.textPrimary, marginTop: DIMENSIONS.SPACING * 0.8,
+            marginBottom: DIMENSIONS.SPACING * 0.4,
+          }}>
+            {t('challenge.noChallenges' as any)}
+          </Text>
+          <Text style={{
+            fontSize: TYPOGRAPHY.bodyS, fontWeight: '500',
+            color: colors.textSecondary, textAlign: 'center',
+          }}>
+            {t('challenge.noChallengesHint' as any)}
+          </Text>
+        </View>
+      )}
+
       {challenges.map((challenge) => (
         <View 
           key={challenge.id}
