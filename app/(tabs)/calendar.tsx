@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Skeleton from '@/components/ui/Skeleton';
 import { DateData } from 'react-native-calendars';
@@ -20,8 +21,16 @@ export default function CalendarScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
 
+  // 用本地时间生成 YYYY-MM-DD，避免 toISOString() UTC 偏差导致跨天错误
+  const toLocalDateStr = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState<string>(toLocalDateStr(new Date()));
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [monthlyData, setMonthlyData] = useState<MonthlyData>({});
   const [chartData, setChartData] = useState<{ day: string; calories: number }[]>([]);
@@ -61,12 +70,15 @@ export default function CalendarScreen() {
     }
   }, [language]);
 
-  useEffect(() => {
-    Promise.all([
-      loadMonthlyData(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
-      loadWeeklyData(),
-    ]).finally(() => setLoading(false));
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      Promise.all([
+        loadMonthlyData(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
+        loadWeeklyData(),
+      ]).finally(() => setLoading(false));
+    }, [currentMonth])
+  );
 
   const onDayPress = (day: DateData) => {
     setSelectedDate(day.dateString);
@@ -88,7 +100,7 @@ export default function CalendarScreen() {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, monthNum, day);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = toLocalDateStr(date);
       const dayData = monthlyData[dateStr];
       const calories = dayData?.calories || 0;
       const progress = calories > 0 ? Math.min((calories / dailyCalorieGoal) * 100, 100) : 0;

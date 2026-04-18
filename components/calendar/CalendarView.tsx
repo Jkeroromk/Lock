@@ -40,7 +40,7 @@ export default function CalendarView({
     >
       <Calendar
         key={`calendar-${themeMode}`}
-        current={currentMonth.toISOString().split('T')[0]}
+        current={`${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-01`}
         onDayPress={onDayPress}
         onMonthChange={onMonthChange}
         markedDates={{
