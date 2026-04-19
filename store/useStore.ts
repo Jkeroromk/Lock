@@ -109,17 +109,13 @@ export const useStore = create<StoreState>()(
             todayCalories: data.totalCalories,
             todayMeals: data.meals,
           });
-        } catch (error) {
-          console.error('Failed to fetch today data:', error);
-        }
+        } catch {}
       },
       fetchWeeklyData: async () => {
         try {
           const data = await fetchWeeklyData();
           set({ weeklyDays: data });
-        } catch (error) {
-          console.error('Failed to fetch weekly data:', error);
-        }
+        } catch {}
       },
       clearSession: () => {
         set({

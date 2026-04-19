@@ -13,16 +13,16 @@ export async function POST(request: NextRequest) {
     const { food_name, calories, protein, carbs, fat, image_url } = body;
 
     if (!food_name || calories === undefined) {
-      return NextResponse.json({ error: '缺少必填字段' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     if (typeof food_name !== 'string' || food_name.length > 200) {
-      return NextResponse.json({ error: '食物名称过长（最多 200 字符）' }, { status: 400 });
+      return NextResponse.json({ error: 'Food name too long (max 200 chars)' }, { status: 400 });
     }
 
     if (image_url !== undefined && image_url !== null) {
       if (typeof image_url !== 'string' || image_url.length > 2000) {
-        return NextResponse.json({ error: '图片 URL 过长（最多 2000 字符）' }, { status: 400 });
+        return NextResponse.json({ error: 'Image URL too long (max 2000 chars)' }, { status: 400 });
       }
     }
 
@@ -51,15 +51,12 @@ export async function POST(request: NextRequest) {
     // ────────────────────────────────────────────────────────────────────────
 
     // ── 同步挑战进度（fire-and-forget，不阻塞响应）──────────────────────────
-    syncChallengeProgress(userId).catch((e) =>
-      console.error('syncChallengeProgress error:', e)
-    );
+    syncChallengeProgress(userId).catch(() => {});
     // ────────────────────────────────────────────────────────────────────────
 
     return NextResponse.json({ success: true, data: meal });
   } catch (error: any) {
-    console.error('Log meal error:', error);
-    return NextResponse.json({ error: '保存餐食失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save meal' }, { status: 500 });
   }
 }
 

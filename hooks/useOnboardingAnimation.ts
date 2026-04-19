@@ -86,9 +86,7 @@ export function useOnboardingAnimation({
   const navigateToHome = useCallback(() => {
     try {
       router.replace('/(tabs)/today');
-    } catch (error) {
-      console.error('Navigation error:', error);
-    }
+    } catch {}
   }, [router]);
 
   // 完成动画后的处理
@@ -119,7 +117,7 @@ export function useOnboardingAnimation({
       goal: onboardingData.goal ?? undefined,
       exerciseFrequency: onboardingData.exerciseFrequency ?? undefined,
       expectedTimeframe: onboardingData.expectedTimeframe ?? undefined,
-    }).catch((err) => console.error('Failed to sync onboarding data:', err));
+    }).catch(() => {});
 
     // 立即跳转，动画已经完成
     navigateToHome();

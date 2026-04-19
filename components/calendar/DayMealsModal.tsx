@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
-import { fetchDayMeals } from '@/services/api';
+import { fetchDayMeals, MealRecord } from '@/services/api';
 
 interface DayMealsModalProps {
   date: string | null; // YYYY-MM-DD, null = closed
@@ -20,19 +20,21 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
   const { t } = useTranslation();
   const { language, dailyCalorieGoal } = useStore();
   const [loading, setLoading] = useState(false);
-  const [meals, setMeals] = useState<any[]>([]);
+  const [meals, setMeals] = useState<MealRecord[]>([]);
   const [totalCalories, setTotalCalories] = useState(0);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     if (!date) return;
     setLoading(true);
     setMeals([]);
+    setFetchError(false);
     fetchDayMeals(date)
       .then((data) => {
         setMeals(data.meals);
         setTotalCalories(data.totalCalories);
       })
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
   }, [date]);
 
@@ -100,7 +102,7 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
             }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: DIMENSIONS.SPACING * 0.5 }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  {t('today.totalCalories')}
+                  {t('today.todayCalories')}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
                   <Text style={{ fontSize: TYPOGRAPHY.numberS, fontWeight: '900', color: colors.textPrimary }}>
@@ -130,19 +132,28 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
               </View>
             )}
 
-            {!loading && meals.length === 0 && (
+            {!loading && fetchError && (
+              <View style={{ paddingVertical: DIMENSIONS.SPACING * 2, alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
+                <Ionicons name="cloud-offline-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textSecondary }}>
+                  {t('log.fetchFailed' as any)}
+                </Text>
+              </View>
+            )}
+
+            {!loading && !fetchError && meals.length === 0 && (
               <View style={{ paddingVertical: DIMENSIONS.SPACING * 2, alignItems: 'center' }}>
                 <Ionicons name="restaurant-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
                 <Text style={{
                   fontSize: TYPOGRAPHY.bodyS, fontWeight: '600',
                   color: colors.textSecondary, marginTop: DIMENSIONS.SPACING * 0.6,
                 }}>
-                  {t('log.noMealsLogged') || '当天没有餐食记录'}
+                  {t('log.noMealsLogged' as any)}
                 </Text>
               </View>
             )}
 
-            {!loading && meals.map((meal, i) => (
+            {!loading && !fetchError && meals.map((meal, i) => (
               <View
                 key={meal.id || i}
                 style={{
@@ -181,17 +192,17 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
                   <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6 }}>
                     {meal.protein > 0 && (
                       <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>
-                        蛋白 {meal.protein}g
+                        {t('log.protein')} {meal.protein}g
                       </Text>
                     )}
                     {meal.carbs > 0 && (
                       <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>
-                        碳水 {meal.carbs}g
+                        {t('log.carbs')} {meal.carbs}g
                       </Text>
                     )}
                     {meal.fat > 0 && (
                       <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>
-                        脂肪 {meal.fat}g
+                        {t('log.fat')} {meal.fat}g
                       </Text>
                     )}
                   </View>

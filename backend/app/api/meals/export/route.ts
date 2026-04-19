@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
       }))
     );
   } catch (error: any) {
-    console.error('Meals export error:', error);
     return NextResponse.json({ error: error.message || 'Export failed' }, { status: 500 });
   }
 }

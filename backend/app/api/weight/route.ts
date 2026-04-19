@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
   const { weight, note } = await request.json();
   if (!weight || isNaN(Number(weight))) {
-    return NextResponse.json({ error: '体重数据无效' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid weight data' }, { status: 400 });
   }
 
   // upsert 今天的记录（一天只保留最新的一条）
@@ -65,7 +65,7 @@ export async function DELETE(request: NextRequest) {
   const { userId } = auth;
 
   const id = request.nextUrl.searchParams.get('id');
-  if (!id) return NextResponse.json({ error: '缺少 id' }, { status: 400 });
+  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
   await prisma.weightRecord.deleteMany({ where: { id, userId } });
   return NextResponse.json({ success: true });

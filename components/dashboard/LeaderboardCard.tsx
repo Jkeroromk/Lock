@@ -32,17 +32,19 @@ export default function LeaderboardCard({ entries, onFriendRemoved }: Leaderboar
     if (entry.isMe || !entry.friendshipId) return;
     Alert.alert(
       entry.name,
-      t('dashboard.removeFriendConfirm' as any) || '确定要删除好友吗？',
+      t('dashboard.removeFriendConfirm' as any),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('dashboard.removeFriend' as any) || '删除好友',
+          text: t('dashboard.removeFriend' as any),
           style: 'destructive',
           onPress: async () => {
             try {
               await removeFriend(entry.friendshipId!);
               onFriendRemoved?.();
-            } catch {}
+            } catch {
+              Alert.alert(t('common.error'), t('dashboard.removeFriendFailed' as any));
+            }
           },
         },
       ]

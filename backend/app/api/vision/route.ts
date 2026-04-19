@@ -29,15 +29,15 @@ export async function POST(request: NextRequest) {
     const { image, lang, mode } = await request.json();
 
     if (!image) {
-      return NextResponse.json({ error: '缺少图片数据' }, { status: 400 });
+      return NextResponse.json({ error: 'Image data required' }, { status: 400 });
     }
 
     if (typeof image !== 'string' || image.length > MAX_BASE64_LENGTH) {
-      return NextResponse.json({ error: '图片大小超出限制（最大 10MB）' }, { status: 413 });
+      return NextResponse.json({ error: 'Image too large (max 10MB)' }, { status: 413 });
     }
 
     if (!FIREWORKS_API_KEY) {
-      return NextResponse.json({ error: 'Fireworks API key 未配置' }, { status: 500 });
+      return NextResponse.json({ error: 'Fireworks API key not configured' }, { status: 500 });
     }
 
     // ── 限流检查（与 diet-analysis 共享同一计数器）──────────────────────────
@@ -120,17 +120,15 @@ Return only the JSON, no other text.`;
       const jsonContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       analysis = JSON.parse(jsonContent);
     } catch {
-      console.error('Failed to parse AI response:', content);
       analysis = { food: 'Unknown food', calories: 0, protein: 0, carbs: 0, fat: 0, confidence: 0.5 };
     }
 
     if (!analysis.food || typeof analysis.calories !== 'number') {
-      return NextResponse.json({ error: 'AI 返回的数据格式不正确' }, { status: 500 });
+      return NextResponse.json({ error: 'Invalid AI response format' }, { status: 500 });
     }
 
     return NextResponse.json({ ...analysis, remaining: quota.remaining });
   } catch (error: any) {
-    console.error('Vision API error:', error);
-    return NextResponse.json({ error: '分析图片失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Image analysis failed' }, { status: 500 });
   }
 }

@@ -14,9 +14,7 @@ try {
     GoogleFit = googleFitModule.default || googleFitModule;
     Scopes = googleFitModule.Scopes;
   }
-} catch (error) {
-  console.warn('Health modules not available (requires development build):', error);
-}
+} catch {}
 
 interface HealthValue {
   value: number;
@@ -51,15 +49,13 @@ export const requestHealthPermissions = async (): Promise<boolean> => {
     return new Promise((resolve) => {
       AppleHealthKit.initHealthKit(permissions, (error: string) => {
         if (error) {
-          console.error('Failed to initialize HealthKit:', error);
           resolve(false);
         } else {
           resolve(true);
         }
       });
     });
-  } catch (error) {
-    console.error('Failed to request health permissions:', error);
+  } catch {
     return false;
   }
 };
@@ -111,8 +107,7 @@ const getAppleHealthData = async (): Promise<HealthData> => {
         }
       );
     });
-  } catch (error) {
-    console.error('Failed to get Apple Health data:', error);
+  } catch {
     return { steps: 0, activeEnergy: 0 };
   }
 };
@@ -143,8 +138,7 @@ const getGoogleFitData = async (): Promise<HealthData> => {
       steps: stepsData?.[0]?.steps?.[0]?.value || 0,
       activeEnergy: caloriesData?.[0]?.calorie || 0,
     };
-  } catch (error) {
-    console.error('Failed to get Google Fit data:', error);
+  } catch {
     return { steps: 0, activeEnergy: 0 };
   }
 };

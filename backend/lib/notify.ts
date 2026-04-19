@@ -25,7 +25,7 @@ export async function sendPushToUser(
 
     if (!user?.pushToken) return;
 
-    const res = await fetch(EXPO_PUSH_URL, {
+    await fetch(EXPO_PUSH_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,12 +42,8 @@ export async function sendPushToUser(
       signal: AbortSignal.timeout(5_000),
     });
 
-    if (!res.ok) {
-      console.error('Expo push failed:', await res.text());
-    }
-  } catch (e) {
-    // 推送失败不影响主业务逻辑
-    console.error('sendPushToUser error:', e);
+  } catch {
+    // push failures are non-critical
   }
 }
 

@@ -30,7 +30,6 @@ export interface UsdaFoodItem {
  */
 export async function searchUsda(query: string, maxResults = 5): Promise<UsdaFoodItem[]> {
   if (!USDA_API_KEY) {
-    console.warn('USDA_API_KEY 未配置，跳过 USDA 搜索');
     return [];
   }
 

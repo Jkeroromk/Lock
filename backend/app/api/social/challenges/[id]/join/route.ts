@@ -11,14 +11,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   const challenge = await prisma.challenge.findUnique({ where: { id: params.id } });
   if (!challenge || challenge.status !== 'ACTIVE') {
-    return NextResponse.json({ error: '挑战不存在或已结束' }, { status: 404 });
+    return NextResponse.json({ error: 'Challenge not found or ended' }, { status: 404 });
   }
 
   const existing = await prisma.challengeParticipant.findUnique({
     where: { challengeId_userId: { challengeId: params.id, userId } },
   });
   if (existing) {
-    return NextResponse.json({ error: '已加入该挑战' }, { status: 400 });
+    return NextResponse.json({ error: 'Already joined this challenge' }, { status: 400 });
   }
 
   const participant = await prisma.challengeParticipant.create({

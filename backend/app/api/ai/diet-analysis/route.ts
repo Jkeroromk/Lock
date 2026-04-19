@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     if (!FIREWORKS_API_KEY) {
-      return NextResponse.json({ error: 'AI 服务未配置' }, { status: 500 });
+      return NextResponse.json({ error: 'AI service not configured' }, { status: 500 });
     }
 
     const mealSummary = meals.length > 0
@@ -111,7 +111,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ ...analysis, remaining: quota.remaining });
   } catch (error: any) {
-    console.error('Diet analysis error:', error);
-    return NextResponse.json({ error: '分析失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Analysis failed' }, { status: 500 });
   }
 }

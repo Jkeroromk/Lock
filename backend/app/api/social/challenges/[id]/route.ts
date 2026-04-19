@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   });
 
   if (!challenge) {
-    return NextResponse.json({ error: '挑战不存在' }, { status: 404 });
+    return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
   }
 
   return NextResponse.json({

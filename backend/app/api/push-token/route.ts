@@ -12,12 +12,12 @@ export async function POST(request: NextRequest) {
     const { token } = await request.json();
 
     if (!token || typeof token !== 'string') {
-      return NextResponse.json({ error: '无效的推送令牌' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid push token' }, { status: 400 });
     }
 
     // Expo push token 格式校验
     if (!token.startsWith('ExponentPushToken[') && !token.startsWith('ExpoPushToken[')) {
-      return NextResponse.json({ error: '无效的推送令牌格式' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid push token format' }, { status: 400 });
     }
 
     await prisma.user.update({
@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Save push token error:', error);
-    return NextResponse.json({ error: '保存推送令牌失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save push token' }, { status: 500 });
   }
 }

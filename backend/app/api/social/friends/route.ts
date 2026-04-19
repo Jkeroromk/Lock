@@ -61,8 +61,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(friends);
   } catch (error: any) {
-    console.error('Get friends error:', error);
-    return NextResponse.json({ error: '获取好友列表失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch friends' }, { status: 500 });
   }
 }
 
@@ -75,7 +74,7 @@ export async function POST(request: NextRequest) {
   try {
     const { identifier } = await request.json();
     if (!identifier) {
-      return NextResponse.json({ error: '请提供用户名或邀请码' }, { status: 400 });
+      return NextResponse.json({ error: 'Username or invite code required' }, { status: 400 });
     }
 
     const target = await prisma.user.findFirst({
@@ -83,10 +82,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!target) {
-      return NextResponse.json({ error: '未找到该用户' }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     if (target.id === userId) {
-      return NextResponse.json({ error: '不能添加自己为好友' }, { status: 400 });
+      return NextResponse.json({ error: 'Cannot add yourself as a friend' }, { status: 400 });
     }
 
     // 检查发送方的好友上限
@@ -106,7 +105,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: 'FRIEND_LIMIT_REACHED',
-            message: `免费版最多添加 ${maxFriends} 位好友，升级 Pro 即可无限添加`,
+            message: `Free plan allows up to ${maxFriends} friends. Upgrade to Pro for unlimited.`,
             limit: maxFriends,
           },
           { status: 403 }
@@ -125,10 +124,10 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       if (existing.status === 'ACCEPTED') {
-        return NextResponse.json({ error: '已经是好友了' }, { status: 400 });
+        return NextResponse.json({ error: 'Already friends' }, { status: 400 });
       }
       if (existing.status === 'PENDING') {
-        return NextResponse.json({ error: '已发送过好友请求' }, { status: 400 });
+        return NextResponse.json({ error: 'Friend request already sent' }, { status: 400 });
       }
     }
 
@@ -147,7 +146,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(friendship, { status: 201 });
   } catch (error: any) {
-    console.error('Add friend error:', error);
-    return NextResponse.json({ error: '发送好友请求失败' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send friend request' }, { status: 500 });
   }
 }
