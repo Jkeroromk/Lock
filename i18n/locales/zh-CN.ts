@@ -84,7 +84,7 @@ const zhCN = {
   },
   dashboard: {
     social: '社交',
-    withFriends: '与朋友家人一起健康生活',
+    withFriends: '与朋友一起健康',
     leaderboard: '排行榜',
     challenges: '挑战',
     myRank: '我的排名',
@@ -374,8 +374,9 @@ const zhCN = {
   water: {
     title: '今日饮水',
     goal: '目标',
-    remaining: '还差 {count} 杯（{ml} ml）达标',
+    remaining: '还差 {ml} ml',
     achieved: '今日饮水目标已达成！',
+    autoAdded: '饮料已记录 +{ml}ml',
     ml: 'ml',
     glasses: '杯',
   },

@@ -21,11 +21,15 @@ export async function GET(request: NextRequest) {
 
   if (!user?.inviteCode) {
     let code = generateCode();
-    // ensure uniqueness
     while (await prisma.user.findUnique({ where: { inviteCode: code } })) {
       code = generateCode();
     }
-    user = await prisma.user.update({ where: { id: userId }, data: { inviteCode: code }, select: { inviteCode: true } });
+    user = await prisma.user.upsert({
+      where: { id: userId },
+      update: { inviteCode: code },
+      create: { id: userId, inviteCode: code },
+      select: { inviteCode: true },
+    });
   }
 
   return NextResponse.json({ inviteCode: user!.inviteCode });

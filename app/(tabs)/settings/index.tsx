@@ -1,5 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert, Platform, Linking, AppState, Image } from 'react-native';
-import * as AlternateAppIcons from 'expo-alternate-app-icons';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Platform, Linking, AppState } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
@@ -49,21 +48,6 @@ export default function SettingsScreen() {
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
-  const [currentIcon, setCurrentIcon] = useState<'dark' | 'light'>('dark');
-
-  const handleIconChange = async (icon: 'dark' | 'light') => {
-    if (icon === currentIcon) return;
-    try {
-      if (icon === 'light') {
-        await AlternateAppIcons.setAlternateAppIconAsync('white-lockin');
-      } else {
-        await AlternateAppIcons.setAlternateAppIconAsync(null);
-      }
-      setCurrentIcon(icon);
-    } catch {
-      // Alternate icons require a device build; silently ignore in Expo Go
-    }
-  };
 
   const languages: LanguageCode[] = ['zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR'];
   const currentLanguageName = languageNames[language];
@@ -203,56 +187,6 @@ export default function SettingsScreen() {
             value={currentLanguageName}
             onPress={() => setShowLanguageModal(true)}
           />
-
-          {/* App Icon Switcher */}
-          <View style={{
-            backgroundColor: colors.cardBackground,
-            borderRadius: 24,
-            padding: DIMENSIONS.CARD_PADDING,
-            marginBottom: DIMENSIONS.SPACING * 0.5,
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-              <Ionicons name="color-palette-outline" size={TYPOGRAPHY.bodyM} color={colors.textPrimary} />
-              <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '700', color: colors.textPrimary, marginLeft: DIMENSIONS.SPACING * 0.4 }}>
-                {t('settings.appIcon')}
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.8 }}>
-              {(['dark', 'light'] as const).map((icon) => {
-                const isSelected = currentIcon === icon;
-                return (
-                  <TouchableOpacity
-                    key={icon}
-                    onPress={() => handleIconChange(icon)}
-                    activeOpacity={0.8}
-                    style={{
-                      flex: 1,
-                      alignItems: 'center',
-                      gap: DIMENSIONS.SPACING * 0.4,
-                      padding: DIMENSIONS.SPACING * 0.6,
-                      borderRadius: 16,
-                      borderWidth: 2,
-                      borderColor: isSelected ? colors.textPrimary : colors.borderPrimary,
-                      backgroundColor: isSelected ? colors.cardBackgroundSecondary : 'transparent',
-                    }}
-                  >
-                    <Image
-                      source={icon === 'dark'
-                        ? require('@/assets/dark-lockin.jpg')
-                        : require('@/assets/white-lockin.jpg')}
-                      style={{ width: 60, height: 60, borderRadius: 14 }}
-                    />
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textPrimary }}>
-                      {icon === 'dark' ? t('settings.appIconDark') : t('settings.appIconLight')}
-                    </Text>
-                    {isSelected && (
-                      <Ionicons name="checkmark-circle" size={18} color={colors.textPrimary} />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
 
           <SettingItem
             icon="notifications"

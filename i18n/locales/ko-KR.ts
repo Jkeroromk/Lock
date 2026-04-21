@@ -44,7 +44,7 @@ const koKR = {
     avgProgress: '평균 진행률', avgDaily: '평균 일일',
   },
   dashboard: {
-    social: '소셜', withFriends: '친구와 가족과 함께 건강하게 생활',
+    social: '소셜', withFriends: '친구와 함께 건강하게',
     leaderboard: '리더보드', challenges: '챌린지',
     myRank: '내 순위', myRanking: '내 순위', friendsLeaderboard: '친구 리더보드',
     streak: '연승', days: '일', addFriend: '친구 추가', createChallenge: '새 챌린지 만들기',
@@ -259,8 +259,8 @@ const koKR = {
   },
   water: {
     title: '수분 섭취', goal: '목표',
-    remaining: '{count}잔 더 ({ml}ml) 필요',
-    achieved: '오늘 수분 목표 달성!', ml: 'ml', glasses: '잔',
+    remaining: '{ml}ml 남음',
+    achieved: '오늘 수분 목표 달성!', autoAdded: '음료에서 +{ml}ml 추가', ml: 'ml', glasses: '잔',
   },
   weightTracker: {
     title: '체중 기록', currentWeight: '현재 체중', vsLast: '지난번 대비', totalChange: '총 변화',

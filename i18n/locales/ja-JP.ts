@@ -44,7 +44,7 @@ const jaJP = {
     avgProgress: '平均進捗', avgDaily: '平均每日',
   },
   dashboard: {
-    social: 'ソーシャル', withFriends: '友人や家族と健康的に生活',
+    social: 'ソーシャル', withFriends: '友人と健康的に',
     leaderboard: 'ランキング', challenges: 'チャレンジ',
     myRank: '自分のランク', myRanking: '自分のランク', friendsLeaderboard: '友達ランキング',
     streak: '連勝', days: '日', addFriend: '友達を追加', createChallenge: '新しいチャレンジを作成',
@@ -250,8 +250,8 @@ const jaJP = {
   },
   water: {
     title: '水分補給', goal: '目標',
-    remaining: 'あと {count} 杯（{ml} ml）で達成',
-    achieved: '今日の水分目標達成！', ml: 'ml', glasses: '杯',
+    remaining: 'あと {ml} ml',
+    achieved: '今日の水分目標達成！', autoAdded: 'ドリンクから +{ml}ml 追加', ml: 'ml', glasses: '杯',
   },
   weightTracker: {
     title: '体重記録', currentWeight: '現在の体重', vsLast: '前回比', totalChange: '合計変化',

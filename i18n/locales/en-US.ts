@@ -52,7 +52,7 @@ const enUS = {
     avgProgress: 'Avg Progress', avgDaily: 'Average Daily',
   },
   dashboard: {
-    social: 'Social', withFriends: 'Live healthy with friends and family',
+    social: 'Social', withFriends: 'Healthy with friends',
     leaderboard: 'Leaderboard', challenges: 'Challenges',
     myRank: 'My Rank', myRanking: 'My Ranking', friendsLeaderboard: 'Friends Leaderboard',
     streak: 'Streak', days: 'days', addFriend: 'Add Friend',
@@ -280,8 +280,9 @@ const enUS = {
   water: {
     title: 'Hydration',
     goal: 'Goal',
-    remaining: '{count} more glass(es) ({ml} ml) to go',
-    achieved: "Today's hydration goal reached!",
+    remaining: '{ml} ml to go',
+    achieved: "Hydration goal reached!",
+    autoAdded: '+{ml}ml from drink',
     ml: 'ml',
     glasses: 'glasses',
   },

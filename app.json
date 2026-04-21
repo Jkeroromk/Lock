@@ -70,7 +70,10 @@
       "expo-secure-store",
       [
         "expo-alternate-app-icons",
-        ["./assets/dark-lockin.jpg", "./assets/white-lockin.jpg"]
+        [
+          { "name": "DarkLockin", "image": "./assets/dark-lockin.jpg" },
+          { "name": "WhiteLockin", "image": "./assets/white-lockin.jpg" }
+        ]
       ]
     ],
     "scheme": "lock",

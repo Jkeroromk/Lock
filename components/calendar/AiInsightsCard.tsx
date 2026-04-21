@@ -28,117 +28,93 @@ export default function AiInsightsCard() {
 
   return (
     <View style={{
-      borderRadius: 24,
-      padding: DIMENSIONS.SPACING * 1.2,
+      borderRadius: 16,
+      padding: DIMENSIONS.SPACING * 0.9,
       marginBottom: DIMENSIONS.SPACING * 1.2,
       backgroundColor: colors.cardBackground,
-      borderWidth: 2,
+      borderWidth: 1,
       borderColor: colors.borderPrimary,
-      shadowColor: colors.shadowColor,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 6,
     }}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 1 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <View style={{
-            width: 32, height: 32, borderRadius: 10,
-            backgroundColor: colors.cardBackgroundSecondary,
-            borderWidth: 1, borderColor: colors.borderPrimary,
-            alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Ionicons name="sparkles" size={16} color={colors.textPrimary} />
-          </View>
-          <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 0.6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Ionicons name="sparkles" size={14} color={colors.textPrimary} />
+          <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '800', color: colors.textPrimary }}>
             {t('aiInsights.title' as any)}
           </Text>
         </View>
         {data && (
           <TouchableOpacity onPress={handleAnalyze} disabled={loading}>
-            <Ionicons name="refresh" size={18} color={colors.textSecondary} />
+            <Ionicons name="refresh" size={15} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
       </View>
 
       {!data && !loading && (
-        <>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textPrimary, opacity: 0.7, marginBottom: DIMENSIONS.SPACING * 1 }}>
-            {t('aiInsights.description' as any)}
+        <TouchableOpacity
+          onPress={handleAnalyze}
+          style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+            paddingVertical: DIMENSIONS.SPACING * 0.6, borderRadius: 10,
+            backgroundColor: colors.textPrimary,
+          }}
+        >
+          <Ionicons name="sparkles" size={13} color={colors.backgroundPrimary} />
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.backgroundPrimary }}>
+            {t('aiInsights.startAnalysis' as any)}
           </Text>
-          <TouchableOpacity
-            onPress={handleAnalyze}
-            style={{
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-              paddingVertical: DIMENSIONS.SPACING * 0.85, borderRadius: 14,
-              backgroundColor: colors.textPrimary,
-            }}
-          >
-            <Ionicons name="sparkles" size={16} color={colors.backgroundPrimary} />
-            <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.backgroundPrimary }}>
-              {t('aiInsights.startAnalysis' as any)}
-            </Text>
-          </TouchableOpacity>
-        </>
+        </TouchableOpacity>
       )}
 
       {loading && (
-        <View style={{ alignItems: 'center', paddingVertical: DIMENSIONS.SPACING * 1.5 }}>
-          <ActivityIndicator color={colors.textPrimary} />
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textSecondary, marginTop: DIMENSIONS.SPACING * 0.6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: DIMENSIONS.SPACING * 0.6 }}>
+          <ActivityIndicator size="small" color={colors.textPrimary} />
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>
             {t('aiInsights.analyzing' as any)}
           </Text>
         </View>
       )}
 
       {error && (
-        <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: '#EF4444', fontWeight: '600', textAlign: 'center' }}>
+        <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: '#EF4444', fontWeight: '600', textAlign: 'center' }}>
           {error}
         </Text>
       )}
 
       {data && !loading && (
-        <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
+        <View style={{ gap: DIMENSIONS.SPACING * 0.55 }}>
           {/* Score + summary */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: DIMENSIONS.SPACING * 0.9, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 14, borderWidth: 1, borderColor: colors.borderPrimary }}>
-            <View style={{ alignItems: 'center', minWidth: 44 }}>
-              <Text style={{ fontSize: TYPOGRAPHY.numberL * 0.7, fontWeight: '900', color: colors.textPrimary, lineHeight: TYPOGRAPHY.numberL * 0.75 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: DIMENSIONS.SPACING * 0.65, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 10, borderWidth: 1, borderColor: colors.borderPrimary }}>
+            <View style={{ alignItems: 'center', minWidth: 36 }}>
+              <Text style={{ fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyL * 1.1 }}>
                 {data.score}
               </Text>
               <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>/ 10</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 }}>{t('aiInsights.recentStatus' as any)}</Text>
-              <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyS * 1.4 }}>
-                {data.summary}
-              </Text>
-            </View>
+            <Text style={{ flex: 1, fontSize: TYPOGRAPHY.bodyXS, fontWeight: '500', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyXS * 1.4 }}>
+              {data.summary}
+            </Text>
           </View>
 
-          {/* Diet suggestions */}
-          <View>
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
+          {/* Suggestions */}
+          <View style={{ gap: DIMENSIONS.SPACING * 0.3 }}>
+            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8 }}>
               {t('aiInsights.dietSuggestions' as any)}
             </Text>
-            <View style={{ gap: DIMENSIONS.SPACING * 0.45 }}>
-              {data.suggestions.map((s, i) => (
-                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
-                  <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary, alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
-                    <Text style={{ fontSize: 9, fontWeight: '900', color: colors.textSecondary }}>{i + 1}</Text>
-                  </View>
-                  <Text style={{ flex: 1, fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyS * 1.45 }}>
-                    {s}
-                  </Text>
-                </View>
-              ))}
-            </View>
+            {data.suggestions.map((s, i) => (
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '900', color: colors.textSecondary, marginTop: 2, minWidth: 14 }}>{i + 1}.</Text>
+                <Text style={{ flex: 1, fontSize: TYPOGRAPHY.bodyXS, fontWeight: '500', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyXS * 1.4 }}>
+                  {s}
+                </Text>
+              </View>
+            ))}
           </View>
 
-          {/* Exercise suggestion */}
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: DIMENSIONS.SPACING * 0.8, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 12, borderWidth: 1, borderColor: colors.borderPrimary }}>
-            <Ionicons name="barbell-outline" size={16} color={colors.textPrimary} style={{ marginTop: 1 }} />
-            <Text style={{ flex: 1, fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyS * 1.4 }}>
+          {/* Exercise */}
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, padding: DIMENSIONS.SPACING * 0.6, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 10, borderWidth: 1, borderColor: colors.borderPrimary }}>
+            <Ionicons name="barbell-outline" size={13} color={colors.textPrimary} style={{ marginTop: 2 }} />
+            <Text style={{ flex: 1, fontSize: TYPOGRAPHY.bodyXS, fontWeight: '500', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyXS * 1.4 }}>
               {data.exercise}
             </Text>
           </View>

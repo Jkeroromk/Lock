@@ -44,7 +44,7 @@ const zhTW = {
     avgProgress: '平均進度', avgDaily: '平均每日',
   },
   dashboard: {
-    social: '社交', withFriends: '與朋友家人一起健康生活',
+    social: '社交', withFriends: '與朋友一起健康',
     leaderboard: '排行榜', challenges: '挑戰',
     myRank: '我的排名', myRanking: '我的排名', friendsLeaderboard: '好友排行榜',
     streak: '連勝', days: '天', addFriend: '添加好友', createChallenge: '創建新挑戰',
@@ -244,8 +244,8 @@ const zhTW = {
   },
   water: {
     title: '今日飲水', goal: '目標',
-    remaining: '還差 {count} 杯（{ml} ml）達標',
-    achieved: '今日飲水目標已達成！', ml: 'ml', glasses: '杯',
+    remaining: '還差 {ml} ml',
+    achieved: '今日飲水目標已達成！', autoAdded: '飲料已記錄 +{ml}ml', ml: 'ml', glasses: '杯',
   },
   weightTracker: {
     title: '體重追蹤', currentWeight: '當前體重', vsLast: '較上次', totalChange: '總變化',

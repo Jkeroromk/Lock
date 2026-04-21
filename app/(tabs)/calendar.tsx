@@ -175,21 +175,6 @@ export default function CalendarScreen() {
         contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
-          {/* Header */}
-          <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-            <Text style={{
-              fontSize: TYPOGRAPHY.titleL, fontWeight: '900',
-              color: colors.textPrimary, letterSpacing: -2,
-              marginBottom: DIMENSIONS.SPACING * 0.3,
-              lineHeight: TYPOGRAPHY.titleL * 1.1,
-            }}>
-              {t('tabs.calendar')}
-            </Text>
-            <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '500', color: colors.textPrimary, opacity: 0.7 }}>
-              {t('calendar.calorieOverview')}
-            </Text>
-          </View>
-
           {loading ? (
             <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
               <Skeleton height={320} borderRadius={24} />
