@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
   const { plan } = await request.json(); // 'FREE' | 'PRO' | 'ENTERPRISE'
 
-  if (!['FREE', 'PRO', 'ENTERPRISE'].includes(plan)) {
+  if (!['FREE', 'PRO', 'MAX'].includes(plan)) {
     return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
   }
 

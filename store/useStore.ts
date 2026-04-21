@@ -7,7 +7,7 @@ export type Gender = 'male' | 'female' | 'other';
 export type Goal = 'lose_weight' | 'lose_fat' | 'gain_muscle';
 export type ExerciseFrequency = 'never' | 'rarely' | '1-2' | '3-4' | '5-6' | 'daily';
 export type ExpectedTimeframe = '1_month' | '2-3_months' | '4-6_months' | '6-12_months' | '1_year_plus';
-export type PlanTier = 'FREE' | 'PRO' | 'ENTERPRISE';
+export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
 interface User {
   id: string;

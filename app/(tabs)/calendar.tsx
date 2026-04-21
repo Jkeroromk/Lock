@@ -162,9 +162,9 @@ export default function CalendarScreen() {
     : 0;
 
   const nutritionStats = [
-    { label: t('today.protein'), value: weeklyNutrition.protein, color: '#6366F1' },
-    { label: t('today.carbs'), value: weeklyNutrition.carbs, color: '#F59E0B' },
-    { label: t('today.fat'), value: weeklyNutrition.fat, color: '#EF4444' },
+    { label: t('log.protein'), value: weeklyNutrition.protein, color: '#6366F1' },
+    { label: t('log.carbs'), value: weeklyNutrition.carbs, color: '#F59E0B' },
+    { label: t('log.fat'), value: weeklyNutrition.fat, color: '#EF4444' },
   ];
 
   return (

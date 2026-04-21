@@ -1,51 +1,71 @@
-/**
- * RevenueCat stub — Apple Developer 账号就绪后替换为真实实现
- * 恢复步骤：
- *   1. npm install react-native-purchases
- *   2. 用 git 恢复此文件原始内容（或参考 ENV_SETUP_GUIDE.md）
- *   3. 在 .env 填入 EXPO_PUBLIC_REVENUECAT_IOS_KEY / ANDROID_KEY
- */
+import Purchases, {
+  LOG_LEVEL,
+  type PurchasesPackage,
+  type CustomerInfo,
+  type PurchasesOffering,
+} from 'react-native-purchases';
+import type { PlanTier } from '@/store/useStore';
 
-export type Plan = 'free' | 'pro';
+export type Plan = 'free' | 'pro' | 'max';
+export type { PurchasesPackage, CustomerInfo, PurchasesOffering };
 
-// Stub types（与真实 react-native-purchases 保持接口兼容）
-export interface PurchasesPackage {
-  packageType: string;
-  product: { priceString: string; productIdentifier: string };
+const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? '';
+
+export function initRevenueCat(platform: 'ios' | 'android'): void {
+  const key = platform === 'ios' ? IOS_KEY : '';
+  if (!key) return;
+  Purchases.setLogLevel(LOG_LEVEL.WARN);
+  Purchases.configure({ apiKey: key });
 }
 
-export interface CustomerInfo {
-  entitlements: { active: Record<string, unknown> };
-}
-
-export interface PurchasesOffering {
-  availablePackages: PurchasesPackage[];
-}
-
-export function initRevenueCat(_platform: 'ios' | 'android'): void {
-  // TODO: enable when Apple Developer account is ready
-}
-
-export async function identifyUser(_userId: string): Promise<void> {
-  // TODO: enable when Apple Developer account is ready
+export async function identifyUser(userId: string): Promise<void> {
+  await Purchases.logIn(userId);
 }
 
 export async function resetUser(): Promise<void> {
-  // TODO: enable when Apple Developer account is ready
+  try { await Purchases.logOut(); } catch {}
+}
+
+/** 从 CustomerInfo 推断当前 plan tier */
+export function planFromCustomerInfo(info: CustomerInfo): PlanTier {
+  if (info.entitlements.active['max'] !== undefined) return 'MAX';
+  if (info.entitlements.active['pro'] !== undefined) return 'PRO';
+  return 'FREE';
 }
 
 export async function checkProStatus(): Promise<boolean> {
-  return false;
+  const info = await Purchases.getCustomerInfo();
+  const plan = planFromCustomerInfo(info);
+  return plan === 'PRO' || plan === 'MAX';
 }
 
+export async function getActivePlan(): Promise<PlanTier> {
+  const info = await Purchases.getCustomerInfo();
+  return planFromCustomerInfo(info);
+}
+
+/** 获取 PRO 套餐（来自 'pro' offering 或当前 offering） */
+export async function fetchProOffering(): Promise<PurchasesOffering | null> {
+  const offerings = await Purchases.getOfferings();
+  return offerings.all['pro'] ?? offerings.current;
+}
+
+/** 获取 MAX 套餐（来自 'max' offering） */
+export async function fetchMaxOffering(): Promise<PurchasesOffering | null> {
+  const offerings = await Purchases.getOfferings();
+  return offerings.all['max'] ?? null;
+}
+
+/** 兼容旧接口，返回当前 offering（PRO） */
 export async function fetchOfferings(): Promise<PurchasesOffering | null> {
-  return null;
+  return fetchProOffering();
 }
 
-export async function purchasePackage(_pkg: PurchasesPackage): Promise<CustomerInfo> {
-  throw new Error('RevenueCat 尚未启用，请先完成 Apple Developer 账号配置');
+export async function purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo> {
+  const { customerInfo } = await Purchases.purchasePackage(pkg);
+  return customerInfo;
 }
 
 export async function restorePurchases(): Promise<CustomerInfo> {
-  throw new Error('RevenueCat 尚未启用，请先完成 Apple Developer 账号配置');
+  return await Purchases.restorePurchases();
 }

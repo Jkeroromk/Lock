@@ -360,7 +360,7 @@ export const fetchChallengeDetail = async (challengeId: string): Promise<Challen
 
 // ─── Subscription ─────────────────────────────────────────────────────────────
 
-export const syncSubscriptionPlan = async (plan: 'FREE' | 'PRO' | 'ENTERPRISE'): Promise<void> => {
+export const syncSubscriptionPlan = async (plan: 'FREE' | 'PRO' | 'MAX'): Promise<void> => {
   await api.post('/api/subscription', { plan });
 };
 
