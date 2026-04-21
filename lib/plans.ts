@@ -1,9 +1,9 @@
-export type PlanTier = 'FREE' | 'PRO' | 'ENTERPRISE';
+export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
 export interface PlanFeatures {
   /** 每日 AI 识别次数（-1 = 无限） */
   dailyAiCalls: number;
-  /** AI 饮食分析 */
+  /** AI 饮食分析（手动触发） */
   aiDietAnalysis: boolean;
   /** 最多好友数（-1 = 无限） */
   maxFriends: number;
@@ -11,8 +11,14 @@ export interface PlanFeatures {
   createChallenge: boolean;
   /** 数据导出 */
   exportData: boolean;
-  /** 体重趋势图（高级） */
+  /** 体重趋势图 */
   weightChart: boolean;
+  /** 每周自动 AI 报告 */
+  weeklyAiReport: boolean;
+  /** AI 自定义营养目标 */
+  customNutritionPlan: boolean;
+  /** 优先客服 */
+  prioritySupport: boolean;
 }
 
 export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
@@ -23,6 +29,9 @@ export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
     createChallenge: false,
     exportData: false,
     weightChart: false,
+    weeklyAiReport: false,
+    customNutritionPlan: false,
+    prioritySupport: false,
   },
   PRO: {
     dailyAiCalls: -1,
@@ -31,14 +40,20 @@ export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
     createChallenge: true,
     exportData: true,
     weightChart: true,
+    weeklyAiReport: false,
+    customNutritionPlan: false,
+    prioritySupport: false,
   },
-  ENTERPRISE: {
+  MAX: {
     dailyAiCalls: -1,
     aiDietAnalysis: true,
     maxFriends: -1,
     createChallenge: true,
     exportData: true,
     weightChart: true,
+    weeklyAiReport: true,
+    customNutritionPlan: true,
+    prioritySupport: true,
   },
 };
 
@@ -47,23 +62,20 @@ export type Feature = keyof PlanFeatures;
 export function hasFeature(plan: PlanTier, feature: Feature): boolean {
   const value = PLAN_FEATURES[plan][feature];
   if (typeof value === 'boolean') return value;
-  // -1 = unlimited = true; 0 = blocked = false; >0 = has quota = true
   return (value as number) !== 0;
 }
 
-/** 获取某功能的配额数量（-1 = 无限） */
 export function getQuota(plan: PlanTier, feature: Feature): number {
   const value = PLAN_FEATURES[plan][feature];
   if (typeof value === 'boolean') return value ? -1 : 0;
   return value as number;
 }
 
-/** 返回计划的显示名称 */
 export function getPlanLabel(plan: PlanTier): string {
-  const labels: Record<PlanTier, string> = {
-    FREE: '免费版',
-    PRO: 'Pro',
-    ENTERPRISE: '企业版',
-  };
+  const labels: Record<PlanTier, string> = { FREE: '免费版', PRO: 'Pro', MAX: 'Max' };
   return labels[plan];
+}
+
+export function isPaidPlan(plan: PlanTier): boolean {
+  return plan === 'PRO' || plan === 'MAX';
 }

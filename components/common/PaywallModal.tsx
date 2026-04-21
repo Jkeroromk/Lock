@@ -20,7 +20,7 @@ import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
-import { fetchOfferings, purchasePackage, restorePurchases, type PurchasesPackage } from '@/lib/revenuecat';
+import { fetchProOffering, fetchMaxOffering, purchasePackage, restorePurchases, planFromCustomerInfo, type PurchasesPackage } from '@/lib/revenuecat';
 import { syncSubscriptionPlan } from '@/services/api';
 import type { Feature } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
@@ -62,8 +62,8 @@ export default function PaywallModal({
   const loadOffering = async () => {
     setLoadingOfferings(true);
     try {
-      const offering = await fetchOfferings();
-      setProPackage(offering?.availablePackages?.[0] ?? null);
+      const [proOff, maxOff] = await Promise.all([fetchProOffering(), fetchMaxOffering()]);
+      setProPackage(maxOff?.availablePackages?.[0] ?? proOff?.availablePackages?.[0] ?? null);
     } finally {
       setLoadingOfferings(false);
     }
@@ -78,9 +78,10 @@ export default function PaywallModal({
     setPurchasing(true);
     try {
       const info = await purchasePackage(proPackage);
-      if (info.entitlements.active['pro']) {
-        setPlan('PRO');
-        await syncSubscriptionPlan('PRO');
+      const newPlan = planFromCustomerInfo(info);
+      if (newPlan !== 'FREE') {
+        setPlan(newPlan);
+        await syncSubscriptionPlan(newPlan);
         onClose();
       }
     } catch (err: any) {
@@ -97,9 +98,10 @@ export default function PaywallModal({
     setRestoring(true);
     try {
       const info = await restorePurchases();
-      if (info.entitlements.active['pro']) {
-        setPlan('PRO');
-        await syncSubscriptionPlan('PRO');
+      const newPlan = planFromCustomerInfo(info);
+      if (newPlan !== 'FREE') {
+        setPlan(newPlan);
+        await syncSubscriptionPlan(newPlan);
         onClose();
       }
     } catch {} finally {
