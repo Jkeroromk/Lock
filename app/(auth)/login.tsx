@@ -4,13 +4,14 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setTokenGetter } from '@/services/tokenStore';
 import * as Linking from 'expo-linking';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { fetchProfile } from '@/services/api';
+import { fetchProfile, updateProfile } from '@/services/api';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -39,36 +40,65 @@ export default function LoginScreen() {
 
   // After Clerk auth succeeds — load profile from our DB and route
   const onAuthSuccess = async () => {
-    try {
-      const profile = await fetchProfile();
-      setUser({
-        id: profile.id,
-        name: profile.name || email.split('@')[0] || 'User',
-        email: profile.email || email,
-        username: profile.username ?? undefined,
-        bio: profile.bio ?? undefined,
-        avatarEmoji: profile.avatarEmoji ?? undefined,
-        avatarImage: profile.avatarImage ?? undefined,
-        showGender: profile.showGender ?? false,
-        height: profile.height ?? undefined,
-        age: profile.age ?? undefined,
-        weight: profile.weight ?? undefined,
-        gender: profile.gender as any,
-        goal: profile.goal as any,
-        exerciseFrequency: profile.exerciseFrequency as any,
-        expectedTimeframe: profile.expectedTimeframe as any,
-        plan: (profile.plan ?? 'FREE') as any,
-        streak: profile.streak ?? 0,
-        hasCompletedOnboarding: profile.hasCompletedOnboarding,
-      });
-      if (profile.hasCompletedOnboarding) {
-        router.replace('/(tabs)/today');
-      } else {
-        const { setHasSelectedLanguage } = useStore.getState();
-        setHasSelectedLanguage(false);
-        router.replace('/(auth)/language-selection');
+    // Retry fetchProfile up to 3x — getToken may return null briefly after setSignInActive
+    let profile = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 400));
+        profile = await fetchProfile();
+        break;
+      } catch {
+        if (attempt === 2) {
+          // All retries failed — use persisted store to decide: returning user → today, new user → onboarding
+          const cached = useStore.getState().user;
+          if (cached?.hasCompletedOnboarding) {
+            router.replace('/(tabs)/today');
+          } else {
+            const { setHasSelectedLanguage } = useStore.getState();
+            setHasSelectedLanguage(false);
+            router.replace('/(auth)/language-selection');
+          }
+          return;
+        }
       }
-    } catch {
+    }
+    if (!profile) return;
+
+    // If DB says onboarding incomplete, check local flag (handles failed DB saves)
+    let completedOnboarding = profile.hasCompletedOnboarding;
+    if (!completedOnboarding) {
+      const localFlag = await AsyncStorage.getItem(`lock_onboarding_done_${profile.id}`).catch(() => null);
+      if (localFlag === 'true') {
+        completedOnboarding = true;
+        updateProfile({ hasCompletedOnboarding: true }).catch(() => {});
+      }
+    }
+
+    setUser({
+      id: profile.id,
+      name: profile.name || email.split('@')[0] || 'User',
+      email: profile.email || email,
+      username: profile.username ?? undefined,
+      bio: profile.bio ?? undefined,
+      avatarEmoji: profile.avatarEmoji ?? undefined,
+      avatarImage: profile.avatarImage ?? undefined,
+      showGender: profile.showGender ?? false,
+      height: profile.height ?? undefined,
+      age: profile.age ?? undefined,
+      weight: profile.weight ?? undefined,
+      gender: profile.gender as any,
+      goal: profile.goal as any,
+      exerciseFrequency: profile.exerciseFrequency as any,
+      expectedTimeframe: profile.expectedTimeframe as any,
+      plan: (profile.plan ?? 'FREE') as any,
+      streak: profile.streak ?? 0,
+      hasCompletedOnboarding: completedOnboarding,
+    });
+    if (completedOnboarding) {
+      router.replace('/(tabs)/today');
+    } else {
+      const { setHasSelectedLanguage } = useStore.getState();
+      setHasSelectedLanguage(false);
       router.replace('/(auth)/language-selection');
     }
   };

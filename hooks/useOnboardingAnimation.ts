@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -91,6 +92,13 @@ export function useOnboardingAnimation({
 
   // 保存 onboarding 数据到后端，最多重试3次，完成后导航
   const saveAndNavigate = useCallback(async () => {
+    const userId = user?.id;
+
+    // Persist completion flag locally first — survives failed API calls and logout
+    if (userId) {
+      await AsyncStorage.setItem(`lock_onboarding_done_${userId}`, 'true').catch(() => {});
+    }
+
     const payload = {
       name: user?.name ?? undefined,
       hasCompletedOnboarding: true,
@@ -108,7 +116,7 @@ export function useOnboardingAnimation({
         await updateProfile(payload);
         break;
       } catch {
-        // continue to next attempt
+        // continue to next attempt; local flag already set above
       }
     }
     navigateToHome();
