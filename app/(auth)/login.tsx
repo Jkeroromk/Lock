@@ -19,7 +19,7 @@ export default function LoginScreen() {
   const { setUser } = useStore();
   const colors = useTheme();
 
-  const { getToken } = useAuth();
+  const { getToken, userId: clerkUserId } = useAuth();
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
   const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
@@ -49,14 +49,22 @@ export default function LoginScreen() {
         break;
       } catch {
         if (attempt === 2) {
-          // All retries failed — use persisted store to decide: returning user → today, new user → onboarding
-          const cached = useStore.getState().user;
-          if (cached?.hasCompletedOnboarding) {
+          // All retries failed — check local flag first, then fall back to cached store
+          const uid = clerkUserId;
+          const localFlag = uid
+            ? await AsyncStorage.getItem(`lock_onboarding_done_${uid}`).catch(() => null)
+            : null;
+          if (localFlag === 'true') {
             router.replace('/(tabs)/today');
           } else {
-            const { setHasSelectedLanguage } = useStore.getState();
-            setHasSelectedLanguage(false);
-            router.replace('/(auth)/language-selection');
+            const cached = useStore.getState().user;
+            if (cached?.hasCompletedOnboarding) {
+              router.replace('/(tabs)/today');
+            } else {
+              const { setHasSelectedLanguage } = useStore.getState();
+              setHasSelectedLanguage(false);
+              router.replace('/(auth)/language-selection');
+            }
           }
           return;
         }

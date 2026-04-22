@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@clerk/clerk-expo';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -38,6 +39,7 @@ export function useOnboardingAnimation({
   onboardingData,
 }: UseOnboardingAnimationProps) {
   const router = useRouter();
+  const { userId: clerkUserId } = useAuth();
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
 
   // 动画值
@@ -92,7 +94,8 @@ export function useOnboardingAnimation({
 
   // 保存 onboarding 数据到后端，最多重试3次，完成后导航
   const saveAndNavigate = useCallback(async () => {
-    const userId = user?.id;
+    // Use Clerk userId directly — reliable even when Zustand user is null
+    const userId = clerkUserId ?? user?.id;
 
     // Persist completion flag locally first — survives failed API calls and logout
     if (userId) {
@@ -120,7 +123,7 @@ export function useOnboardingAnimation({
       }
     }
     navigateToHome();
-  }, [user, onboardingData, navigateToHome]);
+  }, [user, clerkUserId, onboardingData, navigateToHome]);
 
   // 完成动画后的处理
   const handleAnimationComplete = useCallback(() => {
