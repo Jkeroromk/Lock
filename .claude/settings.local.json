@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo:*)",
+      "Bash(npx tsc:*)",
+      "Bash(vercel --version)",
+      "Bash(npm list:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel --yes)",
+      "Bash(vercel env:*)",
+      "Bash(printf \"e65bd3c1-0fa4-4073-9431-9b0f75d67695\")",
+      "Bash(printf \"key_4qdD4UQFPfUTwWiR\")",
+      "Bash(vercel --prod --yes)",
+      "Bash(ls /c/Programming/Lock/.env*)",
+      "Bash(curl -s https://backend-nine-nu-94.vercel.app/api/today -H \"Authorization: Bearer test\")",
+      "Bash(eas --version)",
+      "Bash(eas whoami:*)",
+      "Bash(eas build:configure --platform all)",
+      "Bash(eas init:*)"
+    ]
+  },
+  "enabledMcpjsonServers": []
+}
