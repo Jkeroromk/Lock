@@ -206,8 +206,6 @@ export default function LoginScreen() {
     } catch (err: any) {
       const msg = err?.errors?.[0]?.longMessage ?? err?.message ?? 'unknown';
       Alert.alert('OAuth Error', `Apple: ${msg}`);
-        Alert.alert(t('auth.error'), t('auth.loginFailed'));
-      }
     } finally {
       setIsLoading(false);
     }
