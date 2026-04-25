@@ -19,6 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jkeroro.lockin",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSHealthShareUsageDescription": "我们需要访问您的健康数据以跟踪您的步数、活动能量和心率。",
         "NSHealthUpdateUsageDescription": "我们需要更新您的健康数据以记录您的活动。",
