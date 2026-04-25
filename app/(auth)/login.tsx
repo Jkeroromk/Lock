@@ -179,11 +179,20 @@ export default function LoginScreen() {
       await result.setActive({ session: sessionId });
       setTokenGetter(getToken);
       await onAuthSuccess();
-    } else {
-      const signUpStatus = result.signUp?.status ?? 'none';
-      const signInStatus = result.signIn?.status ?? 'none';
-      Alert.alert('OAuth Error', `No session.\nsignUp:${signUpStatus}\nsignIn:${signInStatus}`);
+      return;
     }
+
+    // missing_requirements: OAuth gave us a signUp but Clerk needs more fields.
+    // Fix: Clerk Dashboard → Email, Phone, Username → set Username & Phone to Off/Optional.
+    if (result.signUp?.status === 'missing_requirements') {
+      const missing = result.signUp.missingFields?.join(', ') ?? 'unknown';
+      Alert.alert('Clerk Config Error', `Missing required fields: ${missing}\n\nGo to Clerk Dashboard → Configure → Email, Phone, Username and set them to Optional.`);
+      return;
+    }
+
+    const signUpStatus = result.signUp?.status ?? 'none';
+    const signInStatus = result.signIn?.status ?? 'none';
+    Alert.alert('OAuth Error', `No session.\nsignUp:${signUpStatus}\nsignIn:${signInStatus}`);
   };
 
   const handleGoogleLogin = async () => {
