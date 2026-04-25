@@ -5,7 +5,7 @@ import { sendPushToUser } from '@/lib/notify';
 
 // POST /api/social/challenges/[id]/join
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

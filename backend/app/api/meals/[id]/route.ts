@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 
 // DELETE /api/meals/[id] — delete a meal
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const authResult = await authenticateRequest(request);
+  const authResult = await authenticateRequest();
   if (authResult instanceof NextResponse) return authResult;
   const { userId } = authResult;
 
@@ -22,7 +22,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
 // PATCH /api/meals/[id] — update a meal's nutrition info
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const authResult = await authenticateRequest(request);
+  const authResult = await authenticateRequest();
   if (authResult instanceof NextResponse) return authResult;
   const { userId } = authResult;
 

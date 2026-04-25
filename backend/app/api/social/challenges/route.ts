@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 
 // GET /api/social/challenges — active challenges the user is in
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/social/challenges — create a challenge
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

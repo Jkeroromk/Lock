@@ -13,7 +13,7 @@ function generateCode(): string {
 
 // GET /api/social/invite-code — get or generate invite code
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

@@ -12,7 +12,7 @@ const GENDER_LABELS: Record<string, string> = { male: '男', female: '女', othe
 
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await authenticateRequest(request);
+    const authResult = await authenticateRequest();
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 

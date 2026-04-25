@@ -6,39 +6,42 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
 import { setTokenGetter } from '@/services/tokenStore';
 import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchProfile } from '@/services/api';
 
+WebBrowser.maybeCompleteAuthSession();
+
+type AuthMode = 'login' | 'signup' | 'verify' | 'resetRequest' | 'resetConfirm';
+
 export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { setUser } = useStore();
+  const { setUser, setHasSelectedLanguage } = useStore();
   const colors = useTheme();
 
   const { getToken } = useAuth();
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
-  const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
-  const { startOAuthFlow: appleOAuth } = useOAuth({ strategy: 'oauth_apple' });
+  const { startOAuthFlow: startGoogleOAuth } = useOAuth({ strategy: 'oauth_google' });
+  const { startOAuthFlow: startAppleOAuth } = useOAuth({ strategy: 'oauth_apple' });
 
+  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
-  const [pendingPasswordReset, setPendingPasswordReset] = useState(false);
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const newPasswordRef = useRef<TextInput>(null);
 
-  // After Clerk auth succeeds — load profile from our DB and route
   const onAuthSuccess = async () => {
+    setTokenGetter(getToken);
     try {
       const profile = await fetchProfile();
       setUser({
@@ -64,7 +67,6 @@ export default function LoginScreen() {
       if (profile.hasCompletedOnboarding) {
         router.replace('/(tabs)/today');
       } else {
-        const { setHasSelectedLanguage } = useStore.getState();
         setHasSelectedLanguage(false);
         router.replace('/(auth)/language-selection');
       }
@@ -73,7 +75,28 @@ export default function LoginScreen() {
     }
   };
 
-  const handleAuth = async () => {
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert(t('auth.error'), t('auth.fillAllFields'));
+      return;
+    }
+    if (!signInLoaded || !signIn) return;
+    setIsLoading(true);
+    try {
+      const result = await signIn.create({ identifier: email, password });
+      await setSignInActive!({ session: result.createdSessionId });
+      await onAuthSuccess();
+    } catch (err: any) {
+      const clerkMsg = err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? '';
+      const rawMsg = err?.message ?? '';
+      const clerkCode = err?.errors?.[0]?.code ?? '';
+      Alert.alert('Auth Error (debug)', `code: ${clerkCode}\nclerk: ${clerkMsg}\nraw: ${rawMsg}\ntype: ${typeof err}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async () => {
     if (!email || !password) {
       Alert.alert(t('auth.error'), t('auth.fillAllFields'));
       return;
@@ -82,34 +105,28 @@ export default function LoginScreen() {
       Alert.alert(t('auth.error'), t('auth.passwordTooShort'));
       return;
     }
-    if (!signInLoaded || !signUpLoaded) return;
-
+    if (!signUpLoaded || !signUp) return;
     setIsLoading(true);
     try {
-      if (isSignUp) {
-        const result = await signUp.create({ emailAddress: email, password });
-        await result.prepareEmailAddressVerification({ strategy: 'email_code' });
-        setPendingVerification(true);
-      } else {
-        const result = await signIn.create({ identifier: email, password });
-        await setSignInActive({ session: result.createdSessionId });
-        setTokenGetter(getToken);
-        await onAuthSuccess();
-      }
+      await signUp.create({ emailAddress: email, password });
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      setMode('verify');
     } catch (err: any) {
-      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
+      const clerkMsg = err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? '';
+      const rawMsg = err?.message ?? '';
+      const clerkCode = err?.errors?.[0]?.code ?? '';
+      Alert.alert('Auth Error (debug)', `code: ${clerkCode}\nclerk: ${clerkMsg}\nraw: ${rawMsg}\ntype: ${typeof err}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleVerify = async () => {
-    if (!signUpLoaded) return;
+    if (!signUpLoaded || !signUp) return;
     setIsLoading(true);
     try {
       const result = await signUp.attemptEmailAddressVerification({ code: verificationCode });
-      await setSignUpActive({ session: result.createdSessionId });
-      setTokenGetter(getToken);
+      await setSignUpActive!({ session: result.createdSessionId });
       await onAuthSuccess();
     } catch (err: any) {
       Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
@@ -118,17 +135,65 @@ export default function LoginScreen() {
     }
   };
 
+  const handleRequestPasswordReset = async () => {
+    if (!email) {
+      Alert.alert(t('auth.error'), t('auth.enterEmailFirst'));
+      return;
+    }
+    if (!signInLoaded || !signIn) return;
+    setIsLoading(true);
+    try {
+      await signIn.create({ strategy: 'reset_password_email_code', identifier: email });
+      setResetCode('');
+      setNewPassword('');
+      setMode('resetConfirm');
+    } catch (err: any) {
+      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.resetFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirmPasswordReset = async () => {
+    if (resetCode.length < 6 || newPassword.length < 8) return;
+    if (!signInLoaded || !signIn) return;
+    setIsLoading(true);
+    try {
+      const result = await signIn.attemptFirstFactor({
+        strategy: 'reset_password_email_code',
+        code: resetCode,
+      });
+      if (result.status === 'needs_new_password') {
+        const resetResult = await signIn.resetPassword({ password: newPassword });
+        if (resetResult.status === 'complete') {
+          await setSignInActive!({ session: resetResult.createdSessionId });
+          setMode('login');
+          await onAuthSuccess();
+        }
+      }
+    } catch (err: any) {
+      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOAuthSuccess = async (createdSessionId: string | null, setActive: ((params: { session: string }) => Promise<void>) | undefined) => {
+    if (!createdSessionId || !setActive) {
+      Alert.alert(t('auth.error'), t('auth.loginFailed'));
+      return;
+    }
+    await setActive({ session: createdSessionId });
+    await onAuthSuccess();
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { createdSessionId, setActive } = await googleOAuth({
-        redirectUrl: Linking.createURL('/', { scheme: 'lock' }),
+      const { createdSessionId, setActive } = await startGoogleOAuth({
+        redirectUrl: Linking.createURL('/'),
       });
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
-        setTokenGetter(getToken);
-        await onAuthSuccess();
-      }
+      await handleOAuthSuccess(createdSessionId, setActive);
     } catch (err: any) {
       if (err.message !== 'cancelled') {
         Alert.alert(t('auth.error'), t('auth.loginFailed'));
@@ -142,14 +207,10 @@ export default function LoginScreen() {
     if (Platform.OS !== 'ios') return;
     setIsLoading(true);
     try {
-      const { createdSessionId, setActive } = await appleOAuth({
-        redirectUrl: Linking.createURL('/', { scheme: 'lock' }),
+      const { createdSessionId, setActive } = await startAppleOAuth({
+        redirectUrl: Linking.createURL('/'),
       });
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
-        setTokenGetter(getToken);
-        await onAuthSuccess();
-      }
+      await handleOAuthSuccess(createdSessionId, setActive);
     } catch (err: any) {
       if (err.message !== 'cancelled') {
         Alert.alert(t('auth.error'), t('auth.loginFailed'));
@@ -159,56 +220,8 @@ export default function LoginScreen() {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      Alert.alert(t('auth.error'), t('auth.enterEmailFirst'));
-      return;
-    }
-    if (!signInLoaded) return;
-    try {
-      await signIn.create({ strategy: 'reset_password_email_code', identifier: email });
-      setResetCode('');
-      setNewPassword('');
-      setPendingPasswordReset(true);
-    } catch (err: any) {
-      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.resetFailed'));
-    }
-  };
-
-  const handlePasswordReset = async () => {
-    if (!signInLoaded) return;
-    if (resetCode.length < 6) {
-      Alert.alert(t('auth.error'), t('auth.enterCode'));
-      return;
-    }
-    if (newPassword.length < 8) {
-      Alert.alert(t('auth.error'), t('auth.passwordTooShort'));
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await signIn.attemptFirstFactor({
-        strategy: 'reset_password_email_code',
-        code: resetCode,
-      });
-      if (result.status === 'needs_new_password') {
-        const resetResult = await signIn.resetPassword({ password: newPassword });
-        if (resetResult.status === 'complete') {
-          await setSignInActive({ session: resetResult.createdSessionId });
-          setTokenGetter(getToken);
-          setPendingPasswordReset(false);
-          await onAuthSuccess();
-        }
-      }
-    } catch (err: any) {
-      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Password reset step
-  if (pendingPasswordReset) {
+  // Password reset confirm step
+  if (mode === 'resetConfirm') {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
         <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: DIMENSIONS.CARD_PADDING }}>
@@ -219,7 +232,6 @@ export default function LoginScreen() {
             {t('auth.resetPasswordSent')}
           </Text>
 
-          {/* Verification code */}
           <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.3 }}>
             {t('auth.verificationCode')}
           </Text>
@@ -245,7 +257,6 @@ export default function LoginScreen() {
             onSubmitEditing={() => newPasswordRef.current?.focus()}
           />
 
-          {/* New password */}
           <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.3 }}>
             {t('auth.newPassword')}
           </Text>
@@ -264,7 +275,7 @@ export default function LoginScreen() {
               value={newPassword}
               onChangeText={setNewPassword}
               returnKeyType="done"
-              onSubmitEditing={handlePasswordReset}
+              onSubmitEditing={handleConfirmPasswordReset}
             />
             <TouchableOpacity
               onPress={() => setShowNewPassword(!showNewPassword)}
@@ -275,7 +286,7 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity
-            onPress={handlePasswordReset}
+            onPress={handleConfirmPasswordReset}
             disabled={isLoading || resetCode.length < 6 || newPassword.length < 8}
             style={{
               borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9,
@@ -290,7 +301,7 @@ export default function LoginScreen() {
             }
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setPendingPasswordReset(false)} style={{ alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => setMode('login')} style={{ alignItems: 'center' }}>
             <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.6 }}>
               {t('auth.back')}
             </Text>
@@ -301,7 +312,7 @@ export default function LoginScreen() {
   }
 
   // Email verification step
-  if (pendingVerification) {
+  if (mode === 'verify') {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
         <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: DIMENSIONS.CARD_PADDING }}>
@@ -333,6 +344,7 @@ export default function LoginScreen() {
             style={{
               borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9,
               backgroundColor: colors.textPrimary, alignItems: 'center',
+              opacity: verificationCode.length < 6 ? 0.5 : 1,
             }}
           >
             {isLoading
@@ -344,6 +356,8 @@ export default function LoginScreen() {
       </SafeAreaView>
     );
   }
+
+  const isSignUp = mode === 'signup';
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
@@ -378,6 +392,7 @@ export default function LoginScreen() {
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
                 value={email}
                 onChangeText={setEmail}
               />
@@ -395,6 +410,8 @@ export default function LoginScreen() {
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
+                  returnKeyType="done"
+                  onSubmitEditing={isSignUp ? handleSignUp : handleLogin}
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
@@ -406,7 +423,7 @@ export default function LoginScreen() {
             </View>
 
             {!isSignUp && (
-              <TouchableOpacity onPress={handleForgotPassword} style={{ alignSelf: 'flex-end', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+              <TouchableOpacity onPress={handleRequestPasswordReset} disabled={isLoading} style={{ alignSelf: 'flex-end', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.6 }}>
                   {t('auth.forgotPassword')}
                 </Text>
@@ -415,7 +432,7 @@ export default function LoginScreen() {
             {isSignUp && <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }} />}
 
             <TouchableOpacity
-              onPress={handleAuth}
+              onPress={isSignUp ? handleSignUp : handleLogin}
               disabled={isLoading}
               style={{ borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9, backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center', marginBottom: DIMENSIONS.SPACING * 0.8, elevation: 4 }}
             >
@@ -425,7 +442,7 @@ export default function LoginScreen() {
               }
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
+            <TouchableOpacity onPress={() => setMode(isSignUp ? 'login' : 'signup')} style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
               <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.7 }}>
                 {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}
               </Text>

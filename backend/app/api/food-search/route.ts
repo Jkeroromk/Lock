@@ -10,7 +10,7 @@ const USDA_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const LOCAL_RESULT_THRESHOLD = 3;
 
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
 
   try {

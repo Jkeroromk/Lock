@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 
 // GET /api/social/friends/requests — incoming pending requests
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

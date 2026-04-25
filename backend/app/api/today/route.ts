@@ -5,7 +5,7 @@ import { authenticateRequest } from '@/lib/auth';
 export async function GET(request: NextRequest) {
   try {
     // 验证用户身份
-    const authResult = await authenticateRequest(request);
+    const authResult = await authenticateRequest();
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
 

@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 
 // GET /api/weight — 获取体重记录列表（最近 90 条）
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/weight — 新增体重记录
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
 // DELETE /api/weight?id=xxx — 删除一条记录
 export async function DELETE(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

@@ -21,7 +21,7 @@ interface VisionResponse {
 
 export async function POST(request: NextRequest) {
   // 认证
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

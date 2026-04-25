@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 
 // GET /api/auth/profile — get or create the user record for the current Clerk user
 export async function GET(request: NextRequest) {
-  const authResult = await authenticateRequest(request);
+  const authResult = await authenticateRequest();
   if (authResult instanceof NextResponse) return authResult;
   const { userId } = authResult;
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
 // PUT /api/auth/profile — update profile fields
 export async function PUT(request: NextRequest) {
-  const authResult = await authenticateRequest(request);
+  const authResult = await authenticateRequest();
   if (authResult instanceof NextResponse) return authResult;
   const { userId } = authResult;
 

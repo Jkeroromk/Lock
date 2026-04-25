@@ -5,7 +5,7 @@ import { sendPushToUser } from '@/lib/notify';
 
 // PATCH /api/social/friends/[id] — accept or reject request
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
@@ -44,7 +44,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
 // DELETE /api/social/friends/[id] — remove friend
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 
 // POST /api/subscription — sync plan after RevenueCat purchase
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
 // GET /api/subscription — get current plan
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 

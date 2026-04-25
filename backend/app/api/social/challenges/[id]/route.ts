@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 
 // GET /api/social/challenges/[id] — get single challenge with all participants
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
 
   const challenge = await prisma.challenge.findUnique({

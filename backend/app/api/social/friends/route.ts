@@ -6,7 +6,7 @@ import { sendPushToUser } from '@/lib/notify';
 
 // GET /api/social/friends — list accepted friends
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/social/friends — send friend request by username or invite code
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest(request);
+  const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
