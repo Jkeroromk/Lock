@@ -158,7 +158,7 @@ const zhTW = {
     loginHistory: '登入紀錄', loginHistoryDescription: '查看最近的登入活動',
     linkedAccounts: '關聯帳號', linkedAccountsHint: '關聯多個登入方式後，您可以用任意一種方式登入同一個帳號。',
     linked: '已關聯', notLinked: '未關聯', link: '關聯', unlink: '解除',
-    linkSuccess: '帳號關聯成功', linkFailed: '關聯失敗，請重試',
+    linkSuccess: '帳號關聯成功', linkFailed: '關聯失敗，請重試', accountAlreadyLinked: '該帳號已關聯到其他用戶',
     unlinkAccount: '解除關聯', unlinkConfirm: '確定要解除與 {provider} 的關聯嗎？',
     unlinkConfirmBtn: '解除關聯', cannotUnlinkLast: '無法解除最後一種登入方式',
     security: '安全', changePasswordDescription: '更新您的帳號密碼',

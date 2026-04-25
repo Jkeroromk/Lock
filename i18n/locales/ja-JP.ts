@@ -162,7 +162,7 @@ const jaJP = {
     loginHistory: 'ログイン履歴', loginHistoryDescription: '最近のログイン履歴を確認',
     linkedAccounts: '連携アカウント', linkedAccountsHint: '複数のログイン方法を連携すると、どの方法でも同じアカウントにログインできます。',
     linked: '連携済み', notLinked: '未連携', link: '連携', unlink: '解除',
-    linkSuccess: 'アカウントを連携しました', linkFailed: '連携に失敗しました。もう一度お試しください',
+    linkSuccess: 'アカウントを連携しました', linkFailed: '連携に失敗しました。もう一度お試しください', accountAlreadyLinked: 'このアカウントは別のユーザーに連携済みです',
     unlinkAccount: '連携解除', unlinkConfirm: '{provider} との連携を解除しますか？',
     unlinkConfirmBtn: '解除', cannotUnlinkLast: '最後のログイン方法は解除できません',
     security: 'セキュリティ', changePasswordDescription: 'アカウントのパスワードを更新',

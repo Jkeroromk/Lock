@@ -6,8 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { useUser, useOAuth, useAuth } from '@clerk/clerk-expo';
+import { useUser, useAuth } from '@clerk/clerk-expo';
 import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+
+type OAuthStrategy = 'oauth_google' | 'oauth_apple' | 'oauth_facebook';
 
 export default function AccountSecurityScreen() {
   const { t } = useTranslation();
@@ -15,7 +18,6 @@ export default function AccountSecurityScreen() {
   const colors = useTheme();
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
-  const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
   const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
 
@@ -23,18 +25,27 @@ export default function AccountSecurityScreen() {
   const isLinked = (provider: string) =>
     externalAccounts.some((a) => a.provider === provider);
 
-  const handleLinkGoogle = async () => {
-    setLinkingProvider('google');
+  const handleLink = async (strategy: OAuthStrategy) => {
+    const provider = strategy.replace('oauth_', '');
+    setLinkingProvider(provider);
     try {
-      const { createdSessionId } = await googleOAuth({
-        redirectUrl: Linking.createURL('/', { scheme: 'lock' }),
+      const externalAccount = await user?.createExternalAccount({
+        strategy,
+        redirectUrl: Linking.createURL('/oauth-callback'),
       });
-      if (createdSessionId) {
+      const url = externalAccount?.verification?.externalVerificationRedirectURL;
+      if (url) {
+        await WebBrowser.openAuthSessionAsync(
+          url.toString(),
+          Linking.createURL('/oauth-callback'),
+        );
         await user?.reload();
         Alert.alert(t('settings.success'), t('settings.linkSuccess'));
       }
     } catch (err: any) {
-      if (err.message !== 'cancelled') {
+      if (err?.errors?.[0]?.code === 'external_account_exists') {
+        Alert.alert(t('settings.error'), t('settings.accountAlreadyLinked'));
+      } else if (err?.message !== 'cancelled') {
         Alert.alert(t('settings.error'), t('settings.linkFailed'));
       }
     } finally {
@@ -107,14 +118,9 @@ export default function AccountSecurityScreen() {
   const providerLabel = (provider: string) => {
     if (provider === 'google') return 'Google';
     if (provider === 'apple') return 'Apple';
+    if (provider === 'facebook') return 'Facebook';
     if (provider === 'email') return t('settings.emailPassword');
     return provider;
-  };
-
-  const providerIcon = (provider: string): any => {
-    if (provider === 'google') return 'logo-google';
-    if (provider === 'apple') return 'logo-apple';
-    return 'mail-outline';
   };
 
   const cardStyle = {
@@ -138,41 +144,37 @@ export default function AccountSecurityScreen() {
     borderColor: colors.borderSecondary,
   };
 
+  const providers: { key: string; strategy: OAuthStrategy; icon: any; label: string; iosOnly?: boolean }[] = [
+    { key: 'google', strategy: 'oauth_google', icon: 'logo-google', label: 'Google' },
+    { key: 'apple', strategy: 'oauth_apple', icon: 'logo-apple', label: 'Apple', iosOnly: true },
+    { key: 'facebook', strategy: 'oauth_facebook', icon: 'logo-facebook', label: 'Facebook' },
+  ];
+
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: DIMENSIONS.CARD_PADDING,
-          paddingTop: DIMENSIONS.SPACING * 0.8,
-          paddingBottom: DIMENSIONS.SPACING * 0.6,
-        }}
-      >
+      <View style={{
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: DIMENSIONS.CARD_PADDING,
+        paddingTop: DIMENSIONS.SPACING * 0.8,
+        paddingBottom: DIMENSIONS.SPACING * 0.6,
+      }}>
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
           style={{
-            width: DIMENSIONS.SCREEN_WIDTH * 0.1,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.1,
+            width: DIMENSIONS.SCREEN_WIDTH * 0.1, height: DIMENSIONS.SCREEN_WIDTH * 0.1,
             borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
             backgroundColor: colors.cardBackground,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: colors.borderSecondary,
+            alignItems: 'center', justifyContent: 'center',
+            borderWidth: 1, borderColor: colors.borderSecondary,
           }}
         >
           <Ionicons name="arrow-back" size={TYPOGRAPHY.body} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text
-          style={{
-            fontSize: TYPOGRAPHY.title,
-            fontWeight: '900',
-            color: colors.textPrimary,
-            marginLeft: DIMENSIONS.SPACING * 0.6,
-          }}
-        >
+        <Text style={{
+          fontSize: TYPOGRAPHY.title, fontWeight: '900',
+          color: colors.textPrimary, marginLeft: DIMENSIONS.SPACING * 0.6,
+        }}>
           {t('settings.accountSecurity')}
         </Text>
       </View>
@@ -184,15 +186,12 @@ export default function AccountSecurityScreen() {
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.4 }}>
 
-          {/* Linked Accounts */}
+          {/* ── Linked Accounts ── */}
           <Text style={{
-            fontSize: TYPOGRAPHY.bodyXS,
-            fontWeight: '700',
-            color: colors.textPrimary,
-            opacity: 0.5,
+            fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
+            color: colors.textPrimary, opacity: 0.5,
             marginBottom: DIMENSIONS.SPACING * 0.6,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
+            textTransform: 'uppercase', letterSpacing: 1,
           }}>
             {t('settings.linkedAccounts')}
           </Text>
@@ -201,68 +200,32 @@ export default function AccountSecurityScreen() {
             {!isLoaded ? (
               <ActivityIndicator color={colors.textPrimary} />
             ) : (
-              <>
-                {/* Google row */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-                  <View style={iconBoxStyle}>
-                    <Ionicons name="logo-google" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                      Google
-                    </Text>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
-                      {isLinked('google') ? t('settings.linked') : t('settings.notLinked')}
-                    </Text>
-                  </View>
-                  {linkingProvider === 'google' ? (
-                    <ActivityIndicator color={colors.textPrimary} size="small" />
-                  ) : isLinked('google') ? (
-                    <TouchableOpacity
-                      onPress={() => handleUnlink('google')}
-                      style={{
-                        paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
-                        borderWidth: 1, borderColor: colors.borderSecondary,
-                      }}
-                    >
-                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.6 }}>
-                        {t('settings.unlink')}
-                      </Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity
-                      onPress={handleLinkGoogle}
-                      style={{
-                        paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
-                        backgroundColor: colors.textPrimary,
-                      }}
-                    >
-                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.backgroundPrimary }}>
-                        {t('settings.link')}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                {/* Apple row — iOS only */}
-                {Platform.OS === 'ios' && (
-                  <>
-                    <View style={{ height: 1, backgroundColor: colors.borderSecondary, marginBottom: DIMENSIONS.SPACING * 0.8 }} />
+              providers
+                .filter(p => !p.iosOnly || Platform.OS === 'ios')
+                .map((p, idx, arr) => (
+                  <View key={p.key}>
+                    {idx > 0 && (
+                      <View style={{ height: 1, backgroundColor: colors.borderSecondary, marginVertical: DIMENSIONS.SPACING * 0.8 }} />
+                    )}
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                       <View style={iconBoxStyle}>
-                        <Ionicons name="logo-apple" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+                        <Ionicons name={p.icon} size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
-                          Apple
+                          {p.label}
                         </Text>
                         <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
-                          {isLinked('apple') ? t('settings.linked') : t('settings.notLinked')}
+                          {isLinked(p.key)
+                            ? externalAccounts.find(a => a.provider === p.key)?.emailAddress || t('settings.linked')
+                            : t('settings.notLinked')}
                         </Text>
                       </View>
-                      {isLinked('apple') ? (
+                      {linkingProvider === p.key ? (
+                        <ActivityIndicator color={colors.textPrimary} size="small" />
+                      ) : isLinked(p.key) ? (
                         <TouchableOpacity
-                          onPress={() => handleUnlink('apple')}
+                          onPress={() => handleUnlink(p.key)}
                           style={{
                             paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
                             borderWidth: 1, borderColor: colors.borderSecondary,
@@ -273,44 +236,39 @@ export default function AccountSecurityScreen() {
                           </Text>
                         </TouchableOpacity>
                       ) : (
-                        <View style={{
-                          paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
-                          backgroundColor: colors.cardBackgroundSecondary,
-                          borderWidth: 1, borderColor: colors.borderSecondary,
-                        }}>
-                          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>
-                            {t('settings.notLinked')}
+                        <TouchableOpacity
+                          onPress={() => handleLink(p.strategy)}
+                          style={{
+                            paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
+                            backgroundColor: colors.textPrimary,
+                          }}
+                        >
+                          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.backgroundPrimary }}>
+                            {t('settings.link')}
                           </Text>
-                        </View>
+                        </TouchableOpacity>
                       )}
                     </View>
-                  </>
-                )}
-              </>
+                  </View>
+                ))
             )}
           </View>
 
-          {/* Separator */}
           <Text style={{
-            fontSize: TYPOGRAPHY.bodyXXS,
-            fontWeight: '600',
-            color: colors.textPrimary,
-            opacity: 0.4,
+            fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600',
+            color: colors.textPrimary, opacity: 0.4,
             marginBottom: DIMENSIONS.SPACING,
             lineHeight: TYPOGRAPHY.bodyXXS * 1.6,
           }}>
             {t('settings.linkedAccountsHint')}
           </Text>
 
-          {/* Change Password */}
+          {/* ── Security ── */}
           <Text style={{
-            fontSize: TYPOGRAPHY.bodyXS,
-            fontWeight: '700',
-            color: colors.textPrimary,
-            opacity: 0.5,
+            fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
+            color: colors.textPrimary, opacity: 0.5,
             marginBottom: DIMENSIONS.SPACING * 0.6,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
+            textTransform: 'uppercase', letterSpacing: 1,
           }}>
             {t('settings.security')}
           </Text>
@@ -338,15 +296,12 @@ export default function AccountSecurityScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Login Activity */}
+          {/* ── Login History ── */}
           <Text style={{
-            fontSize: TYPOGRAPHY.bodyXS,
-            fontWeight: '700',
-            color: colors.textPrimary,
-            opacity: 0.5,
+            fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
+            color: colors.textPrimary, opacity: 0.5,
             marginBottom: DIMENSIONS.SPACING * 0.6,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
+            textTransform: 'uppercase', letterSpacing: 1,
           }}>
             {t('settings.loginHistory')}
           </Text>
@@ -383,15 +338,12 @@ export default function AccountSecurityScreen() {
             </View>
           </View>
 
-          {/* Danger Zone */}
+          {/* ── Danger Zone ── */}
           <Text style={{
-            fontSize: TYPOGRAPHY.bodyXS,
-            fontWeight: '700',
-            color: '#ef4444',
-            opacity: 0.8,
+            fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
+            color: '#ef4444', opacity: 0.8,
             marginBottom: DIMENSIONS.SPACING * 0.6,
-            textTransform: 'uppercase',
-            letterSpacing: 1,
+            textTransform: 'uppercase', letterSpacing: 1,
           }}>
             {t('settings.dangerZone')}
           </Text>
@@ -405,11 +357,10 @@ export default function AccountSecurityScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                 <View style={{ ...iconBoxStyle, backgroundColor: '#ef444420', borderColor: '#ef444440' }}>
-                  {deletingAccount ? (
-                    <ActivityIndicator color="#ef4444" size="small" />
-                  ) : (
-                    <Ionicons name="trash-outline" size={TYPOGRAPHY.iconS} color="#ef4444" />
-                  )}
+                  {deletingAccount
+                    ? <ActivityIndicator color="#ef4444" size="small" />
+                    : <Ionicons name="trash-outline" size={TYPOGRAPHY.iconS} color="#ef4444" />
+                  }
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: '#ef4444', marginBottom: 4 }}>

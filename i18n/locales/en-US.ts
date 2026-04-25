@@ -177,7 +177,7 @@ const enUS = {
     emailPassword: 'Email / Password',
     linked: 'Linked', notLinked: 'Not linked',
     link: 'Link', unlink: 'Unlink',
-    linkSuccess: 'Account linked successfully', linkFailed: 'Link failed, please try again',
+    linkSuccess: 'Account linked successfully', linkFailed: 'Link failed, please try again', accountAlreadyLinked: 'This account is already linked to another user',
     unlinkAccount: 'Unlink Account',
     unlinkConfirm: 'Are you sure you want to unlink {provider}?',
     unlinkConfirmBtn: 'Unlink',

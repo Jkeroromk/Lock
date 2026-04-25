@@ -256,6 +256,7 @@ const zhCN = {
     unlink: '解除',
     linkSuccess: '账号关联成功',
     linkFailed: '关联失败，请重试',
+    accountAlreadyLinked: '该账号已关联到其他用户',
     unlinkAccount: '解除关联',
     unlinkConfirm: '确定要解除与 {provider} 的关联吗？',
     unlinkConfirmBtn: '解除关联',

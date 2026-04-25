@@ -162,7 +162,7 @@ const koKR = {
     loginHistory: '로그인 기록', loginHistoryDescription: '최근 로그인 활동을 확인합니다',
     linkedAccounts: '연결된 계정', linkedAccountsHint: '여러 로그인 방법을 연결하면 어떤 방법으로도 같은 계정에 로그인할 수 있습니다.',
     linked: '연결됨', notLinked: '연결 안 됨', link: '연결', unlink: '해제',
-    linkSuccess: '계정이 연결되었습니다', linkFailed: '연결에 실패했습니다. 다시 시도하세요',
+    linkSuccess: '계정이 연결되었습니다', linkFailed: '연결에 실패했습니다. 다시 시도하세요', accountAlreadyLinked: '이 계정은 이미 다른 사용자에게 연결되어 있습니다',
     unlinkAccount: '연결 해제', unlinkConfirm: '{provider} 연결을 해제하시겠습니까?',
     unlinkConfirmBtn: '해제', cannotUnlinkLast: '마지막 로그인 방법은 해제할 수 없습니다',
     security: '보안', changePasswordDescription: '계정 비밀번호를 업데이트합니다',
