@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/auth/profile — get or create the user record for the current Clerk user
 export async function GET(request: NextRequest) {
   const authResult = await authenticateRequest();
@@ -39,47 +41,35 @@ export async function PUT(request: NextRequest) {
       exerciseFrequency, expectedTimeframe, hasCompletedOnboarding,
     } = body;
 
+    const data = {
+      ...(name !== undefined && { name }),
+      ...(email !== undefined && { email }),
+      ...(username !== undefined && { username }),
+      ...(bio !== undefined && { bio }),
+      ...(avatarEmoji !== undefined && { avatarEmoji }),
+      ...(avatarImage !== undefined && { avatarImage }),
+      ...(showGender !== undefined && { showGender }),
+      ...(height !== undefined && { height }),
+      ...(age !== undefined && { age }),
+      ...(weight !== undefined && { weight }),
+      ...(gender !== undefined && { gender }),
+      ...(goal !== undefined && { goal }),
+      ...(exerciseFrequency !== undefined && { exerciseFrequency }),
+      ...(expectedTimeframe !== undefined && { expectedTimeframe }),
+      ...(hasCompletedOnboarding !== undefined && { hasCompletedOnboarding }),
+    };
+
     const user = await prisma.user.upsert({
       where: { id: userId },
-      create: {
-        id: userId,
-        name,
-        email,
-        username,
-        bio,
-        avatarEmoji,
-        avatarImage,
-        showGender: showGender ?? false,
-        height,
-        age,
-        weight,
-        gender,
-        goal,
-        exerciseFrequency,
-        expectedTimeframe,
-        hasCompletedOnboarding: hasCompletedOnboarding ?? false,
-      },
-      update: {
-        ...(name !== undefined && { name }),
-        ...(email !== undefined && { email }),
-        ...(username !== undefined && { username }),
-        ...(bio !== undefined && { bio }),
-        ...(avatarEmoji !== undefined && { avatarEmoji }),
-        ...(avatarImage !== undefined && { avatarImage }),
-        ...(showGender !== undefined && { showGender }),
-        ...(height !== undefined && { height }),
-        ...(age !== undefined && { age }),
-        ...(weight !== undefined && { weight }),
-        ...(gender !== undefined && { gender }),
-        ...(goal !== undefined && { goal }),
-        ...(exerciseFrequency !== undefined && { exerciseFrequency }),
-        ...(expectedTimeframe !== undefined && { expectedTimeframe }),
-        ...(hasCompletedOnboarding !== undefined && { hasCompletedOnboarding }),
-      },
+      create: { id: userId, showGender: false, hasCompletedOnboarding: false, ...data },
+      update: data,
     });
 
     return NextResponse.json(user);
   } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return NextResponse.json({ error: '用户名已被占用，请选择其他用户名' }, { status: 409 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -46,7 +46,8 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
 
   useEffect(() => {
     if (visible && user) {
-      setUsername(user.username || user.name || '');
+      const rawName = user.username || user.name || '';
+      setUsername(rawName.toLowerCase().replace(/[^a-z0-9_]/g, ''));
       setBio(user.bio || '');
       setAvatarEmoji(user.avatarEmoji || '🏃');
       setAvatarImage(user.avatarImage);
@@ -94,7 +95,8 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
       } as any);
       onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage: avatarImage || undefined, showGender });
     } catch (err: any) {
-      Alert.alert(t('weightTracker.saveFailed'), err?.response?.data?.error || err?.message || t('common.retry'));
+      const msg = err?.response?.data?.error || err?.message || t('common.retry');
+      Alert.alert(t('weightTracker.saveFailed'), msg);
     } finally {
       setSaving(false);
     }
