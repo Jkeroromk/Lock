@@ -9,12 +9,12 @@ import { setTokenGetter } from '@/services/tokenStore';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
-
-WebBrowser.maybeCompleteAuthSession();
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchProfile, updateProfile } from '@/services/api';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const { t } = useTranslation();
