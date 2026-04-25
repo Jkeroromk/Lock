@@ -168,19 +168,29 @@ export default function LoginScreen() {
     }
   };
 
+  const activateOAuthSession = async (
+    result: { createdSessionId: string | null; setActive?: any; signIn?: any; signUp?: any }
+  ) => {
+    const sessionId = result.createdSessionId
+      ?? result.signUp?.createdSessionId
+      ?? result.signIn?.createdSessionId;
+
+    if (sessionId && result.setActive) {
+      await result.setActive({ session: sessionId });
+      setTokenGetter(getToken);
+      await onAuthSuccess();
+    } else {
+      const signUpStatus = result.signUp?.status ?? 'none';
+      const signInStatus = result.signIn?.status ?? 'none';
+      Alert.alert('OAuth Error', `No session.\nsignUp:${signUpStatus}\nsignIn:${signInStatus}`);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const { createdSessionId, setActive } = await googleOAuth({
-        redirectUrl: Linking.createURL('/oauth-callback'),
-      });
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
-        setTokenGetter(getToken);
-        await onAuthSuccess();
-      } else {
-        Alert.alert('OAuth Error', `No session returned. id=${createdSessionId}`);
-      }
+      const result = await googleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') });
+      await activateOAuthSession(result);
     } catch (err: any) {
       const msg = err?.errors?.[0]?.longMessage ?? err?.message ?? 'unknown';
       Alert.alert('OAuth Error', `Google: ${msg}`);
@@ -193,16 +203,8 @@ export default function LoginScreen() {
     if (Platform.OS !== 'ios') return;
     setIsLoading(true);
     try {
-      const { createdSessionId, setActive } = await appleOAuth({
-        redirectUrl: Linking.createURL('/oauth-callback'),
-      });
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
-        setTokenGetter(getToken);
-        await onAuthSuccess();
-      } else {
-        Alert.alert('OAuth Error', `No session returned. id=${createdSessionId}`);
-      }
+      const result = await appleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') });
+      await activateOAuthSession(result);
     } catch (err: any) {
       const msg = err?.errors?.[0]?.longMessage ?? err?.message ?? 'unknown';
       Alert.alert('OAuth Error', `Apple: ${msg}`);
