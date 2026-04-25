@@ -115,6 +115,7 @@ export default function LoginScreen() {
   };
 
   const handleAuth = async () => {
+    Alert.alert('DEBUG', `mode:${isSignUp?'signup':'login'} signInLoaded:${signInLoaded} signUpLoaded:${signUpLoaded}`);
     if (!email || !password) {
       Alert.alert(t('auth.error'), t('auth.fillAllFields'));
       return;
