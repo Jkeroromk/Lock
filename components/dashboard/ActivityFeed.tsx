@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
@@ -118,10 +118,15 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
               backgroundColor: colors.cardBackgroundSecondary,
               alignItems: 'center', justifyContent: 'center',
               marginRight: DIMENSIONS.SPACING * 0.8,
+              overflow: 'hidden',
             }}>
-              <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.textPrimary }}>
-                {item.user.avatar}
-              </Text>
+              {item.user.avatarImage ? (
+                <Image source={{ uri: item.user.avatarImage }} style={{ width: 36, height: 36 }} />
+              ) : (
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.textPrimary }}>
+                  {item.user.avatar}
+                </Text>
+              )}
             </View>
 
             <View style={{ flex: 1 }}>

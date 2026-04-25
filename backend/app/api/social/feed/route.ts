@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const feedItems = await prisma.activityFeed.findMany({
     where: { userId: { in: [userId, ...friendIds] } },
-    include: { user: { select: { id: true, name: true, username: true } } },
+    include: { user: { select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true } } },
     orderBy: { createdAt: 'desc' },
     take: 50,
   });
@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
       user: {
         id: item.user.id,
         name: item.user.name || item.user.username || '用户',
-        avatar: (item.user.name || item.user.username || 'U').charAt(0).toUpperCase(),
+        avatar: item.user.avatarEmoji || (item.user.name || item.user.username || 'U').charAt(0).toUpperCase(),
+        avatarImage: item.user.avatarImage ?? null,
       },
     }))
   );

@@ -271,7 +271,7 @@ export interface FeedItem {
   metadata: Record<string, string | number | boolean | null>;
   createdAt: string;
   isMe: boolean;
-  user: { id: string; name: string; avatar: string };
+  user: { id: string; name: string; avatar: string; avatarImage?: string | null };
 }
 
 export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
