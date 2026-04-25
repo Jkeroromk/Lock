@@ -16,6 +16,11 @@ export async function GET(request: NextRequest) {
     });
     return NextResponse.json(user);
   } catch (error: any) {
+    // P2002 = unique constraint violation from concurrent requests — record was already created
+    if (error?.code === 'P2002') {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) return NextResponse.json(user);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
