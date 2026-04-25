@@ -349,6 +349,7 @@ const zhCN = {
     hasAccount: '已有账号？点击登录',
     noAccount: '没有账号？点击注册',
     socialLoginComingSoon: '社交登录即将推出',
+    rememberEmail: '记住邮箱',
     continueWithGoogle: '使用 Google 继续',
     continueWithApple: '使用 Apple 继续',
     continueWithFacebook: '使用 Facebook 继续',

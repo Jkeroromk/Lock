@@ -234,6 +234,7 @@ const koKR = {
     newPassword: '새 비밀번호', verificationCode: '인증 코드', back: '뒤로', enterCode: '인증 코드를 입력하세요',
     hasAccount: '이미 계정이 있으신가요? 로그인', noAccount: '계정이 없으신가요? 회원가입',
     socialLoginComingSoon: '소셜 로그인 곧 출시 예정',
+    rememberEmail: '이메일 기억',
     continueWithGoogle: 'Google로 계속',
     continueWithApple: 'Apple로 계속',
     continueWithFacebook: 'Facebook으로 계속',

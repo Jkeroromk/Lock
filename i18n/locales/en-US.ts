@@ -254,6 +254,7 @@ const enUS = {
     hasAccount: 'Already have an account? Log in',
     noAccount: "Don't have an account? Sign up",
     socialLoginComingSoon: 'Social login coming soon',
+    rememberEmail: 'Remember email',
     continueWithGoogle: 'Continue with Google',
     continueWithApple: 'Continue with Apple',
     continueWithFacebook: 'Continue with Facebook',

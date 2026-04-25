@@ -219,6 +219,7 @@ const zhTW = {
     newPassword: '新密碼', verificationCode: '驗證碼', back: '返回', enterCode: '請輸入驗證碼',
     hasAccount: '已有賬號？點擊登錄', noAccount: '沒有賬號？點擊註冊',
     socialLoginComingSoon: '社交登錄即將推出',
+    rememberEmail: '記住信箱',
     continueWithGoogle: '使用 Google 繼續',
     continueWithApple: '使用 Apple 繼續',
     continueWithFacebook: '使用 Facebook 繼續',

@@ -225,6 +225,7 @@ const jaJP = {
     hasAccount: 'アカウントをお持ちですか？ログイン',
     noAccount: 'アカウントをお持ちでないですか？サインアップ',
     socialLoginComingSoon: 'ソーシャルログインは近日公開',
+    rememberEmail: 'メールを記憶',
     continueWithGoogle: 'Googleで続ける',
     continueWithApple: 'Appleで続ける',
     continueWithFacebook: 'Facebookで続ける',

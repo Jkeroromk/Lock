@@ -3,7 +3,7 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
@@ -34,6 +34,13 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
+
+  useEffect(() => {
+    AsyncStorage.getItem('lock_saved_email').then((saved) => {
+      if (saved) setEmail(saved);
+    });
+  }, []);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -106,6 +113,10 @@ export default function LoginScreen() {
       streak: profile.streak ?? 0,
       hasCompletedOnboarding: completedOnboarding,
     });
+
+    if (rememberMe && email) {
+      AsyncStorage.setItem('lock_saved_email', email).catch(() => {});
+    }
 
     if (completedOnboarding) {
       router.replace('/(tabs)/today');
@@ -691,18 +702,38 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Forgot password */}
-            {!isSignUp && (
+            {/* Remember me + Forgot password */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
               <TouchableOpacity
-                onPress={handleForgotPassword}
-                style={{ alignSelf: 'flex-end', marginBottom: DIMENSIONS.SPACING * 0.8 }}
+                onPress={() => {
+                  const next = !rememberMe;
+                  setRememberMe(next);
+                  if (!next) AsyncStorage.removeItem('lock_saved_email').catch(() => {});
+                }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                activeOpacity={0.7}
               >
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.45 }}>
-                  {t('auth.forgotPassword')}
+                <View style={{
+                  width: 18, height: 18, borderRadius: 5,
+                  borderWidth: 2, borderColor: rememberMe ? colors.textPrimary : colors.borderPrimary,
+                  backgroundColor: rememberMe ? colors.textPrimary : 'transparent',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {rememberMe && <Ionicons name="checkmark" size={11} color={colors.backgroundPrimary} />}
+                </View>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.55 }}>
+                  {t('auth.rememberEmail' as any)}
                 </Text>
               </TouchableOpacity>
-            )}
-            {isSignUp && <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }} />}
+
+              {!isSignUp && (
+                <TouchableOpacity onPress={handleForgotPassword}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.45 }}>
+                    {t('auth.forgotPassword')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             {/* Submit */}
             <TouchableOpacity
