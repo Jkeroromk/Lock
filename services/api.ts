@@ -306,6 +306,21 @@ export const respondFriendRequest = async (id: string, action: 'accept' | 'rejec
   await api.patch(`/api/social/friends/${id}`, { action });
 };
 
+export interface SentRequest {
+  id: string;
+  to: { id: string; name: string; username: string | null; avatar: string; avatarImage?: string | null };
+  createdAt: string;
+}
+
+export const fetchSentRequests = async (): Promise<SentRequest[]> => {
+  const res = await api.get<SentRequest[]>('/api/social/friends/sent');
+  return res.data;
+};
+
+export const cancelFriendRequest = async (id: string): Promise<void> => {
+  await api.delete(`/api/social/friends/${id}`);
+};
+
 export const removeFriend = async (friendshipId: string): Promise<void> => {
   await api.delete(`/api/social/friends/${friendshipId}`);
 };

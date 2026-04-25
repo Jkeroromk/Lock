@@ -13,11 +13,12 @@ import ChallengesList from '@/components/dashboard/ChallengesList';
 import RefreshLoadingAnimation from '@/components/dashboard/RefreshLoadingAnimation';
 import AddFriendModal from '@/components/dashboard/AddFriendModal';
 import FriendRequestsCard from '@/components/dashboard/FriendRequestsCard';
+import PendingSentRequestsCard from '@/components/dashboard/PendingSentRequestsCard';
 import CreateChallengeModal from '@/components/dashboard/CreateChallengeModal';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import {
-  fetchLeaderboard, fetchFriendRequests, fetchChallenges, fetchFeed, fetchInviteCode,
-  LeaderboardEntry, FriendRequest, ChallengeData, FeedItem,
+  fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges, fetchFeed, fetchInviteCode,
+  LeaderboardEntry, FriendRequest, SentRequest, ChallengeData, FeedItem,
 } from '@/services/api';
 
 type Tab = 'friends' | 'challenges' | 'feed';
@@ -44,6 +45,7 @@ export default function DashboardScreen() {
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [inviteCode, setInviteCode] = useState('');
@@ -65,15 +67,17 @@ export default function DashboardScreen() {
   };
 
   const loadAll = useCallback(async () => {
-    const [lb, reqs, ch, fd, ic] = await Promise.allSettled([
+    const [lb, reqs, sent, ch, fd, ic] = await Promise.allSettled([
       fetchLeaderboard(),
       fetchFriendRequests(),
+      fetchSentRequests(),
       fetchChallenges(),
       fetchFeed(),
       fetchInviteCode(),
     ]);
     if (lb.status === 'fulfilled') setLeaderboard(lb.value);
     if (reqs.status === 'fulfilled') setRequests(reqs.value);
+    if (sent.status === 'fulfilled') setSentRequests(sent.value);
     if (ch.status === 'fulfilled') setChallenges(ch.value);
     if (fd.status === 'fulfilled') setFeed(fd.value);
     if (ic.status === 'fulfilled') setInviteCode(ic.value);
@@ -197,6 +201,7 @@ export default function DashboardScreen() {
               {/* Friend requests */}
               {requests.length > 0 && (
                 <FriendRequestsCard requests={requests} onUpdate={loadAll} />
+                <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
               )}
 
               {/* Unified leaderboard (me + friends) */}
