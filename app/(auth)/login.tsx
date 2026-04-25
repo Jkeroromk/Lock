@@ -128,9 +128,15 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       if (isSignUp) {
-        const result = await signUp.create({ emailAddress: email, password });
-        await result.prepareEmailAddressVerification({ strategy: 'email_code' });
-        setPendingVerification(true);
+        const result = await signUp!.create({ emailAddress: email, password });
+        if (result.status === 'complete' && result.createdSessionId) {
+          await setSignUpActive!({ session: result.createdSessionId });
+          setTokenGetter(getToken);
+          await onAuthSuccess();
+        } else {
+          await signUp!.prepareEmailAddressVerification({ strategy: 'email_code' });
+          setPendingVerification(true);
+        }
       } else {
         const result = await signIn.create({ identifier: email, password });
         await setSignInActive({ session: result.createdSessionId });
