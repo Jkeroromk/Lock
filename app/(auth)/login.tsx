@@ -636,6 +636,7 @@ export default function LoginScreen() {
                 onPress={handleGoogleLogin}
                 disabled={isLoading}
                 colors={colors}
+                brandColor="#4285F4"
               />
               <SocialButton
                 icon="logo-facebook"
@@ -643,6 +644,7 @@ export default function LoginScreen() {
                 onPress={handleFacebookLogin}
                 disabled={isLoading}
                 colors={colors}
+                brandColor="#1877F2"
               />
             </View>
 
@@ -769,11 +771,15 @@ export default function LoginScreen() {
 
 // ─── Social Button Component ──────────────────────────────────────────────────
 function SocialButton({
-  icon, label, onPress, disabled, colors, filled = false,
+  icon, label, onPress, disabled, colors, filled = false, brandColor,
 }: {
   icon: string; label: string; onPress: () => void;
-  disabled: boolean; colors: any; filled?: boolean;
+  disabled: boolean; colors: any; filled?: boolean; brandColor?: string;
 }) {
+  const bg = brandColor ?? (filled ? colors.textPrimary : colors.cardBackground);
+  const fg = brandColor ? '#FFFFFF' : filled ? colors.backgroundPrimary : colors.textPrimary;
+  const border = brandColor ?? (filled ? colors.textPrimary : colors.borderPrimary);
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -782,22 +788,17 @@ function SocialButton({
       style={{
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
         borderRadius: 14, paddingVertical: DIMENSIONS.SPACING * 0.65,
-        backgroundColor: filled ? colors.textPrimary : colors.cardBackground,
+        backgroundColor: bg,
         borderWidth: 2,
-        borderColor: filled ? colors.textPrimary : colors.borderPrimary,
+        borderColor: border,
         gap: DIMENSIONS.SPACING * 0.4,
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <Ionicons
-        name={icon as any}
-        size={TYPOGRAPHY.iconXS}
-        color={filled ? colors.backgroundPrimary : colors.textPrimary}
-      />
+      <Ionicons name={icon as any} size={TYPOGRAPHY.iconXS} color={fg} />
       <Text style={{
         fontSize: TYPOGRAPHY.bodyS, fontWeight: '700',
-        color: filled ? colors.backgroundPrimary : colors.textPrimary,
-        letterSpacing: 0.2,
+        color: fg, letterSpacing: 0.2,
       }}>
         {label}
       </Text>
