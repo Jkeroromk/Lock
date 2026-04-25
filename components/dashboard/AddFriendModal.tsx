@@ -1,6 +1,6 @@
 import {
   View, Text, Image, TextInput, TouchableOpacity, Modal,
-  ActivityIndicator, KeyboardAvoidingView, Platform,
+  ActivityIndicator, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,6 +45,25 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   const [error, setError] = useState('');
   const [isLimitError, setIsLimitError] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const slideAnim = useRef(new Animated.Value(600)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 220, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 3, speed: 16 }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: 600, duration: 200, useNativeDriver: true }),
+      ]).start(() => setMounted(false));
+    }
+  }, [visible]);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plan = user?.plan ?? 'FREE';
@@ -107,13 +126,15 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   const canSend = !!foundUser && relationStatus === 'none' && !sent && !sending;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={mounted} transparent animationType="none" onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
-          activeOpacity={1} onPress={onClose}
-        >
-          <TouchableOpacity activeOpacity={1}>
+        <Animated.View style={{ flex: 1, justifyContent: 'flex-end', opacity: fadeAnim }}>
+          <TouchableOpacity
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }}
+            activeOpacity={1} onPress={onClose}
+          />
+          <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
+            <TouchableOpacity activeOpacity={1}>
             <View style={{
               backgroundColor: colors.backgroundPrimary,
               borderTopLeftRadius: 32, borderTopRightRadius: 32,
@@ -218,8 +239,9 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
                 )}
               </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
   );
