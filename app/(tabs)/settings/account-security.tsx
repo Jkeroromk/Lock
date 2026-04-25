@@ -263,38 +263,42 @@ export default function AccountSecurityScreen() {
             {t('settings.linkedAccountsHint')}
           </Text>
 
-          {/* ── Security ── */}
-          <Text style={{
-            fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
-            color: colors.textPrimary, opacity: 0.5,
-            marginBottom: DIMENSIONS.SPACING * 0.6,
-            textTransform: 'uppercase', letterSpacing: 1,
-          }}>
-            {t('settings.security')}
-          </Text>
+          {/* ── Security — only shown for email/password accounts ── */}
+          {user?.passwordEnabled && (
+            <>
+              <Text style={{
+                fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
+                color: colors.textPrimary, opacity: 0.5,
+                marginBottom: DIMENSIONS.SPACING * 0.6,
+                textTransform: 'uppercase', letterSpacing: 1,
+              }}>
+                {t('settings.security')}
+              </Text>
 
-          <View style={cardStyle}>
-            <TouchableOpacity
-              onPress={() => Alert.alert(t('settings.changePassword'), t('settings.changePasswordDescription'))}
-              activeOpacity={0.7}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <View style={iconBoxStyle}>
-                  <Ionicons name="key-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 }}>
-                    {t('settings.changePassword')}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
-                    {t('settings.changePasswordDescription')}
-                  </Text>
-                </View>
+              <View style={cardStyle}>
+                <TouchableOpacity
+                  onPress={() => Alert.alert(t('settings.changePassword'), t('settings.changePasswordDescription'))}
+                  activeOpacity={0.7}
+                  style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                    <View style={iconBoxStyle}>
+                      <Ionicons name="key-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 }}>
+                        {t('settings.changePassword')}
+                      </Text>
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
+                        {t('settings.changePasswordDescription')}
+                      </Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
+                </TouchableOpacity>
               </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
+            </>
+          )}
 
           {/* ── Login History ── */}
           <Text style={{
