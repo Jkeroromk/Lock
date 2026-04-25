@@ -227,6 +227,10 @@ const jaJP = {
     socialLoginComingSoon: 'ソーシャルログインは近日公開',
     continueWithGoogle: 'Googleで続ける',
     continueWithApple: 'Appleで続ける',
+    continueWithFacebook: 'Facebookで続ける',
+    verificationSentTo: 'コードを送信しました',
+    resendCode: '再送信',
+    verify: '確認',
   },
   common: {
     loading: '読み込み中...', error: 'エラー', retry: '再試行',

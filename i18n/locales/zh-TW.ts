@@ -221,6 +221,10 @@ const zhTW = {
     socialLoginComingSoon: '社交登錄即將推出',
     continueWithGoogle: '使用 Google 繼續',
     continueWithApple: '使用 Apple 繼續',
+    continueWithFacebook: '使用 Facebook 繼續',
+    verificationSentTo: '驗證碼已發送至',
+    resendCode: '重新發送',
+    verify: '驗證',
   },
   common: {
     loading: '加載中...', error: '錯誤', retry: '重試',

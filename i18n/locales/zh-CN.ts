@@ -350,6 +350,10 @@ const zhCN = {
     socialLoginComingSoon: '社交登录即将推出',
     continueWithGoogle: '使用 Google 继续',
     continueWithApple: '使用 Apple 继续',
+    continueWithFacebook: '使用 Facebook 继续',
+    verificationSentTo: '验证码已发送至',
+    resendCode: '重新发送',
+    verify: '验证',
   },
   common: {
     loading: '加载中...', error: '错误', retry: '重试',

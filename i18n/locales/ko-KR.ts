@@ -236,6 +236,10 @@ const koKR = {
     socialLoginComingSoon: '소셜 로그인 곧 출시 예정',
     continueWithGoogle: 'Google로 계속',
     continueWithApple: 'Apple로 계속',
+    continueWithFacebook: 'Facebook으로 계속',
+    verificationSentTo: '코드를 보냈습니다',
+    resendCode: '재전송',
+    verify: '확인',
   },
   common: {
     loading: '로딩 중...', error: '오류', retry: '다시 시도',

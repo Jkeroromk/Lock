@@ -256,6 +256,10 @@ const enUS = {
     socialLoginComingSoon: 'Social login coming soon',
     continueWithGoogle: 'Continue with Google',
     continueWithApple: 'Continue with Apple',
+    continueWithFacebook: 'Continue with Facebook',
+    verificationSentTo: 'We sent a code to',
+    resendCode: 'Resend code',
+    verify: 'Verify',
   },
   common: {
     loading: 'Loading...', error: 'Error', retry: 'Retry',
