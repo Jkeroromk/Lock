@@ -172,17 +172,18 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       const { createdSessionId, setActive } = await googleOAuth({
-        redirectUrl: Linking.createURL('/'),
+        redirectUrl: Linking.createURL('/oauth-callback'),
       });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
         setTokenGetter(getToken);
         await onAuthSuccess();
+      } else {
+        Alert.alert('OAuth Error', `No session returned. id=${createdSessionId}`);
       }
     } catch (err: any) {
-      if (err.message !== 'cancelled') {
-        Alert.alert(t('auth.error'), t('auth.loginFailed'));
-      }
+      const msg = err?.errors?.[0]?.longMessage ?? err?.message ?? 'unknown';
+      Alert.alert('OAuth Error', `Google: ${msg}`);
     } finally {
       setIsLoading(false);
     }
@@ -193,15 +194,18 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       const { createdSessionId, setActive } = await appleOAuth({
-        redirectUrl: Linking.createURL('/'),
+        redirectUrl: Linking.createURL('/oauth-callback'),
       });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
         setTokenGetter(getToken);
         await onAuthSuccess();
+      } else {
+        Alert.alert('OAuth Error', `No session returned. id=${createdSessionId}`);
       }
     } catch (err: any) {
-      if (err.message !== 'cancelled') {
+      const msg = err?.errors?.[0]?.longMessage ?? err?.message ?? 'unknown';
+      Alert.alert('OAuth Error', `Apple: ${msg}`);
         Alert.alert(t('auth.error'), t('auth.loginFailed'));
       }
     } finally {
