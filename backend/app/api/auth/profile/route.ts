@@ -4,6 +4,21 @@ import { authenticateRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
+function generateInviteCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function getUniqueInviteCode(): Promise<string> {
+  let code = generateInviteCode();
+  while (await prisma.user.findUnique({ where: { inviteCode: code } })) {
+    code = generateInviteCode();
+  }
+  return code;
+}
+
 // GET /api/auth/profile — get or create the user record for the current Clerk user
 export async function GET(request: NextRequest) {
   const authResult = await authenticateRequest();
@@ -11,14 +26,13 @@ export async function GET(request: NextRequest) {
   const { userId } = authResult;
 
   try {
-    const user = await prisma.user.upsert({
-      where: { id: userId },
-      create: { id: userId },
-      update: {},
-    });
+    const existing = await prisma.user.findUnique({ where: { id: userId } });
+    if (existing) return NextResponse.json(existing);
+
+    const inviteCode = await getUniqueInviteCode();
+    const user = await prisma.user.create({ data: { id: userId, inviteCode } });
     return NextResponse.json(user);
   } catch (error: any) {
-    // P2002 = unique constraint violation from concurrent requests — record was already created
     if (error?.code === 'P2002') {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (user) return NextResponse.json(user);
