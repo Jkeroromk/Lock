@@ -13,6 +13,7 @@ import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
+import { detectLiquidMl, addWaterMl } from '@/services/waterTracker';
 import { getQuota } from '@/lib/plans';
 
 type LogMode = 'photo' | 'label' | 'barcode';
@@ -495,7 +496,13 @@ export default function LogScreen() {
         fat: result.fat,
         image_url: image || '',
       });
-      Alert.alert(t('settings.success'), t('log.saveSuccess'));
+      const liquidMl = detectLiquidMl(result.food);
+      if (liquidMl > 0) {
+        await addWaterMl(liquidMl);
+        Alert.alert(t('settings.success'), `${t('log.saveSuccess')}\n${(t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl))}`);
+      } else {
+        Alert.alert(t('settings.success'), t('log.saveSuccess'));
+      }
       clearImage();
       setResult(null);
       refreshToday();

@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import React from 'react';
+import { View, Text, Image, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,18 @@ export default function AboutScreen() {
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
+  const [currentIcon, setCurrentIcon] = React.useState<'dark' | 'light'>('dark');
+
+  const handleIconChange = async (icon: 'dark' | 'light') => {
+    if (icon === currentIcon) return;
+    try {
+      const AlternateAppIcons = require('expo-alternate-app-icons');
+      await AlternateAppIcons.setAlternateAppIconAsync(icon === 'light' ? 'WhiteLockin' : 'DarkLockin');
+      setCurrentIcon(icon);
+    } catch {
+      // Requires a native build; silently ignore in Expo Go
+    }
+  };
 
   const rows: { icon: any; label: string; onPress: () => void }[] = [
     {
@@ -91,6 +104,63 @@ export default function AboutScreen() {
           }}>
             {t('about.description')}
           </Text>
+        </View>
+
+        {/* App Icon Switcher */}
+        <Text style={{
+          fontSize: TYPOGRAPHY.bodyXS,
+          fontWeight: '700',
+          color: colors.textSecondary,
+          marginBottom: DIMENSIONS.SPACING * 0.5,
+          paddingLeft: 4,
+          textTransform: 'uppercase',
+          letterSpacing: 0.8,
+        }}>
+          {t('settings.appIcon')}
+        </Text>
+        <View style={{
+          backgroundColor: colors.cardBackground,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: colors.borderPrimary,
+          padding: DIMENSIONS.CARD_PADDING,
+          marginBottom: DIMENSIONS.SPACING * 1.5,
+          flexDirection: 'row',
+          gap: DIMENSIONS.SPACING * 0.8,
+        }}>
+          {(['dark', 'light'] as const).map((icon) => {
+            const isSelected = currentIcon === icon;
+            return (
+              <TouchableOpacity
+                key={icon}
+                onPress={() => handleIconChange(icon)}
+                activeOpacity={0.8}
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  gap: DIMENSIONS.SPACING * 0.4,
+                  padding: DIMENSIONS.SPACING * 0.6,
+                  borderRadius: 14,
+                  borderWidth: 2,
+                  borderColor: isSelected ? colors.textPrimary : colors.borderPrimary,
+                  backgroundColor: isSelected ? colors.cardBackgroundSecondary : 'transparent',
+                }}
+              >
+                <Image
+                  source={icon === 'dark'
+                    ? require('@/assets/dark-lockin.jpg')
+                    : require('@/assets/white-lockin.jpg')}
+                  style={{ width: 60, height: 60, borderRadius: 14 }}
+                />
+                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textPrimary }}>
+                  {icon === 'dark' ? t('settings.appIconDark') : t('settings.appIconLight')}
+                </Text>
+                {isSelected && (
+                  <Ionicons name="checkmark-circle" size={18} color={colors.textPrimary} />
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Legal section */}

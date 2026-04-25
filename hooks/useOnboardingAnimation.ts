@@ -1,5 +1,7 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@clerk/clerk-expo';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -37,6 +39,7 @@ export function useOnboardingAnimation({
   onboardingData,
 }: UseOnboardingAnimationProps) {
   const router = useRouter();
+  const { userId: clerkUserId } = useAuth();
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
 
   // 动画值
@@ -89,11 +92,43 @@ export function useOnboardingAnimation({
     } catch {}
   }, [router]);
 
+  // 保存 onboarding 数据到后端，最多重试3次，完成后导航
+  const saveAndNavigate = useCallback(async () => {
+    // Use Clerk userId directly — reliable even when Zustand user is null
+    const userId = clerkUserId ?? user?.id;
+
+    // Persist completion flag locally first — survives failed API calls and logout
+    if (userId) {
+      await AsyncStorage.setItem(`lock_onboarding_done_${userId}`, 'true').catch(() => {});
+    }
+
+    const payload = {
+      name: user?.name ?? undefined,
+      hasCompletedOnboarding: true,
+      height: onboardingData.height,
+      age: onboardingData.age,
+      weight: onboardingData.weight,
+      gender: onboardingData.gender ?? undefined,
+      goal: onboardingData.goal ?? undefined,
+      exerciseFrequency: onboardingData.exerciseFrequency ?? undefined,
+      expectedTimeframe: onboardingData.expectedTimeframe ?? undefined,
+    };
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 400));
+        await updateProfile(payload);
+        break;
+      } catch {
+        // continue to next attempt; local flag already set above
+      }
+    }
+    navigateToHome();
+  }, [user, clerkUserId, onboardingData, navigateToHome]);
+
   // 完成动画后的处理
   const handleAnimationComplete = useCallback(() => {
     setLockState('closed');
 
-    // Always update store and persist to backend, even if user object is null
     setUser({
       ...(user || {}),
       height: onboardingData.height,
@@ -106,22 +141,8 @@ export function useOnboardingAnimation({
       hasCompletedOnboarding: true,
     } as any);
 
-    // 保存 onboarding 数据到后端数据库
-    updateProfile({
-      name: user?.name ?? undefined,
-      hasCompletedOnboarding: true,
-      height: onboardingData.height,
-      age: onboardingData.age,
-      weight: onboardingData.weight,
-      gender: onboardingData.gender ?? undefined,
-      goal: onboardingData.goal ?? undefined,
-      exerciseFrequency: onboardingData.exerciseFrequency ?? undefined,
-      expectedTimeframe: onboardingData.expectedTimeframe ?? undefined,
-    }).catch(() => {});
-
-    // 立即跳转，动画已经完成
-    navigateToHome();
-  }, [user, onboardingData, setUser, setLockState, navigateToHome]);
+    saveAndNavigate();
+  }, [user, onboardingData, setUser, setLockState, saveAndNavigate]);
 
   // 启动 lock in 动画（在 JS 线程中执行）
   const startLockInAnimation = useCallback(() => {

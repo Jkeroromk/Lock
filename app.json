@@ -7,7 +7,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/dark-lockin.jpg",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -18,7 +18,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lock.app",
+      "bundleIdentifier": "com.jkeroro.lockin",
       "infoPlist": {
         "NSHealthShareUsageDescription": "我们需要访问您的健康数据以跟踪您的步数、活动能量和心率。",
         "NSHealthUpdateUsageDescription": "我们需要更新您的健康数据以记录您的活动。",
@@ -32,7 +32,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#007AFF"
       },
-      "package": "com.lock.app",
+      "package": "com.jkeroro.lockin",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -67,7 +67,14 @@
       ],
       "expo-web-browser",
       "expo-apple-authentication",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-alternate-app-icons",
+        [
+          { "name": "DarkLockin", "image": "./assets/dark-lockin.jpg" },
+          { "name": "WhiteLockin", "image": "./assets/white-lockin.jpg" }
+        ]
+      ]
     ],
     "scheme": "lock",
     "extra": {

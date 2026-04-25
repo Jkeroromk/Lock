@@ -124,7 +124,7 @@ export default function DashboardScreen() {
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 48 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -137,45 +137,6 @@ export default function DashboardScreen() {
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
           <RefreshLoadingAnimation visible={refreshing} />
-
-          {/* ── Header ── */}
-          <View style={{
-            flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
-            marginBottom: DIMENSIONS.SPACING * 1.5,
-          }}>
-            <View>
-              <Text style={{
-                fontSize: TYPOGRAPHY.titleL, fontWeight: '900',
-                color: colors.textPrimary, letterSpacing: -2,
-                lineHeight: TYPOGRAPHY.titleL * 1.05,
-              }}>
-                {t('dashboard.social')}
-              </Text>
-              <Text style={{
-                fontSize: TYPOGRAPHY.bodyS, fontWeight: '500',
-                color: colors.textSecondary, marginTop: 2,
-              }}>
-                {t('dashboard.withFriends')}
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => setShowAddFriend(true)}
-              style={{
-                flexDirection: 'row', alignItems: 'center', gap: 6,
-                backgroundColor: colors.textPrimary,
-                borderRadius: 14, paddingHorizontal: DIMENSIONS.SPACING * 0.9,
-                paddingVertical: DIMENSIONS.SPACING * 0.55,
-              }}
-            >
-              <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
-              <Text style={{
-                fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
-                color: colors.backgroundPrimary,
-              }}>
-                {t('dashboard.addFriend')}
-              </Text>
-            </TouchableOpacity>
-          </View>
 
           {/* ── Tab Switcher ── */}
           <View style={{
@@ -322,6 +283,32 @@ export default function DashboardScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* ── Floating Add Friend button ── */}
+      <View style={{
+        position: 'absolute', bottom: 24, left: DIMENSIONS.CARD_PADDING, right: DIMENSIONS.CARD_PADDING,
+        pointerEvents: 'box-none',
+      }}>
+        <TouchableOpacity
+          onPress={() => setShowAddFriend(true)}
+          activeOpacity={0.85}
+          style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+            backgroundColor: colors.textPrimary,
+            borderRadius: 18, paddingVertical: DIMENSIONS.SPACING * 0.85,
+            shadowColor: colors.shadowColor,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 12,
+            elevation: 8,
+          }}
+        >
+          <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
+          <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.backgroundPrimary }}>
+            {t('dashboard.addFriend')}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <AddFriendModal
         visible={showAddFriend}

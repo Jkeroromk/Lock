@@ -162,9 +162,9 @@ export default function CalendarScreen() {
     : 0;
 
   const nutritionStats = [
-    { label: t('today.protein'), value: weeklyNutrition.protein, color: '#6366F1' },
-    { label: t('today.carbs'), value: weeklyNutrition.carbs, color: '#F59E0B' },
-    { label: t('today.fat'), value: weeklyNutrition.fat, color: '#EF4444' },
+    { label: t('log.protein'), value: weeklyNutrition.protein, color: '#6366F1' },
+    { label: t('log.carbs'), value: weeklyNutrition.carbs, color: '#F59E0B' },
+    { label: t('log.fat'), value: weeklyNutrition.fat, color: '#EF4444' },
   ];
 
   return (
@@ -175,21 +175,6 @@ export default function CalendarScreen() {
         contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
-          {/* Header */}
-          <View style={{ marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-            <Text style={{
-              fontSize: TYPOGRAPHY.titleL, fontWeight: '900',
-              color: colors.textPrimary, letterSpacing: -2,
-              marginBottom: DIMENSIONS.SPACING * 0.3,
-              lineHeight: TYPOGRAPHY.titleL * 1.1,
-            }}>
-              {t('tabs.calendar')}
-            </Text>
-            <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '500', color: colors.textPrimary, opacity: 0.7 }}>
-              {t('calendar.calorieOverview')}
-            </Text>
-          </View>
-
           {loading ? (
             <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
               <Skeleton height={320} borderRadius={24} />
