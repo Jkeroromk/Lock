@@ -140,7 +140,7 @@ const zhCN = {
     challengeJoinedOther: '{name} 加入了挑战「{title}」',
     challengeCompleted: '你完成了挑战「{title}」！',
     challengeCompletedOther: '{name} 完成了挑战「{title}」！',
-    friendAdded: '你添加了一位新好友',
+    friendAdded: '你和 {name} 成为了好友',
     friendAddedOther: '{name} 成为了你的好友',
     justNow: '刚刚',
     minutesAgo: '{mins}分钟前',

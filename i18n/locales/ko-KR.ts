@@ -90,7 +90,7 @@ const koKR = {
     challengeJoinedOther: '{name}님이 챌린지 "{title}"에 참여했습니다',
     challengeCompleted: '챌린지 "{title}"을 완료했습니다!',
     challengeCompletedOther: '{name}님이 챌린지 "{title}"을 완료했습니다!',
-    friendAdded: '새 친구를 추가했습니다',
+    friendAdded: '{name}님과 친구가 되었습니다',
     friendAddedOther: '{name}님이 친구가 되었습니다',
     justNow: '방금',
     minutesAgo: '{mins}분 전',

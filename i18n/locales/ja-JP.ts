@@ -90,7 +90,7 @@ const jaJP = {
     challengeJoinedOther: '{name}さんがチャレンジ「{title}」に参加しました',
     challengeCompleted: 'チャレンジ「{title}」を達成しました！',
     challengeCompletedOther: '{name}さんがチャレンジ「{title}」を達成しました！',
-    friendAdded: '新しい友達を追加しました',
+    friendAdded: '{name}さんと友達になりました',
     friendAddedOther: '{name}さんがあなたの友達になりました',
     justNow: 'たった今',
     minutesAgo: '{mins}分前',

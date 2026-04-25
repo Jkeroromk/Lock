@@ -90,7 +90,7 @@ const zhTW = {
     challengeJoinedOther: '{name} 加入了挑戰「{title}」',
     challengeCompleted: '你完成了挑戰「{title}」！',
     challengeCompletedOther: '{name} 完成了挑戰「{title}」！',
-    friendAdded: '你添加了一位新好友',
+    friendAdded: '你和 {name} 成為了好友',
     friendAddedOther: '{name} 成為了你的好友',
     justNow: '剛剛',
     minutesAgo: '{mins}分鐘前',

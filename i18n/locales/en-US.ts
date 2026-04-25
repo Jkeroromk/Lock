@@ -99,7 +99,7 @@ const enUS = {
     challengeJoinedOther: '{name} joined challenge "{title}"',
     challengeCompleted: 'You completed challenge "{title}"!',
     challengeCompletedOther: '{name} completed challenge "{title}"!',
-    friendAdded: 'You added a new friend',
+    friendAdded: 'You and {name} are now friends',
     friendAddedOther: '{name} became your friend',
     justNow: 'Just now',
     minutesAgo: '{mins}m ago',

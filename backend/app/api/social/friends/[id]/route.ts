@@ -22,20 +22,21 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   });
 
   if (action === 'accept') {
+    const [acceptor, requester] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId }, select: { name: true, username: true } }),
+      prisma.user.findUnique({ where: { id: friendship.requesterId }, select: { name: true, username: true } }),
+    ]);
+    const acceptorDisplay = acceptor?.name || acceptor?.username || '对方';
+    const requesterDisplay = requester?.name || requester?.username || '对方';
+
     await prisma.activityFeed.createMany({
       data: [
-        { userId, type: 'FRIEND_ADDED', metadata: { friendId: friendship.requesterId } },
-        { userId: friendship.requesterId, type: 'FRIEND_ADDED', metadata: { friendId: userId } },
+        { userId, type: 'FRIEND_ADDED', metadata: { friendId: friendship.requesterId, friendName: requesterDisplay } },
+        { userId: friendship.requesterId, type: 'FRIEND_ADDED', metadata: { friendId: userId, friendName: acceptorDisplay } },
       ],
     });
 
-    // 通知发送方：好友请求已被接受
-    const acceptorName = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true, username: true },
-    });
-    const displayName = acceptorName?.name || acceptorName?.username || '对方';
-    sendPushToUser(friendship.requesterId, '好友请求已通过 🎉', `${displayName} 接受了你的好友请求`, { type: 'FRIEND_ACCEPTED' })
+    sendPushToUser(friendship.requesterId, '好友请求已通过 🎉', `${acceptorDisplay} 接受了你的好友请求`, { type: 'FRIEND_ACCEPTED' })
       .catch(() => {});
   }
 

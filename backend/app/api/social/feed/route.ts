@@ -17,7 +17,12 @@ export async function GET(request: NextRequest) {
   );
 
   const feedItems = await prisma.activityFeed.findMany({
-    where: { userId: { in: [userId, ...friendIds] } },
+    where: {
+      OR: [
+        { userId },
+        { userId: { in: friendIds }, NOT: { type: 'FRIEND_ADDED' } },
+      ],
+    },
     include: { user: { select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true } } },
     orderBy: { createdAt: 'desc' },
     take: 50,

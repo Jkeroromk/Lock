@@ -46,7 +46,7 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
           ? r('feed.challengeCompleted', { title: metadata?.title ?? '' })
           : r('feed.challengeCompletedOther', { name, title: metadata?.title ?? '' });
       case 'FRIEND_ADDED':
-        return isMe ? r('feed.friendAdded') : r('feed.friendAddedOther', { name });
+        return r('feed.friendAdded', { name: String(metadata?.friendName ?? name) });
       default:
         return type;
     }
