@@ -200,8 +200,10 @@ export default function DashboardScreen() {
             <>
               {/* Friend requests */}
               {requests.length > 0 && (
-                <FriendRequestsCard requests={requests} onUpdate={loadAll} />
-                <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
+                <>
+                  <FriendRequestsCard requests={requests} onUpdate={loadAll} />
+                  <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
+                </>
               )}
 
               {/* Unified leaderboard (me + friends) */}
