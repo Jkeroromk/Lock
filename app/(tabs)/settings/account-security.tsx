@@ -43,9 +43,12 @@ export default function AccountSecurityScreen() {
         Alert.alert(t('settings.success'), t('settings.linkSuccess'));
       }
     } catch (err: any) {
-      if (err?.errors?.[0]?.code === 'external_account_exists') {
+      const msg = (err?.message ?? err?.errors?.[0]?.message ?? '').toLowerCase();
+      const code = (err?.errors?.[0]?.code ?? '').toLowerCase();
+      const isCancelled = msg.includes('cancel') || msg.includes('dismiss') || msg.includes('abort') || code.includes('cancel');
+      if (code === 'external_account_exists') {
         Alert.alert(t('settings.error'), t('settings.accountAlreadyLinked'));
-      } else if (err?.message !== 'cancelled') {
+      } else if (!isCancelled) {
         Alert.alert(t('settings.error'), t('settings.linkFailed'));
       }
     } finally {

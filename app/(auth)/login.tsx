@@ -208,13 +208,20 @@ export default function LoginScreen() {
     Alert.alert('OAuth Error', `No session.\nsignUp:${signUpStatus}\nsignIn:${signInStatus}`);
   };
 
+  const isOAuthCancel = (err: any) => {
+    const msg = (err?.message ?? err?.errors?.[0]?.message ?? '').toLowerCase();
+    const code = (err?.errors?.[0]?.code ?? '').toLowerCase();
+    return msg.includes('cancel') || msg.includes('dismiss') || msg.includes('abort')
+      || code.includes('cancel') || code.includes('dismiss');
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
       const result = await googleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') });
       await activateOAuthSession(result);
     } catch (err: any) {
-      Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Google login failed');
+      if (!isOAuthCancel(err)) Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Google login failed');
     } finally {
       setIsLoading(false);
     }
@@ -227,7 +234,7 @@ export default function LoginScreen() {
       const result = await appleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') });
       await activateOAuthSession(result);
     } catch (err: any) {
-      Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Apple login failed');
+      if (!isOAuthCancel(err)) Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Apple login failed');
     } finally {
       setIsLoading(false);
     }
@@ -239,7 +246,7 @@ export default function LoginScreen() {
       const result = await facebookOAuth({ redirectUrl: Linking.createURL('/oauth-callback') });
       await activateOAuthSession(result);
     } catch (err: any) {
-      Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Facebook login failed');
+      if (!isOAuthCancel(err)) Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Facebook login failed');
     } finally {
       setIsLoading(false);
     }
