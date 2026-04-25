@@ -34,6 +34,7 @@ export default clerkMiddleware(async (_auth, request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   if (!pathname.startsWith('/api/')) return;
+  if (pathname.startsWith('/api/webhooks/')) return;
 
   const ip = getClientIp(request);
   const { limit, windowMs } = getRateLimitConfig(pathname);
