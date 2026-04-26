@@ -1,8 +1,8 @@
 import {
   View, Text, Modal, ScrollView, TouchableOpacity,
-  ActivityIndicator, Image, Platform,
+  ActivityIndicator, Image, Platform, Animated, StyleSheet,
 } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
@@ -23,6 +23,26 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
   const [meals, setMeals] = useState<MealRecord[]>([]);
   const [totalCalories, setTotalCalories] = useState(0);
   const [fetchError, setFetchError] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const slideAnim = useRef(new Animated.Value(600)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const visible = !!date;
+
+  useEffect(() => {
+    if (visible) {
+      setMounted(true);
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 220, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 3, speed: 16 }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: 600, duration: 200, useNativeDriver: true }),
+      ]).start(() => setMounted(false));
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (!date) return;
@@ -48,18 +68,24 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
 
   return (
     <Modal
-      visible={!!date}
+      visible={mounted}
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={onClose}
     >
-      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-        <View style={{
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <Animated.View
+          style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', opacity: fadeAnim }}
+        >
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+        </Animated.View>
+        <Animated.View style={{
           backgroundColor: colors.backgroundPrimary,
           borderTopLeftRadius: 32, borderTopRightRadius: 32,
           maxHeight: '85%',
           borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 2,
           borderColor: colors.borderPrimary,
+          transform: [{ translateY: slideAnim }],
         }}>
           {/* Handle */}
           <View style={{ alignItems: 'center', paddingTop: DIMENSIONS.SPACING * 0.8 }}>
@@ -220,7 +246,7 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
               </View>
             ))}
           </ScrollView>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
