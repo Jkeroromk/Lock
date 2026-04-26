@@ -89,6 +89,7 @@ export default function LoginScreen() {
       expectedTimeframe: profile.expectedTimeframe as any,
       plan: (profile.plan ?? 'FREE') as any, streak: profile.streak ?? 0,
       hasCompletedOnboarding: completedOnboarding,
+      inviteCode: profile.inviteCode ?? undefined,
     });
 
     if (rememberMe && email) AsyncStorage.setItem('lock_saved_email', email).catch(() => {});

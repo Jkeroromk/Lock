@@ -43,6 +43,7 @@ export default function Index() {
             expectedTimeframe: profile.expectedTimeframe as any,
             hasCompletedOnboarding: completedOnboarding,
             plan: (profile.plan ?? 'FREE') as any,
+            inviteCode: profile.inviteCode ?? undefined,
           });
         })
         .catch(async () => {
