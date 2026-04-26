@@ -29,6 +29,7 @@ interface User {
   isAnonymous?: boolean;
   plan?: PlanTier;
   streak?: number;
+  inviteCode?: string;
 }
 
 interface Meal {

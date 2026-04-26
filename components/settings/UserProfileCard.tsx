@@ -1,5 +1,6 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
@@ -14,6 +15,7 @@ interface User {
   avatarImage?: string;
   gender?: string;
   showGender?: boolean;
+  inviteCode?: string;
 }
 
 interface UserProfileCardProps {
@@ -27,6 +29,12 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
   const { t } = useTranslation();
   const colors = useTheme();
   const isLightMode = themeMode === 'light';
+
+  const handleCopyInviteCode = async () => {
+    if (!user?.inviteCode) return;
+    await Clipboard.setStringAsync(user.inviteCode);
+    Alert.alert(t('settings.success'), t('settings.inviteCodeCopied' as any));
+  };
   const nextTheme = isLightMode ? 'dark' : 'light';
   const themeIcon = isLightMode ? 'sunny' : 'moon';
 
@@ -127,6 +135,36 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
           </View>
         )}
       </View>
+
+      {/* Invite code */}
+      {user?.inviteCode && (
+        <View style={{ marginTop: DIMENSIONS.SPACING * 1.2, borderTopWidth: 1, borderTopColor: colors.borderPrimary, paddingTop: DIMENSIONS.SPACING * 1.0 }}>
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5, textAlign: 'center' }}>
+            {t('settings.inviteCode' as any)}
+          </Text>
+          <TouchableOpacity
+            onPress={handleCopyInviteCode}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+              backgroundColor: colors.cardBackgroundSecondary,
+              borderRadius: 14, borderWidth: 1, borderColor: colors.borderPrimary,
+              paddingVertical: DIMENSIONS.SPACING * 0.7,
+              paddingHorizontal: DIMENSIONS.SPACING * 1.2,
+              gap: 10,
+            }}
+          >
+            <Ionicons name="ticket-outline" size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
+            <Text style={{ fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: colors.textPrimary, letterSpacing: 4 }}>
+              {user.inviteCode}
+            </Text>
+            <Ionicons name="copy-outline" size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
+          </TouchableOpacity>
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '500', color: colors.textSecondary, textAlign: 'center', marginTop: DIMENSIONS.SPACING * 0.4 }}>
+            {t('settings.inviteCodeDesc' as any)}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

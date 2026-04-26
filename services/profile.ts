@@ -19,6 +19,7 @@ export interface UserProfile {
   plan?: 'FREE' | 'PRO' | 'ENTERPRISE';
   streak?: number;
   hasCompletedOnboarding: boolean;
+  inviteCode?: string | null;
 }
 
 export const fetchProfile = async (): Promise<UserProfile> => {

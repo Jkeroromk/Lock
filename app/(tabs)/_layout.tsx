@@ -159,6 +159,7 @@ export default function TabLayout() {
           shadowOpacity: 0.5,
           shadowRadius: 12,
         },
+        lazy: false,
         tabBarItemStyle: {
           paddingHorizontal: 4,
         },
