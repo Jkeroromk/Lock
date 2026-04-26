@@ -15,10 +15,9 @@ interface Challenge {
 
 interface ChallengesListProps {
   challenges: Challenge[];
-  onCreateChallenge: () => void;
 }
 
-export default function ChallengesList({ challenges, onCreateChallenge }: ChallengesListProps) {
+export default function ChallengesList({ challenges }: ChallengesListProps) {
   const { t } = useTranslation();
   const colors = useTheme();
 
@@ -168,32 +167,6 @@ export default function ChallengesList({ challenges, onCreateChallenge }: Challe
         </View>
       ))}
 
-      <TouchableOpacity
-        onPress={onCreateChallenge}
-        style={{
-          borderRadius: 24,
-          padding: DIMENSIONS.SPACING * 1.2,
-          backgroundColor: colors.cardBackground,
-          borderWidth: 2,
-          borderColor: colors.borderPrimary,
-          borderStyle: 'dashed',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Ionicons name="add-circle-outline" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
-        <Text 
-          style={{ 
-            fontSize: TYPOGRAPHY.bodyM,
-            fontWeight: '900',
-            color: colors.textPrimary,
-            marginLeft: DIMENSIONS.SPACING * 0.6,
-          }}
-        >
-          {t('dashboard.createChallenge')}
-        </Text>
-      </TouchableOpacity>
     </>
   );
 }

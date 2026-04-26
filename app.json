@@ -7,39 +7,41 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
-    "icon": "./assets/dark-lockin.jpg",
+    "icon": "./assets/dark-lockin.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#007AFF"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.jkeroro.lockin",
+      "buildNumber": "1",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "NSHealthShareUsageDescription": "我们需要访问您的健康数据以跟踪您的步数、活动能量和心率。",
-        "NSHealthUpdateUsageDescription": "我们需要更新您的健康数据以记录您的活动。",
-        "NSCameraUsageDescription": "我们需要访问相机以拍摄食物照片。",
-        "NSPhotoLibraryUsageDescription": "我们需要访问相册以选择食物照片。",
+        "NSHealthShareUsageDescription": "Lock reads your step count and active energy to show your daily activity alongside nutrition.",
+        "NSHealthUpdateUsageDescription": "Lock writes workout and nutrition data to Apple Health to keep your records complete.",
+        "NSCameraUsageDescription": "Lock uses the camera to photograph meals for AI-powered calorie analysis.",
+        "NSPhotoLibraryUsageDescription": "Lock accesses your photo library to choose a meal photo or profile picture.",
+        "NSPhotoLibraryAddUsageDescription": "Lock saves meal photos to your photo library.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#007AFF"
+        "backgroundColor": "#000000"
       },
       "package": "com.jkeroro.lockin",
+      "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.ACTIVITY_RECOGNITION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.ACTIVITY_RECOGNITION"
       ]
     },
     "web": {
@@ -50,13 +52,13 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "允许访问相册以选择食物照片"
+          "photosPermission": "Lock accesses your photo library to choose meal photos."
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "允许访问相机以拍摄食物照片"
+          "cameraPermission": "Lock uses the camera to photograph meals for calorie analysis."
         }
       ],
       [
@@ -72,8 +74,8 @@
       [
         "expo-alternate-app-icons",
         [
-          { "name": "DarkLockin", "image": "./assets/dark-lockin.jpg" },
-          { "name": "WhiteLockin", "image": "./assets/white-lockin.jpg" }
+          { "name": "DarkLockin", "image": "./assets/dark-lockin.png" },
+          { "name": "WhiteLockin", "image": "./assets/white-lockin.png" }
         ]
       ]
     ],

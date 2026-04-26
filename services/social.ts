@@ -140,3 +140,52 @@ export const fetchChallengeDetail = async (challengeId: string): Promise<Challen
   const res = await api.get<ChallengeDetail>(`/api/social/challenges/${challengeId}`);
   return res.data;
 };
+
+export interface MomentComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: { id: string; name: string; avatar: string; avatarImage?: string | null };
+}
+
+export interface Moment {
+  id: string;
+  content: string;
+  mediaUrl?: string | null;
+  createdAt: string;
+  isMe: boolean;
+  user: { id: string; name: string; avatar: string; avatarImage?: string | null };
+  likesCount: number;
+  isLiked: boolean;
+  commentsCount: number;
+  previewComments: MomentComment[];
+}
+
+export const fetchMoments = async (): Promise<Moment[]> => {
+  const res = await api.get<Moment[]>('/api/social/moments');
+  return res.data;
+};
+
+export const createMoment = async (content: string, mediaUrl?: string | null): Promise<Moment> => {
+  const res = await api.post<Moment>('/api/social/moments', { content, mediaUrl: mediaUrl ?? null });
+  return res.data;
+};
+
+export const deleteMoment = async (id: string): Promise<void> => {
+  await api.delete(`/api/social/moments/${id}`);
+};
+
+export const toggleMomentLike = async (id: string): Promise<{ liked: boolean; count: number }> => {
+  const res = await api.post<{ liked: boolean; count: number }>(`/api/social/moments/${id}/like`);
+  return res.data;
+};
+
+export const fetchMomentComments = async (id: string): Promise<MomentComment[]> => {
+  const res = await api.get<MomentComment[]>(`/api/social/moments/${id}/comments`);
+  return res.data;
+};
+
+export const addMomentComment = async (id: string, content: string): Promise<MomentComment> => {
+  const res = await api.post<MomentComment>(`/api/social/moments/${id}/comments`, { content });
+  return res.data;
+};

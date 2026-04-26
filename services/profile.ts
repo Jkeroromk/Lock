@@ -41,3 +41,7 @@ export const syncHealthDataToBackend = async (steps: number, activeEnergy: numbe
 export const syncSubscriptionPlan = async (plan: 'FREE' | 'PRO' | 'MAX'): Promise<void> => {
   await api.post('/api/subscription', { plan });
 };
+
+export const deleteAccount = async (): Promise<void> => {
+  await api.delete('/api/user/delete');
+};

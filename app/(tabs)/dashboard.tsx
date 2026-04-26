@@ -1,5 +1,4 @@
-import { View, Text, ScrollView, Platform, TouchableOpacity, RefreshControl, Share, ActivityIndicator } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import { View, Text, ScrollView, Platform, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalSearchParams } from 'expo-router';
@@ -10,18 +9,18 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard';
 import ChallengesList from '@/components/dashboard/ChallengesList';
-import RefreshLoadingAnimation from '@/components/dashboard/RefreshLoadingAnimation';
 import AddFriendModal from '@/components/dashboard/AddFriendModal';
 import FriendRequestsCard from '@/components/dashboard/FriendRequestsCard';
 import PendingSentRequestsCard from '@/components/dashboard/PendingSentRequestsCard';
 import CreateChallengeModal from '@/components/dashboard/CreateChallengeModal';
-import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import MomentsFeed from '@/components/dashboard/MomentsFeed';
+import CreateMomentModal from '@/components/dashboard/CreateMomentModal';
 import {
-  fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges, fetchFeed, fetchInviteCode,
-  LeaderboardEntry, FriendRequest, SentRequest, ChallengeData, FeedItem,
+  fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges, fetchMoments,
+  LeaderboardEntry, FriendRequest, SentRequest, ChallengeData, Moment,
 } from '@/services/api';
 
-type Tab = 'friends' | 'challenges' | 'feed';
+type Tab = 'friends' | 'challenges' | 'moments';
 
 export default function DashboardScreen() {
   const { todayCalories, user } = useStore();
@@ -34,6 +33,7 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
+  const [showCreateMoment, setShowCreateMoment] = useState(false);
   const [pendingInviteCode, setPendingInviteCode] = useState<string | undefined>();
 
   useEffect(() => {
@@ -47,40 +47,21 @@ export default function DashboardScreen() {
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
-  const [feed, setFeed] = useState<FeedItem[]>([]);
-  const [inviteCode, setInviteCode] = useState('');
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyCode = async () => {
-    if (!inviteCode) return;
-    await Clipboard.setStringAsync(inviteCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleShareInvite = async () => {
-    if (!inviteCode) return;
-    await Share.share({
-      message: `Join me on Lock! Use invite code「${inviteCode}」👉 lock://invite/${inviteCode}`,
-      title: 'Join Lock',
-    });
-  };
+  const [moments, setMoments] = useState<Moment[]>([]);
 
   const loadAll = useCallback(async () => {
-    const [lb, reqs, sent, ch, fd, ic] = await Promise.allSettled([
+    const [lb, reqs, sent, ch, mom] = await Promise.allSettled([
       fetchLeaderboard(),
       fetchFriendRequests(),
       fetchSentRequests(),
       fetchChallenges(),
-      fetchFeed(),
-      fetchInviteCode(),
+      fetchMoments(),
     ]);
     if (lb.status === 'fulfilled') setLeaderboard(lb.value);
     if (reqs.status === 'fulfilled') setRequests(reqs.value);
     if (sent.status === 'fulfilled') setSentRequests(sent.value);
     if (ch.status === 'fulfilled') setChallenges(ch.value);
-    if (fd.status === 'fulfilled') setFeed(fd.value);
-    if (ic.status === 'fulfilled') setInviteCode(ic.value);
+    if (mom.status === 'fulfilled') setMoments(mom.value);
   }, []);
 
   useEffect(() => {
@@ -106,8 +87,6 @@ export default function DashboardScreen() {
     friendshipId: e.friendshipId,
   }));
 
-  const myEntry = leaderboard.find((e) => e.isMe);
-
   const challengesForList = challenges.map((c) => ({
     id: c.id,
     title: c.title,
@@ -120,8 +99,14 @@ export default function DashboardScreen() {
   const TAB_CONFIG: { key: Tab; label: string; icon: string }[] = [
     { key: 'friends', label: t('dashboard.leaderboard'), icon: 'people' },
     { key: 'challenges', label: t('dashboard.challenges'), icon: 'flag' },
-    { key: 'feed', label: t('tabs.social'), icon: 'newspaper' },
+    { key: 'moments', label: t('moments.title' as any), icon: 'images' },
   ];
+
+  const FAB_CONFIG: Record<Tab, { label: string; icon: string; onPress: () => void }> = {
+    friends: { label: t('dashboard.addFriend'), icon: 'person-add-outline', onPress: () => setShowAddFriend(true) },
+    challenges: { label: t('dashboard.createChallenge'), icon: 'add', onPress: () => setShowCreateChallenge(true) },
+    moments: { label: t('moments.create' as any), icon: 'add', onPress: () => setShowCreateMoment(true) },
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
@@ -140,8 +125,6 @@ export default function DashboardScreen() {
         }
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
-          <RefreshLoadingAnimation visible={refreshing} />
-
           {/* ── Tab Switcher ── */}
           <View style={{
             flexDirection: 'row',
@@ -198,106 +181,39 @@ export default function DashboardScreen() {
           {/* ── Friends Tab ── */}
           {!initialLoading && activeTab === 'friends' && (
             <>
-              {/* Friend requests */}
               {requests.length > 0 && (
                 <>
                   <FriendRequestsCard requests={requests} onUpdate={loadAll} />
                   <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
                 </>
               )}
-
-              {/* Unified leaderboard (me + friends) */}
               <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
-
-              {/* Invite Code Card */}
-              <View style={{
-                borderRadius: 24, padding: DIMENSIONS.SPACING * 1.2,
-                backgroundColor: colors.cardBackground,
-                borderWidth: 2, borderColor: colors.borderPrimary,
-                marginBottom: DIMENSIONS.SPACING * 1.2,
-              }}>
-                {/* Label */}
-                <Text style={{
-                  fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800',
-                  color: colors.textSecondary, textTransform: 'uppercase',
-                  letterSpacing: 1.2, marginBottom: DIMENSIONS.SPACING * 0.8,
-                }}>
-                  {t('dashboard.inviteCode') || 'Invite Code'}
-                </Text>
-
-                {/* Code display row */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-                  {/* Code pill */}
-                  <View style={{
-                    flex: 1,
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                    backgroundColor: colors.cardBackgroundSecondary,
-                    borderRadius: 14, paddingHorizontal: DIMENSIONS.SPACING * 1,
-                    paddingVertical: DIMENSIONS.SPACING * 0.7,
-                    borderWidth: 1.5, borderColor: colors.borderPrimary,
-                  }}>
-                    <Text style={{
-                      fontSize: TYPOGRAPHY.bodyL, fontWeight: '900',
-                      color: colors.textPrimary, letterSpacing: 5,
-                    }}>
-                      {inviteCode || '------'}
-                    </Text>
-                    <TouchableOpacity onPress={handleCopyCode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                      <Ionicons
-                        name={copied ? 'checkmark-circle' : 'copy-outline'}
-                        size={TYPOGRAPHY.iconXS}
-                        color={copied ? '#10B981' : colors.textSecondary}
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Share button */}
-                  <TouchableOpacity
-                    onPress={handleShareInvite}
-                    style={{
-                      width: 44, height: 44, borderRadius: 14,
-                      backgroundColor: colors.cardBackgroundSecondary,
-                      alignItems: 'center', justifyContent: 'center',
-                      borderWidth: 1.5, borderColor: colors.borderPrimary,
-                    }}
-                  >
-                    <Ionicons name="share-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Hint text */}
-                <Text style={{
-                  fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '500',
-                  color: colors.textSecondary, lineHeight: TYPOGRAPHY.bodyXXS * 1.6,
-                }}>
-                  {t('dashboard.inviteHint') || 'Share your code with friends so they can add you.'}
-                </Text>
-              </View>
             </>
           )}
 
           {/* ── Challenges Tab ── */}
           {!initialLoading && activeTab === 'challenges' && (
-            <ChallengesList
-              challenges={challengesForList}
-              onCreateChallenge={() => setShowCreateChallenge(true)}
-            />
+            <ChallengesList challenges={challengesForList} />
           )}
 
-          {/* ── Feed Tab ── */}
-          {!initialLoading && activeTab === 'feed' && (
-            <ActivityFeed items={feed} />
+          {/* ── Moments Tab ── */}
+          {!initialLoading && activeTab === 'moments' && (
+            <MomentsFeed
+              items={moments}
+              onRefresh={loadAll}
+              onCreatePress={() => setShowCreateMoment(true)}
+            />
           )}
         </View>
       </ScrollView>
 
-      {/* ── Floating Add Friend button ── */}
+      {/* ── Floating Action Button ── */}
       <View style={{
         position: 'absolute', bottom: 24, left: DIMENSIONS.CARD_PADDING, right: DIMENSIONS.CARD_PADDING,
         pointerEvents: 'box-none',
       }}>
         <TouchableOpacity
-          onPress={() => setShowAddFriend(true)}
+          onPress={FAB_CONFIG[activeTab].onPress}
           activeOpacity={0.85}
           style={{
             flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -310,9 +226,9 @@ export default function DashboardScreen() {
             elevation: 8,
           }}
         >
-          <Ionicons name="person-add-outline" size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
+          <Ionicons name={FAB_CONFIG[activeTab].icon as any} size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
           <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.backgroundPrimary }}>
-            {t('dashboard.addFriend')}
+            {FAB_CONFIG[activeTab].label}
           </Text>
         </TouchableOpacity>
       </View>
@@ -328,6 +244,12 @@ export default function DashboardScreen() {
         visible={showCreateChallenge}
         onClose={() => setShowCreateChallenge(false)}
         onSuccess={() => { loadAll(); }}
+      />
+
+      <CreateMomentModal
+        visible={showCreateMoment}
+        onClose={() => setShowCreateMoment(false)}
+        onSuccess={(moment) => setMoments((prev) => [moment, ...prev])}
       />
     </SafeAreaView>
   );

@@ -175,10 +175,10 @@ export default function SettingsScreen() {
           />
 
           <SettingItem
-            icon="scale-outline"
-            title={t('settings.weightTracker')}
-            description={t('settings.weightTrackerDescription')}
-            onPress={() => router.push('/(tabs)/settings/weight-tracker')}
+            icon="people-outline"
+            title={t('settings.contacts' as any)}
+            description={t('settings.contactsDescription' as any)}
+            onPress={() => router.push('/(tabs)/settings/contacts')}
           />
 
           <SettingItem

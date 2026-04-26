@@ -9,6 +9,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
+import { useStore } from '@/store/useStore';
+import { deleteAccount } from '@/services/api';
 
 type OAuthStrategy = 'oauth_google' | 'oauth_apple' | 'oauth_facebook';
 
@@ -18,6 +20,7 @@ export default function AccountSecurityScreen() {
   const colors = useTheme();
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
+  const { clearSession } = useStore();
   const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
 
@@ -102,16 +105,33 @@ export default function AccountSecurityScreen() {
         {
           text: t('settings.deleteAccount'),
           style: 'destructive',
-          onPress: async () => {
-            setDeletingAccount(true);
-            try {
-              await user?.delete();
-              await signOut();
-            } catch {
-              Alert.alert(t('settings.error'), t('settings.deleteAccountWarning'));
-            } finally {
-              setDeletingAccount(false);
-            }
+          onPress: () => {
+            // Second confirmation — Apple requires irreversibility to be clear
+            Alert.alert(
+              t('settings.deleteAccount'),
+              t('settings.deleteAccountWarning'),
+              [
+                { text: t('settings.cancel'), style: 'cancel' },
+                {
+                  text: t('settings.deleteAccount'),
+                  style: 'destructive',
+                  onPress: async () => {
+                    setDeletingAccount(true);
+                    try {
+                      // 1. Delete all data from our database first
+                      await deleteAccount();
+                      // 2. Delete from Clerk (triggers webhook as secondary cleanup)
+                      await user?.delete();
+                    } catch {
+                      // Clerk deletion may fail if session already gone — proceed anyway
+                    }
+                    // 3. Clear local store and redirect regardless of errors
+                    clearSession();
+                    router.replace('/(auth)/login');
+                  },
+                },
+              ]
+            );
           },
         },
       ]

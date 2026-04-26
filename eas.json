@@ -8,10 +8,10 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "simulator": false
+        "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://backend-nine-nu-94.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com"
       }
     },
     "preview": {
@@ -23,17 +23,23 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://backend-nine-nu-94.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://backend-nine-nu-94.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "zzou2000@yahoo.com",
+        "ascAppId": "6762630080",
+        "appleTeamId": "KBBN9626H9"
+      }
+    }
   }
 }
