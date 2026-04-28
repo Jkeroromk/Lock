@@ -10,9 +10,13 @@ export async function DELETE() {
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
-  // Cascade deletes handle: meals, posts, likes, comments, friendships,
-  // activity feed, weight records, challenges, push tokens, etc.
-  await prisma.user.deleteMany({ where: { id: userId } });
-
-  return NextResponse.json({ ok: true });
+  try {
+    // Cascade deletes handle: meals, posts, likes, comments, friendships,
+    // activity feed, weight records, challenges, push tokens, etc.
+    await prisma.user.deleteMany({ where: { id: userId } });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('[DELETE /api/user/delete]', error);
+    return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
+  }
 }

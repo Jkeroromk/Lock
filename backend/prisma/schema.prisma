@@ -163,6 +163,7 @@ model PostLike {
 
   @@unique([postId, userId])
   @@index([postId])
+  @@index([userId])
   @@map("post_likes")
 }
 
@@ -177,6 +178,7 @@ model PostComment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId])
+  @@index([userId])
   @@map("post_comments")
 }
 
