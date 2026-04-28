@@ -17,20 +17,25 @@ export async function GET(request: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
-  let user = await prisma.user.findUnique({ where: { id: userId }, select: { inviteCode: true } });
+  try {
+    let user = await prisma.user.findUnique({ where: { id: userId }, select: { inviteCode: true } });
 
-  if (!user?.inviteCode) {
-    let code = generateCode();
-    while (await prisma.user.findUnique({ where: { inviteCode: code } })) {
-      code = generateCode();
+    if (!user?.inviteCode) {
+      let code = generateCode();
+      while (await prisma.user.findUnique({ where: { inviteCode: code } })) {
+        code = generateCode();
+      }
+      user = await prisma.user.upsert({
+        where: { id: userId },
+        update: { inviteCode: code },
+        create: { id: userId, inviteCode: code },
+        select: { inviteCode: true },
+      });
     }
-    user = await prisma.user.upsert({
-      where: { id: userId },
-      update: { inviteCode: code },
-      create: { id: userId, inviteCode: code },
-      select: { inviteCode: true },
-    });
-  }
 
-  return NextResponse.json({ inviteCode: user!.inviteCode });
+    return NextResponse.json({ inviteCode: user!.inviteCode });
+  } catch (error) {
+    console.error('[GET /api/social/invite-code]', error);
+    return NextResponse.json({ error: 'Failed to get invite code' }, { status: 500 });
+  }
 }

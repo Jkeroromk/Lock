@@ -147,7 +147,7 @@ const zhTW = {
     receiveNotifications: '接收推送通知提醒',
     notificationDescription: '接收推送通知提醒',
     pushNotifications: '推送通知',
-    healthData: '健康數據', syncHealthData: '同步健康應用數據', autoSync: '自動同步',
+    healthData: '健康數據', healthDataDescription: '同步健康應用數據', syncHealthData: '同步健康應用數據', autoSync: '自動同步',
     changingLanguage: '正在切換語言...',
     contacts: '好友通訊錄',
     contactsDescription: '查看好友名片，分享你的名片',

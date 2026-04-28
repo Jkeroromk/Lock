@@ -7,36 +7,41 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
 
-  const challenge = await prisma.challenge.findUnique({
-    where: { id: params.id },
-    include: {
-      creator: { select: { name: true, username: true } },
-      participants: {
-        include: { user: { select: { id: true, name: true, username: true } } },
-        orderBy: { progress: 'desc' },
+  try {
+    const challenge = await prisma.challenge.findUnique({
+      where: { id: params.id },
+      include: {
+        creator: { select: { name: true, username: true } },
+        participants: {
+          include: { user: { select: { id: true, name: true, username: true } } },
+          orderBy: { progress: 'desc' },
+        },
       },
-    },
-  });
+    });
 
-  if (!challenge) {
-    return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
+    if (!challenge) {
+      return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      id: challenge.id,
+      title: challenge.title,
+      description: challenge.description,
+      type: challenge.type,
+      goalValue: challenge.goalValue,
+      startDate: challenge.startDate,
+      endDate: challenge.endDate,
+      status: challenge.status,
+      creatorName: challenge.creator.name || challenge.creator.username || '用户',
+      participants: challenge.participants.map((p) => ({
+        userId: p.userId,
+        name: p.user.name || p.user.username || '用户',
+        progress: p.progress,
+        joinedAt: p.joinedAt,
+      })),
+    });
+  } catch (error) {
+    console.error('[GET /api/social/challenges/[id]]', error);
+    return NextResponse.json({ error: 'Failed to fetch challenge' }, { status: 500 });
   }
-
-  return NextResponse.json({
-    id: challenge.id,
-    title: challenge.title,
-    description: challenge.description,
-    type: challenge.type,
-    goalValue: challenge.goalValue,
-    startDate: challenge.startDate,
-    endDate: challenge.endDate,
-    status: challenge.status,
-    creatorName: challenge.creator.name || challenge.creator.username || '用户',
-    participants: challenge.participants.map((p) => ({
-      userId: p.userId,
-      name: p.user.name || p.user.username || '用户',
-      progress: p.progress,
-      joinedAt: p.joinedAt,
-    })),
-  });
 }

@@ -13,42 +13,46 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ user: null });
   }
 
-  const target = await prisma.user.findFirst({
-    where: { OR: [{ username: q }, { inviteCode: q }] },
-    select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, bio: true },
-  });
+  try {
+    const target = await prisma.user.findFirst({
+      where: { OR: [{ username: q }, { inviteCode: q }] },
+      select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, bio: true },
+    });
 
-  if (!target) return NextResponse.json({ user: null });
-  if (target.id === userId) return NextResponse.json({ user: null, self: true });
+    if (!target) return NextResponse.json({ user: null });
+    if (target.id === userId) return NextResponse.json({ user: null, self: true });
 
-  // Check existing friendship status
-  const existing = await prisma.friendship.findFirst({
-    where: {
-      OR: [
-        { requesterId: userId, addresseeId: target.id },
-        { requesterId: target.id, addresseeId: userId },
-      ],
-    },
-    select: { status: true, requesterId: true },
-  });
+    const existing = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { requesterId: userId, addresseeId: target.id },
+          { requesterId: target.id, addresseeId: userId },
+        ],
+      },
+      select: { status: true, requesterId: true },
+    });
 
-  let relationStatus: 'none' | 'friends' | 'pending_sent' | 'pending_received' = 'none';
-  if (existing) {
-    if (existing.status === 'ACCEPTED') relationStatus = 'friends';
-    else if (existing.status === 'PENDING') {
-      relationStatus = existing.requesterId === userId ? 'pending_sent' : 'pending_received';
+    let relationStatus: 'none' | 'friends' | 'pending_sent' | 'pending_received' = 'none';
+    if (existing) {
+      if (existing.status === 'ACCEPTED') relationStatus = 'friends';
+      else if (existing.status === 'PENDING') {
+        relationStatus = existing.requesterId === userId ? 'pending_sent' : 'pending_received';
+      }
     }
-  }
 
-  return NextResponse.json({
-    user: {
-      id: target.id,
-      name: target.name || target.username || '用户',
-      username: target.username,
-      avatarEmoji: target.avatarEmoji || '🏃',
-      avatarImage: target.avatarImage || null,
-      bio: target.bio,
-    },
-    relationStatus,
-  });
+    return NextResponse.json({
+      user: {
+        id: target.id,
+        name: target.name || target.username || '用户',
+        username: target.username,
+        avatarEmoji: target.avatarEmoji || '🏃',
+        avatarImage: target.avatarImage || null,
+        bio: target.bio,
+      },
+      relationStatus,
+    });
+  } catch (error) {
+    console.error('[GET /api/social/users/search]', error);
+    return NextResponse.json({ error: 'Failed to search users' }, { status: 500 });
+  }
 }

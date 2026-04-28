@@ -8,10 +8,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
-  const post = await prisma.post.findUnique({ where: { id: params.id } });
-  if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (post.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  try {
+    const post = await prisma.post.findUnique({ where: { id: params.id } });
+    if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (post.userId !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  await prisma.post.delete({ where: { id: params.id } });
-  return NextResponse.json({ ok: true });
+    await prisma.post.delete({ where: { id: params.id } });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('[DELETE /api/social/moments/[id]]', error);
+    return NextResponse.json({ error: 'Failed to delete moment' }, { status: 500 });
+  }
 }

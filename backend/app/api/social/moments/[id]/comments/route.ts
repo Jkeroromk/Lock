@@ -18,20 +18,25 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
 
-  const comments = await prisma.postComment.findMany({
-    where: { postId: params.id },
-    include: { user: { select: USER_SELECT } },
-    orderBy: { createdAt: 'asc' },
-  });
+  try {
+    const comments = await prisma.postComment.findMany({
+      where: { postId: params.id },
+      include: { user: { select: USER_SELECT } },
+      orderBy: { createdAt: 'asc' },
+    });
 
-  return NextResponse.json(
-    comments.map((c) => ({
-      id: c.id,
-      content: c.content,
-      createdAt: c.createdAt,
-      user: formatUser(c.user),
-    }))
-  );
+    return NextResponse.json(
+      comments.map((c) => ({
+        id: c.id,
+        content: c.content,
+        createdAt: c.createdAt,
+        user: formatUser(c.user),
+      }))
+    );
+  } catch (error) {
+    console.error('[GET /api/social/moments/[id]/comments]', error);
+    return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 });
+  }
 }
 
 // POST /api/social/moments/[id]/comments — add a comment
@@ -40,23 +45,28 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
-  const post = await prisma.post.findUnique({ where: { id: params.id } });
-  if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
   const { content } = await request.json();
   if (!content || typeof content !== 'string' || !content.trim()) {
     return NextResponse.json({ error: 'Content required' }, { status: 400 });
   }
 
-  const comment = await prisma.postComment.create({
-    data: { postId: params.id, userId, content: content.trim() },
-    include: { user: { select: USER_SELECT } },
-  });
+  try {
+    const post = await prisma.post.findUnique({ where: { id: params.id } });
+    if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  return NextResponse.json({
-    id: comment.id,
-    content: comment.content,
-    createdAt: comment.createdAt,
-    user: formatUser(comment.user),
-  }, { status: 201 });
+    const comment = await prisma.postComment.create({
+      data: { postId: params.id, userId, content: content.trim() },
+      include: { user: { select: USER_SELECT } },
+    });
+
+    return NextResponse.json({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      user: formatUser(comment.user),
+    }, { status: 201 });
+  } catch (error) {
+    console.error('[POST /api/social/moments/[id]/comments]', error);
+    return NextResponse.json({ error: 'Failed to add comment' }, { status: 500 });
+  }
 }
