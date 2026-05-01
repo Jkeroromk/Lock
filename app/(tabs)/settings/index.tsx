@@ -221,6 +221,15 @@ export default function SettingsScreen() {
             onPress={() => router.push('/(tabs)/settings/pricing')}
           />
 
+          {user?.plan && user.plan !== 'FREE' && (
+            <SettingItem
+              icon="storefront-outline"
+              title={t('settings.manageSubscription' as any)}
+              description={t('settings.manageSubscriptionDescription' as any)}
+              onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
+            />
+          )}
+
           <SettingItem
             icon="download-outline"
             title={t('settings.exportData')}

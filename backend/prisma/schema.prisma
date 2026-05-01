@@ -45,6 +45,7 @@ model User {
   posts                 Post[]
   postLikes             PostLike[]
   postComments          PostComment[]
+  postReports           PostReport[]
 
   @@map("users")
 }
@@ -146,6 +147,7 @@ model Post {
   user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes    PostLike[]
   comments PostComment[]
+  reports  PostReport[]
 
   @@index([userId])
   @@index([createdAt])
@@ -180,6 +182,22 @@ model PostComment {
   @@index([postId])
   @@index([userId])
   @@map("post_comments")
+}
+
+model PostReport {
+  id        String   @id @default(uuid()) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  reporterId String  @map("reporter_id")
+  reason    String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, reporterId])
+  @@index([postId])
+  @@index([reporterId])
+  @@map("post_reports")
 }
 
 model WeightRecord {

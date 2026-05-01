@@ -189,3 +189,7 @@ export const addMomentComment = async (id: string, content: string): Promise<Mom
   const res = await api.post<MomentComment>(`/api/social/moments/${id}/comments`, { content });
   return res.data;
 };
+
+export const reportMoment = async (postId: string, reason: string): Promise<void> => {
+  await api.post('/api/social/report', { postId, reason });
+};

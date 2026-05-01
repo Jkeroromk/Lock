@@ -148,8 +148,8 @@ export default function AboutScreen() {
               >
                 <Image
                   source={icon === 'dark'
-                    ? require('@/assets/dark-lockin.jpg')
-                    : require('@/assets/white-lockin.jpg')}
+                    ? require('@/assets/dark-lockin.png')
+                    : require('@/assets/white-lockin.png')}
                   style={{ width: 60, height: 60, borderRadius: 14 }}
                 />
                 <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textPrimary }}>
