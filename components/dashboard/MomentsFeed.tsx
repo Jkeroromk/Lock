@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTranslation } from '@/i18n';
-import { Moment, MomentComment, toggleMomentLike, deleteMoment, addMomentComment, fetchMomentComments } from '@/services/api';
+import { Moment, MomentComment, toggleMomentLike, deleteMoment, addMomentComment, fetchMomentComments, reportMoment } from '@/services/api';
 
 interface Props {
   items: Moment[];
@@ -107,6 +107,32 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
     }
   };
 
+  const handleShowOwnOptions = () => {
+    Alert.alert(t('moments.moreOptions' as any), undefined, [
+      { text: t('moments.delete' as any), style: 'destructive', onPress: handleDelete },
+      { text: t('settings.cancel' as any), style: 'cancel' },
+    ]);
+  };
+
+  const handleShowReportOptions = () => {
+    Alert.alert(t('moments.reportReason' as any), undefined, [
+      { text: t('moments.reportReasonSpam' as any), onPress: () => handleReport(t('moments.reportReasonSpam' as any)) },
+      { text: t('moments.reportReasonInappropriate' as any), onPress: () => handleReport(t('moments.reportReasonInappropriate' as any)) },
+      { text: t('moments.reportReasonHarassment' as any), onPress: () => handleReport(t('moments.reportReasonHarassment' as any)) },
+      { text: t('moments.reportReasonOther' as any), onPress: () => handleReport(t('moments.reportReasonOther' as any)) },
+      { text: t('settings.cancel' as any), style: 'cancel' },
+    ]);
+  };
+
+  const handleReport = async (reason: string) => {
+    try {
+      await reportMoment(item.id, reason);
+      Alert.alert('', t('moments.reportSuccess' as any));
+    } catch {
+      Alert.alert('', t('moments.reportFailed' as any));
+    }
+  };
+
   const handleViewAllComments = async () => {
     if (allComments !== null) {
       setAllComments(null);
@@ -149,11 +175,12 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
             {timeAgo(item.createdAt, t)}
           </Text>
         </View>
-        {item.isMe && (
-          <TouchableOpacity onPress={handleDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          onPress={item.isMe ? handleShowOwnOptions : handleShowReportOptions}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
+        </TouchableOpacity>
       </View>
 
       {/* Content */}

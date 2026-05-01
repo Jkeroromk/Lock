@@ -49,7 +49,8 @@ function ClerkTokenBridge() {
       identifyUser(userId);
       // 登录后注册推送令牌（异步，不阻塞 UI）
       registerAndSavePushToken().catch(() => {});
-    } else {
+    } else if (isSignedIn === false) {
+      // Only reset when explicitly signed out, not while Clerk is still loading
       resetUser();
     }
   }, [isSignedIn, userId]);
