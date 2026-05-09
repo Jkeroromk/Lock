@@ -17,7 +17,8 @@
       "Bash(eas --version)",
       "Bash(eas whoami:*)",
       "Bash(eas build:configure --platform all)",
-      "Bash(eas init:*)"
+      "Bash(eas init:*)",
+      "Bash(git fetch *)"
     ]
   },
   "enabledMcpjsonServers": []

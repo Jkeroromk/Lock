@@ -9,7 +9,7 @@
     "jsEngine": "hermes",
     "icon": "./assets/dark-lockin.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/dark-lockin.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -22,7 +22,7 @@
       "buildNumber": "1",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "NSHealthShareUsageDescription": "Lock reads your step count and active energy to show your daily activity alongside nutrition.",
+        "NSHealthShareUsageDescription": "Lock reads your step count and active energy to display daily activity and sync it to your personal account.",
         "NSHealthUpdateUsageDescription": "Lock writes workout and nutrition data to Apple Health to keep your records complete.",
         "NSCameraUsageDescription": "Lock uses the camera to photograph meals for AI-powered calorie analysis.",
         "NSPhotoLibraryUsageDescription": "Lock accesses your photo library to choose a meal photo or profile picture.",
@@ -32,7 +32,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/dark-lockin.png",
         "backgroundColor": "#000000"
       },
       "package": "com.jkeroro.lockin",
@@ -45,7 +45,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/dark-lockin.png"
     },
     "plugins": [
       "expo-router",

@@ -212,7 +212,7 @@ const enUS = {
     privacyControls: 'Privacy Controls',
     privacyControlsDescription: 'Allow anonymous data for personalization',
     healthConnections: 'Health Connections',
-    healthConnectionsDescription: 'Sync Apple Health / Google Fit',
+    healthConnectionsDescription: 'Sync steps & energy from Apple Health / Google Fit (data stored on your account)',
     connectedTo: 'Connected to', notConnected: 'Not connected',
     connectionEnabled: 'Health data sync enabled', connectionDisabled: 'Health data sync disabled',
     accountSecurity: 'Account & Security',

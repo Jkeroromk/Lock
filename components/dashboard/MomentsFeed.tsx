@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
@@ -87,6 +87,33 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
             }
           },
         },
+      ]
+    );
+  };
+
+  const handleReport = () => {
+    const reasons = [
+      t('moments.reportSpam' as any),
+      t('moments.reportInappropriate' as any),
+      t('moments.reportHarassment' as any),
+      t('moments.reportOther' as any),
+    ] as string[];
+    Alert.alert(
+      t('moments.report' as any),
+      t('moments.reportConfirm' as any),
+      [
+        ...reasons.map((reason) => ({
+          text: reason,
+          onPress: async () => {
+            try {
+              await reportMoment(item.id, reason);
+              Alert.alert('', t('moments.reportSuccess' as any));
+            } catch {
+              Alert.alert('', t('moments.reportFailed' as any));
+            }
+          },
+        })),
+        { text: t('settings.cancel' as any), style: 'cancel' as const },
       ]
     );
   };

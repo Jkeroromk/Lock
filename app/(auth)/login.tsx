@@ -142,13 +142,9 @@ export default function LoginScreen() {
     if (sessionId && result.setActive) {
       await result.setActive({ session: sessionId }); setTokenGetter(getToken); await onAuthSuccess(); return;
     }
-    if (result.signUp?.status === 'missing_requirements') {
-      const missing = result.signUp.missingFields?.join(', ') ?? 'unknown';
-      Alert.alert('Config Error', `Missing: ${missing}\nClerk Dashboard → Configure → set Username/Phone to Optional.`); return;
+    if (result.signUp?.status === 'missing_requirements' || !sessionId) {
+      Alert.alert(t('auth.error'), t('auth.loginFailed'));
     }
-    const signUpStatus = result.signUp?.status ?? 'none';
-    const signInStatus = result.signIn?.status ?? 'none';
-    Alert.alert('OAuth Error', `No session.\nsignUp:${signUpStatus}\nsignIn:${signInStatus}`);
   };
 
   const isOAuthCancel = (err: any) => {

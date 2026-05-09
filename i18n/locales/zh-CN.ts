@@ -261,7 +261,7 @@ const zhCN = {
     privacyControls: '隐私控制',
     privacyControlsDescription: '允许匿名数据用于个性化体验',
     healthConnections: '健康数据源',
-    healthConnectionsDescription: '同步 Apple Health / Google Fit',
+    healthConnectionsDescription: '同步 Apple Health / Google Fit 的步数与消耗热量（数据将保存至您的账户）',
     connectedTo: '已连接至',
     notConnected: '未连接',
     connectionEnabled: '健康数据同步已启用',
