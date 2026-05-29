@@ -37,12 +37,10 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    console.error('Sync health error:', error);
-    return NextResponse.json(
-      { error: error.message || '同步健康数据失败' },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : '同步健康数据失败';
+    console.error('Sync health error:', err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'desc',
       },
+      take: 100,
     });
 
     // 计算总卡路里
@@ -36,12 +37,10 @@ export async function GET(request: NextRequest) {
       totalCalories,
       meals: meals || [],
     });
-  } catch (error: any) {
-    console.error('Today API error:', error);
-    return NextResponse.json(
-      { error: error.message || '获取今日数据失败' },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : '获取今日数据失败';
+    console.error('Today API error:', err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

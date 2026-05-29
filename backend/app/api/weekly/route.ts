@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'asc',
       },
+      take: 500,
     });
 
     // 按日期分组并计算每日数据
@@ -48,12 +49,10 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(weeklyData);
-  } catch (error: any) {
-    console.error('Weekly API error:', error);
-    return NextResponse.json(
-      { error: error.message || '获取周数据失败' },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : '获取周数据失败';
+    console.error('Weekly API error:', err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
