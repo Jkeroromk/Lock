@@ -325,7 +325,7 @@ const zhTW = {
     title: '關於 Lock', version: '版本',
     description: 'Lock 是一款專注於健身與飲食管理的智能 App，幫助你追蹤每日卡路里、記錄餐食、監測健康數據，與朋友共同挑戰健康目標。',
     legal: '法律信息', privacyPolicy: '隱私政策', termsOfService: '服務條款',
-    contact: '聯繫我們', contactEmail: 'support@lock-app.com',
+    contact: '聯繫我們', contactEmail: 'support@jkeroro.com',
     madeWith: '用 ❤️ 打造', copyright: '© 2026 Lock. 保留所有權利。',
   },
   pricing: {

@@ -386,7 +386,7 @@ const enUS = {
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
     contact: 'Contact Us',
-    contactEmail: 'support@lock-app.com',
+    contactEmail: 'support@jkeroro.com',
     madeWith: 'Made with ❤️',
     copyright: '© 2026 Lock. All rights reserved.',
   },
