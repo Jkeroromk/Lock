@@ -481,7 +481,7 @@ const zhCN = {
     privacyPolicy: '隐私政策',
     termsOfService: '服务条款',
     contact: '联系我们',
-    contactEmail: 'support@lock-app.com',
+    contactEmail: 'support@jkeroro.com',
     madeWith: '用 ❤️ 打造',
     copyright: '© 2026 Lock. 保留所有权利。',
   },

@@ -340,7 +340,7 @@ const koKR = {
     title: 'Lock 정보', version: '버전',
     description: 'Lock은 일일 칼로리 추적, 식사 기록, 건강 데이터 모니터링, 친구와의 건강 목표 도전을 지원하는 피트니스 & 식단 관리 앱입니다.',
     legal: '법적 정보', privacyPolicy: '개인정보 처리방침', termsOfService: '이용약관',
-    contact: '문의하기', contactEmail: 'support@lock-app.com',
+    contact: '문의하기', contactEmail: 'support@jkeroro.com',
     madeWith: '❤️ 로 만들었습니다', copyright: '© 2026 Lock. All rights reserved.',
   },
   pricing: {
