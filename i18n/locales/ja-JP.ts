@@ -331,7 +331,7 @@ const jaJP = {
     title: 'Lockについて', version: 'バージョン',
     description: 'Lockは、毎日のカロリー追跡・食事記録・健康データ監視・友達との目標チャレンジを支援するフィットネス＆食事管理アプリです。',
     legal: '法的情報', privacyPolicy: 'プライバシーポリシー', termsOfService: '利用規約',
-    contact: 'お問い合わせ', contactEmail: 'support@lock-app.com',
+    contact: 'お問い合わせ', contactEmail: 'support@jkeroro.com',
     madeWith: '❤️ を込めて制作', copyright: '© 2026 Lock. All rights reserved.',
   },
   pricing: {
