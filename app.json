@@ -21,9 +21,12 @@
       "bundleIdentifier": "com.jkeroro.lockin",
       "buildNumber": "1",
       "usesAppleSignIn": true,
+      "entitlements": {
+        "com.apple.developer.healthkit": true
+      },
       "infoPlist": {
         "NSHealthShareUsageDescription": "Lock reads your step count and active energy to display daily activity and sync it to your personal account.",
-        "NSHealthUpdateUsageDescription": "Lock writes workout and nutrition data to Apple Health to keep your records complete.",
+        "NSHealthUpdateUsageDescription": "Lock reads your step count and active energy from Apple Health to display your daily activity.",
         "NSCameraUsageDescription": "Lock uses the camera to photograph meals for AI-powered calorie analysis.",
         "NSPhotoLibraryUsageDescription": "Lock accesses your photo library to choose a meal photo or profile picture.",
         "NSPhotoLibraryAddUsageDescription": "Lock saves meal photos to your photo library.",
