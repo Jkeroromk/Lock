@@ -244,10 +244,10 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded, onUserBlocke
           <Ionicons
             name={item.isLiked ? 'heart' : 'heart-outline'}
             size={18}
-            color={item.isLiked ? '#EF4444' : colors.textSecondary}
+            color={item.isLiked ? colors.danger : colors.textSecondary}
           />
           {item.likesCount > 0 && (
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: item.isLiked ? '#EF4444' : colors.textSecondary }}>
+            <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: item.isLiked ? colors.danger : colors.textSecondary }}>
               {item.likesCount}
             </Text>
           )}

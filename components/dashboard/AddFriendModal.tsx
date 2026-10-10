@@ -118,8 +118,8 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
 
   const relationLabel = (): { text: string; icon: string; color: string } | null => {
     if (sent || relationStatus === 'pending_sent') return { text: t('dashboard.requestSent' as any), icon: 'time-outline', color: colors.textSecondary };
-    if (relationStatus === 'friends') return { text: t('dashboard.alreadyFriends' as any), icon: 'checkmark-circle', color: '#10B981' };
-    if (relationStatus === 'pending_received') return { text: t('dashboard.pendingYourApproval' as any), icon: 'person-add', color: '#F59E0B' };
+    if (relationStatus === 'friends') return { text: t('dashboard.alreadyFriends' as any), icon: 'checkmark-circle', color: colors.textPrimary };
+    if (relationStatus === 'pending_received') return { text: t('dashboard.pendingYourApproval' as any), icon: 'person-add', color: colors.textPrimary };
     return null;
   };
 
@@ -220,11 +220,11 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
               {/* Error */}
               {error ? (
                 <View style={{ marginBottom: DIMENSIONS.SPACING }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: '#EF4444', fontWeight: '600', marginBottom: isLimitError ? DIMENSIONS.SPACING * 0.5 : 0 }}>{error}</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.danger, fontWeight: '600', marginBottom: isLimitError ? DIMENSIONS.SPACING * 0.5 : 0 }}>{error}</Text>
                   {isLimitError && (
-                    <TouchableOpacity onPress={() => { onClose(); router.push('/(tabs)/settings/pricing'); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: DIMENSIONS.SPACING * 0.4, paddingHorizontal: DIMENSIONS.SPACING * 0.8, backgroundColor: '#F59E0B22', borderRadius: 8, alignSelf: 'flex-start' }}>
-                      <Ionicons name="star" size={12} color="#F59E0B" />
-                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800', color: '#F59E0B' }}>{t('dashboard.upgradePro' as any)}</Text>
+                    <TouchableOpacity onPress={() => { onClose(); router.push('/(tabs)/settings/pricing'); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: DIMENSIONS.SPACING * 0.4, paddingHorizontal: DIMENSIONS.SPACING * 0.8, backgroundColor: colors.accent, borderRadius: 8, alignSelf: 'flex-start' }}>
+                      <Ionicons name="star" size={12} color={colors.onAccent} />
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800', color: colors.onAccent }}>{t('dashboard.upgradePro' as any)}</Text>
                     </TouchableOpacity>
                   )}
                 </View>

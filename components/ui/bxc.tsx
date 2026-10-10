@@ -1,9 +1,11 @@
 /**
  * Lock "B×C" design primitives. Build screens from these so the look stays
- * consistent: Card (default / hero / inverse), Ring, Bar, Chip, Sticker, Label.
+ * consistent: Card (default / hero / inverse), Ring, Bar, Chip, Sticker, Label,
+ * Button, IconButton, ScreenHeader, Segmented, Corners.
  */
 import { ReactNode } from 'react';
-import { View, TouchableOpacity, type ViewStyle, type StyleProp, type TouchableOpacityProps } from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, type ViewStyle, type StyleProp, type TouchableOpacityProps } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { Text } from '@/components/ui/Text';
 import { FONTS } from '@/constants/fonts';
@@ -173,7 +175,7 @@ export function Chip({ label, selected, onPress, style, ...rest }: {
         style,
       ]}
     >
-      <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 13, color: selected ? c.backgroundPrimary : c.textPrimary }}>
+      <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 13, color: selected ? c.backgroundPrimary : c.textPrimary }}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -200,6 +202,164 @@ export function Sticker({ children, background, color, rotate = -4, style }: {
       {typeof children === 'string' ? (
         <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 12, color: color ?? c.onAccent }}>{children}</Text>
       ) : children}
+    </View>
+  );
+}
+
+// ── Button ─────────────────────────────────────────────────────────────────
+type ButtonVariant = 'primary' | 'solid' | 'outline';
+
+/**
+ * primary: yellow with ink stroke (the one main action on a screen)
+ * solid:   ink on paper / paper on ink
+ * outline: stroked, transparent
+ */
+export function Button({ label, onPress, variant = 'primary', icon, loading, disabled, style, accessibilityLabel }: {
+  label: string;
+  onPress?: () => void;
+  variant?: ButtonVariant;
+  icon?: string;
+  loading?: boolean;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
+}) {
+  const c = useTheme();
+  const palette = {
+    primary: { bg: c.accent, border: c.ink, fg: c.onAccent },
+    solid: { bg: c.textPrimary, border: c.textPrimary, fg: c.backgroundPrimary },
+    outline: { bg: 'transparent', border: c.borderPrimary, fg: c.textPrimary },
+  }[variant];
+  const inactive = disabled || loading;
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={inactive}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled: !!inactive, busy: !!loading }}
+      style={[{
+        minHeight: 52, borderRadius: 14, borderWidth: STROKE.control, borderColor: palette.border,
+        backgroundColor: palette.bg, paddingHorizontal: 16,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+        opacity: disabled && !loading ? 0.45 : 1,
+      }, style]}
+    >
+      {loading ? (
+        <ActivityIndicator color={palette.fg} />
+      ) : (
+        <>
+          {icon ? <Ionicons name={icon as any} size={19} color={palette.fg} /> : null}
+          <Text style={{ fontSize: 17, fontWeight: '800', color: palette.fg }}>{label}</Text>
+        </>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+// ── IconButton ─────────────────────────────────────────────────────────────
+export function IconButton({ icon, onPress, accessibilityLabel, filled, style }: {
+  icon: string;
+  onPress?: () => void;
+  accessibilityLabel: string;
+  filled?: boolean;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const c = useTheme();
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.75}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={[{
+        width: 44, height: 44, borderRadius: RADIUS.control, borderWidth: STROKE.control,
+        borderColor: filled ? c.ink : c.borderPrimary, backgroundColor: filled ? c.accent : 'transparent',
+        alignItems: 'center', justifyContent: 'center',
+      }, style]}
+    >
+      <Ionicons name={icon as any} size={20} color={filled ? c.onAccent : c.textPrimary} />
+    </TouchableOpacity>
+  );
+}
+
+// ── ScreenHeader ───────────────────────────────────────────────────────────
+/** Big tab-screen title, optional mono caption and a right-hand slot. */
+export function ScreenHeader({ title, caption, right, style }: {
+  title: string;
+  caption?: string;
+  right?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const c = useTheme();
+  return (
+    <View style={[{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 8, marginBottom: 16 }, style]}>
+      <View style={{ flex: 1 }}>
+        <Text accessibilityRole="header" style={{ fontSize: 40, fontWeight: '800', letterSpacing: -1.6, lineHeight: 42, color: c.textPrimary }}>
+          {title}
+        </Text>
+        {caption ? (
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 8, textTransform: 'uppercase' }}>
+            {caption}
+          </Text>
+        ) : null}
+      </View>
+      {right}
+    </View>
+  );
+}
+
+// ── Segmented ──────────────────────────────────────────────────────────────
+/** Equal-width row of chips; exactly one selected. `badge` adds a yellow dot. */
+export function Segmented<K extends string>({ options, value, onChange, style }: {
+  options: { key: K; label: string; badge?: boolean }[];
+  value: K;
+  onChange: (key: K) => void;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const c = useTheme();
+  return (
+    <View style={[{ flexDirection: 'row', gap: 6 }, style]} accessibilityRole="tablist">
+      {options.map((o) => (
+        <View key={o.key} style={{ flex: 1 }}>
+          <Chip
+            label={o.label.toUpperCase()}
+            selected={o.key === value}
+            onPress={() => onChange(o.key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: o.key === value }}
+            style={{ paddingHorizontal: 4 }}
+          />
+          {o.badge ? (
+            <View pointerEvents="none" style={{
+              position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: 6,
+              backgroundColor: c.accent, borderWidth: 2, borderColor: c.ink,
+            }} />
+          ) : null}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// ── Corners ────────────────────────────────────────────────────────────────
+/** Camera-viewfinder corner brackets drawn over a box (pointerEvents none). */
+export function Corners({ color, inset = 12, size = 30, stroke = 4 }: {
+  color?: string;
+  inset?: number;
+  size?: number;
+  stroke?: number;
+}) {
+  const c = useTheme();
+  const col = color ?? c.accent;
+  const base = { position: 'absolute' as const, width: size, height: size, borderColor: col };
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <View style={[base, { top: inset, left: inset, borderTopWidth: stroke, borderLeftWidth: stroke, borderTopLeftRadius: 12 }]} />
+      <View style={[base, { top: inset, right: inset, borderTopWidth: stroke, borderRightWidth: stroke, borderTopRightRadius: 12 }]} />
+      <View style={[base, { bottom: inset, left: inset, borderBottomWidth: stroke, borderLeftWidth: stroke, borderBottomLeftRadius: 12 }]} />
+      <View style={[base, { bottom: inset, right: inset, borderBottomWidth: stroke, borderRightWidth: stroke, borderBottomRightRadius: 12 }]} />
     </View>
   );
 }

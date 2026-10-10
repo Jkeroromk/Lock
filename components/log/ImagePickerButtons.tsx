@@ -1,9 +1,9 @@
-import { View, TouchableOpacity } from 'react-native';
-import { Text } from '@/components/ui/Text';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Text } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { Button, Corners, RADIUS, STROKE } from '@/components/ui/bxc';
 
 interface Props {
   mode: 'photo' | 'label';
@@ -11,42 +11,35 @@ interface Props {
   onPickImage: () => void;
 }
 
+/** Empty state for photo / label modes: a viewfinder card plus the two ways in. */
 export default function ImagePickerButtons({ mode, onTakePhoto, onPickImage }: Props) {
-  const colors = useTheme();
+  const c = useTheme();
   const { t } = useTranslation();
+  const isLabel = mode === 'label';
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View>
       <View style={{
-        width: DIMENSIONS.SCREEN_WIDTH * 0.28, height: DIMENSIONS.SCREEN_WIDTH * 0.28,
-        borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.14,
-        alignItems: 'center', justifyContent: 'center',
-        marginBottom: DIMENSIONS.SPACING * 1.5,
-        backgroundColor: colors.cardBackground, borderWidth: 2, borderColor: colors.borderPrimary,
+        height: 300, borderRadius: RADIUS.card, borderWidth: STROKE.card, borderColor: c.borderPrimary,
+        backgroundColor: c.cardBackground, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28,
       }}>
-        <Ionicons name={mode === 'label' ? 'reader-outline' : 'camera-outline'} size={TYPOGRAPHY.iconXL} color={colors.textPrimary} />
+        <Corners />
+        <View style={{
+          width: 76, height: 76, borderRadius: 24, backgroundColor: c.accent, borderWidth: 2, borderColor: c.ink,
+          alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }],
+        }}>
+          <Ionicons name={isLabel ? 'reader-outline' : 'camera-outline'} size={34} color={c.onAccent} />
+        </View>
+        <Text style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.5, color: c.textPrimary, marginTop: 18, textAlign: 'center' }}>
+          {isLabel ? t('log.labelMode' as any) : t('log.startLogging')}
+        </Text>
+        <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: 6, textAlign: 'center' }}>
+          {isLabel ? t('log.labelDesc' as any) : t('log.takeOrSelect')}
+        </Text>
       </View>
 
-      <Text style={{ fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.4, textAlign: 'center' }}>
-        {mode === 'label' ? t('log.labelMode' as any) : t('log.startLogging')}
-      </Text>
-      <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textSecondary, marginBottom: DIMENSIONS.SPACING * 2, textAlign: 'center', paddingHorizontal: DIMENSIONS.SPACING * 2, lineHeight: TYPOGRAPHY.bodyS * 1.5 }}>
-        {mode === 'label' ? t('log.labelDesc' as any) : t('log.takeOrSelect')}
-      </Text>
-
-      <TouchableOpacity onPress={onTakePhoto} activeOpacity={0.8} style={{ borderRadius: 24, paddingVertical: DIMENSIONS.SPACING * 1.2, paddingHorizontal: DIMENSIONS.SPACING * 2, alignItems: 'center', justifyContent: 'center', marginBottom: DIMENSIONS.SPACING * 0.8, minHeight: 64, width: '100%', backgroundColor: colors.textPrimary, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 16, elevation: 8 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
-          <Ionicons name="camera" size={TYPOGRAPHY.titleM} color={colors.backgroundPrimary} />
-          <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.backgroundPrimary }}>{t('log.takePhoto')}</Text>
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={onPickImage} activeOpacity={0.8} style={{ borderRadius: 24, paddingVertical: DIMENSIONS.SPACING * 1.2, paddingHorizontal: DIMENSIONS.SPACING * 2, alignItems: 'center', justifyContent: 'center', minHeight: 64, width: '100%', backgroundColor: colors.cardBackground, borderWidth: 2, borderColor: colors.borderPrimary }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
-          <Ionicons name="images" size={TYPOGRAPHY.titleM} color={colors.textPrimary} />
-          <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>{t('log.selectFromAlbum')}</Text>
-        </View>
-      </TouchableOpacity>
+      <Button label={t('log.takePhoto')} icon="camera" onPress={onTakePhoto} style={{ marginTop: 14 }} />
+      <Button label={t('log.selectFromAlbum')} icon="images-outline" variant="outline" onPress={onPickImage} style={{ marginTop: 8 }} />
     </View>
   );
 }

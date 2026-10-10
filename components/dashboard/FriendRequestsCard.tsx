@@ -55,10 +55,10 @@ export default function FriendRequestsCard({ requests, onUpdate }: FriendRequest
         </Text>
         <View style={{
           marginLeft: DIMENSIONS.SPACING * 0.6,
-          backgroundColor: '#EF4444', borderRadius: 10,
+          backgroundColor: colors.accent, borderRadius: 10,
           paddingHorizontal: 6, paddingVertical: 2,
         }}>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '900', color: '#fff' }}>
+          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '900', color: colors.onAccent }}>
             {requests.length}
           </Text>
         </View>

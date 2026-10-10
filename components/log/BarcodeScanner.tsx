@@ -1,26 +1,29 @@
-import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { FONTS } from '@/constants/fonts';
+import { Button, Corners, RADIUS, STROKE } from '@/components/ui/bxc';
 
 interface Props {
   onScanned: (code: string) => void;
 }
 
+const HEIGHT = 300;
+
 export default function BarcodeScanner({ onScanned }: Props) {
-  const colors = useTheme();
+  const c = useTheme();
   const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const scannedRef = useRef(false);
 
   if (!permission) {
     return (
-      <View style={{ height: DIMENSIONS.SCREEN_WIDTH * 0.7, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.textPrimary} />
+      <View style={{ height: HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={c.textPrimary} />
       </View>
     );
   }
@@ -28,41 +31,31 @@ export default function BarcodeScanner({ onScanned }: Props) {
   if (!permission.granted) {
     return (
       <View style={{
-        borderRadius: 24, padding: DIMENSIONS.SPACING * 2,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 1, borderColor: colors.borderPrimary,
-        alignItems: 'center',
+        borderRadius: RADIUS.card, borderWidth: STROKE.card, borderColor: c.borderPrimary,
+        backgroundColor: c.cardBackground, padding: 24, alignItems: 'center',
       }}>
         <View style={{
-          width: 60, height: 60, borderRadius: 18,
-          backgroundColor: colors.cardBackgroundSecondary,
-          alignItems: 'center', justifyContent: 'center', marginBottom: DIMENSIONS.SPACING,
+          width: 64, height: 64, borderRadius: 20, backgroundColor: c.accent, borderWidth: 2, borderColor: c.ink,
+          alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }],
         }}>
-          <Ionicons name="camera-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
+          <Ionicons name="barcode-outline" size={30} color={c.onAccent} />
         </View>
-        <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary, marginBottom: 6 }}>
+        <Text style={{ fontSize: 20, fontWeight: '800', color: c.textPrimary, marginTop: 16 }}>
           {t('log.cameraPermissionTitle' as any)}
         </Text>
-        <Text style={{ fontSize: TYPOGRAPHY.bodyS, color: colors.textSecondary, textAlign: 'center', marginBottom: DIMENSIONS.SPACING }}>
+        <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, textAlign: 'center', marginTop: 6 }}>
           {t('log.cameraPermissionDesc' as any)}
         </Text>
-        <TouchableOpacity
-          onPress={requestPermission}
-          style={{ paddingHorizontal: DIMENSIONS.SPACING * 1.5, paddingVertical: DIMENSIONS.SPACING * 0.7, borderRadius: 14, backgroundColor: colors.textPrimary }}
-        >
-          <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '800', color: colors.backgroundPrimary }}>
-            {t('log.grantCamera' as any)}
-          </Text>
-        </TouchableOpacity>
+        <Button label={t('log.grantCamera' as any)} onPress={requestPermission} style={{ marginTop: 16, alignSelf: 'stretch' }} />
       </View>
     );
   }
 
   return (
     <View>
-      <View style={{ borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: colors.borderPrimary, marginBottom: DIMENSIONS.SPACING }}>
+      <View style={{ borderRadius: RADIUS.card, overflow: 'hidden', borderWidth: STROKE.card, borderColor: c.borderPrimary, backgroundColor: c.ink }}>
         <CameraView
-          style={{ height: DIMENSIONS.SCREEN_WIDTH * 0.8 }}
+          style={{ height: HEIGHT }}
           barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'qr', 'code39'] }}
           onBarcodeScanned={({ data }) => {
             if (scannedRef.current) return;
@@ -71,14 +64,18 @@ export default function BarcodeScanner({ onScanned }: Props) {
             setTimeout(() => { scannedRef.current = false; }, 3000);
           }}
         />
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-          <View style={{ width: DIMENSIONS.SCREEN_WIDTH * 0.6, height: DIMENSIONS.SCREEN_WIDTH * 0.25, borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 8 }} />
-          <Text style={{ marginTop: DIMENSIONS.SPACING * 0.8, fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.45)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+        <Corners inset={16} />
+        <View pointerEvents="none" style={{ position: 'absolute', left: 28, right: 28, top: HEIGHT / 2 - 1.5, height: 3, borderRadius: 2, backgroundColor: c.accent }} />
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, bottom: 22, alignItems: 'center' }}>
+          <Text style={{
+            fontFamily: FONTS.mono, fontSize: 11, color: c.onAccent, backgroundColor: c.accent,
+            paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, overflow: 'hidden', textTransform: 'uppercase',
+          }}>
             {t('log.aimAtBarcode' as any)}
           </Text>
         </View>
       </View>
-      <Text style={{ textAlign: 'center', fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary, fontWeight: '600' }}>
+      <Text style={{ fontFamily: FONTS.mono, textAlign: 'center', fontSize: 11, color: c.textSecondary, marginTop: 10 }}>
         {t('log.supportedFormats' as any)}
       </Text>
     </View>

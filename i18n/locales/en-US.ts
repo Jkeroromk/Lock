@@ -16,6 +16,7 @@ const enUS = {
     ofGoal: 'of {goal}',
   },
   log: {
+    foodName: 'Food name', photoShort: 'Photo', labelShort: 'Label', barcodeShort: 'Barcode', aiAnalyzed: 'AI analyzed',
     startLogging: 'Start Logging',
     takeOrSelect: 'Take or select meal photos to analyze nutritional information',
     takePhoto: 'Take Photo', selectFromAlbum: 'Select from Album',
@@ -49,6 +50,7 @@ const enUS = {
     extractNutrition: 'Extract Nutrition',
   },
   calendar: {
+    legendHit: 'Goal hit', legendClose: 'Close', legendOk: 'OK', legendLow: 'Low',
     calorieOverview: 'Calorie Progress Overview', weeklyCalories: 'Weekly Calories',
     thisWeek: 'This Week', weeklyNutrition: 'Weekly Nutrition', progress: 'Progress',
     completed: 'Completed (100%+)', good: 'Good (80-100%)', normal: 'Normal (60-80%)',

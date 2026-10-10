@@ -185,7 +185,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
               </View>
 
               {error ? (
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: '#EF4444', marginBottom: DIMENSIONS.SPACING, fontWeight: '600' }}>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.danger, marginBottom: DIMENSIONS.SPACING, fontWeight: '600' }}>
                   {error}
                 </Text>
               ) : null}
