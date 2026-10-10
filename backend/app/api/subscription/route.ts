@@ -1,34 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { refreshUserPlan, RevenueCatNotConfiguredError } from '@/lib/revenuecat';
 
-// POST /api/subscription — sync plan after RevenueCat purchase
-export async function POST(request: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+// POST /api/subscription — re-verify the caller's plan with RevenueCat.
+// The request body is ignored: the plan is always derived server-side from
+// RevenueCat entitlements, never from what the client claims.
+export async function POST() {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
-  const { plan } = await request.json();
-
-  if (!['FREE', 'PRO', 'MAX'].includes(plan)) {
-    return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
-  }
-
   try {
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { plan },
-      select: { id: true, plan: true },
-    });
-    return NextResponse.json(user);
+    const result = await refreshUserPlan(userId);
+    if (!result) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    return NextResponse.json({ id: userId, ...result });
   } catch (error) {
+    if (error instanceof RevenueCatNotConfiguredError) {
+      console.error('[POST /api/subscription] RevenueCat secret key missing');
+      return NextResponse.json({ error: 'Subscription verification unavailable' }, { status: 503 });
+    }
     console.error('[POST /api/subscription]', error);
-    return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to verify subscription' }, { status: 502 });
   }
 }
 
-// GET /api/subscription — get current plan
-export async function GET(request: NextRequest) {
+// GET /api/subscription — get current plan (as last verified)
+export async function GET() {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;

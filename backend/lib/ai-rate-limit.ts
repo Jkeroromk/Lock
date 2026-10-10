@@ -17,7 +17,7 @@ export interface RateLimitDenied {
 /**
  * 检查并扣减用户的每日 AI 调用配额（所有 AI 接口共享同一计数器）。
  * - FREE 用户：每日限 getDailyAiCallLimit() 次
- * - PRO / ENTERPRISE：不限次数
+ * - PRO / MAX：不限次数
  *
  * 采用"先扣后用"策略，防止并发绕过限制。
  */

@@ -26,7 +26,7 @@ model User {
   exerciseFrequency  String?  @map("exercise_frequency")
   expectedTimeframe  String?  @map("expected_timeframe")
   hasCompletedOnboarding Boolean @default(false) @map("has_completed_onboarding")
-  plan         String   @default("FREE") // FREE | PRO | ENTERPRISE
+  plan         String   @default("FREE") // FREE | PRO | MAX — written only from RevenueCat (lib/revenuecat.ts)
   subscription String?  // RevenueCat subscription product ID
   aiCallsToday    Int      @default(0) @map("ai_calls_today")
   aiCallsResetAt  DateTime @default(now()) @map("ai_calls_reset_at") @db.Timestamptz(6)

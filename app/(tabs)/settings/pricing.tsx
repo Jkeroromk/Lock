@@ -60,7 +60,7 @@ export default function PricingScreen() {
       const newPlan = planFromCustomerInfo(info);
       if (newPlan !== 'FREE') {
         setPlan(newPlan);
-        await syncSubscriptionPlan(newPlan);
+        await syncSubscriptionPlan();
         Alert.alert(
           t('pricing.purchaseSuccess' as any),
           t('pricing.purchaseSuccessMsg' as any),
@@ -82,7 +82,7 @@ export default function PricingScreen() {
       const newPlan = planFromCustomerInfo(info);
       if (newPlan !== 'FREE') {
         setPlan(newPlan);
-        await syncSubscriptionPlan(newPlan);
+        await syncSubscriptionPlan();
         Alert.alert(t('pricing.restoreSuccess' as any), t('pricing.restoreSuccessMsg' as any));
       } else {
         Alert.alert(t('pricing.noRestoreFound' as any), t('pricing.noRestoreMsg' as any));
