@@ -15,6 +15,7 @@ const jaJP = {
     ofGoal: '目標 {goal}',
   },
   log: {
+    foodName: '食品名', photoShort: '写真', labelShort: 'ラベル', barcodeShort: 'バーコード', aiAnalyzed: 'AI 解析済み',
     startLogging: '記録を開始',
     takeOrSelect: '食事の写真を撮影または選択して栄養情報を分析',
     takePhoto: '写真を撮る', selectFromAlbum: 'アルバムから選択',
@@ -41,6 +42,7 @@ const jaJP = {
     extractNutrition: '栄養情報を抽出',
   },
   calendar: {
+    legendHit: '達成', legendClose: 'あと少し', legendOk: 'ふつう', legendLow: '不足',
     calorieOverview: 'カロリー進捗概要', weeklyCalories: '週間カロリー',
     thisWeek: '今週', weeklyNutrition: '週間栄養', progress: '進捗',
     completed: '完了 (100%+)', good: '良好 (80-100%)', normal: '普通 (60-80%)',

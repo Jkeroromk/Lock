@@ -15,6 +15,7 @@ const koKR = {
     ofGoal: '목표 {goal}',
   },
   log: {
+    foodName: '음식 이름', photoShort: '사진', labelShort: '라벨', barcodeShort: '바코드', aiAnalyzed: 'AI 분석 완료',
     startLogging: '기록 시작',
     takeOrSelect: '식사 사진을 촬영하거나 선택하여 영양 정보 분석',
     takePhoto: '사진 촬영', selectFromAlbum: '앨범에서 선택',
@@ -41,6 +42,7 @@ const koKR = {
     extractNutrition: '영양 정보 추출',
   },
   calendar: {
+    legendHit: '달성', legendClose: '근접', legendOk: '보통', legendLow: '부족',
     calorieOverview: '칼로리 진행 상황 개요', weeklyCalories: '주간 칼로리',
     thisWeek: '이번 주', weeklyNutrition: '주간 영양', progress: '진행률',
     completed: '완료 (100%+)', good: '양호 (80-100%)', normal: '보통 (60-80%)',

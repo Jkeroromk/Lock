@@ -1,9 +1,10 @@
-import { View, TouchableOpacity } from 'react-native';
+import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { FONTS } from '@/constants/fonts';
+import { Bar, Card, RADIUS, STROKE } from '@/components/ui/bxc';
 
 interface Challenge {
   id: string;
@@ -20,155 +21,42 @@ interface ChallengesListProps {
 
 export default function ChallengesList({ challenges }: ChallengesListProps) {
   const { t } = useTranslation();
-  const colors = useTheme();
+  const c = useTheme();
+
+  if (challenges.length === 0) {
+    return (
+      <View style={{ borderRadius: RADIUS.card, borderWidth: STROKE.card, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, padding: 24, alignItems: 'center', marginBottom: 14 }}>
+        <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: c.accent, borderWidth: 2, borderColor: c.ink, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] }}>
+          <Ionicons name="flag-outline" size={30} color={c.onAccent} />
+        </View>
+        <Text style={{ fontSize: 20, fontWeight: '800', color: c.textPrimary, marginTop: 16, textAlign: 'center' }}>{t('challenge.noChallenges' as any)}</Text>
+        <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, textAlign: 'center', marginTop: 6 }}>{t('challenge.noChallengesHint' as any)}</Text>
+      </View>
+    );
+  }
 
   return (
-    <>
-      {challenges.length === 0 && (
-        <View style={{
-          borderRadius: 24, padding: DIMENSIONS.SPACING * 2,
-          backgroundColor: colors.cardBackground,
-          borderWidth: 2, borderColor: colors.borderPrimary,
-          alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.2,
-        }}>
-          <Ionicons name="flag-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
-          <Text style={{
-            fontSize: TYPOGRAPHY.bodyM, fontWeight: '900',
-            color: colors.textPrimary, marginTop: DIMENSIONS.SPACING * 0.8,
-            marginBottom: DIMENSIONS.SPACING * 0.4,
-          }}>
-            {t('challenge.noChallenges' as any)}
-          </Text>
-          <Text style={{
-            fontSize: TYPOGRAPHY.bodyS, fontWeight: '500',
-            color: colors.textSecondary, textAlign: 'center',
-          }}>
-            {t('challenge.noChallengesHint' as any)}
-          </Text>
-        </View>
-      )}
-
-      {challenges.map((challenge) => (
-        <View 
-          key={challenge.id}
-          style={{ 
-            borderRadius: 20,
-            padding: DIMENSIONS.SPACING * 1.2,
-            marginBottom: DIMENSIONS.SPACING * 1.2,
-            backgroundColor: colors.cardBackground,
-            borderWidth: 2,
-            borderColor: colors.borderPrimary,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-            <View style={{ flex: 1, marginRight: DIMENSIONS.SPACING }}>
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.title,
-                  fontWeight: '900',
-                  color: colors.textPrimary,
-                  marginBottom: DIMENSIONS.SPACING * 0.3,
-                }}
-              >
-                {challenge.title}
+    <View style={{ gap: 12, marginBottom: 14 }}>
+      {challenges.map((ch) => {
+        const done = ch.total > 0 && ch.progress >= ch.total;
+        return (
+          <Card key={ch.id} variant={done ? 'hero' : 'default'} padding={16}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, textTransform: 'uppercase' }}>
+                {ch.participants} {t('dashboard.participants')}
               </Text>
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '600',
-                  color: colors.textPrimary,
-                  opacity: 0.7,
-                }}
-              >
-                {challenge.description}
+              <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 11, color: c.textPrimary, textTransform: 'uppercase' }}>
+                {ch.progress} / {ch.total} {t('dashboard.days')}
               </Text>
             </View>
-            <View 
-              style={{ 
-                paddingHorizontal: DIMENSIONS.SPACING * 0.8,
-                paddingVertical: DIMENSIONS.SPACING * 0.4,
-                borderRadius: 20,
-                backgroundColor: colors.cardBackgroundSecondary,
-                borderWidth: 1,
-                borderColor: colors.borderSecondary,
-              }}
-            >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyXXS,
-                  fontWeight: '700',
-                  color: colors.textPrimary,
-                }}
-              >
-                {challenge.participants} {t('dashboard.participants')}
-              </Text>
-            </View>
-          </View>
-          
-          <View style={{ marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.6 }}>
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '700',
-                  color: colors.textPrimary,
-                }}
-              >
-                {t('dashboard.goal')}
-              </Text>
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '900',
-                  color: colors.textPrimary,
-                }}
-              >
-                {challenge.progress} / {challenge.total} {t('dashboard.days')}
-              </Text>
-            </View>
-            <View 
-              style={{ 
-                height: 10,
-                borderRadius: 5,
-                overflow: 'hidden',
-                backgroundColor: colors.cardBackgroundSecondary,
-                borderWidth: 1,
-                borderColor: colors.borderSecondary,
-              }}
-            >
-              <View 
-                style={{ 
-                  height: '100%',
-                  borderRadius: 5,
-                  width: `${(challenge.progress / challenge.total) * 100}%`,
-                  backgroundColor: colors.textPrimary,
-                }}
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={{
-              borderRadius: 16,
-              paddingVertical: DIMENSIONS.SPACING * 0.6,
-              backgroundColor: colors.textPrimary,
-              alignItems: 'center',
-            }}
-          >
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.body,
-                fontWeight: '900',
-                color: colors.backgroundPrimary,
-              }}
-            >
-              {t('dashboard.viewDetails')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      ))}
-
-    </>
+            <Text style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.6, color: c.textPrimary, marginTop: 6 }}>{ch.title}</Text>
+            {ch.description ? (
+              <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: 4 }}>{ch.description}</Text>
+            ) : null}
+            <Bar progress={ch.total > 0 ? ch.progress / ch.total : 0} height={12} color={done ? c.accent : undefined} style={{ marginTop: 12 }} />
+          </Card>
+        );
+      })}
+    </View>
   );
 }
-

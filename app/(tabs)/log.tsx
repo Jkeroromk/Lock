@@ -1,5 +1,5 @@
 import {
-  View, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Platform,
+  View, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert,
 } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
+import { Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented, Sticker } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
 import { detectLiquidMl, addWaterMl } from '@/services/waterTracker';
@@ -20,15 +21,11 @@ import ImagePickerButtons from '@/components/log/ImagePickerButtons';
 
 type LogMode = 'photo' | 'label' | 'barcode';
 
-const MODE_CONFIG: { key: LogMode; icon: string }[] = [
-  { key: 'photo', icon: 'camera' },
-  { key: 'label', icon: 'reader' },
-  { key: 'barcode', icon: 'barcode' },
-];
+const MODES: LogMode[] = ['photo', 'label', 'barcode'];
 
 export default function LogScreen() {
   const { t, language } = useTranslation();
-  const colors = useTheme();
+  const c = useTheme();
   const router = useRouter();
   const { refreshToday, user } = useStore();
   const plan = user?.plan ?? 'FREE';
@@ -134,48 +131,36 @@ export default function LogScreen() {
 
   const handleModeChange = (newMode: LogMode) => { setMode(newMode); clearImage(); setResult(null); setLookingUp(false); };
 
+  const modeCaption = mode === 'barcode' ? t('log.barcodeScanDesc' as any) : mode === 'label' ? t('log.labelScanDesc' as any) : t('log.takeOrSelect');
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8, paddingBottom: 20, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
-        {/* Header */}
-        <View style={{ marginBottom: DIMENSIONS.SPACING }}>
-          <Text style={{ fontSize: TYPOGRAPHY.titleL, fontWeight: '900', color: colors.textPrimary, letterSpacing: -2, lineHeight: TYPOGRAPHY.titleL * 1.05 }}>{t('tabs.log')}</Text>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textSecondary, marginTop: 2 }}>
-            {mode === 'barcode' ? t('log.barcodeScanDesc' as any) : mode === 'label' ? t('log.labelScanDesc' as any) : t('log.takeOrSelect')}
-          </Text>
-        </View>
+        <ScreenHeader title={t('tabs.log')} />
+        <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: -8, marginBottom: 14 }}>{modeCaption}</Text>
 
-        {/* Mode selector */}
-        <View style={{ flexDirection: 'row', backgroundColor: colors.cardBackground, borderRadius: 16, borderWidth: 1, borderColor: colors.borderPrimary, padding: 4, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-          {MODE_CONFIG.map(({ key, icon }) => {
-            const active = mode === key;
-            const modeLabel = key === 'photo' ? t('log.modePhoto' as any) : key === 'label' ? t('log.modeLabel' as any) : t('log.modeBarcode' as any);
-            return (
-              <TouchableOpacity key={key} onPress={() => handleModeChange(key)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: DIMENSIONS.SPACING * 0.5, borderRadius: 12, backgroundColor: active ? colors.textPrimary : 'transparent', gap: 5 }}>
-                <Ionicons name={icon as any} size={TYPOGRAPHY.bodyXS} color={active ? colors.backgroundPrimary : colors.textSecondary} />
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800', color: active ? colors.backgroundPrimary : colors.textSecondary }}>{modeLabel}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <Segmented
+          value={mode}
+          onChange={handleModeChange}
+          options={MODES.map((key) => ({ key, label: t(`log.${key}Short` as any) }))}
+          style={{ marginBottom: 14 }}
+        />
 
         {/* Barcode mode */}
         {mode === 'barcode' && (
           <>
             {lookingUp ? (
-              <View style={{ borderRadius: 24, padding: DIMENSIONS.SPACING * 2.5, backgroundColor: colors.cardBackground, borderWidth: 1, borderColor: colors.borderPrimary, alignItems: 'center', marginBottom: DIMENSIONS.SPACING }}>
-                <ActivityIndicator size="large" color={colors.textPrimary} />
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textSecondary, marginTop: DIMENSIONS.SPACING * 0.8 }}>{t('log.lookingUp' as any)}</Text>
+              <View style={{ height: 300, borderRadius: RADIUS.card, borderWidth: STROKE.card, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator size="large" color={c.textPrimary} />
+                <Label style={{ marginTop: 14 }}>{t('log.lookingUp' as any)}</Label>
               </View>
             ) : result ? null : (
               <BarcodeScanner onScanned={handleBarcodeScan} />
             )}
             {result && <ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} />}
             {result && !isEditing && (
-              <TouchableOpacity onPress={() => { setResult(null); setLookingUp(false); }} activeOpacity={0.8} style={{ borderRadius: 16, paddingVertical: DIMENSIONS.SPACING, alignItems: 'center', marginTop: DIMENSIONS.SPACING * 0.6, backgroundColor: colors.cardBackground, borderWidth: 2, borderColor: colors.borderPrimary }}>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '700', color: colors.textPrimary }}>{t('log.rescan' as any)}</Text>
-              </TouchableOpacity>
+              <Button label={t('log.rescan' as any)} icon="barcode-outline" variant="outline" onPress={() => { setResult(null); setLookingUp(false); }} />
             )}
           </>
         )}
@@ -184,36 +169,46 @@ export default function LogScreen() {
         {mode !== 'barcode' && (
           <>
             {image && (
-              <View style={{ marginBottom: DIMENSIONS.SPACING }}>
-                <View style={{ borderRadius: 24, overflow: 'hidden', marginBottom: DIMENSIONS.SPACING, borderWidth: 1, borderColor: colors.borderPrimary, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 6 }}>
-                  <Image source={{ uri: image }} style={{ width: '100%', height: DIMENSIONS.SCREEN_WIDTH * 0.75 }} resizeMode="cover" />
+              <View style={{ marginBottom: 14 }}>
+                <View style={{ borderRadius: RADIUS.card, overflow: 'hidden', borderWidth: STROKE.card, borderColor: c.borderPrimary }}>
+                  <Image source={{ uri: image }} style={{ width: '100%', aspectRatio: 4 / 3 }} resizeMode="cover" accessibilityIgnoresInvertColors />
+                  <Corners />
+                  {analyzing ? (
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(10,10,10,0.55)', alignItems: 'center', justifyContent: 'center' }}>
+                      <ActivityIndicator size="large" color={c.accent} />
+                      <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.accent, marginTop: 12, textTransform: 'uppercase' }}>{t('log.analyzing')}</Text>
+                    </View>
+                  ) : result ? (
+                    <Sticker style={{ position: 'absolute', left: 16, bottom: 16 }}>{t('log.aiAnalyzed' as any)}</Sticker>
+                  ) : null}
                 </View>
                 {!result && (
                   <>
                     {aiQuota !== -1 && (
-                      <TouchableOpacity onPress={() => router.push('/(tabs)/settings/pricing')} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: DIMENSIONS.SPACING * 0.8, paddingVertical: DIMENSIONS.SPACING * 0.4, paddingHorizontal: DIMENSIONS.SPACING, backgroundColor: '#F59E0B22', borderRadius: 10, alignSelf: 'center' }}>
-                        <Ionicons name="flash" size={12} color="#F59E0B" />
-                        <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800', color: '#F59E0B' }}>{(t('log.freeQuotaBadge' as any) as string).replace('{quota}', String(aiQuota))}</Text>
+                      <TouchableOpacity
+                        onPress={() => router.push('/(tabs)/settings/pricing')}
+                        accessibilityRole="button"
+                        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'center', minHeight: 44, paddingHorizontal: 12, marginTop: 6 }}
+                      >
+                        <Ionicons name="flash" size={13} color={c.textSecondary} />
+                        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{(t('log.freeQuotaBadge' as any) as string).replace('{quota}', String(aiQuota))}</Text>
                       </TouchableOpacity>
                     )}
-                    <TouchableOpacity onPress={() => analyzeImage(mode === 'label' ? 'label' : 'food')} disabled={analyzing} activeOpacity={0.8} style={{ borderRadius: 24, paddingVertical: DIMENSIONS.SPACING, alignItems: 'center', justifyContent: 'center', minHeight: 56, backgroundColor: colors.textPrimary, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 6 }}>
-                      {analyzing ? <ActivityIndicator color={colors.backgroundPrimary} size="large" /> : (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING * 0.6 }}>
-                          <Ionicons name={mode === 'label' ? 'scan' : 'sparkles'} size={TYPOGRAPHY.iconM} color={colors.backgroundPrimary} />
-                          <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '900', color: colors.backgroundPrimary }}>{mode === 'label' ? t('log.extractNutrition' as any) : t('log.analyzeFood')}</Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
+                    <Button
+                      label={mode === 'label' ? t('log.extractNutrition' as any) : t('log.analyzeFood')}
+                      icon={mode === 'label' ? 'scan' : 'sparkles'}
+                      loading={analyzing}
+                      onPress={() => analyzeImage(mode === 'label' ? 'label' : 'food')}
+                      style={{ marginTop: aiQuota !== -1 ? 0 : 14 }}
+                    />
                   </>
                 )}
               </View>
             )}
             {result && <ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} />}
             {!image && <ImagePickerButtons mode={mode as 'photo' | 'label'} onTakePhoto={takePhoto} onPickImage={pickImage} />}
-            {image && !isEditing && (
-              <TouchableOpacity onPress={clearImage} activeOpacity={0.8} style={{ borderRadius: 16, paddingVertical: DIMENSIONS.SPACING, alignItems: 'center', marginTop: DIMENSIONS.SPACING * 0.6, backgroundColor: colors.cardBackground, borderWidth: 2, borderColor: colors.borderPrimary }}>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '700', color: colors.textPrimary }}>{t('log.selectOtherPhoto')}</Text>
-              </TouchableOpacity>
+            {image && !isEditing && !analyzing && (
+              <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} />
             )}
           </>
         )}

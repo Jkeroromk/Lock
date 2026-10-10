@@ -1,11 +1,11 @@
-import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
-import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-
-const MACRO_COLORS = { protein: '#6366F1', carbs: '#F59E0B', fat: '#F97316' };
+import { useStore } from '@/store/useStore';
+import { FONTS } from '@/constants/fonts';
+import { Bar, Button, Card, IconButton, Label, RADIUS, STROKE } from '@/components/ui/bxc';
+import { macroTargets } from '@/components/today/CaloriesCard';
 
 export interface FoodResult {
   food: string;
@@ -28,91 +28,104 @@ interface Props {
   onSaveMeal: () => void;
 }
 
+const MACROS = ['protein', 'carbs', 'fat'] as const;
+
+/** AI / barcode result: hero card with kcal, macro bars (share of today's target) and save. */
 export default function ResultCard({ result, isEditing, editedData, saving, onEdit, onCancelEdit, onSaveEdit, onChange, onSaveMeal }: Props) {
-  const colors = useTheme();
+  const c = useTheme();
   const { t } = useTranslation();
+  const { dailyCalorieGoal } = useStore();
+  const targets = macroTargets(dailyCalorieGoal || 2000);
+
+  const inputStyle = {
+    color: c.textPrimary, borderWidth: STROKE.control, borderColor: c.textPrimary, borderRadius: RADIUS.control,
+    paddingHorizontal: 10, paddingVertical: 8, backgroundColor: c.backgroundPrimary,
+  };
 
   return (
-    <View style={{ borderRadius: 24, marginBottom: DIMENSIONS.SPACING, backgroundColor: colors.cardBackground, borderWidth: 1, borderColor: colors.borderPrimary, overflow: 'hidden' }}>
-      {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: DIMENSIONS.SPACING * 1.2, borderBottomWidth: 1, borderBottomColor: colors.borderPrimary }}>
+    <Card variant="hero" padding={16} style={{ marginBottom: 14 }}>
+      {/* Name + kcal */}
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
         <View style={{ flex: 1 }}>
           {isEditing ? (
             <TextInput
-              value={editedData.food} onChangeText={(v) => onChange('food', v)}
-              style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 10, paddingHorizontal: DIMENSIONS.SPACING * 0.6, paddingVertical: DIMENSIONS.SPACING * 0.4, borderWidth: 1, borderColor: colors.borderPrimary }}
-              placeholderTextColor={colors.textSecondary}
+              value={editedData.food}
+              onChangeText={(v) => onChange('food', v)}
+              accessibilityLabel={t('log.foodName' as any)}
+              style={[inputStyle, { fontSize: 20, fontWeight: '800' }]}
             />
           ) : (
-            <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary, lineHeight: TYPOGRAPHY.title * 1.2 }}>{result.food}</Text>
+            <Text style={{ fontSize: 24, fontWeight: '800', letterSpacing: -0.7, lineHeight: 26, color: c.textPrimary }}>
+              {result.food}
+            </Text>
           )}
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary, marginTop: 4 }}>
-            {t('log.confidence')}：{(result.confidence * 100).toFixed(0)}%
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, marginTop: 6, textTransform: 'uppercase' }}>
+            {t('log.confidence')} {(result.confidence * 100).toFixed(0)}%
           </Text>
         </View>
-        {!isEditing && (
-          <TouchableOpacity onPress={onEdit} style={{ padding: DIMENSIONS.SPACING * 0.6, borderRadius: 10, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary, marginLeft: DIMENSIONS.SPACING * 0.8 }}>
-            <Ionicons name="create-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Calories */}
-      <View style={{ paddingHorizontal: DIMENSIONS.SPACING * 1.4, paddingVertical: DIMENSIONS.SPACING * 1.2, borderBottomWidth: 1, borderBottomColor: colors.borderPrimary, flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-        {isEditing ? (
-          <TextInput value={editedData.calories} onChangeText={(v) => onChange('calories', v)} keyboardType="numeric"
-            style={{ fontSize: TYPOGRAPHY.numberL, fontWeight: '900', color: colors.textPrimary, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 10, paddingHorizontal: DIMENSIONS.SPACING * 0.6, paddingVertical: DIMENSIONS.SPACING * 0.3, borderWidth: 1, borderColor: colors.borderPrimary, minWidth: 120 }}
-            placeholderTextColor={colors.textSecondary} />
-        ) : (
-          <Text style={{ fontSize: TYPOGRAPHY.numberL, fontWeight: '900', color: colors.textPrimary, lineHeight: TYPOGRAPHY.numberL * 1.05 }}>{result.calories}</Text>
-        )}
-        <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '700', color: colors.textSecondary, marginBottom: 6 }}>{t('log.calories')}</Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          {isEditing ? (
+            <TextInput
+              value={editedData.calories}
+              onChangeText={(v) => onChange('calories', v)}
+              keyboardType="numeric"
+              accessibilityLabel={t('log.calories')}
+              style={[inputStyle, { fontSize: 28, fontWeight: '800', minWidth: 92, textAlign: 'right' }]}
+            />
+          ) : (
+            <Text style={{ fontSize: 44, fontWeight: '800', letterSpacing: -2, lineHeight: 44, color: c.textPrimary }}>
+              {Math.round(result.calories)}
+            </Text>
+          )}
+          <Label style={{ fontSize: 10, marginTop: 4 }}>KCAL</Label>
+        </View>
+        {!isEditing ? (
+          <IconButton icon="create-outline" onPress={onEdit} accessibilityLabel={t('log.edit')} style={{ marginTop: -2 }} />
+        ) : null}
       </View>
 
       {/* Macros */}
-      <View style={{ flexDirection: 'row', padding: DIMENSIONS.SPACING * 1.2 }}>
-        {([
-          { label: t('log.protein'), key: 'protein', color: MACRO_COLORS.protein },
-          { label: t('log.carbs'), key: 'carbs', color: MACRO_COLORS.carbs },
-          { label: t('log.fat'), key: 'fat', color: MACRO_COLORS.fat },
-        ] as const).map((macro, i) => (
-          <View key={macro.key} style={{ flex: 1, alignItems: 'center', borderLeftWidth: i > 0 ? 1 : 0, borderLeftColor: colors.borderPrimary }}>
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>{macro.label}</Text>
+      <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+        {MACROS.map((key) => (
+          <View key={key} style={{ flex: 1 }}>
+            <Label style={{ fontSize: 10 }}>{t(`log.${key}`)}</Label>
             {isEditing ? (
-              <TextInput value={editedData[macro.key]} onChangeText={(v) => onChange(macro.key, v)} keyboardType="numeric"
-                style={{ fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: macro.color, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 8, paddingHorizontal: DIMENSIONS.SPACING * 0.5, paddingVertical: DIMENSIONS.SPACING * 0.3, borderWidth: 1, borderColor: colors.borderPrimary, textAlign: 'center', minWidth: DIMENSIONS.SCREEN_WIDTH * 0.18 }}
-                placeholderTextColor={colors.textSecondary} />
+              <TextInput
+                value={editedData[key]}
+                onChangeText={(v) => onChange(key, v)}
+                keyboardType="numeric"
+                accessibilityLabel={t(`log.${key}`)}
+                style={[inputStyle, { fontSize: 18, fontWeight: '800', marginTop: 4 }]}
+              />
             ) : (
-              <Text style={{ fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: macro.color }}>{(result as any)[macro.key]}g</Text>
+              <>
+                <Text style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.6, color: c.textPrimary }}>
+                  {Math.round(result[key])}g
+                </Text>
+                <Bar progress={targets[key] > 0 ? result[key] / targets[key] : 0} height={8} style={{ marginTop: 4 }} />
+              </>
             )}
           </View>
         ))}
       </View>
 
       {/* Actions */}
-      <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, padding: DIMENSIONS.SPACING * 1.2, borderTopWidth: 1, borderTopColor: colors.borderPrimary }}>
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
         {isEditing ? (
           <>
-            <TouchableOpacity onPress={onCancelEdit} activeOpacity={0.8} style={{ flex: 1, borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9, alignItems: 'center', backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}>
-              <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '800', color: colors.textPrimary }}>{t('log.cancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onSaveEdit} activeOpacity={0.8} style={{ flex: 2, borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9, alignItems: 'center', backgroundColor: colors.textPrimary }}>
-              <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '800', color: colors.backgroundPrimary }}>{t('log.saveChanges')}</Text>
-            </TouchableOpacity>
+            <Button label={t('log.cancel')} variant="outline" onPress={onCancelEdit} style={{ flex: 1 }} />
+            <Button label={t('log.saveChanges')} variant="solid" onPress={onSaveEdit} style={{ flex: 2 }} />
           </>
         ) : (
-          <TouchableOpacity onPress={onSaveMeal} disabled={saving} activeOpacity={0.8} style={{ flex: 1, borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9, alignItems: 'center', backgroundColor: colors.textPrimary, opacity: saving ? 0.6 : 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              {saving
-                ? <ActivityIndicator color={colors.backgroundPrimary} size="small" />
-                : <Ionicons name="checkmark-circle" size={TYPOGRAPHY.iconS} color={colors.backgroundPrimary} />}
-              <Text style={{ fontSize: TYPOGRAPHY.body, fontWeight: '800', color: colors.backgroundPrimary }}>
-                {saving ? t('log.saving' as any) : t('log.saveMeal')}
-              </Text>
-            </View>
-          </TouchableOpacity>
+          <Button
+            label={saving ? t('log.saving' as any) : t('log.saveMeal')}
+            icon="checkmark"
+            loading={saving}
+            onPress={onSaveMeal}
+            style={{ flex: 1 }}
+          />
         )}
       </View>
-    </View>
+    </Card>
   );
 }

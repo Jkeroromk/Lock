@@ -1,17 +1,15 @@
 import { View, ScrollView } from 'react-native';
-import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Skeleton from '@/components/ui/Skeleton';
-import { DateData } from 'react-native-calendars';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { ScreenHeader } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchMonthlyData, fetchWeeklyData, MonthlyData } from '@/services/api';
-import CalendarView from '@/components/calendar/CalendarView';
+import CalendarView, { type DayMark } from '@/components/calendar/CalendarView';
 import WeeklyCaloriesChart from '@/components/calendar/WeeklyCaloriesChart';
 import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreakdown';
 import MonthlyStats from '@/components/calendar/MonthlyStats';
@@ -39,14 +37,6 @@ export default function CalendarScreen() {
 
   // 点击某天弹出餐食详情
   const [selectedMealDate, setSelectedMealDate] = useState<string | null>(null);
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 100) return colors.progressWhite;
-    if (progress >= 80) return colors.progressLightGray;
-    if (progress >= 60) return colors.progressMediumGray;
-    if (progress >= 40) return colors.progressDarkGray;
-    return colors.progressVeryDarkGray;
-  };
 
   const getWeekdayLabel = (dateStr: string) => {
     try {
@@ -96,63 +86,27 @@ export default function CalendarScreen() {
     }, [currentMonth])
   );
 
-  const onDayPress = (day: DateData) => {
-    setSelectedMealDate(day.dateString);
+  const onDayPress = (dateStr: string) => {
+    setSelectedMealDate(dateStr);
   };
 
-  const onMonthChange = (month: DateData) => {
-    const newMonth = new Date(month.year, month.month - 1, 1);
-    setCurrentMonth(newMonth);
-    loadMonthlyData(month.year, month.month);
+  const onMonthChange = (month: Date) => {
+    setCurrentMonth(month);
+    loadMonthlyData(month.getFullYear(), month.getMonth() + 1);
   };
 
   const buildMarkedDates = () => {
-    const markedDates: any = {};
-    const today = new Date();
+    const marks: Record<string, DayMark> = {};
     const year = currentMonth.getFullYear();
     const monthNum = currentMonth.getMonth();
     const daysInMonth = new Date(year, monthNum + 1, 0).getDate();
-
+    const goal = dailyCalorieGoal || 2000;
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, monthNum, day);
-      const dateStr = toLocalDateStr(date);
-      const dayData = monthlyData[dateStr];
-      const calories = dayData?.calories || 0;
-      const progress = calories > 0 ? Math.min((calories / dailyCalorieGoal) * 100, 100) : 0;
-
-      const isToday =
-        today.getFullYear() === year &&
-        today.getMonth() === monthNum &&
-        today.getDate() === day;
-
-      let dotColor: string = colors.progressVeryDarkGray;
-      if (calories > 0) {
-        if (progress >= 100) dotColor = colors.progressWhite;
-        else if (progress >= 80) dotColor = colors.progressLightGray;
-        else if (progress >= 60) dotColor = colors.progressMediumGray;
-        else if (progress >= 40) dotColor = colors.progressDarkGray;
-      }
-
-      markedDates[dateStr] = {
-        marked: calories > 0,
-        dotColor,
-        selected: isToday,
-        selectedColor: colors.cardBackground,
-        customStyles: {
-          container: {
-            backgroundColor: isToday ? colors.cardBackgroundSecondary : 'transparent',
-            borderRadius: 8,
-          },
-          text: {
-            color: colors.textPrimary,
-            fontWeight: isToday ? '900' : '600',
-          },
-        },
-        calories,
-        progress,
-      };
+      const dateStr = toLocalDateStr(new Date(year, monthNum, day));
+      const calories = monthlyData[dateStr]?.calories || 0;
+      marks[dateStr] = { calories, progress: calories > 0 ? Math.min((calories / goal) * 100, 100) : 0 };
     }
-    return markedDates;
+    return marks;
   };
 
   const markedDates = buildMarkedDates();
@@ -163,9 +117,9 @@ export default function CalendarScreen() {
     : 0;
 
   const nutritionStats = [
-    { label: t('log.protein'), value: weeklyNutrition.protein, color: '#6366F1' },
-    { label: t('log.carbs'), value: weeklyNutrition.carbs, color: '#F59E0B' },
-    { label: t('log.fat'), value: weeklyNutrition.fat, color: '#EF4444' },
+    { label: t('log.protein'), value: weeklyNutrition.protein, color: colors.accent },
+    { label: t('log.carbs'), value: weeklyNutrition.carbs, color: colors.textPrimary },
+    { label: t('log.fat'), value: weeklyNutrition.fat, color: '#8C8B86' },
   ];
 
   return (
@@ -175,14 +129,14 @@ export default function CalendarScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-        <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
+        <View style={{ paddingHorizontal: 18 }}>
+          <ScreenHeader title={t('tabs.calendar')} />
           {loading ? (
-            <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
-              <Skeleton height={320} borderRadius={24} />
-              <Skeleton height={160} borderRadius={24} />
-              <Skeleton height={200} borderRadius={24} />
-              <Skeleton height={160} borderRadius={24} />
-              <Skeleton height={120} borderRadius={20} />
+            <View style={{ gap: 14 }}>
+              <Skeleton height={340} borderRadius={22} />
+              <Skeleton height={140} borderRadius={22} />
+              <Skeleton height={200} borderRadius={22} />
+              <Skeleton height={160} borderRadius={22} />
             </View>
           ) : (
             <Animated.View entering={FadeIn.duration(400)}>
@@ -190,7 +144,7 @@ export default function CalendarScreen() {
               <CalendarView
                 currentMonth={currentMonth}
                 markedDates={markedDates}
-                selectedDate={toLocalDateStr(new Date())}
+                todayStr={toLocalDateStr(new Date())}
                 onDayPress={onDayPress}
                 onMonthChange={onMonthChange}
               />

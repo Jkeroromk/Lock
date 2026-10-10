@@ -1,82 +1,54 @@
 import { View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { useStore } from '@/store/useStore';
+import { FONTS } from '@/constants/fonts';
+import { Card, Label } from '@/components/ui/bxc';
+import type { DayMark } from '@/components/calendar/CalendarView';
 
 interface MonthlyStatsProps {
-  markedDates: any;
+  markedDates: Record<string, DayMark>;
   avgDailyCalories: number;
 }
 
 export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyStatsProps) {
   const { t } = useTranslation();
-  const colors = useTheme();
+  const c = useTheme();
   const { dailyCalorieGoal } = useStore();
 
-  const dates = Object.values(markedDates) as any[];
-  const completedDays = dates.filter((d: any) => d.progress >= 100).length;
-  const daysWithData = dates.filter((d: any) => d.calories > 0).length;
-  const avgProgress = daysWithData === 0 ? 0 : dates.reduce((sum, d) => sum + (d.progress || 0), 0) / dates.length;
-  const bestDay = Math.max(...dates.map((d: any) => d.calories || 0));
+  const days = Object.values(markedDates);
+  const logged = days.filter((d) => d.calories > 0);
+  const completedDays = days.filter((d) => d.progress >= 100).length;
+  const avgProgress = logged.length === 0 ? 0 : logged.reduce((s, d) => s + d.progress, 0) / logged.length;
 
   const stats = [
-    { label: t('calendar.completedDays'), value: `${completedDays}`, sub: t('dashboard.days') },
-    { label: t('calendar.avgProgress'), value: `${Math.round(avgProgress)}%`, sub: null },
-    { label: t('calendar.avgDaily'), value: `${avgDailyCalories}`, sub: 'kcal' },
-    { label: t('today.target'), value: `${dailyCalorieGoal}`, sub: 'kcal' },
+    { label: t('calendar.completedDays'), value: `${completedDays}`, unit: t('dashboard.days'), highlight: true },
+    { label: t('calendar.avgProgress'), value: `${Math.round(avgProgress)}%`, unit: '' },
+    { label: t('calendar.avgDaily'), value: avgDailyCalories.toLocaleString(), unit: 'kcal' },
+    { label: t('today.target'), value: (dailyCalorieGoal || 2000).toLocaleString(), unit: 'kcal' },
   ];
 
   return (
-    <View style={{
-      borderRadius: 20,
-      padding: DIMENSIONS.SPACING * 1.2,
-      marginBottom: DIMENSIONS.SPACING * 1.2,
-      backgroundColor: colors.cardBackground,
-      borderWidth: 2,
-      borderColor: colors.borderPrimary,
-    }}>
-      <Text style={{
-        fontSize: TYPOGRAPHY.title,
-        fontWeight: '900',
-        color: colors.textPrimary,
-        marginBottom: DIMENSIONS.SPACING,
-      }}>
-        {t('calendar.monthlyStats')}
-      </Text>
-
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: DIMENSIONS.SPACING * 0.6 }}>
-        {stats.map((stat, i) => (
+    <Card padding={16} style={{ marginBottom: 14 }}>
+      <Text style={{ fontSize: 20, fontWeight: '800', color: c.textPrimary, marginBottom: 12 }}>{t('calendar.monthlyStats')}</Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        {stats.map((s, i) => (
           <View key={i} style={{
-            flex: 1,
-            minWidth: '45%',
-            backgroundColor: colors.cardBackgroundSecondary,
-            borderRadius: 16,
-            padding: DIMENSIONS.SPACING,
-            borderWidth: 1,
-            borderColor: colors.borderSecondary,
+            flexGrow: 1, flexBasis: '45%', borderRadius: 16, padding: 12,
+            backgroundColor: s.highlight ? c.accent : 'transparent',
+            borderWidth: 2, borderColor: s.highlight ? c.ink : c.borderPrimary,
           }}>
-            <Text style={{
-              fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600',
-              color: colors.textPrimary, opacity: 0.6,
-              marginBottom: DIMENSIONS.SPACING * 0.3,
-            }}>
-              {stat.label}
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
-              <Text style={{ fontSize: TYPOGRAPHY.numberS, fontWeight: '900', color: colors.textPrimary }}>
-                {stat.value}
-              </Text>
-              {stat.sub && (
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.5 }}>
-                  {stat.sub}
-                </Text>
-              )}
+            <Label color={s.highlight ? c.onAccent : undefined} style={{ fontSize: 10 }}>{s.label}</Label>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+              <Text style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.8, color: s.highlight ? c.onAccent : c.textPrimary }}>{s.value}</Text>
+              {s.unit ? (
+                <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: s.highlight ? c.onAccent : c.textSecondary }}>{s.unit}</Text>
+              ) : null}
             </View>
           </View>
         ))}
       </View>
-    </View>
+    </Card>
   );
 }

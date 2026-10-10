@@ -28,6 +28,7 @@ const zhCN = {
     ofGoal: '目标 {goal}',
   },
   log: {
+    foodName: '食物名称', photoShort: '拍照', labelShort: '标签', barcodeShort: '条码', aiAnalyzed: 'AI 已识别',
     startLogging: '开始记录',
     takeOrSelect: '拍摄或选择餐食照片以分析营养信息',
     takePhoto: '拍照',
@@ -72,6 +73,7 @@ const zhCN = {
     extractNutrition: '提取营养信息',
   },
   calendar: {
+    legendHit: '达标', legendClose: '接近', legendOk: '一般', legendLow: '偏低',
     calorieOverview: '卡路里进度概览',
     weeklyCalories: '每周卡路里',
     thisWeek: '本周',

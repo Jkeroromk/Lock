@@ -15,6 +15,7 @@ const zhTW = {
     ofGoal: '目標 {goal}',
   },
   log: {
+    foodName: '食物名稱', photoShort: '拍照', labelShort: '標籤', barcodeShort: '條碼', aiAnalyzed: 'AI 已辨識',
     startLogging: '開始記錄',
     takeOrSelect: '拍攝或選擇餐食照片以分析營養資訊',
     takePhoto: '拍照', selectFromAlbum: '從相冊選擇',
@@ -41,6 +42,7 @@ const zhTW = {
     extractNutrition: '提取營養資訊',
   },
   calendar: {
+    legendHit: '達標', legendClose: '接近', legendOk: '普通', legendLow: '偏低',
     calorieOverview: '卡路里進度概覽', weeklyCalories: '每週卡路里',
     thisWeek: '本週', weeklyNutrition: '每週營養', progress: '進度',
     completed: '完成目標 (100%+)', good: '良好 (80-100%)', normal: '一般 (60-80%)',

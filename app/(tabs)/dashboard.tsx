@@ -1,12 +1,9 @@
-import { View, ScrollView, Platform, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
-import { Text } from '@/components/ui/Text';
+import { View, ScrollView, Platform, RefreshControl, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { IconButton, ScreenHeader, Segmented } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard';
 import ChallengesList from '@/components/dashboard/ChallengesList';
@@ -24,7 +21,6 @@ import {
 type Tab = 'friends' | 'challenges' | 'moments';
 
 export default function DashboardScreen() {
-  const { todayCalories, user } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
   const { inviteCode: deepLinkCode } = useLocalSearchParams<{ inviteCode?: string }>();
@@ -97,10 +93,10 @@ export default function DashboardScreen() {
     participants: c.participants,
   }));
 
-  const TAB_CONFIG: { key: Tab; label: string; icon: string }[] = [
-    { key: 'friends', label: t('dashboard.leaderboard'), icon: 'people' },
-    { key: 'challenges', label: t('dashboard.challenges'), icon: 'flag' },
-    { key: 'moments', label: t('moments.title' as any), icon: 'images' },
+  const TAB_CONFIG: { key: Tab; label: string }[] = [
+    { key: 'friends', label: t('dashboard.leaderboard') },
+    { key: 'challenges', label: t('dashboard.challenges') },
+    { key: 'moments', label: t('moments.title' as any) },
   ];
 
   const FAB_CONFIG: Record<Tab, { label: string; icon: string; onPress: () => void }> = {
@@ -114,7 +110,7 @@ export default function DashboardScreen() {
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 24 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -125,56 +121,28 @@ export default function DashboardScreen() {
           />
         }
       >
-        <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
-          {/* ── Tab Switcher ── */}
-          <View style={{
-            flexDirection: 'row',
-            backgroundColor: colors.cardBackground,
-            borderRadius: 16, borderWidth: 2, borderColor: colors.borderPrimary,
-            padding: 4,
-            marginBottom: DIMENSIONS.SPACING * 1.4,
-          }}>
-            {TAB_CONFIG.map(({ key, label, icon }) => {
-              const active = activeTab === key;
-              const hasBadge = key === 'friends' && requests.length > 0;
-              return (
-                <TouchableOpacity
-                  key={key}
-                  onPress={() => setActiveTab(key)}
-                  style={{
-                    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-                    paddingVertical: DIMENSIONS.SPACING * 0.65,
-                    borderRadius: 12,
-                    backgroundColor: active ? colors.textPrimary : 'transparent',
-                    gap: 5,
-                  }}
-                >
-                  <Ionicons
-                    name={icon as any}
-                    size={TYPOGRAPHY.iconXS * 0.85}
-                    color={active ? colors.backgroundPrimary : colors.textSecondary}
-                  />
-                  <Text style={{
-                    fontSize: TYPOGRAPHY.bodyXS, fontWeight: '800',
-                    color: active ? colors.backgroundPrimary : colors.textSecondary,
-                  }}>
-                    {label}
-                  </Text>
-                  {hasBadge && (
-                    <View style={{
-                      width: 7, height: 7, borderRadius: 4,
-                      backgroundColor: '#EF4444',
-                      position: 'absolute', top: 6, right: 8,
-                    }} />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+        <View style={{ paddingHorizontal: 18 }}>
+          <ScreenHeader
+            title={t('tabs.social')}
+            right={
+              <IconButton
+                icon={FAB_CONFIG[activeTab].icon}
+                filled
+                onPress={FAB_CONFIG[activeTab].onPress}
+                accessibilityLabel={FAB_CONFIG[activeTab].label}
+              />
+            }
+          />
+          <Segmented
+            value={activeTab}
+            onChange={setActiveTab}
+            options={TAB_CONFIG.map(({ key, label }) => ({ key, label, badge: key === 'friends' && requests.length > 0 }))}
+            style={{ marginBottom: 16 }}
+          />
 
           {/* ── Initial Loading ── */}
           {initialLoading && (
-            <View style={{ paddingVertical: DIMENSIONS.SPACING * 4, alignItems: 'center' }}>
+            <View style={{ paddingVertical: 64, alignItems: 'center' }}>
               <ActivityIndicator size="large" color={colors.textPrimary} />
             </View>
           )}
@@ -207,32 +175,6 @@ export default function DashboardScreen() {
           )}
         </View>
       </ScrollView>
-
-      {/* ── Floating Action Button ── */}
-      <View style={{
-        position: 'absolute', bottom: 24, left: DIMENSIONS.CARD_PADDING, right: DIMENSIONS.CARD_PADDING,
-        pointerEvents: 'box-none',
-      }}>
-        <TouchableOpacity
-          onPress={FAB_CONFIG[activeTab].onPress}
-          activeOpacity={0.85}
-          style={{
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-            backgroundColor: colors.textPrimary,
-            borderRadius: 18, paddingVertical: DIMENSIONS.SPACING * 0.85,
-            shadowColor: colors.shadowColor,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.25,
-            shadowRadius: 12,
-            elevation: 8,
-          }}
-        >
-          <Ionicons name={FAB_CONFIG[activeTab].icon as any} size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
-          <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.backgroundPrimary }}>
-            {FAB_CONFIG[activeTab].label}
-          </Text>
-        </TouchableOpacity>
-      </View>
 
       <AddFriendModal
         visible={showAddFriend}
