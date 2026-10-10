@@ -1,4 +1,5 @@
-import { View, Text, Modal, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Modal, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageCode, languageNames } from '@/i18n/locales';

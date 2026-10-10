@@ -1,65 +1,44 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Text } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
+import { FONTS } from '@/constants/fonts';
+import { Sticker } from '@/components/ui/bxc';
 
 interface DateHeaderProps {
   language: string;
   streak?: number;
 }
 
+const LOCALES: Record<string, string> = { 'zh-CN': 'zh-CN', 'zh-TW': 'zh-TW', 'ja-JP': 'ja-JP', 'ko-KR': 'ko-KR' };
+
+/** "Lock in." title, today's date and the tilted streak sticker. */
 export default function DateHeader({ language, streak = 0 }: DateHeaderProps) {
   const { t } = useTranslation();
-  const locale = language === 'zh-CN' ? 'zh-CN' : language === 'zh-TW' ? 'zh-TW' : language === 'ja-JP' ? 'ja-JP' : language === 'ko-KR' ? 'ko-KR' : 'en-US';
+  const c = useTheme();
+  const locale = LOCALES[language] ?? 'en-US';
+  const date = new Date().toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+  const isLight = c.backgroundPrimary !== c.ink;
 
   return (
-    <View style={{ marginBottom: DIMENSIONS.SPACING * 0.2, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <View>
-          <Text
-            style={{
-              fontSize: TYPOGRAPHY.body,
-              fontWeight: '900',
-              color: COLORS.textPrimary,
-              marginBottom: DIMENSIONS.SPACING * 0.1,
-            }}
-          >
-            {new Date().toLocaleDateString(locale, { month: 'long', day: 'numeric' })}
-          </Text>
-          <Text
-            style={{
-              fontSize: TYPOGRAPHY.bodyXS,
-              fontWeight: '500',
-              color: COLORS.textPrimary,
-              opacity: 0.7,
-            }}
-          >
-            {new Date().toLocaleDateString(locale, { weekday: 'long' })}
-          </Text>
-        </View>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 8, marginBottom: 16 }}>
+      <View>
+        <Text style={{ fontSize: 42, fontWeight: '800', letterSpacing: -1.8, lineHeight: 42, color: c.textPrimary }}>
+          Lock in.
+        </Text>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 8, textTransform: 'uppercase' }}>
+          {date}
+        </Text>
       </View>
-
-      {/* Streak badge */}
-      {streak > 0 && (
-        <View style={{
-          flexDirection: 'row', alignItems: 'center', gap: 4,
-          paddingHorizontal: DIMENSIONS.SPACING * 0.8,
-          paddingVertical: DIMENSIONS.SPACING * 0.35,
-          backgroundColor: streak >= 7 ? '#F59E0B22' : COLORS.cardBackground,
-          borderRadius: 20,
-          borderWidth: 1,
-          borderColor: streak >= 7 ? '#F59E0B44' : COLORS.borderPrimary,
-        }}>
-          <Text style={{ fontSize: 14 }}>🔥</Text>
-          <Text style={{
-            fontSize: TYPOGRAPHY.bodyXS,
-            fontWeight: '900',
-            color: streak >= 7 ? '#F59E0B' : COLORS.textPrimary,
-          }}>
-            {streak} {t('dashboard.days')}
+      {streak > 0 ? (
+        <Sticker background={isLight ? c.ink : c.accent} style={{ marginBottom: 4 }}>
+          <Ionicons name="flame" size={13} color={isLight ? c.accent : c.onAccent} />
+          <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 12, color: isLight ? c.paper : c.onAccent, textTransform: 'uppercase' }}>
+            {t('today.streakDays', { n: String(streak) })}
           </Text>
-        </View>
-      )}
+        </Sticker>
+      ) : null}
     </View>
   );
 }
-

@@ -10,6 +10,7 @@ import { DIMENSIONS } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { loadWater, addWater, undoLastWater, loadWaterGoal, saveWaterGoal, DEFAULT_WATER_GOAL_ML } from '@/services/waterTracker';
 import CaloriesCard from '@/components/today/CaloriesCard';
+import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
 import MealsList from '@/components/today/MealsList';
 import WaterCard from '@/components/today/WaterCard';
@@ -83,19 +84,28 @@ export default function TodayScreen() {
     }, [loading])
   );
 
-  const calorieProgress = Math.min((todayCalories / dailyCalorieGoal) * 100, 100);
-  const remainingCalories = Math.max(dailyCalorieGoal - todayCalories, 0);
+  const macros = todayMeals.reduce(
+    (sum, m) => ({
+      protein: sum.protein + (Number(m.protein) || 0),
+      carbs: sum.carbs + (Number(m.carbs) || 0),
+      fat: sum.fat + (Number(m.fat) || 0),
+    }),
+    { protein: 0, carbs: 0, fat: 0 }
+  );
+  const STEP_GOAL = 10000;
+  const ENERGY_GOAL = 500;
 
   return (
     <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 12 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />
           }
         >
-          <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: 0, paddingBottom: DIMENSIONS.SPACING }}>
+          <View style={{ paddingHorizontal: 18, paddingTop: 0, paddingBottom: 8 }}>
+            <DateHeader language={language} streak={streak} />
             {loading ? (
               <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
                 <Skeleton height={180} borderRadius={24} />
@@ -108,26 +118,25 @@ export default function TodayScreen() {
               <Animated.View entering={FadeIn.duration(400)}>
                 <CaloriesCard
                   todayCalories={todayCalories}
-                  calorieProgress={calorieProgress}
-                  remainingCalories={remainingCalories}
-                  language={language}
-                  streak={streak}
+                  protein={macros.protein}
+                  carbs={macros.carbs}
+                  fat={macros.fat}
                 />
 
-                <View style={{ flexDirection: 'row', alignItems: 'stretch', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING }}>
+                <View style={{ flexDirection: 'row', alignItems: 'stretch', gap: 12, marginBottom: 14 }}>
                   <HealthStatsCard
-                    icon="footsteps"
+                    inverse
                     label={t('today.steps')}
                     value={healthData.steps}
-                    unit={t('today.stepsUnit')}
-                    goal={10000}
+                    goal={STEP_GOAL}
+                    caption={t('today.ofGoal', { goal: STEP_GOAL.toLocaleString() })}
                   />
                   <HealthStatsCard
-                    icon="flame"
                     label={t('today.energy')}
                     value={healthData.activeEnergy}
                     unit={t('today.kcal')}
-                    goal={500}
+                    goal={ENERGY_GOAL}
+                    caption={t('today.ofGoal', { goal: `${ENERGY_GOAL} ${t('today.kcal')}` })}
                   />
                 </View>
 

@@ -1,7 +1,7 @@
 import {
-  View, Text, Modal, TextInput, TouchableOpacity, Image,
-  Alert, Platform, ScrollView, KeyboardAvoidingView,
+  View, Modal, TouchableOpacity, Image, Alert, Platform, ScrollView, KeyboardAvoidingView,
 } from 'react-native';
+import { Text, TextInput } from '@/components/ui/Text';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';

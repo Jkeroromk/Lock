@@ -1,7 +1,10 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, Platform } from 'react-native';
+import { View, Platform } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useEffect } from 'react';
+import { useFonts } from 'expo-font';
+import { FONT_FILES } from '@/constants/fonts';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -58,13 +61,13 @@ function ClerkTokenBridge() {
   return null;
 }
 
-// Sets global default font
-(Text as any).defaultProps = (Text as any).defaultProps || {};
-(Text as any).defaultProps.style = { fontFamily: 'Nunito' };
 
 export default function RootLayout() {
   const themeMode = useStore((state) => state.themeMode);
   const colors = useTheme();
+  // Fonts are bundled locally, so this resolves almost immediately. If loading
+  // ever fails we still render (system font) rather than block the app.
+  const [fontsLoaded, fontError] = useFonts(FONT_FILES);
 
   // Without a publishable key Clerk never finishes loading and the app sits on
   // the loading screen forever. Show the problem instead.
@@ -76,6 +79,10 @@ export default function RootLayout() {
         </Text>
       </View>
     );
+  }
+
+  if (!fontsLoaded && !fontError) {
+    return <View style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} />;
   }
 
   return (
@@ -91,7 +98,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
         </Stack>
-        <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
+        <StatusBar style={colors.backgroundPrimary === '#0A0A0A' ? 'light' : 'dark'} />
       </ClerkProvider>
     </GestureHandlerRootView>
   );

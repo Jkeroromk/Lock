@@ -7,6 +7,12 @@ const jaJP = {
     steps: '歩数', stepsUnit: '歩', energy: 'エネルギー', heartRate: '心拍数', bpm: '回/分',
     meals: '食事', recorded: '記録済み', noMeals: '食事が記録されていません',
     startRecording: '最初の食事を記録して栄養を追跡',
+    kcalLeft: '残りkcal',
+    kcalOver: '超過kcal',
+    eatenOfGoal: '摂取 {eaten} · 目標 {goal}',
+    plates: '今日の食事',
+    streakDays: '{n}日連続',
+    ofGoal: '目標 {goal}',
   },
   log: {
     startLogging: '記録を開始',

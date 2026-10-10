@@ -11,9 +11,9 @@
  *   />
  */
 import {
-  View, Text, Modal, TouchableOpacity,
-  ActivityIndicator, ScrollView,
+  View, Modal, TouchableOpacity, ActivityIndicator, ScrollView,
 } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';

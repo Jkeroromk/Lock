@@ -7,6 +7,12 @@ const zhTW = {
     steps: '步數', stepsUnit: '步', energy: '能量', heartRate: '心率', bpm: '次/分',
     meals: '餐食', recorded: '已記錄', noMeals: '尚未記錄餐食',
     startRecording: '開始記錄您的第一餐以追蹤營養',
+    kcalLeft: '剩餘千卡',
+    kcalOver: '超出千卡',
+    eatenOfGoal: '已攝取 {eaten} · 目標 {goal}',
+    plates: '今日餐點',
+    streakDays: '連續 {n} 天',
+    ofGoal: '目標 {goal}',
   },
   log: {
     startLogging: '開始記錄',

@@ -20,6 +20,12 @@ const zhCN = {
     recorded: '已记录',
     noMeals: '尚未记录餐食',
     startRecording: '开始记录您的第一餐以追踪营养',
+    kcalLeft: '剩余千卡',
+    kcalOver: '超出千卡',
+    eatenOfGoal: '已摄入 {eaten} · 目标 {goal}',
+    plates: '今日餐盘',
+    streakDays: '连续 {n} 天',
+    ofGoal: '目标 {goal}',
   },
   log: {
     startLogging: '开始记录',

@@ -1,7 +1,7 @@
 import {
-  View, Text, ScrollView, TouchableOpacity, Image,
-  ActivityIndicator, Alert, Platform,
+  View, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Platform,
 } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';

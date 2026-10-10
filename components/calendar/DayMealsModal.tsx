@@ -1,7 +1,7 @@
 import {
-  View, Text, Modal, ScrollView, TouchableOpacity,
-  ActivityIndicator, Image, Platform, Animated, StyleSheet,
+  View, Modal, ScrollView, TouchableOpacity, ActivityIndicator, Image, Platform, Animated, StyleSheet,
 } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useEffect, useState, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
