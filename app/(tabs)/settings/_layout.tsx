@@ -46,6 +46,10 @@ export default function SettingsLayout() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="app-icon"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="export-data"
         options={{ headerShown: false }}
       />

@@ -1,8 +1,8 @@
 import { View, ScrollView, TouchableOpacity, Alert, Platform, Linking, AppState } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'expo-router';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
 import { LanguageCode, languageNames } from '@/i18n/locales';
@@ -23,6 +23,7 @@ import GoalsModal from '@/components/settings/GoalsModal';
 import LanguageModal from '@/components/settings/LanguageModal';
 import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoadingModal';
 import EditProfileModal from '@/components/settings/EditProfileModal';
+import { getAppIconOption, getCurrentAppIcon } from '@/lib/appIcon';
 
 export default function SettingsScreen() {
   const {
@@ -52,6 +53,11 @@ export default function SettingsScreen() {
 
   const languages: LanguageCode[] = ['en-US', 'zh-CN', 'zh-TW', 'ja-JP', 'ko-KR'];
   const currentLanguageName = languageNames[language];
+  const [appIconLabel, setAppIconLabel] = useState(() => getAppIconOption(getCurrentAppIcon()).labelKey);
+  // Refresh when coming back from the icon picker.
+  useFocusEffect(useCallback(() => {
+    setAppIconLabel(getAppIconOption(getCurrentAppIcon()).labelKey);
+  }, []));
 
   const appState = useRef(AppState.currentState);
 
@@ -195,6 +201,15 @@ export default function SettingsScreen() {
             value={currentLanguageName}
             onPress={() => setShowLanguageModal(true)}
           />
+
+          {Platform.OS === 'ios' && (
+            <SettingItem
+              icon="apps-outline"
+              title={t('settings.appIcon')}
+              value={t(appIconLabel)}
+              onPress={() => router.push('/(tabs)/settings/app-icon')}
+            />
+          )}
 
           <SettingItem
             icon="notifications"
