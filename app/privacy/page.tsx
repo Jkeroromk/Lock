@@ -1,89 +1,112 @@
-import { ThemeToggle } from '../components/ThemeToggle';
+import type { Metadata } from 'next';
+import { LegalPage, B, Mail, List, type LegalSection } from '../components/LegalPage';
 
-const sections = [
+export const metadata: Metadata = {
+  title: 'Privacy Policy — Lock',
+  description: 'How Lock collects, uses and protects your information.',
+};
+
+const sections: LegalSection[] = [
   {
     title: 'Information We Collect',
     content: (
       <>
-        <p><strong className="text-foreground font-bold">Account information:</strong> When you create an account, we collect your name, email address, and profile details (height, weight, age, goal) to personalise your experience.</p>
-        <p><strong className="text-foreground font-bold">Meal data:</strong> Photos you submit for calorie analysis and meal logs you create. Photos are processed by our AI system and are not stored permanently on our servers.</p>
-        <p><strong className="text-foreground font-bold">Health data:</strong> With your permission, we access step count and active energy from Apple Health. This data is used solely to display your activity in-app and is never sold or shared with third parties.</p>
-        <p><strong className="text-foreground font-bold">Usage data:</strong> Basic analytics such as feature usage and crash reports to improve the app.</p>
+        <p><B>Account information:</B> your email address, name, username, bio and profile picture, and the body details you enter during setup (height, weight, age, gender, goal, exercise frequency).</p>
+        <p><B>Meal data:</B> the meals you log — food names, calories and macros. Photos you take for calorie analysis are sent to our AI provider to be analysed and are <B>not stored</B> by Lock.</p>
+        <p><B>Content you post:</B> Moments (text and photos), comments, likes and challenges. These are stored until you delete them or your account.</p>
+        <p><B>Health data:</B> with your permission, step count and active energy from Apple Health (see &ldquo;Apple Health&rdquo; below).</p>
+        <p><B>Weight records</B> you choose to log, and a <B>push notification token</B> if you enable reminders.</p>
+        <p><B>Purchases:</B> your subscription status (Free, Pro or Max). Payments are processed by Apple; we never see your payment details.</p>
       </>
     ),
   },
   {
     title: 'How We Use Your Information',
-    content: <p>We use your information to provide and improve the Lock service, personalise your calorie goals and recommendations, enable social features (leaderboards, friend activity, Moments), send optional push notifications (meal reminders), and process in-app purchases via RevenueCat.</p>,
+    content: (
+      <List items={[
+        "Provide Lock's core features: AI food recognition, calorie and macro tracking, and diet analysis",
+        'Calculate your daily calorie goals and show your progress',
+        'Run social features — friends, leaderboards, Moments and challenges',
+        'Send meal reminders and friend notifications you opt in to',
+        'Verify and manage your subscription',
+        'Keep the service secure and enforce our Terms of Service',
+      ]} />
+    ),
   },
   {
-    title: 'Data Sharing',
-    content: <p>We do not sell your personal data. We share data only with service providers necessary to operate the app: Clerk (authentication), Vercel (hosting), OpenAI (food image analysis), RevenueCat (subscription management), and Prisma/Supabase (database). All providers are bound by data processing agreements.</p>,
+    title: 'Apple Health',
+    content: (
+      <>
+        <p>Lock reads your step count and active energy from Apple HealthKit, only after you grant permission, to display your daily activity in the app.</p>
+        <List items={[
+          'HealthKit data is used only for health and fitness features inside Lock',
+          'It is never used for advertising or marketing',
+          'It is never sold, and never shared with advertising platforms or data brokers',
+          'You can revoke access at any time in iPhone Settings → Privacy & Security → Health → Lock',
+        ]} />
+      </>
+    ),
   },
   {
-    title: 'Social Features',
-    content: <p>When you use social features (leaderboard, Moments, friend activity), your display name, avatar, calorie totals, and streak count are visible to your friends within the app. You control your friend list and can remove friends at any time.</p>,
+    title: 'Service Providers',
+    content: (
+      <>
+        <p>We do not sell your personal data. We share data only with providers that operate the service on our behalf:</p>
+        <List items={[
+          <><B>Clerk</B> — sign-in and account security (including Sign in with Apple / Google)</>,
+          <><B>Fireworks AI</B> — analysing meal photos and nutrition labels, and generating diet analysis</>,
+          <><B>Supabase</B> — database hosting</>,
+          <><B>Vercel</B> — server hosting</>,
+          <><B>RevenueCat</B> — subscription management</>,
+          <><B>Expo</B> — delivering push notifications</>,
+          <><B>USDA FoodData Central</B> — food search (only the search text is sent, never your personal data)</>,
+        ]} />
+      </>
+    ),
+  },
+  {
+    title: 'What Your Friends Can See',
+    content: (
+      <p>Social features are friends-only. Your friends can see your display name, username, avatar, today&apos;s calorie total, streak, and the Moments, comments and challenges you post. People who are not your friends cannot see your Moments. You can remove friends, and block users — blocked users can no longer see you, find you in search or send you friend requests.</p>
+    ),
   },
   {
     title: 'Data Retention & Deletion',
-    content: <p>You may delete your account at any time from <span className="text-foreground">Settings → Account Security → Delete Account</span>. This permanently removes all your data within 30 days. You may also request deletion at <a href="mailto:support@jkeroro.com" className="text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity">support@jkeroro.com</a>.</p>,
+    content: (
+      <p>Your data is kept while your account is active. You can delete your account at any time in <span className="text-foreground">Settings → Account Security → Delete Account</span>, which permanently deletes your account and all associated data (meals, posts, comments, friends, weight and health records) within 30 days. Pro and Max members can also export their meal history from Settings. You can request deletion at any time by emailing <Mail />.</p>
+    ),
+  },
+  {
+    title: 'Your Rights',
+    content: (
+      <p>You can access, correct, export or delete your personal data, and withdraw permissions such as Apple Health or notifications at any time. Contact <Mail /> for any request.</p>
+    ),
+  },
+  {
+    title: 'Security',
+    content: <p>Data is encrypted in transit and stored with industry-standard providers. Passwords are handled by Clerk — Lock never has access to your password.</p>,
   },
   {
     title: "Children's Privacy",
-    content: <p>Lock is not directed at children under 13. We do not knowingly collect personal information from children under 13.</p>,
+    content: <p>Lock is not directed at children under 13, and we do not knowingly collect personal information from them. If you believe a child has provided us data, contact us and we will delete it.</p>,
   },
   {
     title: 'Changes to This Policy',
-    content: <p>We may update this policy occasionally. We will notify you of significant changes via the app or email. Continued use of the app after changes constitutes acceptance of the updated policy.</p>,
+    content: <p>We will notify you of significant changes in the app or by email. Continued use of Lock after changes means you accept the updated policy.</p>,
   },
   {
     title: 'Contact',
-    content: <p>Questions? Contact us at <a href="mailto:support@jkeroro.com" className="text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity">support@jkeroro.com</a>.</p>,
+    content: <p>Questions? Email <Mail />.</p>,
   },
 ];
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-background">
-
-      <header className="border-b border-border px-10 h-[60px] flex items-center justify-between">
-        <a href="/" className="text-[18px] font-black tracking-[-0.04em] text-foreground">Lock</a>
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <a href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
-        </div>
-      </header>
-
-      <main className="max-w-[720px] mx-auto px-8 py-[72px] pb-24">
-        <p className="text-[11px] font-bold text-muted-foreground tracking-[0.12em] uppercase mb-4">Legal</p>
-        <h1 className="text-[clamp(32px,5vw,48px)] font-black tracking-[-0.03em] text-foreground mb-3">
-          Privacy Policy
-        </h1>
-        <p className="text-sm text-muted-foreground/60 mb-16">Last updated: January 2025</p>
-
-        <p className="text-[15px] text-muted-foreground leading-[1.8] mb-12">
-          Lock (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) is committed to protecting your privacy.
-          This policy explains how we collect, use, and safeguard your information when you use the Lock mobile application.
-        </p>
-
-        {sections.map((s) => (
-          <div key={s.title} className="border-t border-border py-9">
-            <h2 className="text-[15px] font-extrabold tracking-[-0.01em] text-foreground mb-4">{s.title}</h2>
-            <div className="text-[15px] text-muted-foreground leading-[1.8] space-y-3">{s.content}</div>
-          </div>
-        ))}
-      </main>
-
-      <footer className="border-t border-border px-10 py-6">
-        <div className="flex justify-between items-center max-w-[720px] mx-auto flex-wrap gap-3">
-          <a href="/" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">← Lock</a>
-          <div className="flex gap-6">
-            <a href="/support" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Support</a>
-            <a href="https://jkeroro.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Jkeroro.com</a>
-          </div>
-        </div>
-      </footer>
-
-    </div>
+    <LegalPage
+      title="Privacy Policy"
+      lastUpdated="October 10, 2026"
+      intro={<p>Lock (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) values your privacy. This policy explains what we collect, how we use it, and the choices you have when you use the Lock mobile app.</p>}
+      sections={sections}
+    />
   );
 }

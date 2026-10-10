@@ -69,6 +69,7 @@ export default function Support() {
           <a href="/" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">← Lock</a>
           <div className="flex gap-6">
             <a href="/privacy" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Privacy Policy</a>
+            <a href="/terms" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Terms of Service</a>
             <a href="https://jkeroro.com" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Jkeroro.com</a>
           </div>
         </div>
