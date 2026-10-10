@@ -38,8 +38,19 @@ export const syncHealthDataToBackend = async (steps: number, activeEnergy: numbe
   } catch {}
 };
 
-export const syncSubscriptionPlan = async (plan: 'FREE' | 'PRO' | 'MAX'): Promise<void> => {
-  await api.post('/api/subscription', { plan });
+/**
+ * Ask the backend to re-verify our plan with RevenueCat after a purchase or
+ * restore. The backend decides the plan itself — the client can't set it.
+ * Never throws: if this fails, the RevenueCat webhook still updates the
+ * backend shortly after, so a successful purchase is never reported as failed.
+ */
+export const syncSubscriptionPlan = async (): Promise<'FREE' | 'PRO' | 'MAX' | null> => {
+  try {
+    const res = await api.post<{ plan: 'FREE' | 'PRO' | 'MAX' }>('/api/subscription');
+    return res.data.plan;
+  } catch {
+    return null;
+  }
 };
 
 export const deleteAccount = async (): Promise<void> => {

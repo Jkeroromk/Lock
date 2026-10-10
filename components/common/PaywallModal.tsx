@@ -81,7 +81,7 @@ export default function PaywallModal({
       const newPlan = planFromCustomerInfo(info);
       if (newPlan !== 'FREE') {
         setPlan(newPlan);
-        await syncSubscriptionPlan(newPlan);
+        await syncSubscriptionPlan();
         onClose();
       }
     } catch (err: any) {
@@ -101,7 +101,7 @@ export default function PaywallModal({
       const newPlan = planFromCustomerInfo(info);
       if (newPlan !== 'FREE') {
         setPlan(newPlan);
-        await syncSubscriptionPlan(newPlan);
+        await syncSubscriptionPlan();
         onClose();
       }
     } catch {} finally {
