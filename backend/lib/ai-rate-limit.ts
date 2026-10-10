@@ -75,3 +75,18 @@ export async function checkAndIncrementAiQuota(
   const remaining = limit === -1 ? -1 : limit - (currentCalls + 1);
   return { ok: true, remaining, currentCalls, needsReset };
 }
+
+/**
+ * Gives back one AI call when the call failed on our side (AI provider error,
+ * unparseable response), so users aren't charged quota for failures.
+ */
+export async function refundAiQuota(userId: string): Promise<void> {
+  try {
+    await prisma.user.updateMany({
+      where: { id: userId, aiCallsToday: { gt: 0 } },
+      data: { aiCallsToday: { decrement: 1 } },
+    });
+  } catch (error) {
+    console.error('[refundAiQuota]', error);
+  }
+}

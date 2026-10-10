@@ -1,6 +1,6 @@
 import axios from 'axios';
-import * as FileSystem from 'expo-file-system/legacy';
 import { api } from './client';
+import { toCompressedBase64 } from '@/lib/image';
 
 export interface FoodAnalysis {
   food: string;
@@ -71,11 +71,16 @@ export const analyzeFoodImage = async (
   mode: 'food' | 'label' = 'food',
 ): Promise<FoodAnalysis> => {
   try {
-    const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' as any });
-    const response = await api.post<FoodAnalysis>('/api/vision', { image: base64, lang: lang ?? 'en-US', mode });
+    // 1024px is plenty for food / label recognition and keeps the request ~200 KB.
+    const base64 = await toCompressedBase64(imageUri, { maxWidth: 1024, quality: 0.7 });
+    const response = await api.post<FoodAnalysis>(
+      '/api/vision',
+      { image: base64, lang: lang ?? 'en-US', mode },
+      { timeout: 60_000 } // AI analysis can take longer than the default API timeout
+    );
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.error || '分析图片失败');
+    throw new Error(error.response?.data?.error || 'Image analysis failed');
   }
 };
 

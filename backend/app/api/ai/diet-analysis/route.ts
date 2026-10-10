@@ -1,20 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { checkAndIncrementAiQuota } from '@/lib/ai-rate-limit';
+import { checkAndIncrementAiQuota, refundAiQuota } from '@/lib/ai-rate-limit';
+import { TEXT_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 
-const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY?.trim();
-const FIREWORKS_API_URL = 'https://api.fireworks.ai/inference/v1/chat/completions';
+// The prompt is written in Chinese; this tells the model which language to answer in.
+const RESPONSE_LANGUAGE: Record<string, string> = {
+  'en-US': 'English',
+  'zh-CN': '简体中文',
+  'zh-TW': '繁體中文',
+  'ja-JP': '日本語',
+  'ko-KR': '한국어',
+};
 
 const GOAL_LABELS: Record<string, string> = { lose_weight: '减重', lose_fat: '减脂', gain_muscle: '增肌' };
 const GENDER_LABELS: Record<string, string> = { male: '男', female: '女', other: '其他' };
+
+// AI calls can take up to ~30s; don't let the function be cut off first.
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   try {
     const authResult = await authenticateRequest();
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
+    const lang = request.nextUrl.searchParams.get('lang') ?? 'en-US';
+    const responseLanguage = RESPONSE_LANGUAGE[lang] ?? RESPONSE_LANGUAGE['en-US'];
 
     // ── 限流检查 ────────────────────────────────────────────────────────────
     const quota = await checkAndIncrementAiQuota(userId);
@@ -39,8 +50,10 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    if (!FIREWORKS_API_KEY) {
-      return NextResponse.json({ error: 'AI service not configured' }, { status: 500 });
+    if (!process.env.FIREWORKS_API_KEY?.trim()) {
+      await refundAiQuota(userId);
+      console.error('[GET /api/ai/diet-analysis] FIREWORKS_API_KEY is not configured');
+      return NextResponse.json({ error: 'AI service not configured' }, { status: 503 });
     }
 
     const mealSummary = meals.length > 0
@@ -88,29 +101,23 @@ export async function GET(request: NextRequest) {
   "score": 评分(1-10的整数)
 }`;
 
-    const response = await axios.post(
-      FIREWORKS_API_URL,
-      {
-        model: 'accounts/fireworks/models/qwen3-30b-a3b-instruct',
-        messages: [{ role: 'user', content: prompt }],
+    let analysis: { summary: string; suggestions: string[]; exercise: string; score: number };
+    try {
+      const content = await fireworksChat({
+        model: TEXT_MODEL,
+        messages: [{ role: 'user', content: `${prompt}\n\nWrite all text values in ${responseLanguage}.` }],
         temperature: 0.3,
-        max_tokens: 600,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${FIREWORKS_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 20000,
-      }
-    );
-
-    const content = response.data.choices[0]?.message?.content || '';
-    const jsonContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
-    const analysis = JSON.parse(jsonContent);
+      });
+      analysis = extractJson(content);
+    } catch (error) {
+      await refundAiQuota(userId);
+      console.error('[GET /api/ai/diet-analysis] AI call failed', { model: TEXT_MODEL, reason: describeAiError(error) });
+      return NextResponse.json({ error: 'Analysis failed' }, { status: 502 });
+    }
 
     return NextResponse.json({ ...analysis, remaining: quota.remaining });
   } catch (error: any) {
+    console.error('[GET /api/ai/diet-analysis]', error);
     return NextResponse.json({ error: 'Analysis failed' }, { status: 500 });
   }
 }
