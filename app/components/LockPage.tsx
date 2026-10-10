@@ -85,7 +85,7 @@ const COPY = {
       tag: 'AI nutrition tracking, built for people who want to stop thinking about food.',
       cols: [
         { h: 'Product', items: [['Features', '#features'], ['Screens', '#screens'], ['Community', '#community'], ['FAQ', '#faq']] as [string, string][] },
-        { h: 'Company', items: [['Support', '/support'], ['Privacy', '/privacy'], ['Jkeroro.com', 'https://jkeroro.com']] as [string, string][] },
+        { h: 'Company', items: [['Support', '/support'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Jkeroro.com', 'https://jkeroro.com']] as [string, string][] },
         { h: 'Get Lock', items: [['App Store', APPSTORE_URL]] as [string, string][] },
       ],
       rights: '© 2026 Lock. All rights reserved.',
@@ -166,7 +166,7 @@ const COPY = {
       tag: 'AI 营养追踪，献给不想再为食物内耗的人。',
       cols: [
         { h: '产品', items: [['功能', '#features'], ['界面', '#screens'], ['社区', '#community'], ['常见问题', '#faq']] as [string, string][] },
-        { h: '公司', items: [['支持', '/support'], ['隐私', '/privacy'], ['Jkeroro.com', 'https://jkeroro.com']] as [string, string][] },
+        { h: '公司', items: [['支持', '/support'], ['隐私', '/privacy'], ['条款', '/terms'], ['Jkeroro.com', 'https://jkeroro.com']] as [string, string][] },
         { h: '获取 Lock', items: [['App Store', APPSTORE_URL]] as [string, string][] },
       ],
       rights: '© 2026 Lock. 保留所有权利。',
