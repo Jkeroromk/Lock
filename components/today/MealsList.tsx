@@ -1,8 +1,10 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, TouchableOpacity, Alert } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
+import { Card } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { deleteMeal } from '@/services/api';
 import { useStore } from '@/store/useStore';
@@ -25,7 +27,7 @@ const MEAL_ICONS = ['sunny', 'cafe', 'restaurant', 'moon'] as const;
 
 export default function MealsList({ meals }: MealsListProps) {
   const { t } = useTranslation();
-  const colors = useTheme();
+  const c = useTheme();
   const { removeMealOptimistic, refreshToday } = useStore();
   const [activeMealId, setActiveMealId] = useState<string | null>(null);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
@@ -51,30 +53,28 @@ export default function MealsList({ meals }: MealsListProps) {
     ]);
   };
 
+  const isLight = c.backgroundPrimary !== c.ink;
+
   return (
-    <View style={{ marginBottom: DIMENSIONS.SPACING }}>
+    <View style={{ marginBottom: 14 }}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Ionicons name="restaurant" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
-          <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>{t('today.meals')}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.cardBackground, borderRadius: 10, borderWidth: 1, borderColor: colors.borderPrimary, paddingHorizontal: DIMENSIONS.SPACING * 0.6, paddingVertical: 4, gap: 4 }}>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '800', color: colors.textPrimary }}>{meals.length}</Text>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>{t('today.recorded')}</Text>
-        </View>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 4, marginBottom: 10 }}>
+        <Text style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{t('today.plates')}</Text>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary }}>
+          {meals.length > 0 ? `${Math.round(totalCalories).toLocaleString()} ${t('today.kcal')}` : ''}
+        </Text>
       </View>
 
       {meals.length === 0 ? (
-        <View style={{ borderRadius: 20, padding: DIMENSIONS.SPACING * 2, backgroundColor: colors.cardBackground, borderWidth: 1, borderColor: colors.borderPrimary, alignItems: 'center' }}>
-          <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: colors.cardBackgroundSecondary, alignItems: 'center', justifyContent: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-            <Ionicons name="restaurant-outline" size={TYPOGRAPHY.iconM} color={colors.textSecondary} />
+        <Card padding={24} style={{ alignItems: 'center' }}>
+          <View style={{ width: 56, height: 56, borderRadius: 16, borderWidth: 2, borderColor: c.borderPrimary, alignItems: 'center', justifyContent: 'center', marginBottom: 12, transform: [{ rotate: '-4deg' }] }}>
+            <Ionicons name="camera-outline" size={26} color={c.textPrimary} />
           </View>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary, marginBottom: 4 }}>{t('today.noMeals')}</Text>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '500', color: colors.textSecondary, textAlign: 'center', lineHeight: TYPOGRAPHY.bodyS * 1.6 }}>{t('today.startRecording')}</Text>
-        </View>
+          <Text style={{ fontSize: 18, fontWeight: '800', color: c.textPrimary, marginBottom: 4 }}>{t('today.noMeals')}</Text>
+          <Text style={{ fontSize: 14, color: c.textSecondary, textAlign: 'center', lineHeight: 20 }}>{t('today.startRecording')}</Text>
+        </Card>
       ) : (
-        <View style={{ borderRadius: 20, overflow: 'hidden', backgroundColor: colors.cardBackground, borderWidth: 1, borderColor: colors.borderPrimary }}>
+        <View style={{ gap: 8 }}>
           {meals.map((meal, index) => {
             const mealIcon = MEAL_ICONS[Math.min(index, MEAL_ICONS.length - 1)];
             const rowId = meal.id ?? String(index);
@@ -82,47 +82,64 @@ export default function MealsList({ meals }: MealsListProps) {
             const isDeleting = deletingId === meal.id;
 
             return (
-              <View key={rowId} style={{ borderBottomWidth: index < meals.length - 1 ? 1 : 0, borderBottomColor: colors.borderPrimary, opacity: isDeleting ? 0.4 : 1 }}>
-                <TouchableOpacity activeOpacity={0.7} onPress={() => setActiveMealId(isActive ? null : rowId)} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: DIMENSIONS.SPACING, paddingVertical: DIMENSIONS.SPACING * 0.9 }}>
-                  <View style={{ width: 36, height: 36, borderRadius: 11, backgroundColor: colors.cardBackgroundSecondary, alignItems: 'center', justifyContent: 'center', marginRight: DIMENSIONS.SPACING * 0.7 }}>
-                    <Ionicons name={mealIcon as any} size={TYPOGRAPHY.bodyM} color={colors.textPrimary} />
+              <View
+                key={rowId}
+                style={{
+                  backgroundColor: c.cardBackground, borderRadius: 18, borderWidth: 2,
+                  borderColor: isActive ? c.textPrimary : c.borderPrimary,
+                  overflow: 'hidden', opacity: isDeleting ? 0.4 : 1,
+                }}
+              >
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setActiveMealId(isActive ? null : rowId)}
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: isActive }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9, paddingLeft: 9, paddingRight: 14 }}
+                >
+                  <View style={{
+                    width: 46, height: 46, borderRadius: 12,
+                    backgroundColor: c.cardBackgroundSecondary,
+                    borderWidth: isLight ? 1.5 : 0, borderColor: c.ink,
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Ionicons name={mealIcon as any} size={20} color={c.textPrimary} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '700', color: colors.textPrimary, marginBottom: 3 }} numberOfLines={1}>{meal.food_name}</Text>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>{t('log.protein')} {meal.protein}g · {t('log.carbs')} {meal.carbs}g · {t('log.fat')} {meal.fat}g</Text>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }} numberOfLines={1}>{meal.food_name}</Text>
+                    <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, marginTop: 2 }} numberOfLines={1}>
+                      P{Math.round(meal.protein)} C{Math.round(meal.carbs)} F{Math.round(meal.fat)}
+                    </Text>
                   </View>
-                  <View style={{ alignItems: 'flex-end', marginLeft: 8, gap: 2 }}>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>{meal.calories}</Text>
-                    <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>{t('today.kcal')}</Text>
-                  </View>
-                  <Ionicons name={isActive ? 'chevron-up' : 'chevron-down'} size={TYPOGRAPHY.bodyS} color={colors.textSecondary} style={{ marginLeft: 6 }} />
+                  <Text style={{ fontSize: 20, fontWeight: '800', color: c.textPrimary }}>{Math.round(meal.calories)}</Text>
                 </TouchableOpacity>
 
                 {isActive && (
-                  <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.borderPrimary, backgroundColor: colors.cardBackgroundSecondary }}>
-                    <TouchableOpacity onPress={() => { setEditingMeal(meal); setActiveMealId(null); }} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: DIMENSIONS.SPACING * 0.75, borderRightWidth: 1, borderRightColor: colors.borderPrimary }}>
-                      <Ionicons name="create-outline" size={TYPOGRAPHY.bodyM} color={colors.textPrimary} />
-                      <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary }}>{t('log.edit')}</Text>
+                  <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 9, paddingBottom: 9 }}>
+                    <TouchableOpacity
+                      onPress={() => { setEditingMeal(meal); setActiveMealId(null); }}
+                      accessibilityRole="button"
+                      style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 13, borderWidth: 2, borderColor: c.textPrimary }}
+                    >
+                      <Ionicons name="create-outline" size={16} color={c.textPrimary} />
+                      <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 13, color: c.textPrimary }}>{t('log.edit')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDelete(meal)} disabled={isDeleting} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: DIMENSIONS.SPACING * 0.75 }}>
-                      <Ionicons name="trash-outline" size={TYPOGRAPHY.bodyM} color="#EF4444" />
-                      <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: '#EF4444' }}>{isDeleting ? t('common.deleting' as any) : t('common.delete')}</Text>
+                    <TouchableOpacity
+                      onPress={() => handleDelete(meal)}
+                      disabled={isDeleting}
+                      accessibilityRole="button"
+                      style={{ flex: 1, minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 13, borderWidth: 2, borderColor: c.danger }}
+                    >
+                      <Ionicons name="trash-outline" size={16} color={c.danger} />
+                      <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 13, color: c.danger }}>
+                        {isDeleting ? t('common.deleting' as any) : t('common.delete')}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 )}
               </View>
             );
           })}
-
-          {meals.length > 1 && (
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: DIMENSIONS.SPACING * 0.8, paddingHorizontal: DIMENSIONS.SPACING, backgroundColor: colors.cardBackgroundSecondary, borderTopWidth: 1, borderTopColor: colors.borderPrimary }}>
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8 }}>{t('today.todayCalories')}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>{totalCalories.toLocaleString()}</Text>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary }}>{t('today.kcal')}</Text>
-              </View>
-            </View>
-          )}
         </View>
       )}
 

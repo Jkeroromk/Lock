@@ -7,6 +7,12 @@ const koKR = {
     steps: '걸음', stepsUnit: '걸음', energy: '에너지', heartRate: '심박수', bpm: '회/분',
     meals: '식사', recorded: '기록됨', noMeals: '식사가 기록되지 않았습니다',
     startRecording: '첫 식사를 기록하여 영양을 추적하세요',
+    kcalLeft: '남은 kcal',
+    kcalOver: '초과 kcal',
+    eatenOfGoal: '{eaten} 섭취 · 목표 {goal}',
+    plates: '오늘의 식사',
+    streakDays: '{n}일 연속',
+    ofGoal: '목표 {goal}',
   },
   log: {
     startLogging: '기록 시작',

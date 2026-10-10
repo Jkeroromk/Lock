@@ -1,7 +1,7 @@
 import {
-  View, Text, Image, TextInput, TouchableOpacity, Modal,
-  ActivityIndicator, KeyboardAvoidingView, Platform, Animated,
+  View, Image, TouchableOpacity, Modal, ActivityIndicator, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
+import { Text, TextInput } from '@/components/ui/Text';
 import { useState, useEffect, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';

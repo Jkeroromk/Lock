@@ -1,4 +1,5 @@
-import { View, Text, Animated, Easing } from 'react-native';
+import { View, Animated, Easing } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useEffect, useRef } from 'react';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';

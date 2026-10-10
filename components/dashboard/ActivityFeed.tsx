@@ -1,4 +1,5 @@
-import { View, Text, Image } from 'react-native';
+import { View, Image } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';

@@ -1,7 +1,7 @@
 import {
-  View, Text, TextInput, TouchableOpacity, Alert,
-  KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
+  View, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
 } from 'react-native';
+import { Text, TextInput } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';

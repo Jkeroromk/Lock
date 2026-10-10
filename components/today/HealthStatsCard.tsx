@@ -1,84 +1,46 @@
-import { View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useTheme } from '@/hooks/useTheme';
+import { FONTS } from '@/constants/fonts';
+import { Card, Label } from '@/components/ui/bxc';
 
 interface HealthStatsCardProps {
-  icon: string;
   label: string;
-  value: string | number;
+  value: number;
   unit?: string;
-  accentColor?: string;
   goal?: number;
+  /** The inverted (paper-on-ink / ink-on-paper) card — use for one card per row. */
+  inverse?: boolean;
+  /** Short caption under the number, e.g. "64% of 10,000" */
+  caption?: string;
 }
 
-export default function HealthStatsCard({ icon, label, value, unit, goal }: HealthStatsCardProps) {
-  const colors = useTheme();
-  const numVal = typeof value === 'number' ? value : parseFloat(value as string) || 0;
-  const progressPct = goal && goal > 0 ? Math.min(numVal / goal, 1) : null;
+export default function HealthStatsCard({ label, value, unit, goal, inverse, caption }: HealthStatsCardProps) {
+  const c = useTheme();
+  const fg = inverse ? c.textInverse : c.textPrimary;
+  const muted = inverse ? c.textInverse : c.textSecondary;
+  const pct = goal && goal > 0 ? Math.min(value / goal, 1) : 0;
+  // Yellow reads on dark surfaces; on light ones use ink.
+  const onDark = inverse ? c.surfaceInverse === c.ink : c.backgroundPrimary === c.ink;
+  const fill = onDark ? c.accent : c.ink;
 
   return (
-    <View style={{
-      flex: 1,
-      borderRadius: 20,
-      backgroundColor: colors.cardBackground,
-      borderWidth: 1, borderColor: colors.borderPrimary,
-      overflow: 'hidden',
-    }}>
-      <View style={{ padding: DIMENSIONS.SPACING * 0.9 }}>
-        {/* Icon + label */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.6, gap: 6 }}>
-          <View style={{
-            width: 30, height: 30, borderRadius: 9,
-            backgroundColor: colors.cardBackgroundSecondary,
-            alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Ionicons name={icon as any} size={TYPOGRAPHY.bodyM} color={colors.textPrimary} />
-          </View>
-          <Text style={{
-            fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700',
-            color: colors.textSecondary, textTransform: 'uppercase',
-            letterSpacing: 0.8, flex: 1,
-          }} numberOfLines={1}>
-            {label}
-          </Text>
-        </View>
-
-        {/* Value */}
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 3 }}>
-          <Text style={{
-            fontSize: TYPOGRAPHY.numberS, fontWeight: '900',
-            color: colors.textPrimary, letterSpacing: -1,
-            lineHeight: TYPOGRAPHY.numberS * 1,
-          }}>
-            {typeof value === 'number' ? value.toLocaleString() : value}
-          </Text>
-          {unit && (
-            <Text style={{
-              fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700',
-              color: colors.textSecondary,
-            }}>
-              {unit}
-            </Text>
-          )}
-        </View>
-
-        {/* Optional progress bar */}
-        {progressPct !== null && (
-          <View style={{
-            height: 3, borderRadius: 2,
-            backgroundColor: colors.cardBackgroundSecondary,
-            marginTop: DIMENSIONS.SPACING * 0.5,
-            overflow: 'hidden',
-          }}>
-            <View style={{
-              height: '100%', borderRadius: 2,
-              width: `${progressPct * 100}%`,
-              backgroundColor: colors.textPrimary, opacity: 0.8,
-            }} />
-          </View>
-        )}
+    <Card variant={inverse ? 'inverse' : 'default'} padding={14} style={{ flex: 1 }}>
+      <Label color={muted} style={inverse ? { opacity: 0.8 } : undefined}>{label}</Label>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 2 }}>
+        <Text style={{ fontSize: 32, fontWeight: '800', letterSpacing: -1.2, color: fg }}>
+          {Math.round(value).toLocaleString()}
+        </Text>
+        {unit ? <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: muted }}>{unit}</Text> : null}
       </View>
-    </View>
+      {goal ? (
+        <View style={{ height: 6, borderRadius: 3, backgroundColor: inverse ? 'rgba(127,127,127,0.35)' : c.track, marginTop: 10, overflow: 'hidden' }}>
+          <View style={{ height: 6, width: `${pct * 100}%`, backgroundColor: fill, borderRadius: 3 }} />
+        </View>
+      ) : null}
+      {caption ? (
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: muted, marginTop: 6, opacity: inverse ? 0.8 : 1 }}>{caption}</Text>
+      ) : null}
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';

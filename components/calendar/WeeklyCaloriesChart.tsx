@@ -1,4 +1,5 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';

@@ -8,6 +8,12 @@ const enUS = {
     heartRate: 'Heart Rate', bpm: 'bpm', meals: 'Meals', recorded: 'Recorded',
     noMeals: 'No meals recorded',
     startRecording: 'Start recording your first meal to track nutrition',
+    kcalLeft: 'kcal left',
+    kcalOver: 'kcal over',
+    eatenOfGoal: '{eaten} eaten · goal {goal}',
+    plates: 'Today\'s plates',
+    streakDays: '{n}-day streak',
+    ofGoal: 'of {goal}',
   },
   log: {
     startLogging: 'Start Logging',

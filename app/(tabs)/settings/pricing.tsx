@@ -1,7 +1,7 @@
 import {
-  View, Text, ScrollView, TouchableOpacity,
-  ActivityIndicator, Alert, Linking,
+  View, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Linking,
 } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';

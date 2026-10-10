@@ -1,4 +1,5 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
