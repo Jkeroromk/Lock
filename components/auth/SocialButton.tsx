@@ -1,8 +1,9 @@
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useTheme } from '@/hooks/useTheme';
+import { STROKE } from '@/components/ui/bxc';
 
 export function GoogleG({ size = 20 }: { size?: number }) {
   return (
@@ -16,32 +17,46 @@ export function GoogleG({ size = 20 }: { size?: number }) {
   );
 }
 
-export function SocialButton({
-  icon, label, onPress, disabled, colors, filled = false, brandColor,
-}: {
-  icon: string; label: string; onPress: () => void;
-  disabled: boolean; colors: any; filled?: boolean; brandColor?: string;
+type Provider = 'apple' | 'google' | 'facebook';
+
+/**
+ * Third-party sign-in buttons. Apple follows Apple's HIG (solid, contrasting with
+ * the screen), Google keeps its white button and full-color G, Facebook keeps its blue mark.
+ */
+export function SocialButton({ provider, label, onPress, disabled, style }: {
+  provider: Provider;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
 }) {
-  const bg = brandColor ?? (filled ? colors.textPrimary : colors.cardBackground);
-  const fg = brandColor ? '#FFFFFF' : filled ? colors.backgroundPrimary : colors.textPrimary;
-  const border = brandColor ?? (filled ? colors.textPrimary : colors.borderPrimary);
+  const c = useTheme();
+  const look = {
+    apple: { bg: c.textPrimary, border: c.textPrimary, fg: c.backgroundPrimary },
+    google: { bg: '#FFFFFF', border: c.backgroundPrimary === c.ink ? '#FFFFFF' : c.borderPrimary, fg: '#1F1F1F' },
+    facebook: { bg: 'transparent', border: c.borderPrimary, fg: c.textPrimary },
+  }[provider];
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.75}
-      style={{
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-        borderRadius: 14, paddingVertical: DIMENSIONS.SPACING * 0.65,
-        backgroundColor: bg, borderWidth: 2, borderColor: border,
-        gap: DIMENSIONS.SPACING * 0.4, opacity: disabled ? 0.5 : 1,
-      }}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[{
+        minHeight: 52, borderRadius: 14, borderWidth: STROKE.control, borderColor: look.border, backgroundColor: look.bg,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, opacity: disabled ? 0.5 : 1,
+      }, style]}
     >
-      <Ionicons name={icon as any} size={TYPOGRAPHY.iconXS} color={fg} />
-      <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: fg, letterSpacing: 0.2 }}>
-        {label}
-      </Text>
+      {provider === 'google' ? <GoogleG size={19} /> : (
+        <Ionicons
+          name={provider === 'apple' ? 'logo-apple' : 'logo-facebook'}
+          size={20}
+          color={provider === 'facebook' ? '#1877F2' : look.fg}
+        />
+      )}
+      <Text style={{ fontSize: 16, fontWeight: '700', color: look.fg }}>{label}</Text>
     </TouchableOpacity>
   );
 }

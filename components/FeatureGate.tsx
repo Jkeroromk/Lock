@@ -31,23 +31,23 @@ export default function FeatureGate({ feature, children, fallback }: FeatureGate
 
   return (
     <View style={{
-      borderRadius: 16,
-      padding: DIMENSIONS.SPACING * 1.5,
+      borderRadius: 22,
+      padding: 20,
       backgroundColor: colors.cardBackground,
-      borderWidth: 1.5,
+      borderWidth: 2,
       borderColor: colors.borderPrimary,
       alignItems: 'center',
       gap: DIMENSIONS.SPACING * 0.6,
     }}>
       <View style={{
-        width: 44, height: 44, borderRadius: 22,
-        backgroundColor: '#F59E0B22',
-        alignItems: 'center', justifyContent: 'center',
+        width: 52, height: 52, borderRadius: 16,
+        backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink,
+        alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }],
       }}>
-        <Ionicons name="lock-closed" size={TYPOGRAPHY.iconS} color="#F59E0B" />
+        <Ionicons name="lock-closed" size={22} color={colors.onAccent} />
       </View>
       <Text style={{
-        fontSize: TYPOGRAPHY.bodyM, fontWeight: '900',
+        fontSize: 20, fontWeight: '800',
         color: colors.textPrimary, textAlign: 'center',
       }}>
         {t('featureGate.upgradeTitle' as any)}
@@ -60,16 +60,14 @@ export default function FeatureGate({ feature, children, fallback }: FeatureGate
         {t('featureGate.upgradeDesc' as any)}
       </Text>
       <Link href="/(tabs)/settings/pricing" asChild>
-        <TouchableOpacity style={{
-          marginTop: DIMENSIONS.SPACING * 0.4,
-          paddingHorizontal: DIMENSIONS.SPACING * 1.5,
-          paddingVertical: DIMENSIONS.SPACING * 0.6,
-          backgroundColor: colors.textPrimary,
-          borderRadius: 12,
+        <TouchableOpacity accessibilityRole="button" style={{
+          marginTop: 6, minHeight: 48, paddingHorizontal: 22, justifyContent: 'center',
+          backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink,
+          borderRadius: 14,
         }}>
           <Text style={{
-            fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
-            color: colors.backgroundPrimary,
+            fontSize: 16, fontWeight: '800',
+            color: colors.onAccent,
           }}>
             {t('featureGate.viewPlans' as any)}
           </Text>

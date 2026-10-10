@@ -174,6 +174,7 @@ const zhTW = {
     noChallengesHint: '創建一個挑戰，邀請好友一起參與！',
   },
   settings: {
+    title: '設定',
     goals: '目標', clickToEdit: '點擊編輯每日目標', editGoals: '編輯目標',
     dailyGoalsSummary: '每日 {calories} 大卡 · {steps} 步',
     dailyCalories: '每日卡路里', dailySteps: '每日步數',

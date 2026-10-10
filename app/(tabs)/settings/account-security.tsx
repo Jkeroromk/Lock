@@ -369,14 +369,14 @@ export default function AccountSecurityScreen() {
           {/* ── Danger Zone ── */}
           <Text style={{
             fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700',
-            color: '#ef4444', opacity: 0.8,
+            color: colors.danger,
             marginBottom: DIMENSIONS.SPACING * 0.6,
             textTransform: 'uppercase', letterSpacing: 1,
           }}>
             {t('settings.dangerZone')}
           </Text>
 
-          <View style={{ ...cardStyle, borderColor: '#ef444440' }}>
+          <View style={{ ...cardStyle, borderColor: colors.danger }}>
             <TouchableOpacity
               onPress={handleDeleteAccount}
               activeOpacity={0.7}
@@ -384,14 +384,14 @@ export default function AccountSecurityScreen() {
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <View style={{ ...iconBoxStyle, backgroundColor: '#ef444420', borderColor: '#ef444440' }}>
+                <View style={{ ...iconBoxStyle, backgroundColor: 'transparent', borderColor: colors.danger }}>
                   {deletingAccount
-                    ? <ActivityIndicator color="#ef4444" size="small" />
-                    : <Ionicons name="trash-outline" size={TYPOGRAPHY.iconS} color="#ef4444" />
+                    ? <ActivityIndicator color={colors.danger} size="small" />
+                    : <Ionicons name="trash-outline" size={TYPOGRAPHY.iconS} color={colors.danger} />
                   }
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: '#ef4444', marginBottom: 4 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.danger, marginBottom: 4 }}>
                     {t('settings.deleteAccount')}
                   </Text>
                   <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary }}>
@@ -399,7 +399,7 @@ export default function AccountSecurityScreen() {
                   </Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color="#ef4444" />
+              <Ionicons name="chevron-forward" size={TYPOGRAPHY.body} color={colors.danger} />
             </TouchableOpacity>
           </View>
         </View>

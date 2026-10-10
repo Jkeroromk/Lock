@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRef, useState } from 'react';
@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { FONTS } from '@/constants/fonts';
+import { Button } from '@/components/ui/bxc';
 
 interface Props {
   isLoading: boolean;
@@ -37,9 +39,11 @@ export default function ForgotPasswordScreen({ isLoading, onReset, onBack }: Pro
         >
           <TouchableOpacity
             onPress={onBack}
-            style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8, alignSelf: 'flex-start' }}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            style={{ width: 44, height: 44, marginLeft: 10, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}
           >
-            <Ionicons name="arrow-back" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
 
           <View style={{
@@ -49,17 +53,15 @@ export default function ForgotPasswordScreen({ isLoading, onReset, onBack }: Pro
           }}>
             <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.5 }}>
               <View style={{
-                width: DIMENSIONS.SCREEN_WIDTH * 0.18, height: DIMENSIONS.SCREEN_WIDTH * 0.18,
-                borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.045,
-                backgroundColor: colors.textPrimary,
-                alignItems: 'center', justifyContent: 'center',
-                marginBottom: DIMENSIONS.SPACING * 0.8,
+                width: 72, height: 72, borderRadius: 22, backgroundColor: colors.accent,
+                borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center',
+                marginBottom: 18, transform: [{ rotate: '-4deg' }],
               }}>
-                <Ionicons name="lock-closed-outline" size={TYPOGRAPHY.iconM} color={colors.backgroundPrimary} />
+                <Ionicons name="lock-closed-outline" size={32} color={colors.onAccent} />
               </View>
               <Text style={{
-                fontSize: TYPOGRAPHY.titleS, fontWeight: '900',
-                color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.3, letterSpacing: -0.5,
+                fontSize: 34, fontWeight: '800',
+                color: colors.textPrimary, marginBottom: 8, letterSpacing: -1.2,
               }}>
                 {t('auth.resetPassword')}
               </Text>
@@ -68,7 +70,7 @@ export default function ForgotPasswordScreen({ isLoading, onReset, onBack }: Pro
               </Text>
             </View>
 
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.6, marginBottom: DIMENSIONS.SPACING * 0.3, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, marginBottom: 6, textTransform: 'uppercase' }}>
               {t('auth.verificationCode')}
             </Text>
             <TextInput
@@ -89,7 +91,7 @@ export default function ForgotPasswordScreen({ isLoading, onReset, onBack }: Pro
               onSubmitEditing={() => newPasswordRef.current?.focus()}
             />
 
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.6, marginBottom: DIMENSIONS.SPACING * 0.3, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, marginBottom: 6, textTransform: 'uppercase' }}>
               {t('auth.newPassword')}
             </Text>
             <View style={{ position: 'relative', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
@@ -111,30 +113,20 @@ export default function ForgotPasswordScreen({ isLoading, onReset, onBack }: Pro
               />
               <TouchableOpacity
                 onPress={() => setShowNewPassword(!showNewPassword)}
-                style={{ position: 'absolute', right: DIMENSIONS.SPACING * 0.9, top: DIMENSIONS.SPACING * 0.85 }}
+                accessibilityRole="button"
+                accessibilityLabel={showNewPassword ? 'Hide password' : 'Show password'}
+                style={{ position: 'absolute', right: 4, top: 0, bottom: 0, width: 44, alignItems: 'center', justifyContent: 'center' }}
               >
                 <Ionicons name={showNewPassword ? 'eye-off' : 'eye'} size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
+            <Button
+              label={t('auth.ok')}
+              loading={isLoading}
+              disabled={!ready}
               onPress={() => onReset(resetCode, newPassword)}
-              disabled={isLoading || !ready}
-              style={{
-                borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.7,
-                backgroundColor: ready ? colors.textPrimary : colors.cardBackground,
-                alignItems: 'center',
-                borderWidth: !ready ? 1.5 : 0,
-                borderColor: colors.borderPrimary,
-              }}
-            >
-              {isLoading
-                ? <ActivityIndicator color={colors.backgroundPrimary} />
-                : <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: ready ? colors.backgroundPrimary : colors.textSecondary }}>
-                  {t('auth.ok')}
-                </Text>
-              }
-            </TouchableOpacity>
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

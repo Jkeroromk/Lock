@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRef, useState } from 'react';
@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { Button } from '@/components/ui/bxc';
 
 interface Props {
   email: string;
@@ -36,9 +37,11 @@ export default function OtpVerificationScreen({ email, isLoading, onVerify, onRe
         >
           <TouchableOpacity
             onPress={onBack}
-            style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8, alignSelf: 'flex-start' }}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            style={{ width: 44, height: 44, marginLeft: 10, marginTop: 4, alignItems: 'center', justifyContent: 'center' }}
           >
-            <Ionicons name="arrow-back" size={TYPOGRAPHY.iconS} color={colors.textPrimary} />
+            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
 
           <View style={{
@@ -48,17 +51,15 @@ export default function OtpVerificationScreen({ email, isLoading, onVerify, onRe
           }}>
             <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.5 }}>
               <View style={{
-                width: DIMENSIONS.SCREEN_WIDTH * 0.18, height: DIMENSIONS.SCREEN_WIDTH * 0.18,
-                borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.045,
-                backgroundColor: colors.textPrimary,
-                alignItems: 'center', justifyContent: 'center',
-                marginBottom: DIMENSIONS.SPACING * 0.8,
+                width: 72, height: 72, borderRadius: 22, backgroundColor: colors.accent,
+                borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center',
+                marginBottom: 18, transform: [{ rotate: '-4deg' }],
               }}>
-                <Ionicons name="mail-outline" size={TYPOGRAPHY.iconM} color={colors.backgroundPrimary} />
+                <Ionicons name="mail-outline" size={32} color={colors.onAccent} />
               </View>
               <Text style={{
-                fontSize: TYPOGRAPHY.titleS, fontWeight: '900',
-                color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 0.3, letterSpacing: -0.5,
+                fontSize: 34, fontWeight: '800',
+                color: colors.textPrimary, marginBottom: 8, letterSpacing: -1.2,
               }}>
                 {t('auth.checkEmail')}
               </Text>
@@ -79,16 +80,17 @@ export default function OtpVerificationScreen({ email, isLoading, onVerify, onRe
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <View key={i} style={{
                   width: DIMENSIONS.SCREEN_WIDTH * 0.12, height: DIMENSIONS.SCREEN_WIDTH * 0.15,
-                  borderRadius: 14, backgroundColor: colors.cardBackground,
+                  borderRadius: 14,
                   borderWidth: 2,
                   borderColor: codeDigits[i] ? colors.textPrimary : colors.borderPrimary,
+                  backgroundColor: codeDigits[i] ? colors.accent : colors.cardBackground,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
                   <TextInput
                     ref={(r) => { codeRefs.current[i] = r; }}
                     style={{
                       width: '100%', height: '100%', textAlign: 'center',
-                      fontSize: TYPOGRAPHY.titleS, fontWeight: '900', color: colors.textPrimary,
+                      fontSize: 26, fontWeight: '800', color: codeDigits[i] ? colors.onAccent : colors.textPrimary,
                     }}
                     keyboardType="number-pad"
                     maxLength={1}
@@ -114,33 +116,20 @@ export default function OtpVerificationScreen({ email, isLoading, onVerify, onRe
               ))}
             </View>
 
-            <TouchableOpacity
+            <Button
+              label={t('auth.verify')}
+              loading={isLoading}
+              disabled={currentCode.length < 6}
               onPress={() => onVerify(currentCode)}
-              disabled={isLoading || currentCode.length < 6}
-              style={{
-                borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.7,
-                backgroundColor: currentCode.length === 6 ? colors.textPrimary : colors.cardBackground,
-                alignItems: 'center', justifyContent: 'center',
-                borderWidth: currentCode.length < 6 ? 1.5 : 0,
-                borderColor: colors.borderPrimary, marginBottom: DIMENSIONS.SPACING * 0.8,
-              }}
-            >
-              {isLoading
-                ? <ActivityIndicator color={currentCode.length === 6 ? colors.backgroundPrimary : colors.textPrimary} />
-                : <Text style={{
-                  fontSize: TYPOGRAPHY.bodyS, fontWeight: '900',
-                  color: currentCode.length === 6 ? colors.backgroundPrimary : colors.textSecondary,
-                }}>
-                  {t('auth.verify')}
-                </Text>
-              }
-            </TouchableOpacity>
+              style={{ marginBottom: 6 }}
+            />
 
             <TouchableOpacity
               onPress={() => { onResend(); setCodeDigits(['', '', '', '', '', '']); codeRefs.current[0]?.focus(); }}
-              style={{ alignItems: 'center' }}
+              accessibilityRole="button"
+              style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44 }}
             >
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textPrimary, opacity: 0.5, fontWeight: '600' }}>
+              <Text style={{ fontSize: 14, color: colors.textPrimary, fontWeight: '700' }}>
                 {t('auth.resendCode')}
               </Text>
             </TouchableOpacity>

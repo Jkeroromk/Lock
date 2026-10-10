@@ -1,7 +1,7 @@
 import { View, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
 import { useTheme } from '@/hooks/useTheme';
 import CustomSwitch from './CustomSwitch';
 
@@ -30,103 +30,45 @@ export default function SettingItem({
 }: SettingItemProps) {
   const colors = useTheme();
   const content = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-        <View 
-          style={{ 
-            width: DIMENSIONS.SCREEN_WIDTH * 0.1,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.1,
-            borderRadius: 12,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: DIMENSIONS.SPACING * 0.6,
-            backgroundColor: colors.cardBackgroundSecondary,
-            borderWidth: 1,
-            borderColor: colors.borderSecondary,
-          }}
-        >
-          <Ionicons name={icon as any} size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text 
-            style={{ 
-              fontSize: TYPOGRAPHY.bodyM,
-              fontWeight: '700',
-              color: colors.textPrimary,
-              marginBottom: DIMENSIONS.SPACING * 0.1,
-            }}
-          >
-            {title}
-          </Text>
-          {description && (
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '500',
-                color: colors.textPrimary,
-                opacity: 0.7,
-              }}
-            >
-              {description}
-            </Text>
-          )}
-          {value && (
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '500',
-                color: colors.textPrimary,
-                opacity: 0.7,
-              }}
-            >
-              {value}
-            </Text>
-          )}
-        </View>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <View style={{
+        width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
+        borderWidth: 2, borderColor: colors.borderPrimary,
+      }}>
+        <Ionicons name={icon as any} size={19} color={colors.textPrimary} />
       </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textPrimary }}>{title}</Text>
+        {description ? (
+          <Text style={{ fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 1 }}>{description}</Text>
+        ) : null}
+      </View>
+      {value ? (
+        <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, maxWidth: 130, textTransform: 'uppercase' }}>
+          {value}
+        </Text>
+      ) : null}
       {showSwitch ? (
-        <CustomSwitch
-          value={switchValue ?? false}
-          onValueChange={onSwitchChange || (() => {})}
-        />
-      ) : showChevron && (
-        <Ionicons name="chevron-forward" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} opacity={0.7} />
-      )}
+        <CustomSwitch value={switchValue ?? false} onValueChange={onSwitchChange || (() => {})} accessibilityLabel={title} />
+      ) : showChevron ? (
+        <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+      ) : null}
     </View>
   );
 
+  const box = {
+    borderRadius: 18, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 8, minHeight: 64,
+    justifyContent: 'center' as const,
+    backgroundColor: colors.cardBackground, borderWidth: 2, borderColor: colors.borderPrimary,
+  };
+
   if (onPress) {
     return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onPress}
-        style={{ 
-          borderRadius: 16,
-          padding: DIMENSIONS.SPACING,
-          marginBottom: DIMENSIONS.SPACING,
-          backgroundColor: colors.cardBackground,
-          borderWidth: 2,
-          borderColor: colors.borderPrimary,
-        }}
-      >
+      <TouchableOpacity activeOpacity={0.8} onPress={onPress} accessibilityRole="button" accessibilityLabel={value ? `${title}, ${value}` : title} style={box}>
         {content}
       </TouchableOpacity>
     );
   }
 
-  return (
-    <View 
-      style={{ 
-        borderRadius: 16,
-        padding: DIMENSIONS.SPACING,
-        marginBottom: DIMENSIONS.SPACING,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 2,
-        borderColor: colors.borderPrimary,
-      }}
-    >
-      {content}
-    </View>
-  );
+  return <View style={box}>{content}</View>;
 }
-

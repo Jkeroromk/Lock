@@ -174,6 +174,7 @@ const jaJP = {
     noChallengesHint: 'チャレンジを作成して友達を招待しましょう！',
   },
   settings: {
+    title: '設定',
     goals: '目標', clickToEdit: 'クリックして毎日の目標を編集', editGoals: '目標を編集',
     dailyGoalsSummary: '毎日 {calories} kcal · {steps} 歩',
     dailyCalories: '毎日のカロリー', dailySteps: '毎日の歩数',

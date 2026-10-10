@@ -1,7 +1,7 @@
 import { View, Animated, Easing } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { useEffect, useRef } from 'react';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 
@@ -16,7 +16,7 @@ export default function LoadingScreen({ hint }: { hint?: string } = {}) {
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.2,
+          toValue: 1.06,
           duration: 800,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
@@ -55,73 +55,29 @@ export default function LoadingScreen({ hint }: { hint?: string } = {}) {
   });
 
   return (
-    <View 
-      style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        backgroundColor: colors.backgroundPrimary,
-      }}
-    >
-      {/* 现代化的加载动画 */}
-      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.backgroundPrimary }}>
+      <View style={{ width: 128, height: 128, alignItems: 'center', justifyContent: 'center' }}>
         <Animated.View
           style={{
-            width: DIMENSIONS.SCREEN_WIDTH * 0.15,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.15,
-            borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.075,
-            backgroundColor: colors.textPrimary,
-            alignItems: 'center',
-            justifyContent: 'center',
-            transform: [{ scale: pulseAnim }],
-            shadowColor: colors.textPrimary,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.5,
-            shadowRadius: 20,
-            elevation: 10,
+            position: 'absolute', width: 128, height: 128, borderRadius: 64,
+            borderWidth: 5, borderColor: colors.track, borderTopColor: colors.accent, borderRightColor: colors.accent,
+            transform: [{ rotate: rotateInterpolate }],
           }}
-        >
-          <Animated.View
-            style={{
-              width: DIMENSIONS.SCREEN_WIDTH * 0.12,
-              height: DIMENSIONS.SCREEN_WIDTH * 0.12,
-              borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.06,
-              borderWidth: 3,
-              borderColor: colors.backgroundPrimary,
-              borderTopColor: 'transparent',
-              transform: [{ rotate: rotateInterpolate }],
-            }}
-          />
-        </Animated.View>
-        
-        <Text 
-          style={{ 
-            fontSize: TYPOGRAPHY.bodyS,
-            fontWeight: '600',
-            color: colors.textPrimary,
-            marginTop: DIMENSIONS.SPACING * 1.5,
-            opacity: 0.8,
-            letterSpacing: 1,
-          }}
-        >
-          {t('common.loading')}
-        </Text>
-        {hint ? (
-          <Text
-            style={{
-              fontSize: TYPOGRAPHY.bodyXS,
-              color: colors.textSecondary,
-              marginTop: DIMENSIONS.SPACING,
-              paddingHorizontal: DIMENSIONS.SPACING * 3,
-              textAlign: 'center',
-              lineHeight: TYPOGRAPHY.bodyXS * 1.5,
-            }}
-          >
-            {hint}
-          </Text>
-        ) : null}
+        />
+        <Animated.Image
+          source={require('@/assets/icons/preview-open-lock.png')}
+          style={{ width: 84, height: 84, borderRadius: 19, transform: [{ scale: pulseAnim }] }}
+          accessibilityIgnoresInvertColors
+        />
       </View>
+      <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginTop: 24, textTransform: 'uppercase' }}>
+        {t('common.loading')}
+      </Text>
+      {hint ? (
+        <Text style={{ fontSize: 14, lineHeight: 20, color: colors.textSecondary, marginTop: 12, paddingHorizontal: 40, textAlign: 'center' }}>
+          {hint}
+        </Text>
+      ) : null}
     </View>
   );
 }
-

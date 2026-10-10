@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { useMemo, useEffect, useRef } from 'react';
 import WheelPicker from '@quidone/react-native-wheel-picker';
 import { useTheme } from '@/hooks/useTheme';
+import { FONTS, resolveFontFamily } from '@/constants/fonts';
 
 interface WheelPickerOption<T = string | number> {
   label: string | number;
@@ -122,7 +123,7 @@ export default function CustomWheelPicker<T extends string | number = number>({
         visibleItemCount={visibleItemCount}
         width="100%"
         style={{
-          borderRadius: 16,
+          borderRadius: 22,
           overflow: 'hidden',
           backgroundColor: colors.cardBackground,
           borderWidth: 2,
@@ -130,11 +131,14 @@ export default function CustomWheelPicker<T extends string | number = number>({
         }}
         itemTextStyle={{
           color: colors.textPrimary,
+          fontFamily: resolveFontFamily(FONTS.display, '700'),
+          fontSize: 20,
         }}
         overlayItemStyle={{
-          borderTopWidth: 2,
-          borderBottomWidth: 2,
-          borderColor: colors.textPrimary,
+          backgroundColor: colors.accent,
+          opacity: 0.35,
+          borderRadius: 13,
+          marginHorizontal: 8,
         }}
       />
     </View>

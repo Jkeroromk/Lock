@@ -3,7 +3,8 @@ import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
+import { Card, IconButton, Label } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 
 
@@ -39,134 +40,59 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
   const nextTheme = isLightMode ? 'dark' : 'light';
   const themeIcon = isLightMode ? 'sunny' : 'moon';
 
+  const displayName = user?.username ? `@${user.username}` : user?.name || t('settings.userName');
+
   return (
-    <View 
-      style={{ 
-        borderRadius: 20,
-        padding: DIMENSIONS.SPACING * 1.2,
-        marginBottom: DIMENSIONS.SPACING * 1.2,
-        backgroundColor: colors.cardBackground,
-        borderWidth: 2,
-        borderColor: colors.borderPrimary,
-        shadowColor: colors.shadowColor,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
-      }}
-    >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => onThemeChange(nextTheme)}
-          style={{
-            width: DIMENSIONS.SCREEN_WIDTH * 0.08,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.08,
-            borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04,
-            backgroundColor: colors.cardBackgroundSecondary,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: colors.borderSecondary,
-          }}
-        >
-          <Ionicons name={themeIcon as any} size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={onEdit}
-          style={{
-            width: DIMENSIONS.SCREEN_WIDTH * 0.08,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.08,
-            borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04,
-            backgroundColor: colors.cardBackgroundSecondary,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: colors.borderSecondary,
-          }}
-        >
-          <Ionicons name="pencil-outline" size={TYPOGRAPHY.iconXS} color={colors.textPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={{ alignItems: 'center' }}>
-        <View
-          style={{
-            width: DIMENSIONS.SCREEN_WIDTH * 0.18,
-            height: DIMENSIONS.SCREEN_WIDTH * 0.18,
-            borderRadius: 20,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: DIMENSIONS.SPACING * 0.6,
-            backgroundColor: colors.cardBackgroundSecondary,
-            borderWidth: 2,
-            borderColor: colors.borderSecondary,
-          }}
-        >
+    <Card variant="hero" padding={16} style={{ marginBottom: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <View style={{
+          width: 72, height: 72, borderRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
+          backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink, transform: [{ rotate: '-3deg' }],
+        }}>
           {user?.avatarImage ? (
-            <Image source={{ uri: user.avatarImage }} style={{ width: '100%', height: '100%', borderRadius: 18 }} />
+            <Image source={{ uri: user.avatarImage }} style={{ width: 72, height: 72 }} accessibilityIgnoresInvertColors />
           ) : user?.avatarEmoji ? (
-            <Text style={{ fontSize: DIMENSIONS.SCREEN_WIDTH * 0.09 }}>{user.avatarEmoji}</Text>
+            <Text style={{ fontSize: 34 }}>{user.avatarEmoji}</Text>
           ) : (
-            <Ionicons name="person" size={TYPOGRAPHY.iconL} color={colors.textPrimary} />
+            <Text style={{ fontSize: 30, fontWeight: '800', color: colors.onAccent }}>{(user?.name || '?').trim().charAt(0).toUpperCase()}</Text>
           )}
         </View>
-        <Text
-          style={{
-            fontSize: TYPOGRAPHY.bodyL,
-            fontWeight: '900',
-            color: colors.textPrimary,
-            marginBottom: DIMENSIONS.SPACING * 0.15,
-          }}
-        >
-          {user?.username ? `@${user.username}` : user?.name || t('settings.userName')}
-        </Text>
-        {user?.bio && (
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '500', color: colors.textPrimary, opacity: 0.7, textAlign: 'center', marginTop: DIMENSIONS.SPACING * 0.2 }}>
-            {user.bio}
-          </Text>
-        )}
-        {user?.showGender && user?.gender && (
-          <View style={{ marginTop: DIMENSIONS.SPACING * 0.4, paddingHorizontal: DIMENSIONS.SPACING * 0.6, paddingVertical: 2, borderRadius: 10, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 1, borderColor: colors.borderPrimary }}>
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary }}>
-              {t(`settings.genderOptions.${user.gender}` as any) || user.gender}
-            </Text>
-          </View>
-        )}
+        <View style={{ flex: 1 }}>
+          <Text numberOfLines={1} style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.6, color: colors.textPrimary }}>{displayName}</Text>
+          {user?.bio ? (
+            <Text numberOfLines={2} style={{ fontSize: 14, lineHeight: 19, color: colors.textSecondary, marginTop: 2 }}>{user.bio}</Text>
+          ) : null}
+          {user?.showGender && user?.gender ? (
+            <Label style={{ fontSize: 10, marginTop: 4 }}>{t(`settings.genderOptions.${user.gender}` as any) || user.gender}</Label>
+          ) : null}
+        </View>
+        <View style={{ gap: 6 }}>
+          <IconButton icon={themeIcon} onPress={() => onThemeChange(nextTheme)} accessibilityLabel={t('settings.theme' as any)} />
+          <IconButton icon="pencil-outline" onPress={onEdit} accessibilityLabel={t('settings.editProfile' as any)} />
+        </View>
       </View>
 
-      {/* Invite code */}
-      {user?.inviteCode && (
-        <View style={{ marginTop: DIMENSIONS.SPACING * 1.2, borderTopWidth: 1, borderTopColor: colors.borderPrimary, paddingTop: DIMENSIONS.SPACING * 1.0 }}>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5, textAlign: 'center' }}>
-            {t('settings.inviteCode' as any)}
-          </Text>
-          <TouchableOpacity
-            onPress={handleCopyInviteCode}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-              backgroundColor: colors.cardBackgroundSecondary,
-              borderRadius: 14, borderWidth: 1, borderColor: colors.borderPrimary,
-              paddingVertical: DIMENSIONS.SPACING * 0.7,
-              paddingHorizontal: DIMENSIONS.SPACING * 1.2,
-              gap: 10,
-            }}
-          >
-            <Ionicons name="ticket-outline" size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
-            <Text style={{ fontSize: TYPOGRAPHY.bodyL, fontWeight: '900', color: colors.textPrimary, letterSpacing: 4 }}>
-              {user.inviteCode}
-            </Text>
-            <Ionicons name="copy-outline" size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
-          </TouchableOpacity>
-          <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '500', color: colors.textSecondary, textAlign: 'center', marginTop: DIMENSIONS.SPACING * 0.4 }}>
-            {t('settings.inviteCodeDesc' as any)}
-          </Text>
+      {user?.inviteCode ? (
+        <View style={{ marginTop: 16, borderTopWidth: 1.5, borderTopColor: colors.divider, paddingTop: 14 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Label>{t('settings.inviteCode' as any)}</Label>
+            <TouchableOpacity
+              onPress={handleCopyInviteCode}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={`${t('settings.inviteCode' as any)} ${user.inviteCode}`}
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, paddingHorizontal: 14,
+                borderRadius: 13, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink,
+              }}
+            >
+              <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 17, letterSpacing: 3, color: colors.onAccent }}>{user.inviteCode}</Text>
+              <Ionicons name="copy-outline" size={16} color={colors.onAccent} />
+            </TouchableOpacity>
+          </View>
+          <Text style={{ fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 8 }}>{t('settings.inviteCodeDesc' as any)}</Text>
         </View>
-      )}
-    </View>
+      ) : null}
+    </Card>
   );
 }
-

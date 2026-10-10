@@ -51,16 +51,17 @@ export default function CompletionAnimation({
             {
               width: DIMENSIONS.SCREEN_WIDTH * 0.2,
               height: DIMENSIONS.SCREEN_WIDTH * 0.2,
-              borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.1,
-              backgroundColor: colors.textPrimary,
+              borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.06,
+              backgroundColor: colors.accent,
+              borderWidth: 3,
+              borderColor: colors.ink,
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: DIMENSIONS.SPACING * 1.5,
-              shadowColor: colors.textPrimary,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.5,
-              shadowRadius: 20,
-              elevation: 10,
+              shadowColor: colors.cardShadow,
+              shadowOffset: { width: 6, height: 6 },
+              shadowOpacity: 1,
+              shadowRadius: 0,
             },
             lockContainerAnimatedStyle,
           ]}
@@ -75,7 +76,7 @@ export default function CompletionAnimation({
             ]}
             pointerEvents="none"
           >
-            <Ionicons name="lock-open" size={DIMENSIONS.SCREEN_WIDTH * 0.12} color={colors.backgroundPrimary} />
+            <Ionicons name="lock-open" size={DIMENSIONS.SCREEN_WIDTH * 0.11} color={colors.onAccent} />
           </Animated.View>
           
           {/* 锁上图标 */}
@@ -88,17 +89,18 @@ export default function CompletionAnimation({
             ]}
             pointerEvents="none"
           >
-            <Ionicons name="lock-closed" size={DIMENSIONS.SCREEN_WIDTH * 0.12} color={colors.backgroundPrimary} />
+            <Ionicons name="lock-closed" size={DIMENSIONS.SCREEN_WIDTH * 0.11} color={colors.onAccent} />
           </Animated.View>
         </Animated.View>
         
         {/* 完成文本 */}
         <Text
           style={{
-            fontSize: TYPOGRAPHY.title,
-            fontWeight: '900',
+            fontSize: 44,
+            fontWeight: '800',
+            letterSpacing: -1.8,
             color: colors.textPrimary,
-            marginBottom: DIMENSIONS.SPACING * 0.4,
+            marginBottom: 8,
             textAlign: 'center',
           }}
         >

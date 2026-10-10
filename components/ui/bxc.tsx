@@ -1,13 +1,13 @@
 /**
  * Lock "B×C" design primitives. Build screens from these so the look stays
  * consistent: Card (default / hero / inverse), Ring, Bar, Chip, Sticker, Label,
- * Button, IconButton, ScreenHeader, Segmented, Corners.
+ * Button, IconButton, ScreenHeader, Segmented, Corners, TextField.
  */
-import { ReactNode } from 'react';
-import { View, TouchableOpacity, ActivityIndicator, type ViewStyle, type StyleProp, type TouchableOpacityProps } from 'react-native';
+import { ReactNode, forwardRef } from 'react';
+import { View, TouchableOpacity, ActivityIndicator, TextInput as RNTextInput, type ViewStyle, type StyleProp, type TouchableOpacityProps, type TextInputProps } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
-import { Text } from '@/components/ui/Text';
+import { Text, TextInput } from '@/components/ui/Text';
 import { FONTS } from '@/constants/fonts';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -363,3 +363,26 @@ export function Corners({ color, inset = 12, size = 30, stroke = 4 }: {
     </View>
   );
 }
+
+// ── TextField ──────────────────────────────────────────────────────────────
+/** 52pt stroked input. `right` renders inside the field (e.g. a show-password toggle). */
+export const TextField = forwardRef<RNTextInput, TextInputProps & { right?: ReactNode; containerStyle?: StyleProp<ViewStyle> }>(
+  function TextField({ style, right, containerStyle, ...props }, ref) {
+    const c = useTheme();
+    return (
+      <View style={[{
+        flexDirection: 'row', alignItems: 'center', minHeight: 52, borderRadius: 14,
+        borderWidth: STROKE.control, borderColor: c.borderPrimary, backgroundColor: c.cardBackground,
+        paddingLeft: 14, paddingRight: right ? 4 : 14,
+      }, containerStyle]}>
+        <TextInput
+          ref={ref}
+          placeholderTextColor={c.textSecondary}
+          {...props}
+          style={[{ flex: 1, fontSize: 16, fontWeight: '500', color: c.textPrimary, paddingVertical: 12 }, style]}
+        />
+        {right}
+      </View>
+    );
+  },
+);

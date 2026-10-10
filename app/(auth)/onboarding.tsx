@@ -1,11 +1,12 @@
-import { View, TouchableOpacity, Alert } from 'react-native';
+import { View, Alert } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
+import { Button } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import CompletionAnimation from '@/components/onboarding/CompletionAnimation';
 import OnboardingSteps from '@/components/onboarding/OnboardingSteps';
@@ -28,6 +29,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const { user, setUser, setThemeMode } = useStore();
   const colors = useTheme();
+  const isLight = colors.backgroundPrimary !== colors.ink;
   
   const [currentStep, setCurrentStep] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -131,44 +133,28 @@ export default function OnboardingScreen() {
       <View
         style={{
           flex: 1,
-          paddingHorizontal: DIMENSIONS.CARD_PADDING,
-          paddingTop: DIMENSIONS.SPACING * 2,
-          paddingBottom: DIMENSIONS.SPACING * 3,
+          paddingHorizontal: 18,
+          paddingTop: 16,
+          paddingBottom: 16,
         }}
       >
-        {/* Progress Indicator */}
-        <View style={{ marginBottom: DIMENSIONS.SPACING * 2 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 0.6 }}>
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '600',
-                color: colors.textPrimary,
-                opacity: 0.7,
-              }}
-            >
-              {t('onboarding.step', { current: currentStep + 1, total: STEPS.length })}
-            </Text>
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyXS,
-                fontWeight: '600',
-                color: colors.textPrimary,
-                opacity: 0.7,
-              }}
-            >
-              {Math.round(((currentStep + 1) / STEPS.length) * 100)}%
-            </Text>
-          </View>
-          <View style={{ height: 4, backgroundColor: colors.cardBackgroundSecondary, borderRadius: 2, overflow: 'hidden' }}>
-            <View 
-              style={{ 
-                height: '100%', 
-                width: `${((currentStep + 1) / STEPS.length) * 100}%`, 
-                backgroundColor: colors.textPrimary,
-                borderRadius: 2,
-              }} 
-            />
+        {/* Progress */}
+        <View style={{ marginBottom: 28 }}>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginBottom: 10, textTransform: 'uppercase' }}>
+            {t('onboarding.step', { current: currentStep + 1, total: STEPS.length })}
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 5 }} accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: STEPS.length, now: currentStep + 1 }}>
+            {STEPS.map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  flex: 1, height: 10, borderRadius: 4,
+                  backgroundColor: i <= currentStep ? colors.accent : 'transparent',
+                  borderWidth: 1.5,
+                  borderColor: i <= currentStep && !isLight ? colors.accent : isLight ? colors.ink : colors.borderSecondary,
+                }}
+              />
+            ))}
           </View>
         </View>
 
@@ -205,63 +191,24 @@ export default function OnboardingScreen() {
           />
         </View>
 
-        {/* Navigation Buttons */}
-        <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.8, marginTop: DIMENSIONS.SPACING * 2 }}>
-          {currentStep >= 0 && (
-            <TouchableOpacity
-              onPress={() => {
-                if (currentStep === 0) {
-                  // 如果是第一步，导航到语言选择页面
-                  router.push('/(auth)/language-selection');
-                } else {
-                  handleBack();
-                }
-              }}
-              style={{
-                flex: 1,
-                paddingVertical: DIMENSIONS.SPACING * 0.9,
-                backgroundColor: colors.cardBackground,
-                borderRadius: 16,
-                borderWidth: 2,
-                borderColor: colors.borderPrimary,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.bodyS,
-                  fontWeight: '700',
-                  color: colors.textPrimary,
-                }}
-              >
-                {t('onboarding.back')}
-              </Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            onPress={handleNext}
-            disabled={!canProceed()}
-            style={{
-              flex: 1,
-              paddingVertical: DIMENSIONS.SPACING * 0.9,
-              backgroundColor: canProceed() ? colors.textPrimary : colors.cardBackgroundSecondary,
-              borderRadius: 16,
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: canProceed() ? 1 : 0.5,
+        {/* Navigation */}
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 24 }}>
+          <Button
+            label={t('onboarding.back')}
+            variant="outline"
+            onPress={() => {
+              if (currentStep === 0) router.push('/(auth)/language-selection');
+              else handleBack();
             }}
-          >
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyS,
-                fontWeight: '700',
-                color: canProceed() ? colors.backgroundPrimary : colors.textSecondary,
-              }}
-            >
-              {currentStep === STEPS.length - 1 ? t('onboarding.complete') : t('onboarding.next')}
-            </Text>
-          </TouchableOpacity>
+            style={{ flex: 1 }}
+          />
+          <Button
+            label={currentStep === STEPS.length - 1 ? t('onboarding.complete') : t('onboarding.next')}
+            icon={currentStep === STEPS.length - 1 ? 'lock-closed' : undefined}
+            disabled={!canProceed()}
+            onPress={handleNext}
+            style={{ flex: 2 }}
+          />
         </View>
       </View>
     </SafeAreaView>
