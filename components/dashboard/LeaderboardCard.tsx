@@ -4,6 +4,7 @@ import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { removeFriend } from '@/services/api';
+import { useBlockUser } from '@/hooks/useBlockUser';
 
 export interface LeaderboardEntry {
   id: string;
@@ -27,6 +28,7 @@ const RANK_MEDALS = ['🥇', '🥈', '🥉'];
 export default function LeaderboardCard({ entries, onFriendRemoved }: LeaderboardCardProps) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const confirmBlock = useBlockUser();
 
   const handleLongPress = (entry: LeaderboardEntry) => {
     if (entry.isMe || !entry.friendshipId) return;
@@ -46,6 +48,11 @@ export default function LeaderboardCard({ entries, onFriendRemoved }: Leaderboar
               Alert.alert(t('common.error'), t('dashboard.removeFriendFailed' as any));
             }
           },
+        },
+        {
+          text: t('block.blockUser'),
+          style: 'destructive',
+          onPress: () => confirmBlock(entry, () => onFriendRemoved?.()),
         },
       ]
     );

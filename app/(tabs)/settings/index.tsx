@@ -182,6 +182,13 @@ export default function SettingsScreen() {
           />
 
           <SettingItem
+            icon="ban-outline"
+            title={t('block.blockedUsers')}
+            description={t('block.blockedUsersDescription')}
+            onPress={() => router.push('/(tabs)/settings/blocked-users')}
+          />
+
+          <SettingItem
             icon="language"
             title={t('settings.language')}
             value={currentLanguageName}

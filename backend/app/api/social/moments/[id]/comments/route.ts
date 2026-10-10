@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { canViewPost, getBlockedUserIds } from '@/lib/blocks';
 
 const USER_SELECT = { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true };
 
@@ -17,10 +18,20 @@ function formatUser(u: { id: string; name: string | null; username: string | nul
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   try {
+    const post = await prisma.post.findUnique({
+      where: { id: params.id },
+      select: { id: true, userId: true, hiddenAt: true },
+    });
+    if (!post || !(await canViewPost(userId, post))) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    const blockedIds = Array.from(await getBlockedUserIds(userId));
     const comments = await prisma.postComment.findMany({
-      where: { postId: params.id },
+      where: { postId: params.id, ...(blockedIds.length ? { userId: { notIn: blockedIds } } : {}) },
       include: { user: { select: USER_SELECT } },
       orderBy: { createdAt: 'asc' },
     });
@@ -51,8 +62,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 
   try {
-    const post = await prisma.post.findUnique({ where: { id: params.id } });
-    if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const post = await prisma.post.findUnique({
+      where: { id: params.id },
+      select: { id: true, userId: true, hiddenAt: true },
+    });
+    if (!post || !(await canViewPost(userId, post))) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
 
     const comment = await prisma.postComment.create({
       data: { postId: params.id, userId, content: content.trim() },

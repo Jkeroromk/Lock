@@ -193,3 +193,26 @@ export const addMomentComment = async (id: string, content: string): Promise<Mom
 export const reportMoment = async (postId: string, reason: string): Promise<void> => {
   await api.post('/api/social/report', { postId, reason });
 };
+
+export interface BlockedUser {
+  id: string;
+  name: string;
+  username: string | null;
+  avatar: string;
+  avatarImage?: string | null;
+  blockedAt: string;
+}
+
+/** Block a user: removes any friendship/request and hides them from each other. */
+export const blockUser = async (userId: string): Promise<void> => {
+  await api.post('/api/social/blocks', { userId });
+};
+
+export const unblockUser = async (userId: string): Promise<void> => {
+  await api.delete(`/api/social/blocks/${encodeURIComponent(userId)}`);
+};
+
+export const fetchBlockedUsers = async (): Promise<BlockedUser[]> => {
+  const res = await api.get<BlockedUser[]>('/api/social/blocks');
+  return res.data;
+};

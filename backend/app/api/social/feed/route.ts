@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { getBlockedUserIds } from '@/lib/blocks';
 
 // GET /api/social/feed — activity feed from friends + self
 export async function GET(request: NextRequest) {
@@ -17,7 +18,9 @@ export async function GET(request: NextRequest) {
       f.requesterId === userId ? f.addresseeId : f.requesterId
     );
 
-    const feedItems = await prisma.activityFeed.findMany({
+    const blockedIds = await getBlockedUserIds(userId);
+
+    const allFeedItems = await prisma.activityFeed.findMany({
       where: {
         OR: [
           { userId },
@@ -27,6 +30,11 @@ export async function GET(request: NextRequest) {
       include: { user: { select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true } } },
       orderBy: { createdAt: 'desc' },
       take: 50,
+    });
+    const feedItems = allFeedItems.filter((item) => {
+      if (blockedIds.has(item.userId)) return false;
+      const friendId = (item.metadata as Record<string, unknown> | null)?.friendId;
+      return !(typeof friendId === 'string' && blockedIds.has(friendId));
     });
 
     // Collect friendIds that need name lookup (old FRIEND_ADDED events missing friendName)
