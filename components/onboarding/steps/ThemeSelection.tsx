@@ -72,11 +72,11 @@ export default function ThemeSelection({ themeMode, setThemeMode }: ThemeSelecti
               onPress={() => setThemeMode(theme.mode)}
               activeOpacity={0.8}
               style={{
-                borderRadius: 20,
-                padding: DIMENSIONS.SPACING * 1.2,
-                backgroundColor: isSelected ? colors.textPrimary : colors.cardBackground,
+                borderRadius: 22,
+                padding: 16,
+                backgroundColor: isSelected ? colors.accent : colors.cardBackground,
                 borderWidth: 2,
-                borderColor: isSelected ? colors.textPrimary : colors.borderPrimary,
+                borderColor: isSelected ? colors.ink : colors.borderPrimary,
                 flexDirection: 'row',
                 alignItems: 'center',
               }}
@@ -86,7 +86,7 @@ export default function ThemeSelection({ themeMode, setThemeMode }: ThemeSelecti
                   width: DIMENSIONS.SCREEN_WIDTH * 0.12,
                   height: DIMENSIONS.SCREEN_WIDTH * 0.12,
                   borderRadius: 16,
-                  backgroundColor: isSelected ? colors.backgroundPrimary : colors.cardBackgroundSecondary,
+                  backgroundColor: isSelected ? colors.ink : colors.cardBackgroundSecondary,
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: DIMENSIONS.SPACING * 0.8,
@@ -95,15 +95,15 @@ export default function ThemeSelection({ themeMode, setThemeMode }: ThemeSelecti
                 <Ionicons
                   name={theme.icon as any}
                   size={TYPOGRAPHY.iconL}
-                  color={isSelected ? colors.textPrimary : colors.textPrimary}
+                  color={isSelected ? colors.accent : colors.textPrimary}
                 />
               </View>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
-                    fontSize: TYPOGRAPHY.bodyL,
-                    fontWeight: '900',
-                    color: isSelected ? colors.backgroundPrimary : colors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: '800',
+                    color: isSelected ? colors.onAccent : colors.textPrimary,
                     marginBottom: DIMENSIONS.SPACING * 0.2,
                   }}
                 >
@@ -111,10 +111,8 @@ export default function ThemeSelection({ themeMode, setThemeMode }: ThemeSelecti
                 </Text>
                 <Text
                   style={{
-                    fontSize: TYPOGRAPHY.bodyXS,
-                    fontWeight: '500',
-                    color: isSelected ? colors.backgroundPrimary : colors.textPrimary,
-                    opacity: 0.7,
+                    fontSize: 14,
+                    color: isSelected ? colors.onAccent : colors.textSecondary,
                   }}
                 >
                   {theme.description}
@@ -123,8 +121,8 @@ export default function ThemeSelection({ themeMode, setThemeMode }: ThemeSelecti
               {isSelected && (
                 <Ionicons
                   name="checkmark-circle"
-                  size={TYPOGRAPHY.iconM}
-                  color={colors.backgroundPrimary}
+                  size={26}
+                  color={colors.onAccent}
                 />
               )}
             </TouchableOpacity>

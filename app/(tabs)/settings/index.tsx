@@ -7,7 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
 import { LanguageCode, languageNames } from '@/i18n/locales';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import Constants from 'expo-constants';
+import { FONTS } from '@/constants/fonts';
+import { ScreenHeader } from '@/components/ui/bxc';
+
+const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@clerk/clerk-expo';
 import {
@@ -166,7 +170,8 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-        <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.8 }}>
+        <View style={{ paddingHorizontal: 18 }}>
+          <ScreenHeader title={t('settings.title' as any)} />
           <UserProfileCard
             user={user}
             themeMode={themeMode === 'auto' ? 'dark' : themeMode}
@@ -284,33 +289,20 @@ export default function SettingsScreen() {
                 },
               ]);
             }}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
+            accessibilityRole="button"
             style={{
-              borderRadius: 24,
-              paddingVertical: DIMENSIONS.SPACING,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginTop: DIMENSIONS.SPACING * 0.4,
-              marginBottom: DIMENSIONS.SPACING * 1.2,
-              minHeight: 56,
-              backgroundColor: colors.cardBackground,
-              borderWidth: 2,
-              borderColor: colors.borderPrimary,
+              minHeight: 52, borderRadius: 14, borderWidth: 2, borderColor: colors.danger,
+              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8,
             }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="log-out" size={TYPOGRAPHY.title} color="#EF4444" />
-              <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', marginLeft: DIMENSIONS.SPACING * 0.4, color: "#EF4444" }}>
-                {t('settings.logout')}
-              </Text>
-            </View>
+            <Ionicons name="log-out-outline" size={19} color={colors.danger} />
+            <Text style={{ fontSize: 17, fontWeight: '800', color: colors.danger }}>{t('settings.logout')}</Text>
           </TouchableOpacity>
 
-          <View style={{ paddingVertical: DIMENSIONS.SPACING * 0.8, alignItems: 'center' }}>
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.7 }}>
-              Lock v1.0.0
-            </Text>
-          </View>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, textAlign: 'center', marginTop: 16, marginBottom: 8 }}>
+            LOCK v{APP_VERSION}
+          </Text>
         </View>
       </ScrollView>
 

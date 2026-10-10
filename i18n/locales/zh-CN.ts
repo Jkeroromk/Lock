@@ -224,6 +224,7 @@ const zhCN = {
     noChallengesHint: '创建一个挑战，邀请好友一起参与！',
   },
   settings: {
+    title: '设置',
     goals: '目标',
     clickToEdit: '点击编辑每日目标',
     editGoals: '编辑目标',

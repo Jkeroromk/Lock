@@ -1,7 +1,7 @@
 import {
-  View, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView,
+  View, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, Image,
 } from 'react-native';
-import { Text, TextInput } from '@/components/ui/Text';
+import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
@@ -13,10 +13,11 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
+import { Button, HardShadow, TextField } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchProfile, updateProfile } from '@/services/api';
-import { SocialButton, GoogleG } from '@/components/auth/SocialButton';
+import { SocialButton } from '@/components/auth/SocialButton';
 import OtpVerificationScreen from '@/components/auth/OtpVerificationScreen';
 import ForgotPasswordScreen from '@/components/auth/ForgotPasswordScreen';
 
@@ -43,7 +44,7 @@ export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [pendingPasswordReset, setPendingPasswordReset] = useState(false);
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<any>(null);
 
   useEffect(() => {
     AsyncStorage.getItem('lock_saved_email').then((saved) => { if (saved) setEmail(saved); });
@@ -224,115 +225,115 @@ export default function LoginScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING * 1.2, paddingVertical: DIMENSIONS.SPACING }}>
+          <View style={{ paddingHorizontal: 22, paddingVertical: 24 }}>
 
             {/* Brand */}
-            <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.8 }}>
-              <View style={{
-                width: DIMENSIONS.SCREEN_WIDTH * 0.16, height: DIMENSIONS.SCREEN_WIDTH * 0.16,
-                borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.04, backgroundColor: colors.textPrimary,
-                alignItems: 'center', justifyContent: 'center', marginBottom: DIMENSIONS.SPACING * 0.5,
-              }}>
-                <Text style={{ fontSize: TYPOGRAPHY.titleM, fontWeight: '900', color: colors.backgroundPrimary, letterSpacing: -1 }}>L</Text>
-              </View>
-              <Text style={{ fontSize: TYPOGRAPHY.titleM, fontWeight: '900', color: colors.textPrimary, letterSpacing: -1, marginBottom: DIMENSIONS.SPACING * 0.15 }}>Lock</Text>
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '500', color: colors.textPrimary, opacity: 0.45, letterSpacing: 0.5 }}>
+            <View style={{ alignItems: 'flex-start', marginBottom: 28 }}>
+              <HardShadow color={colors.cardShadow} radius={20} offset={5} style={{ transform: [{ rotate: '-4deg' }] }}>
+                <Image source={require('@/assets/icons/preview-open-lock.png')} style={{ width: 84, height: 84, borderRadius: 19 }} accessibilityIgnoresInvertColors accessibilityLabel="Lock" />
+              </HardShadow>
+              <Text accessibilityRole="header" style={{ fontSize: 52, fontWeight: '800', letterSpacing: -2.2, lineHeight: 54, color: colors.textPrimary, marginTop: 22 }}>
+                Lock in.
+              </Text>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginTop: 8, textTransform: 'uppercase' }}>
                 {t('auth.welcome')}
               </Text>
             </View>
 
-            {/* Social Buttons */}
-            <View style={{ gap: DIMENSIONS.SPACING * 0.45, marginBottom: DIMENSIONS.SPACING * 1 }}>
+            {/* Social */}
+            <View style={{ gap: 8 }}>
               {Platform.OS === 'ios' && (
-                <SocialButton icon="logo-apple" label={t('auth.continueWithApple')} onPress={handleAppleLogin} disabled={isLoading} colors={colors} filled />
+                <SocialButton provider="apple" label={t('auth.continueWithApple')} onPress={handleAppleLogin} disabled={isLoading} />
               )}
-              <TouchableOpacity
-                onPress={handleGoogleLogin} disabled={isLoading} activeOpacity={0.75}
-                style={{
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: 14, paddingVertical: DIMENSIONS.SPACING * 0.65,
-                  backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#E0E0E0',
-                  gap: DIMENSIONS.SPACING * 0.4, opacity: isLoading ? 0.5 : 1,
-                }}
-              >
-                <GoogleG size={TYPOGRAPHY.iconXS} />
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: '#3C4043', letterSpacing: 0.2 }}>
-                  {t('auth.continueWithGoogle')}
-                </Text>
-              </TouchableOpacity>
-              <SocialButton icon="logo-facebook" label={t('auth.continueWithFacebook')} onPress={handleFacebookLogin} disabled={isLoading} colors={colors} brandColor="#1877F2" />
+              <SocialButton provider="google" label={t('auth.continueWithGoogle')} onPress={handleGoogleLogin} disabled={isLoading} />
+              <SocialButton provider="facebook" label={t('auth.continueWithFacebook')} onPress={handleFacebookLogin} disabled={isLoading} />
             </View>
 
             {/* Divider */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1, gap: DIMENSIONS.SPACING * 0.5 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: colors.borderPrimary }} />
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.35, letterSpacing: 1, textTransform: 'uppercase' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 20 }}>
+              <View style={{ flex: 1, height: 1.5, backgroundColor: colors.borderPrimary }} />
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, textTransform: 'uppercase' }}>
                 {t('auth.orContinueWith')}
               </Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: colors.borderPrimary }} />
+              <View style={{ flex: 1, height: 1.5, backgroundColor: colors.borderPrimary }} />
             </View>
 
             {/* Email / Password */}
-            <View style={{ gap: DIMENSIONS.SPACING * 0.5, marginBottom: DIMENSIONS.SPACING * 0.6 }}>
-              <TextInput
-                style={{ backgroundColor: colors.cardBackground, borderRadius: 14, paddingHorizontal: DIMENSIONS.SPACING * 0.8, paddingVertical: DIMENSIONS.SPACING * 0.65, color: colors.textPrimary, fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', borderWidth: 2, borderColor: colors.borderPrimary }}
-                placeholder={t('auth.emailPlaceholder')} placeholderTextColor={colors.textSecondary}
-                keyboardType="email-address" autoCapitalize="none" autoCorrect={false}
+            <View style={{ gap: 8 }}>
+              <TextField
+                accessibilityLabel={t('auth.email')}
+                placeholder={t('auth.emailPlaceholder')}
+                keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
                 returnKeyType="next" value={email} onChangeText={setEmail}
                 onSubmitEditing={() => passwordRef.current?.focus()}
               />
-              <View style={{ position: 'relative' }}>
-                <TextInput
-                  ref={passwordRef}
-                  style={{ backgroundColor: colors.cardBackground, borderRadius: 14, paddingHorizontal: DIMENSIONS.SPACING * 0.8, paddingVertical: DIMENSIONS.SPACING * 0.65, paddingRight: DIMENSIONS.SPACING * 2.5, color: colors.textPrimary, fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', borderWidth: 2, borderColor: colors.borderPrimary }}
-                  placeholder={t('auth.passwordPlaceholder')} placeholderTextColor={colors.textSecondary}
-                  secureTextEntry={!showPassword} returnKeyType="done" value={password}
-                  onChangeText={setPassword} onSubmitEditing={handleAuth}
-                />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: DIMENSIONS.SPACING * 0.9, top: DIMENSIONS.SPACING * 0.65 }}>
-                  <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
+              <TextField
+                ref={passwordRef}
+                accessibilityLabel={t('auth.password')}
+                placeholder={t('auth.passwordPlaceholder')}
+                secureTextEntry={!showPassword} returnKeyType="done" value={password}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'} textContentType={isSignUp ? 'newPassword' : 'password'}
+                onChangeText={setPassword} onSubmitEditing={handleAuth}
+                right={
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    accessibilityRole="button"
+                    accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                    style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                }
+              />
             </View>
 
             {/* Remember me + Forgot */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 0.8 }}>
-              <TouchableOpacity onPress={() => { const next = !rememberMe; setRememberMe(next); if (!next) AsyncStorage.removeItem('lock_saved_email').catch(() => {}); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} activeOpacity={0.7}>
-                <View style={{ width: 18, height: 18, borderRadius: 5, borderWidth: 2, borderColor: rememberMe ? colors.textPrimary : colors.borderPrimary, backgroundColor: rememberMe ? colors.textPrimary : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-                  {rememberMe && <Ionicons name="checkmark" size={11} color={colors.backgroundPrimary} />}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+              <TouchableOpacity
+                onPress={() => { const next = !rememberMe; setRememberMe(next); if (!next) AsyncStorage.removeItem('lock_saved_email').catch(() => {}); }}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: rememberMe }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 }}
+                activeOpacity={0.7}
+              >
+                <View style={{
+                  width: 20, height: 20, borderRadius: 6, borderWidth: 2,
+                  borderColor: rememberMe ? colors.ink : colors.borderPrimary,
+                  backgroundColor: rememberMe ? colors.accent : 'transparent',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {rememberMe && <Ionicons name="checkmark" size={13} color={colors.onAccent} />}
                 </View>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.55 }}>{t('auth.rememberEmail' as any)}</Text>
+                <Text style={{ fontSize: 14, color: colors.textSecondary }}>{t('auth.rememberEmail' as any)}</Text>
               </TouchableOpacity>
               {!isSignUp && (
-                <TouchableOpacity onPress={handleForgotPassword}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textPrimary, opacity: 0.45 }}>{t('auth.forgotPassword')}</Text>
+                <TouchableOpacity onPress={handleForgotPassword} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>{t('auth.forgotPassword')}</Text>
                 </TouchableOpacity>
               )}
             </View>
 
-            {/* Submit */}
-            <TouchableOpacity onPress={handleAuth} disabled={isLoading} style={{ borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.7, backgroundColor: colors.textPrimary, alignItems: 'center', justifyContent: 'center', marginBottom: DIMENSIONS.SPACING * 0.6 }}>
-              {isLoading
-                ? <ActivityIndicator color={colors.backgroundPrimary} size="small" />
-                : <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.backgroundPrimary, letterSpacing: 0.3 }}>{isSignUp ? t('auth.signUp') : t('auth.login')}</Text>
-              }
-            </TouchableOpacity>
+            <Button
+              label={isSignUp ? t('auth.signUp') : t('auth.login')}
+              loading={isLoading}
+              onPress={handleAuth}
+              style={{ marginTop: 8 }}
+            />
 
-            {/* Toggle */}
-            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textPrimary, opacity: 0.45 }}>
+            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 6 }}>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>
                 {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}
               </Text>
             </TouchableOpacity>
 
             {/* Terms agreement (required before posting user content — App Store 1.2) */}
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '500', color: colors.textPrimary, opacity: 0.5, textAlign: 'center', lineHeight: TYPOGRAPHY.bodyXXS * 1.6, marginTop: DIMENSIONS.SPACING * 1.2, paddingHorizontal: DIMENSIONS.SPACING }}>
+            <Text style={{ fontSize: 12, lineHeight: 18, color: colors.textSecondary, textAlign: 'center', marginTop: 14, paddingHorizontal: 8 }}>
               {t('auth.agreePrefix')}
-              <Text style={{ fontWeight: '800', textDecorationLine: 'underline' }} onPress={() => router.push('/legal/terms')}>
+              <Text style={{ fontWeight: '700', color: colors.textPrimary, textDecorationLine: 'underline' }} onPress={() => router.push('/legal/terms')}>
                 {t('settings.termsOfService')}
               </Text>
               {t('auth.agreeAnd')}
-              <Text style={{ fontWeight: '800', textDecorationLine: 'underline' }} onPress={() => router.push('/legal/privacy')}>
+              <Text style={{ fontWeight: '700', color: colors.textPrimary, textDecorationLine: 'underline' }} onPress={() => router.push('/legal/privacy')}>
                 {t('settings.privacyPolicy')}
               </Text>
               {t('auth.agreeSuffix')}

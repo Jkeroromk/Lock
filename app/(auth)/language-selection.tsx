@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ScrollView } from 'react-native';
+import { View, ScrollView, Image } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
@@ -8,6 +8,8 @@ import { LanguageCode } from '@/i18n/locales';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { FONTS } from '@/constants/fonts';
+import { Button, HardShadow } from '@/components/ui/bxc';
 import LanguageWheelPicker from '@/components/onboarding/LanguageWheelPicker';
 import { useCallback } from 'react';
 
@@ -62,47 +64,14 @@ export default function LanguageSelectionScreen() {
       >
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           {/* Title */}
-          <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 2 }}>
-            <View 
-              style={{ 
-                width: DIMENSIONS.SCREEN_WIDTH * 0.1,
-                height: DIMENSIONS.SCREEN_WIDTH * 0.1,
-                borderRadius: DIMENSIONS.SCREEN_WIDTH * 0.05,
-                backgroundColor: colors.textPrimary,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: DIMENSIONS.SPACING * 0.6,
-              }}
-            >
-              <Text 
-                style={{ 
-                  fontSize: TYPOGRAPHY.title,
-                  fontWeight: '900',
-                  color: colors.backgroundPrimary,
-                }}
-              >
-                L
-              </Text>
-            </View>
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.title,
-                fontWeight: '900',
-                color: colors.textPrimary,
-                marginBottom: DIMENSIONS.SPACING * 0.2,
-              }}
-            >
-              Lock
+          <View style={{ alignItems: 'center', marginBottom: 28 }}>
+            <HardShadow color={colors.cardShadow} radius={19} style={{ transform: [{ rotate: '-4deg' }] }}>
+              <Image source={require('@/assets/icons/preview-open-lock.png')} style={{ width: 84, height: 84, borderRadius: 19 }} accessibilityIgnoresInvertColors accessibilityLabel="Lock" />
+            </HardShadow>
+            <Text accessibilityRole="header" style={{ fontSize: 44, fontWeight: '800', letterSpacing: -1.8, color: colors.textPrimary, marginTop: 20 }}>
+              Lock in.
             </Text>
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyS,
-                fontWeight: '600',
-                color: colors.textPrimary,
-                opacity: 0.7,
-                textAlign: 'center',
-              }}
-            >
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, textAlign: 'center', marginTop: 6, textTransform: 'uppercase' }}>
               {t('languageSelection.title')}
             </Text>
           </View>
@@ -116,28 +85,7 @@ export default function LanguageSelectionScreen() {
             />
           </View>
 
-          {/* Continue Button */}
-          <TouchableOpacity
-            onPress={handleContinue}
-            style={{
-              width: '100%',
-              paddingVertical: DIMENSIONS.SPACING * 0.8,
-              backgroundColor: colors.textPrimary,
-              borderRadius: 16,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text 
-              style={{ 
-                fontSize: TYPOGRAPHY.bodyS,
-                fontWeight: '700',
-                color: colors.backgroundPrimary,
-              }}
-            >
-              {t('languageSelection.continue')}
-            </Text>
-          </TouchableOpacity>
+          <Button label={t('languageSelection.continue')} onPress={handleContinue} style={{ alignSelf: 'stretch' }} />
         </View>
       </ScrollView>
     </SafeAreaView>

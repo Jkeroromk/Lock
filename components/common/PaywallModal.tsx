@@ -19,7 +19,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
-import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { FONTS } from '@/constants/fonts';
+import { Button, Card } from '@/components/ui/bxc';
 import { fetchProOffering, fetchMaxOffering, purchasePackage, restorePurchases, planFromCustomerInfo, type PurchasesPackage } from '@/lib/revenuecat';
 import { syncSubscriptionPlan } from '@/services/api';
 import type { Feature } from '@/lib/plans';
@@ -118,125 +119,63 @@ export default function PaywallModal({
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}>
         <View style={{
           backgroundColor: colors.backgroundPrimary,
-          borderTopLeftRadius: 32, borderTopRightRadius: 32,
-          paddingHorizontal: DIMENSIONS.CARD_PADDING,
-          paddingTop: DIMENSIONS.SPACING * 0.8,
-          paddingBottom: DIMENSIONS.CARD_PADDING * 2,
-          maxHeight: '85%',
+          borderTopLeftRadius: 30, borderTopRightRadius: 30,
+          borderWidth: 2, borderBottomWidth: 0, borderColor: colors.borderStrong,
+          paddingHorizontal: 18, paddingTop: 10, paddingBottom: 34,
+          maxHeight: '88%',
         }}>
-          {/* Handle + close */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-            <View style={{
-              width: 40, height: 4, borderRadius: 2,
-              backgroundColor: colors.borderPrimary, flex: 1,
-            }} />
-            <TouchableOpacity
-              onPress={onClose}
-              style={{ padding: DIMENSIONS.SPACING * 0.4, marginLeft: DIMENSIONS.SPACING }}
-            >
-              <Ionicons name="close" size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="close" size={22} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Star icon */}
-            <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING }}>
-              <View style={{
-                width: 64, height: 64, borderRadius: 20,
-                backgroundColor: '#F59E0B22',
-                alignItems: 'center', justifyContent: 'center',
-                marginBottom: DIMENSIONS.SPACING * 0.8,
-              }}>
-                <Ionicons name="star" size={TYPOGRAPHY.iconM} color="#F59E0B" />
-              </View>
-              <Text style={{
-                fontSize: TYPOGRAPHY.bodyL, fontWeight: '900',
-                color: colors.textPrimary, textAlign: 'center',
-                marginBottom: 6,
-              }}>
-                {displayTitle}
-              </Text>
-              <Text style={{
-                fontSize: TYPOGRAPHY.bodyS, color: colors.textSecondary,
-                textAlign: 'center', lineHeight: TYPOGRAPHY.bodyS * 1.5,
-                paddingHorizontal: DIMENSIONS.SPACING,
-              }}>
-                {displayDesc}
-              </Text>
-            </View>
-
-            {/* Features list */}
             <View style={{
-              borderRadius: 16, backgroundColor: colors.cardBackground,
-              borderWidth: 1, borderColor: colors.borderPrimary,
-              padding: DIMENSIONS.SPACING * 1.2,
-              marginBottom: DIMENSIONS.SPACING,
+              width: 72, height: 72, borderRadius: 22, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink,
+              alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }],
             }}>
+              <Ionicons name="star" size={32} color={colors.onAccent} />
+            </View>
+            <Text style={{ fontSize: 34, fontWeight: '800', letterSpacing: -1.2, lineHeight: 36, color: colors.textPrimary, marginTop: 18 }}>
+              {displayTitle}
+            </Text>
+            <Text style={{ fontSize: 15, lineHeight: 21, color: colors.textSecondary, marginTop: 8 }}>
+              {displayDesc}
+            </Text>
+
+            <Card padding={14} style={{ marginTop: 18, marginBottom: 16 }}>
               {PRO_HIGHLIGHT_ICONS.map((icon, i) => (
-                <View key={i} style={{
-                  flexDirection: 'row', alignItems: 'center',
-                  gap: 12,
-                  paddingVertical: DIMENSIONS.SPACING * 0.4,
-                }}>
-                  <View style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    backgroundColor: '#F59E0B22',
-                    alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Ionicons name={icon as any} size={14} color="#F59E0B" />
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 7 }}>
+                  <View style={{ width: 30, height: 30, borderRadius: 9, borderWidth: 2, borderColor: colors.borderPrimary, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name={icon as any} size={15} color={colors.textPrimary} />
                   </View>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '700', color: colors.textPrimary }}>
+                  <Text style={{ flex: 1, fontSize: 15, fontWeight: '700', color: colors.textPrimary }}>
                     {t(`paywall.feature${i + 1}` as any)}
                   </Text>
                 </View>
               ))}
-            </View>
+            </Card>
 
-            {/* Purchase button */}
-            <TouchableOpacity
+            <Button
+              label={t('paywall.upgradePro' as any)}
+              icon="star"
+              loading={purchasing || loadingOfferings}
               onPress={handlePurchase}
-              disabled={purchasing || loadingOfferings}
-              style={{
-                borderRadius: 16, paddingVertical: DIMENSIONS.SPACING,
-                backgroundColor: '#F59E0B',
-                alignItems: 'center',
-                marginBottom: DIMENSIONS.SPACING * 0.6,
-                opacity: purchasing || loadingOfferings ? 0.7 : 1,
-              }}
-            >
-              {purchasing || loadingOfferings ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: '#fff' }}>
-                    {t('paywall.upgradePro' as any)}
-                  </Text>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: '#fff', opacity: 0.8, marginTop: 2 }}>
-                    {priceLabel}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            />
+            {priceLabel ? (
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, textAlign: 'center', marginTop: 8, textTransform: 'uppercase' }}>
+                {priceLabel}
+              </Text>
+            ) : null}
 
-            {/* Restore */}
-            <TouchableOpacity
-              onPress={handleRestore}
-              disabled={restoring}
-              style={{ alignItems: 'center', paddingVertical: DIMENSIONS.SPACING * 0.5 }}
-            >
+            <TouchableOpacity onPress={handleRestore} disabled={restoring} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 4 }}>
               {restoring
                 ? <ActivityIndicator size="small" color={colors.textSecondary} />
-                : <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600' }}>
-                    {t('paywall.restorePurchases' as any)}
-                  </Text>
-              }
+                : <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>{t('paywall.restorePurchases' as any)}</Text>}
             </TouchableOpacity>
 
-            <Text style={{
-              fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary,
-              textAlign: 'center', marginTop: DIMENSIONS.SPACING * 0.8,
-              opacity: 0.6, lineHeight: TYPOGRAPHY.bodyXXS * 1.6,
-            }}>
+            <Text style={{ fontSize: 12, lineHeight: 18, color: colors.textSecondary, textAlign: 'center', marginTop: 6 }}>
               {t('paywall.subscriptionNote' as any)}
             </Text>
           </ScrollView>

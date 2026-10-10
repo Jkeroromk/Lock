@@ -182,12 +182,12 @@ export default function LanguageModal({
                         <Text style={{
                           fontSize: TYPOGRAPHY.bodyXS,
                           fontWeight: '700',
-                          color: '#EF4444',
+                          color: colors.danger,
                           paddingHorizontal: 8,
                           paddingVertical: 4,
                           borderRadius: 8,
                           borderWidth: 1,
-                          borderColor: '#EF4444',
+                          borderColor: colors.danger,
                           overflow: 'hidden',
                         }}>
                           {t('languagePack.remove')}

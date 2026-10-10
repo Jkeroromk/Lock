@@ -17,10 +17,12 @@ export default function StepHeader({ titleKey, descriptionKey }: StepHeaderProps
     <>
       <Text 
         style={{ 
-          fontSize: TYPOGRAPHY.title,
-          fontWeight: '900',
+          fontSize: 34,
+          fontWeight: '800',
+          letterSpacing: -1.2,
+          lineHeight: 36,
           color: colors.textPrimary,
-          marginBottom: DIMENSIONS.SPACING * 0.4,
+          marginBottom: 8,
           textAlign: 'center',
         }}
       >
@@ -28,10 +30,9 @@ export default function StepHeader({ titleKey, descriptionKey }: StepHeaderProps
       </Text>
       <Text 
         style={{ 
-          fontSize: TYPOGRAPHY.bodyS,
-          fontWeight: '500',
-          color: colors.textPrimary,
-          opacity: 0.7,
+          fontSize: 15,
+          lineHeight: 21,
+          color: colors.textSecondary,
           marginBottom: DIMENSIONS.SPACING * 1.5,
           textAlign: 'center',
         }}
