@@ -324,6 +324,19 @@ export default function LoginScreen() {
                 {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}
               </Text>
             </TouchableOpacity>
+
+            {/* Terms agreement (required before posting user content — App Store 1.2) */}
+            <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '500', color: colors.textPrimary, opacity: 0.5, textAlign: 'center', lineHeight: TYPOGRAPHY.bodyXXS * 1.6, marginTop: DIMENSIONS.SPACING * 1.2, paddingHorizontal: DIMENSIONS.SPACING }}>
+              {t('auth.agreePrefix')}
+              <Text style={{ fontWeight: '800', textDecorationLine: 'underline' }} onPress={() => router.push('/legal/terms')}>
+                {t('settings.termsOfService')}
+              </Text>
+              {t('auth.agreeAnd')}
+              <Text style={{ fontWeight: '800', textDecorationLine: 'underline' }} onPress={() => router.push('/legal/privacy')}>
+                {t('settings.privacyPolicy')}
+              </Text>
+              {t('auth.agreeSuffix')}
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

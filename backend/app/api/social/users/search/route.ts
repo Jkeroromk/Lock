@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { isBlockedEitherWay } from '@/lib/blocks';
 
 // GET /api/social/users/search?q=username — preview a user before sending request
 export async function GET(request: NextRequest) {
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
 
     if (!target) return NextResponse.json({ user: null });
     if (target.id === userId) return NextResponse.json({ user: null, self: true });
+    if (await isBlockedEitherWay(userId, target.id)) return NextResponse.json({ user: null });
 
     const existing = await prisma.friendship.findFirst({
       where: {

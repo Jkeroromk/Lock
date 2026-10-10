@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { isBlockedEitherWay } from '@/lib/blocks';
 import { getMaxFriends } from '@/lib/plans';
 import { sendPushToUser } from '@/lib/notify';
 
@@ -81,7 +82,8 @@ export async function POST(request: NextRequest) {
       where: { OR: [{ username: identifier }, { inviteCode: identifier }] },
     });
 
-    if (!target) {
+    // A block in either direction looks the same as "no such user".
+    if (!target || (target.id !== userId && (await isBlockedEitherWay(userId, target.id)))) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     if (target.id === userId) {

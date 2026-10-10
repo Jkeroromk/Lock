@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { canViewPost } from '@/lib/blocks';
 
 // POST /api/social/moments/[id]/like — toggle like
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -9,8 +10,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   const { userId } = auth;
 
   try {
-    const post = await prisma.post.findUnique({ where: { id: params.id } });
-    if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const post = await prisma.post.findUnique({
+      where: { id: params.id },
+      select: { id: true, userId: true, hiddenAt: true },
+    });
+    if (!post || !(await canViewPost(userId, post))) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
 
     const existing = await prisma.postLike.findUnique({
       where: { postId_userId: { postId: params.id, userId } },

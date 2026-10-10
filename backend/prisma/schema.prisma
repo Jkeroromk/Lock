@@ -46,6 +46,8 @@ model User {
   postLikes             PostLike[]
   postComments          PostComment[]
   postReports           PostReport[]
+  blocksMade            UserBlock[]  @relation("BlockBlocker")
+  blockedBy             UserBlock[]  @relation("BlockBlocked")
 
   @@map("users")
 }
@@ -141,6 +143,7 @@ model Post {
   userId    String   @map("user_id")
   content   String   @db.Text
   mediaUrl  String?  @map("media_url") @db.Text
+  hiddenAt  DateTime? @map("hidden_at") @db.Timestamptz(6) // set when auto-hidden by reports; author still sees it
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -198,6 +201,22 @@ model PostReport {
   @@index([postId])
   @@index([reporterId])
   @@map("post_reports")
+}
+
+// A blocks B: they disappear from each other's social surfaces, any
+// friendship/request between them is removed, and B can't re-request A.
+model UserBlock {
+  id        String   @id @default(uuid()) @db.Uuid
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  blocker User @relation("BlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("user_blocks")
 }
 
 model WeightRecord {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { getBlockedUserIds, getFriendIds } from '@/lib/blocks';
 
 const USER_SELECT = { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true };
 
@@ -20,22 +21,31 @@ export async function GET(request: NextRequest) {
   const { userId } = auth;
 
   try {
-    const friendships = await prisma.friendship.findMany({
-      where: { status: 'ACCEPTED', OR: [{ requesterId: userId }, { addresseeId: userId }] },
-    });
-    const friendIds = friendships.map((f) => (f.requesterId === userId ? f.addresseeId : f.requesterId));
-    const visibleUserIds = [userId, ...friendIds];
+    const [friendIds, blockedIds] = await Promise.all([getFriendIds(userId), getBlockedUserIds(userId)]);
+    const visibleUserIds = [userId, ...friendIds.filter((id) => !blockedIds.has(id))];
+    const blockedList = Array.from(blockedIds);
+    const commentFilter = blockedList.length ? { userId: { notIn: blockedList } } : {};
 
     const posts = await prisma.post.findMany({
-      where: { userId: { in: visibleUserIds } },
+      where: {
+        userId: { in: visibleUserIds },
+        OR: [
+          // own posts are always visible to their author
+          { userId },
+          // others' posts: not auto-hidden and not reported by me
+          { hiddenAt: null, reports: { none: { reporterId: userId } } },
+        ],
+      },
       include: {
         user: { select: USER_SELECT },
         likes: { select: { userId: true } },
         comments: {
+          where: commentFilter,
           include: { user: { select: USER_SELECT } },
           orderBy: { createdAt: 'asc' },
           take: 3,
         },
+        _count: { select: { comments: { where: commentFilter } } },
       },
       orderBy: { createdAt: 'desc' },
       take: 50,
@@ -51,7 +61,7 @@ export async function GET(request: NextRequest) {
         user: formatUser(p.user),
         likesCount: p.likes.length,
         isLiked: p.likes.some((l) => l.userId === userId),
-        commentsCount: p.comments.length,
+        commentsCount: p._count.comments,
         previewComments: p.comments.map((c) => ({
           id: c.id,
           content: c.content,

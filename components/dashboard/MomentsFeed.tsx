@@ -1,9 +1,11 @@
 import { View, Text, Image, TouchableOpacity, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTranslation } from '@/i18n';
+import { useStore } from '@/store/useStore';
+import { useBlockUser } from '@/hooks/useBlockUser';
 import { Moment, MomentComment, toggleMomentLike, deleteMoment, addMomentComment, fetchMomentComments, reportMoment } from '@/services/api';
 
 interface Props {
@@ -44,11 +46,15 @@ interface MomentCardProps {
   onLikeToggle: (id: string, liked: boolean, count: number) => void;
   onDelete: (id: string) => void;
   onCommentAdded: (id: string, comment: MomentComment) => void;
+  onUserBlocked: (userId: string) => void;
+  blockedUserIds: Set<string>;
 }
 
-function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCardProps) {
+function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded, onUserBlocked, blockedUserIds }: MomentCardProps) {
   const colors = useTheme();
   const { t } = useTranslation();
+  const myId = useStore((state) => state.user?.id);
+  const confirmBlock = useBlockUser();
   const [liking, setLiking] = useState(false);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -91,33 +97,6 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
     );
   };
 
-  const handleReport = () => {
-    const reasons = [
-      t('moments.reportSpam' as any),
-      t('moments.reportInappropriate' as any),
-      t('moments.reportHarassment' as any),
-      t('moments.reportOther' as any),
-    ] as string[];
-    Alert.alert(
-      t('moments.report' as any),
-      t('moments.reportConfirm' as any),
-      [
-        ...reasons.map((reason) => ({
-          text: reason,
-          onPress: async () => {
-            try {
-              await reportMoment(item.id, reason);
-              Alert.alert('', t('moments.reportSuccess' as any));
-            } catch {
-              Alert.alert('', t('moments.reportFailed' as any));
-            }
-          },
-        })),
-        { text: t('settings.cancel' as any), style: 'cancel' as const },
-      ]
-    );
-  };
-
   const handleSendComment = async () => {
     if (!commentText.trim() || sendingComment) return;
     setSendingComment(true);
@@ -141,6 +120,22 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
     ]);
   };
 
+  const handleShowOtherOptions = () => {
+    Alert.alert(t('moments.moreOptions' as any), undefined, [
+      { text: t('moments.report' as any), onPress: handleShowReportOptions },
+      { text: t('block.blockUser'), style: 'destructive', onPress: () => confirmBlock(item.user, onUserBlocked) },
+      { text: t('settings.cancel' as any), style: 'cancel' },
+    ]);
+  };
+
+  const handleCommentLongPress = (c: MomentComment) => {
+    if (c.user.id === myId) return;
+    Alert.alert(t('block.commentOptions', { name: c.user.name }), undefined, [
+      { text: t('block.blockUser'), style: 'destructive', onPress: () => confirmBlock(c.user, onUserBlocked) },
+      { text: t('settings.cancel' as any), style: 'cancel' },
+    ]);
+  };
+
   const handleShowReportOptions = () => {
     Alert.alert(t('moments.reportReason' as any), undefined, [
       { text: t('moments.reportReasonSpam' as any), onPress: () => handleReport(t('moments.reportReasonSpam' as any)) },
@@ -154,7 +149,8 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
   const handleReport = async (reason: string) => {
     try {
       await reportMoment(item.id, reason);
-      Alert.alert('', t('moments.reportSuccess' as any));
+      Alert.alert('', t('block.reportAndHide'));
+      onDelete(item.id); // reported posts are hidden from the reporter
     } catch {
       Alert.alert('', t('moments.reportFailed' as any));
     }
@@ -176,7 +172,7 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
     }
   };
 
-  const displayedComments = allComments ?? item.previewComments;
+  const displayedComments = (allComments ?? item.previewComments).filter((c) => !blockedUserIds.has(c.user.id));
   const hasMoreComments = allComments === null && item.commentsCount > item.previewComments.length;
 
   return (
@@ -203,7 +199,7 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
           </Text>
         </View>
         <TouchableOpacity
-          onPress={item.isMe ? handleShowOwnOptions : handleShowReportOptions}
+          onPress={item.isMe ? handleShowOwnOptions : handleShowOtherOptions}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
@@ -273,14 +269,20 @@ function MomentCard({ item, onLikeToggle, onDelete, onCommentAdded }: MomentCard
       {(displayedComments.length > 0 || hasMoreComments || loadingComments) && (
         <View style={{ paddingHorizontal: DIMENSIONS.SPACING * 1.0, paddingBottom: DIMENSIONS.SPACING * 0.8, gap: 6 }}>
           {displayedComments.map((c) => (
-            <View key={c.id} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+            <TouchableOpacity
+              key={c.id}
+              activeOpacity={0.7}
+              delayLongPress={350}
+              onLongPress={() => handleCommentLongPress(c)}
+              style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}
+            >
               <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '800', color: colors.textPrimary }}>
                 {c.user.name}:
               </Text>
               <Text style={{ flex: 1, fontSize: TYPOGRAPHY.bodyXS, color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyXS * 1.5 }}>
                 {c.content}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
 
           {loadingComments && <ActivityIndicator size="small" color={colors.textSecondary} />}
@@ -349,10 +351,11 @@ export default function MomentsFeed({ items, onRefresh, onCreatePress }: Props) 
   const { t } = useTranslation();
   const [moments, setMoments] = useState<Moment[]>(items);
 
-  // Sync when parent refreshes
-  if (items !== moments && items.length !== moments.length) {
+  // Sync only when the parent passes a new list (e.g. after refresh). Local
+  // removals (delete / report / block) must not be undone by a stale prop.
+  useEffect(() => {
     setMoments(items);
-  }
+  }, [items]);
 
   const handleLikeToggle = (id: string, liked: boolean, count: number) => {
     setMoments((prev) =>
@@ -362,6 +365,18 @@ export default function MomentsFeed({ items, onRefresh, onCreatePress }: Props) 
 
   const handleDelete = (id: string) => {
     setMoments((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
+
+  const handleUserBlocked = (userId: string) => {
+    setBlockedUserIds((prev) => new Set(prev).add(userId));
+    setMoments((prev) =>
+      prev
+        .filter((m) => m.user.id !== userId)
+        .map((m) => ({ ...m, previewComments: m.previewComments.filter((c) => c.user.id !== userId) }))
+    );
+    onRefresh(); // friendship was removed server-side; refresh leaderboard etc.
   };
 
   const handleCommentAdded = (id: string, comment: MomentComment) => {
@@ -409,6 +424,8 @@ export default function MomentsFeed({ items, onRefresh, onCreatePress }: Props) 
           onLikeToggle={handleLikeToggle}
           onDelete={handleDelete}
           onCommentAdded={handleCommentAdded}
+          onUserBlocked={handleUserBlocked}
+          blockedUserIds={blockedUserIds}
         />
       ))}
     </View>

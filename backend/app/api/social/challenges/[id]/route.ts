@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { getBlockedUserIds } from '@/lib/blocks';
 
 // GET /api/social/challenges/[id] — get single challenge with all participants
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   try {
+    const blockedIds = await getBlockedUserIds(userId);
     const challenge = await prisma.challenge.findUnique({
       where: { id: params.id },
       include: {
@@ -33,7 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       endDate: challenge.endDate,
       status: challenge.status,
       creatorName: challenge.creator.name || challenge.creator.username || '用户',
-      participants: challenge.participants.map((p) => ({
+      participants: challenge.participants.filter((p) => !blockedIds.has(p.userId)).map((p) => ({
         userId: p.userId,
         name: p.user.name || p.user.username || '用户',
         progress: p.progress,

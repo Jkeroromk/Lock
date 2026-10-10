@@ -34,6 +34,10 @@ export default function SettingsLayout() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="blocked-users"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="weight-tracker"
         options={{ headerShown: false }}
       />

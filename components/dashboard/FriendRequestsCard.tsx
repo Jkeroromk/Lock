@@ -1,9 +1,10 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { FriendRequest, respondFriendRequest } from '@/services/api';
 import { useTranslation } from '@/i18n';
+import { useBlockUser } from '@/hooks/useBlockUser';
 
 interface FriendRequestsCardProps {
   requests: FriendRequest[];
@@ -13,8 +14,17 @@ interface FriendRequestsCardProps {
 export default function FriendRequestsCard({ requests, onUpdate }: FriendRequestsCardProps) {
   const colors = useTheme();
   const { t } = useTranslation();
+  const confirmBlock = useBlockUser();
 
   if (requests.length === 0) return null;
+
+  const handleDecline = (req: FriendRequest) => {
+    Alert.alert(req.from.name, undefined, [
+      { text: t('block.decline'), onPress: () => handleRespond(req.id, 'reject') },
+      { text: t('block.declineAndBlock'), style: 'destructive', onPress: () => confirmBlock(req.from, () => onUpdate()) },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
 
   const handleRespond = async (id: string, action: 'accept' | 'reject') => {
     try {
@@ -97,7 +107,7 @@ export default function FriendRequestsCard({ requests, onUpdate }: FriendRequest
             <Ionicons name="checkmark" size={TYPOGRAPHY.iconXS} color={colors.backgroundPrimary} />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => handleRespond(req.id, 'reject')}
+            onPress={() => handleDecline(req)}
             style={{
               width: 36, height: 36, borderRadius: 11,
               backgroundColor: colors.cardBackgroundSecondary,

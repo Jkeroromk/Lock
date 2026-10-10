@@ -91,12 +91,12 @@ const privacyContent: Record<LanguageCode, LegalContent> = {
 const termsContent: Record<LanguageCode, LegalContent> = {
   'zh-CN': {
     intro: '通过下载、安装或使用 Lock 应用，您同意受本服务条款约束。',
-    lastUpdated: '最后更新：2026 年 1 月 1 日',
+    lastUpdated: '最后更新：2026 年 10 月 10 日',
     sections: [
       { title: '服务描述', body: 'Lock 提供：\n\n• AI 食物识别与卡路里追踪\n• 健康数据监测（步数、消耗热量）\n• 社交功能（好友、排行榜、挑战赛）\n• 个性化饮食分析\n\nLock 提供的内容仅供参考，不构成医疗建议。' },
       { title: '账户注册', body: '• 您必须年满 13 周岁\n• 您有责任保管账户凭据\n• 请勿与他人共享账户\n• 如发现未授权访问，请立即联系我们' },
-      { title: '订阅与付款', body: '免费版：每日 3 次 AI 识别，最多 5 位好友\n\nPro 版：无限 AI 识别、AI 饮食分析、无限好友、创建挑战赛、数据导出\n\n• 费用通过 App Store 或 Google Play 收取\n• 订阅将在当前周期结束前 24 小时自动续费\n• 可随时在 App Store / Google Play 取消\n• 已付费期间不予退款' },
-      { title: '用户行为准则', body: '使用 Lock 时，您同意不得：\n\n• 发布虚假或有害内容\n• 骚扰或伤害其他用户\n• 尝试未经授权访问系统\n• 使用自动化工具访问服务\n• 违反任何适用法律' },
+      { title: '订阅与付款', body: '免费版：每日 3 次 AI 识别，最多 5 位好友\n\nPro 版：无限 AI 识别、AI 饮食分析、无限好友、创建挑战赛、数据导出\n\nMax 版：包含 Pro 全部功能，以及每周自动 AI 报告、AI 定制营养计划、优先客服支持\n\n• 费用通过 App Store 或 Google Play 收取\n• 订阅将在当前周期结束前 24 小时自动续费\n• 可随时在 App Store / Google Play 取消\n• 已付费期间不予退款' },
+      { title: '用户内容与零容忍政策', body: '您对您发布的动态、评论、挑战赛及个人资料内容负责。Lock 对不良内容和辱骂性用户实行零容忍。您同意不得发布或发送：\n\n• 色情、裸露或性暗示内容\n• 骚扰、霸凌、威胁或仇恨言论\n• 暴力、自残或宣扬饮食失调的内容\n• 垃圾信息、诈骗或虚假信息\n• 侵犯他人隐私或知识产权的内容\n• 任何违法内容\n\n您可以通过任意动态的「···」菜单举报内容，或在动态、评论、排行榜和好友请求中拉黑用户；拉黑后双方将互相不可见。我们会在 24 小时内审核举报，删除违规内容，并对违规用户予以警告、限制或永久封禁。' },
       { title: '健康免责声明', body: 'Lock 提供的卡路里估算和饮食建议仅供参考，不构成专业医疗建议。\n\n• AI 识别的食物数据可能存在误差\n• 开始新的饮食或锻炼计划前请咨询专业医生\n• 我们对因依赖应用数据而产生的健康问题不承担责任' },
       { title: '知识产权', body: 'Lock 中的所有内容均为 Lock 团队的财产，受知识产权法保护。未经书面许可，不得复制或分发。' },
       { title: '责任限制', body: '在法律允许的最大范围内，Lock 对以下情况不承担责任：\n\n• 因使用或无法使用服务造成的损失\n• 数据丢失或损坏\n• 第三方行为造成的损害\n\n我们的最大责任不超过您过去 12 个月内支付的订阅费用。' },
@@ -105,12 +105,12 @@ const termsContent: Record<LanguageCode, LegalContent> = {
   },
   'en-US': {
     intro: 'By downloading, installing, or using Lock, you agree to be bound by these Terms of Service.',
-    lastUpdated: 'Last updated: January 1, 2026',
+    lastUpdated: 'Last updated: October 10, 2026',
     sections: [
       { title: 'Service Description', body: 'Lock provides:\n\n• AI food recognition and calorie tracking\n• Health data monitoring (steps, active calories)\n• Social features (friends, leaderboards, challenges)\n• Personalized diet analysis\n\nContent provided by Lock is for informational purposes only and does not constitute medical advice.' },
       { title: 'Account Registration', body: '• You must be at least 13 years old\n• You are responsible for keeping your credentials secure\n• Do not share your account with others\n• Report unauthorized access immediately' },
-      { title: 'Subscriptions & Payments', body: 'Free tier: 3 AI scans/day, up to 5 friends\n\nPro: Unlimited AI scans, AI diet analysis, unlimited friends, create challenges, data export\n\n• Fees are charged through App Store or Google Play\n• Subscriptions auto-renew 24 hours before the current period ends\n• Cancel anytime in App Store / Google Play\n• No refunds for the current paid period' },
-      { title: 'User Conduct', body: 'You agree not to:\n\n• Post false or harmful content\n• Harass or harm other users\n• Attempt unauthorized access\n• Use automated tools to access the service\n• Violate any applicable laws' },
+      { title: 'Subscriptions & Payments', body: 'Free tier: 3 AI scans/day, up to 5 friends\n\nPro: Unlimited AI scans, AI diet analysis, unlimited friends, create challenges, data export\n\nMax: Everything in Pro, plus a weekly automatic AI report, an AI custom nutrition plan and priority support\n\n• Fees are charged through App Store or Google Play\n• Subscriptions auto-renew 24 hours before the current period ends\n• Cancel anytime in App Store / Google Play\n• No refunds for the current paid period' },
+      { title: 'User Content & Zero Tolerance', body: 'You are responsible for the moments, comments, challenges and profile information you post. Lock has zero tolerance for objectionable content and abusive users. You agree not to post or send:\n\n• Sexual, nude or sexually suggestive content\n• Harassment, bullying, threats or hate speech\n• Violence, self-harm, or content promoting disordered eating\n• Spam, scams or misleading information\n• Content that violates others\' privacy or intellectual property\n• Anything illegal\n\nYou can report content from the "···" menu on any moment, and block users from moments, comments, the leaderboard and friend requests; blocked users can no longer see or contact you. We review reports within 24 hours, remove violating content, and warn, restrict or permanently ban users who violate these rules.' },
       { title: 'Health Disclaimer', body: 'Calorie estimates and diet suggestions from Lock are for reference only and do not constitute professional medical advice.\n\n• AI-recognized food data may contain errors\n• Consult a doctor before starting new diet or exercise plans\n• We are not liable for health issues arising from reliance on app data' },
       { title: 'Intellectual Property', body: 'All content in Lock is the property of the Lock team and protected by intellectual property laws. Reproduction or distribution without written permission is prohibited.' },
       { title: 'Limitation of Liability', body: 'To the maximum extent permitted by law, Lock is not liable for:\n\n• Losses from use or inability to use the service\n• Data loss or corruption\n• Damages caused by third parties\n\nOur maximum liability shall not exceed subscription fees paid in the past 12 months.' },
@@ -119,12 +119,12 @@ const termsContent: Record<LanguageCode, LegalContent> = {
   },
   'zh-TW': {
     intro: '通過下載、安裝或使用 Lock 應用，您同意受本服務條款約束。',
-    lastUpdated: '最後更新：2026 年 1 月 1 日',
+    lastUpdated: '最後更新：2026 年 10 月 10 日',
     sections: [
       { title: '服務說明', body: 'Lock 提供：\n\n• AI 食物識別與卡路里追蹤\n• 健康數據監測（步數、消耗熱量）\n• 社交功能（好友、排行榜、挑戰賽）\n• 個性化飲食分析\n\nLock 提供的內容僅供參考，不構成醫療建議。' },
       { title: '賬戶注冊', body: '• 您必須年滿 13 周歲\n• 您有責任保管賬戶憑據\n• 如發現未授權訪問，請立即聯繫我們' },
-      { title: '訂閱與付款', body: '免費版：每日 3 次 AI 識別，最多 5 位好友\n\nPro 版：無限 AI 識別、AI 飲食分析、無限好友\n\n• 費用通過 App Store 或 Google Play 收取\n• 可隨時取消，已付費期間不予退款' },
-      { title: '用戶行為準則', body: '您同意不發布虛假或有害內容，不騷擾其他用戶，不違反任何適用法律。' },
+      { title: '訂閱與付款', body: '免費版：每日 3 次 AI 識別，最多 5 位好友\n\nPro 版：無限 AI 識別、AI 飲食分析、無限好友、建立挑戰賽、資料匯出\n\nMax 版：包含 Pro 全部功能，以及每週自動 AI 報告、AI 客製營養計劃、優先客服支援\n\n• 費用通過 App Store 或 Google Play 收取\n• 可隨時取消，已付費期間不予退款' },
+      { title: '用戶內容與零容忍政策', body: '您對您發布的動態、留言、挑戰賽及個人資料內容負責。Lock 對不良內容和辱罵性用戶實行零容忍。您同意不得發布或傳送：\n\n• 色情、裸露或性暗示內容\n• 騷擾、霸凌、威脅或仇恨言論\n• 暴力、自殘或宣揚飲食失調的內容\n• 垃圾訊息、詐騙或虛假資訊\n• 侵犯他人隱私或智慧財產權的內容\n• 任何違法內容\n\n您可以透過任意動態的「···」選單檢舉內容，或在動態、留言、排行榜和好友邀請中封鎖用戶；封鎖後雙方將互相不可見。我們會在 24 小時內審核檢舉，刪除違規內容，並對違規用戶予以警告、限制或永久停權。' },
       { title: '健康免責聲明', body: 'Lock 提供的卡路里估算和飲食建議僅供參考，不構成專業醫療建議。開始新的飲食或鍛鍊計劃前請咨詢專業醫生。' },
       { title: '責任限制', body: '在法律允許的範圍內，Lock 不承擔因使用服務造成的損失責任。' },
       { title: '聯繫我們', body: 'support@jkeroro.com' },
@@ -132,11 +132,12 @@ const termsContent: Record<LanguageCode, LegalContent> = {
   },
   'ja-JP': {
     intro: 'Lockをダウンロード、インストール、または使用することで、本利用規約に同意したものとみなされます。',
-    lastUpdated: '最終更新：2026年1月1日',
+    lastUpdated: '最終更新：2026年10月10日',
     sections: [
       { title: 'サービスの説明', body: 'Lockは以下を提供します：\n\n• AI食品認識とカロリー追跡\n• 健康データモニタリング（歩数、活動カロリー）\n• ソーシャル機能（友達、ランキング、チャレンジ）\n• パーソナライズされた食事分析\n\n提供されるコンテンツは情報提供のみを目的としており、医療アドバイスを構成するものではありません。' },
       { title: 'アカウント登録', body: '• 13歳以上である必要があります\n• ログイン情報を安全に管理する責任があります\n• 不正アクセスを発見した場合はすぐにご連絡ください' },
-      { title: 'サブスクリプションと支払い', body: '無料プラン：1日3回のAIスキャン、最大5人の友達\n\nProプラン：無制限のAIスキャン、AI食事分析、無制限の友達\n\n• 料金はApp StoreまたはGoogle Playで請求\n• いつでもキャンセル可能、支払済み期間の返金なし' },
+      { title: 'サブスクリプションと支払い', body: '無料プラン：1日3回のAIスキャン、最大5人の友達\n\nProプラン：無制限のAIスキャン、AI食事分析、無制限の友達、チャレンジ作成、データエクスポート\n\nMaxプラン：Proの全機能に加え、毎週の自動AIレポート、AIカスタム栄養プラン、優先サポート\n\n• 料金はApp StoreまたはGoogle Playで請求\n• いつでもキャンセル可能、支払済み期間の返金なし' },
+      { title: 'ユーザーコンテンツとゼロトレランス方針', body: '投稿したモーメント、コメント、チャレンジ、プロフィール情報については、お客様ご自身が責任を負います。Lockは不適切なコンテンツおよび迷惑行為を行うユーザーを一切容認しません。以下の投稿・送信は禁止されています：\n\n• 性的、裸体、または性的に示唆的なコンテンツ\n• 嫌がらせ、いじめ、脅迫、ヘイトスピーチ\n• 暴力、自傷行為、摂食障害を助長するコンテンツ\n• スパム、詐欺、誤解を招く情報\n• 他者のプライバシーや知的財産権を侵害するコンテンツ\n• 違法なコンテンツ\n\n各モーメントの「···」メニューからコンテンツを報告でき、モーメント、コメント、ランキング、友達リクエストからユーザーをブロックできます。ブロックしたユーザーはあなたを閲覧・連絡できなくなります。報告は24時間以内に確認し、違反コンテンツを削除し、違反ユーザーには警告、制限、または永久停止の措置を取ります。' },
       { title: '健康に関する免責事項', body: 'Lockのカロリー推定と食事アドバイスは参考情報のみで、医療アドバイスを構成するものではありません。新しい食事や運動プログラムを始める前に医師にご相談ください。' },
       { title: '責任の制限', body: '法律で許可される最大限の範囲で、Lockはサービスの使用による損失について責任を負いません。' },
       { title: 'お問い合わせ', body: 'support@jkeroro.com' },
@@ -144,11 +145,12 @@ const termsContent: Record<LanguageCode, LegalContent> = {
   },
   'ko-KR': {
     intro: 'Lock을 다운로드, 설치 또는 사용함으로써 본 이용약관에 동의하는 것으로 간주됩니다.',
-    lastUpdated: '최종 업데이트: 2026년 1월 1일',
+    lastUpdated: '최종 업데이트: 2026년 10월 10일',
     sections: [
       { title: '서비스 설명', body: 'Lock은 다음을 제공합니다:\n\n• AI 음식 인식 및 칼로리 추적\n• 건강 데이터 모니터링 (걸음수, 활동 칼로리)\n• 소셜 기능 (친구, 순위, 챌린지)\n• 개인화된 식단 분석\n\nLock이 제공하는 콘텐츠는 정보 제공 목적이며 의학적 조언을 구성하지 않습니다.' },
       { title: '계정 등록', body: '• 만 13세 이상이어야 합니다\n• 계정 자격증명을 안전하게 관리할 책임이 있습니다\n• 무단 접근 발견 시 즉시 연락하세요' },
-      { title: '구독 및 결제', body: '무료: 하루 3회 AI 스캔, 최대 5명 친구\n\nPro: 무제한 AI 스캔, AI 식단 분석, 무제한 친구\n\n• 요금은 App Store 또는 Google Play에서 청구\n• 언제든지 취소 가능, 결제 기간 환불 불가' },
+      { title: '구독 및 결제', body: '무료: 하루 3회 AI 스캔, 최대 5명 친구\n\nPro: 무제한 AI 스캔, AI 식단 분석, 무제한 친구, 챌린지 생성, 데이터 내보내기\n\nMax: Pro의 모든 기능 + 주간 자동 AI 리포트, AI 맞춤 영양 계획, 우선 고객 지원\n\n• 요금은 App Store 또는 Google Play에서 청구\n• 언제든지 취소 가능, 결제 기간 환불 불가' },
+      { title: '사용자 콘텐츠 및 무관용 정책', body: '게시한 모먼트, 댓글, 챌린지 및 프로필 정보에 대한 책임은 회원님에게 있습니다. Lock은 부적절한 콘텐츠와 악의적인 사용자에 대해 무관용 원칙을 적용합니다. 다음을 게시하거나 보내지 않을 것에 동의합니다:\n\n• 성적, 나체 또는 성적으로 암시적인 콘텐츠\n• 괴롭힘, 따돌림, 협박 또는 혐오 발언\n• 폭력, 자해 또는 섭식 장애를 조장하는 콘텐츠\n• 스팸, 사기 또는 허위 정보\n• 타인의 개인정보나 지식재산권을 침해하는 콘텐츠\n• 불법적인 콘텐츠\n\n모든 모먼트의 "···" 메뉴에서 콘텐츠를 신고할 수 있으며, 모먼트, 댓글, 순위 및 친구 요청에서 사용자를 차단할 수 있습니다. 차단된 사용자는 회원님을 보거나 연락할 수 없습니다. 신고는 24시간 이내에 검토하며, 위반 콘텐츠를 삭제하고 위반 사용자에게 경고, 제한 또는 영구 정지 조치를 취합니다.' },
       { title: '건강 면책 조항', body: 'Lock의 칼로리 추정 및 식단 제안은 참고용이며 전문 의료 조언을 구성하지 않습니다. 새로운 식단이나 운동 계획을 시작하기 전에 의사와 상담하세요.' },
       { title: '책임 제한', body: '법률이 허용하는 최대 범위 내에서 Lock은 서비스 사용으로 인한 손실에 대해 책임을 지지 않습니다.' },
       { title: '문의', body: 'support@jkeroro.com' },
