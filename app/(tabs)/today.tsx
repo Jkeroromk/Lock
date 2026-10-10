@@ -8,7 +8,7 @@ import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { loadWaterMl, saveWaterMl, GLASS_ML, WATER_GOAL_ML } from '@/services/waterTracker';
+import { loadWater, addWater, undoLastWater, loadWaterGoal, saveWaterGoal, DEFAULT_WATER_GOAL_ML } from '@/services/waterTracker';
 import CaloriesCard from '@/components/today/CaloriesCard';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
 import MealsList from '@/components/today/MealsList';
@@ -24,23 +24,31 @@ export default function TodayScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [healthData, setHealthData] = useState({ steps: 0, activeEnergy: 0 });
   const [waterMl, setWaterMl] = useState(0);
+  const [waterLogCount, setWaterLogCount] = useState(0);
+  const [waterGoalMl, setWaterGoalMl] = useState(DEFAULT_WATER_GOAL_ML);
 
-  const loadWater = async () => {
-    const ml = await loadWaterMl();
-    setWaterMl(ml);
+  const applyWater = (state: { ml: number; log: number[] }) => {
+    setWaterMl(state.ml);
+    setWaterLogCount(state.log.length);
   };
 
-  const handleAddWater = async () => {
-    const next = waterMl + GLASS_ML;
-    setWaterMl(next);
-    await saveWaterMl(next);
+  const loadWaterData = async () => {
+    const [state, goal] = await Promise.all([loadWater(), loadWaterGoal()]);
+    applyWater(state);
+    setWaterGoalMl(goal);
   };
 
-  const handleRemoveWater = async () => {
-    if (waterMl <= 0) return;
-    const next = Math.max(0, waterMl - GLASS_ML);
-    setWaterMl(next);
-    await saveWaterMl(next);
+  const handleAddWater = async (ml: number) => {
+    setWaterMl((current) => current + ml); // optimistic
+    applyWater(await addWater(ml));
+  };
+
+  const handleUndoWater = async () => {
+    applyWater(await undoLastWater());
+  };
+
+  const handleSetWaterGoal = async (ml: number) => {
+    setWaterGoalMl(await saveWaterGoal(ml));
   };
 
   const loadHealthData = async () => {
@@ -63,14 +71,14 @@ export default function TodayScreen() {
 
   useEffect(() => {
     requestHealthPermissions();
-    Promise.all([refreshToday(), loadHealthData(), loadWater()]).finally(() => setLoading(false));
+    Promise.all([refreshToday(), loadHealthData(), loadWaterData()]).finally(() => setLoading(false));
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       if (!loading) {
         refreshToday();
-        loadWater();
+        loadWaterData();
       }
     }, [loading])
   );
@@ -125,9 +133,11 @@ export default function TodayScreen() {
 
                 <WaterCard
                   waterMl={waterMl}
-                  goalMl={WATER_GOAL_ML}
+                  goalMl={waterGoalMl}
+                  canUndo={waterLogCount > 0 || waterMl > 0}
                   onAdd={handleAddWater}
-                  onRemove={handleRemoveWater}
+                  onUndo={handleUndoWater}
+                  onSetGoal={handleSetWaterGoal}
                 />
 
                 <MealsList meals={todayMeals} />

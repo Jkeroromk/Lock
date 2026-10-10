@@ -5,11 +5,11 @@ import {
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system/legacy';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { updateProfile } from '@/services/api';
+import { toCompressedBase64 } from '@/lib/image';
 
 
 const AVATAR_OPTIONS = [
@@ -69,8 +69,9 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
     });
     if (!result.canceled && result.assets[0]) {
       const src = result.assets[0].uri;
-      // 读取为 base64，存数据库，不依赖本地文件路径
-      const base64 = await FileSystem.readAsStringAsync(src, { encoding: FileSystem.EncodingType.Base64 });
+      // Stored in the database and sent with every leaderboard / moments
+      // response, so keep it small: 256px is plenty for an avatar.
+      const base64 = await toCompressedBase64(src, { maxWidth: 256, quality: 0.7 });
       const dataUri = `data:image/jpeg;base64,${base64}`;
       setAvatarImage(dataUri);
       setAvatarEmoji('');

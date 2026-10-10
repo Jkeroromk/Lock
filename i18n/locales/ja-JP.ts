@@ -329,6 +329,11 @@ const jaJP = {
     title: '水分補給', goal: '目標',
     remaining: 'あと {ml} ml',
     achieved: '今日の水分目標達成！', autoAdded: 'ドリンクから +{ml}ml 追加', ml: 'ml', glasses: '杯',
+    undo: '取り消し',
+    custom: 'カスタム',
+    customTitle: '水分を追加',
+    goalTitle: '1日の水分目標',
+    range: '{min}〜{max} ml で入力',
   },
   weightTracker: {
     title: '体重記録', currentWeight: '現在の体重', vsLast: '前回比', totalChange: '合計変化',

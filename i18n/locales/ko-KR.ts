@@ -338,6 +338,11 @@ const koKR = {
     title: '수분 섭취', goal: '목표',
     remaining: '{ml}ml 남음',
     achieved: '오늘 수분 목표 달성!', autoAdded: '음료에서 +{ml}ml 추가', ml: 'ml', glasses: '잔',
+    undo: '취소',
+    custom: '직접 입력',
+    customTitle: '물 추가',
+    goalTitle: '하루 물 목표',
+    range: '{min}–{max} ml 입력',
   },
   weightTracker: {
     title: '체중 기록', currentWeight: '현재 체중', vsLast: '지난번 대비', totalChange: '총 변화',

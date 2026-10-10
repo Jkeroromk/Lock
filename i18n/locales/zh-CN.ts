@@ -457,6 +457,11 @@ const zhCN = {
     autoAdded: '饮料已记录 +{ml}ml',
     ml: 'ml',
     glasses: '杯',
+    undo: '撤销',
+    custom: '自定义',
+    customTitle: '添加饮水量',
+    goalTitle: '每日饮水目标',
+    range: '请输入 {min}–{max} ml',
   },
   weightTracker: {
     title: '体重追踪',

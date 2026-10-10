@@ -323,6 +323,11 @@ const zhTW = {
     title: '今日飲水', goal: '目標',
     remaining: '還差 {ml} ml',
     achieved: '今日飲水目標已達成！', autoAdded: '飲料已記錄 +{ml}ml', ml: 'ml', glasses: '杯',
+    undo: '復原',
+    custom: '自訂',
+    customTitle: '新增飲水量',
+    goalTitle: '每日飲水目標',
+    range: '請輸入 {min}–{max} ml',
   },
   weightTracker: {
     title: '體重追蹤', currentWeight: '當前體重', vsLast: '較上次', totalChange: '總變化',

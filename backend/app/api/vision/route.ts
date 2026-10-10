@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
 import { authenticateRequest } from '@/lib/auth';
-import { checkAndIncrementAiQuota } from '@/lib/ai-rate-limit';
+import { checkAndIncrementAiQuota, refundAiQuota } from '@/lib/ai-rate-limit';
+import { VISION_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 
-const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY?.trim();
-const FIREWORKS_API_URL = 'https://api.fireworks.ai/inference/v1/chat/completions';
-const FIREWORKS_TIMEOUT_MS = 30_000;
-
-// base64 编码的 10MB 图片约为 13,981,013 字符
-const MAX_BASE64_LENGTH = 14_000_000;
+// Vercel rejects request bodies over 4.5 MB before they reach us; the app
+// downsizes photos to ~1024px (~200 KB), so this is only a sanity cap.
+const MAX_BASE64_LENGTH = 4_000_000;
 
 interface VisionResponse {
   food: string;
@@ -18,6 +15,9 @@ interface VisionResponse {
   fat: number;
   confidence: number;
 }
+
+// AI calls can take up to ~30s; don't let the function be cut off first.
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   // 认证
@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (typeof image !== 'string' || image.length > MAX_BASE64_LENGTH) {
-      return NextResponse.json({ error: 'Image too large (max 10MB)' }, { status: 413 });
+      return NextResponse.json({ error: 'Image too large' }, { status: 413 });
     }
 
-    if (!FIREWORKS_API_KEY) {
-      return NextResponse.json({ error: 'Fireworks API key not configured' }, { status: 500 });
+    if (!process.env.FIREWORKS_API_KEY?.trim()) {
+      console.error('[POST /api/vision] FIREWORKS_API_KEY is not configured');
+      return NextResponse.json({ error: 'AI service not configured' }, { status: 503 });
     }
 
     // ── 限流检查（与 diet-analysis 共享同一计数器）──────────────────────────
@@ -85,50 +86,44 @@ Instructions:
 ${langInstruction}
 Return only the JSON, no other text.`;
 
-    const response = await axios.post(
-      FIREWORKS_API_URL,
-      {
-        model: 'accounts/fireworks/models/qwen3-vl-30b-a3b-instruct',
+    try {
+      const content = await fireworksChat({
+        model: VISION_MODEL,
         messages: [
           {
             role: 'user',
             content: [
-              {
-                type: 'image_url',
-                image_url: { url: `data:image/jpeg;base64,${image}` },
-              },
+              { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${image}` } },
               { type: 'text', text: promptText },
             ],
           },
         ],
         temperature: 0.1,
-        max_tokens: 500,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${FIREWORKS_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: FIREWORKS_TIMEOUT_MS,
+      });
+
+      const analysis = extractJson<VisionResponse>(content);
+      const num = (v: unknown) => (typeof v === 'number' && isFinite(v) ? v : Number(v) || 0);
+      if (!analysis.food || !isFinite(Number(analysis.calories))) {
+        throw new Error(`Invalid AI response: ${content.slice(0, 200)}`);
       }
-    );
 
-    const content = response.data.choices[0]?.message?.content || '';
-
-    let analysis: VisionResponse;
-    try {
-      const jsonContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      analysis = JSON.parse(jsonContent);
-    } catch {
-      analysis = { food: 'Unknown food', calories: 0, protein: 0, carbs: 0, fat: 0, confidence: 0.5 };
+      return NextResponse.json({
+        food: String(analysis.food),
+        calories: Math.round(num(analysis.calories)),
+        protein: Math.round(num(analysis.protein)),
+        carbs: Math.round(num(analysis.carbs)),
+        fat: Math.round(num(analysis.fat)),
+        confidence: Math.min(1, Math.max(0, num(analysis.confidence) || 0.5)),
+        remaining: quota.remaining,
+      });
+    } catch (error) {
+      // AI failed after we took a quota unit — give it back and log why.
+      await refundAiQuota(userId);
+      console.error('[POST /api/vision] AI call failed', { model: VISION_MODEL, mode: analysisMode, reason: describeAiError(error) });
+      return NextResponse.json({ error: 'Image analysis failed' }, { status: 502 });
     }
-
-    if (!analysis.food || typeof analysis.calories !== 'number') {
-      return NextResponse.json({ error: 'Invalid AI response format' }, { status: 500 });
-    }
-
-    return NextResponse.json({ ...analysis, remaining: quota.remaining });
-  } catch (error: any) {
+  } catch (error) {
+    console.error('[POST /api/vision]', error);
     return NextResponse.json({ error: 'Image analysis failed' }, { status: 500 });
   }
 }

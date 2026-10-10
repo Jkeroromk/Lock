@@ -362,6 +362,11 @@ const enUS = {
     autoAdded: '+{ml}ml from drink',
     ml: 'ml',
     glasses: 'glasses',
+    undo: 'Undo',
+    custom: 'Custom',
+    customTitle: 'Add water',
+    goalTitle: 'Daily water goal',
+    range: 'Enter {min}–{max} ml',
   },
   weightTracker: {
     title: 'Weight Tracker',
