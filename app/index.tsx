@@ -5,11 +5,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStore } from '@/store/useStore';
 import { fetchProfile, updateProfile } from '@/services/api';
 import LoadingScreen from '@/components/auth/LoadingScreen';
+import { useTranslation } from '@/i18n';
 
 export default function Index() {
   const { isSignedIn, isLoaded, userId } = useAuth();
   const { user, setUser } = useStore();
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [slow, setSlow] = useState(false);
+  const { t } = useTranslation();
+
+  // If startup takes unusually long, tell the user instead of spinning silently.
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 12_000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -63,7 +72,7 @@ export default function Index() {
   }, [isSignedIn, isLoaded]);
 
   if (!isLoaded || (isSignedIn && !profileLoaded)) {
-    return <LoadingScreen />;
+    return <LoadingScreen hint={slow ? t('common.slowLoading') : undefined} />;
   }
 
   if (!isSignedIn) {

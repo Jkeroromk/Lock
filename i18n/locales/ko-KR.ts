@@ -317,6 +317,7 @@ const koKR = {
     loading: '로딩 중...', error: '오류', retry: '다시 시도',
     save: '저장', cancel: '취소', confirm: '확인',
     delete: '삭제', close: '닫기', optional: '선택', deleting: '삭제 중...',
+    slowLoading: '평소보다 오래 걸리고 있습니다. 인터넷 연결을 확인한 후 Lock을 다시 실행해 주세요.',
   },
   paywall: {
     upgradeTitle: 'Pro로 업그레이드',

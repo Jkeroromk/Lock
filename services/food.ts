@@ -72,7 +72,7 @@ export const analyzeFoodImage = async (
 ): Promise<FoodAnalysis> => {
   try {
     const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' as any });
-    const response = await api.post<FoodAnalysis>('/api/vision', { image: base64, lang: lang ?? 'zh-CN', mode });
+    const response = await api.post<FoodAnalysis>('/api/vision', { image: base64, lang: lang ?? 'en-US', mode });
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || '分析图片失败');

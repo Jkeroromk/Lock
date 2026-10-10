@@ -5,6 +5,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-nextjs-app
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 20_000,
   headers: { 'Content-Type': 'application/json' },
 });
 

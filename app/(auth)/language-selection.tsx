@@ -34,7 +34,7 @@ export default function LanguageSelectionScreen() {
     setPickerKey(prev => prev + 1);
   }, [language]);
 
-  const languages: LanguageCode[] = ['zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR'];
+  const languages: LanguageCode[] = ['en-US', 'zh-CN', 'zh-TW', 'ja-JP', 'ko-KR'];
 
   const handleLanguageChange = (lang: LanguageCode) => {
     setSelectedLanguage(lang);

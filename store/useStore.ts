@@ -84,7 +84,7 @@ export const useStore = create<StoreState>()(
       todayCalories: 0,
       todayMeals: [],
       weeklyDays: [],
-      language: 'zh-CN',
+      language: 'en-US',
       hasSelectedLanguage: false,
       themeMode: 'auto',
       dailyCalorieGoal: 2000,
@@ -131,6 +131,15 @@ export const useStore = create<StoreState>()(
     {
       name: 'lock-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      // v1: default language changed from zh-CN to en-US. Installs where the
+      // user never explicitly picked a language switch to English.
+      version: 1,
+      migrate: (persisted: any, version) => {
+        if (version < 1 && persisted && !persisted.hasSelectedLanguage) {
+          persisted.language = 'en-US';
+        }
+        return persisted;
+      },
       partialize: (state) => ({
         language: state.language,
         user: state.user,

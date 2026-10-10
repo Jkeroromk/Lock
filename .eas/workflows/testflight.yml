@@ -1,0 +1,29 @@
+# Build the iOS app and send it to TestFlight.
+#
+# Trigger: add the "testflight" label to a pull request. The PR's branch is
+# built with the production profile and submitted to App Store Connect, so it
+# can be tested on device before merging.
+#
+# Can also be run manually: npx eas-cli workflow:run testflight.yml
+name: iOS → TestFlight
+
+on:
+  pull_request_labeled:
+    labels:
+      - testflight
+
+jobs:
+  build_ios:
+    name: Build iOS (production)
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  submit_ios:
+    name: Submit to TestFlight
+    needs: [build_ios]
+    type: submit
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      profile: production

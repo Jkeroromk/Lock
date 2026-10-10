@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Text, Platform } from 'react-native';
+import { Text, View, Platform } from 'react-native';
 import { useEffect } from 'react';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
@@ -21,7 +21,7 @@ if (Platform.OS === 'ios' || Platform.OS === 'android') {
   initRevenueCat(Platform.OS);
 }
 
-const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 // SecureStore token cache for Clerk
 const tokenCache = {
@@ -65,6 +65,18 @@ function ClerkTokenBridge() {
 export default function RootLayout() {
   const themeMode = useStore((state) => state.themeMode);
   const colors = useTheme();
+
+  // Without a publishable key Clerk never finishes loading and the app sits on
+  // the loading screen forever. Show the problem instead.
+  if (!PUBLISHABLE_KEY) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#000' }}>
+        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', textAlign: 'center' }}>
+          Configuration error: EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY is missing from this build.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

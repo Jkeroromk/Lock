@@ -302,6 +302,7 @@ const zhTW = {
     loading: '加載中...', error: '錯誤', retry: '重試',
     save: '保存', cancel: '取消', confirm: '確認',
     delete: '刪除', close: '關閉', optional: '可選', deleting: '刪除中...',
+    slowLoading: '載入時間比平時長，請檢查網路連線，然後關閉並重新開啟 Lock。',
   },
   paywall: {
     upgradeTitle: '升級到 Pro',
