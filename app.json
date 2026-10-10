@@ -7,11 +7,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
-    "icon": "./assets/dark-lockin.png",
+    "icon": "./assets/icons/icon-open-lock.png",
     "splash": {
-      "image": "./assets/dark-lockin.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#0A0A0A"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -35,8 +35,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/dark-lockin.png",
-        "backgroundColor": "#000000"
+        "foregroundImage": "./assets/icons/android-fg-open-lock.png",
+        "backgroundColor": "#0A0A0A"
       },
       "package": "com.jkeroro.lockin",
       "versionCode": 1,
@@ -48,7 +48,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/dark-lockin.png"
+      "favicon": "./assets/icons/preview-open-lock.png"
     },
     "plugins": [
       "expo-router",
@@ -77,8 +77,21 @@
       [
         "expo-alternate-app-icons",
         [
-          { "name": "DarkLockin", "image": "./assets/dark-lockin.png" },
-          { "name": "WhiteLockin", "image": "./assets/white-lockin.png" }
+          {
+            "name": "RingL",
+            "ios": "./assets/icons/icon-ring-l.png",
+            "android": { "foregroundImage": "./assets/icons/android-fg-ring-l.png", "backgroundColor": "#0A0A0A" }
+          },
+          {
+            "name": "StickerL",
+            "ios": "./assets/icons/icon-sticker-l.png",
+            "android": { "foregroundImage": "./assets/icons/android-fg-sticker-l.png", "backgroundColor": "#FFD43B" }
+          },
+          {
+            "name": "KeyholeDial",
+            "ios": "./assets/icons/icon-keyhole-dial.png",
+            "android": { "foregroundImage": "./assets/icons/android-fg-keyhole-dial.png", "backgroundColor": "#0A0A0A" }
+          }
         ]
       ]
     ],
