@@ -11,7 +11,9 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com"
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_aGVscGluZy1wZWdhc3VzLTQ3LmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
       }
     },
     "preview": {
@@ -23,13 +25,17 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com"
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_aGVscGluZy1wZWdhc3VzLTQ3LmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com"
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_aGVscGluZy1wZWdhc3VzLTQ3LmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
       }
     }
   },

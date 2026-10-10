@@ -4,7 +4,7 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 
-export default function LoadingScreen() {
+export default function LoadingScreen({ hint }: { hint?: string } = {}) {
   const colors = useTheme();
   const { t } = useTranslation();
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -105,6 +105,20 @@ export default function LoadingScreen() {
         >
           {t('common.loading')}
         </Text>
+        {hint ? (
+          <Text
+            style={{
+              fontSize: TYPOGRAPHY.bodyXS,
+              color: colors.textSecondary,
+              marginTop: DIMENSIONS.SPACING,
+              paddingHorizontal: DIMENSIONS.SPACING * 3,
+              textAlign: 'center',
+              lineHeight: TYPOGRAPHY.bodyXS * 1.5,
+            }}
+          >
+            {hint}
+          </Text>
+        ) : null}
       </View>
     </View>
   );

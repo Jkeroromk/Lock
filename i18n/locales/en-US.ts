@@ -337,6 +337,7 @@ const enUS = {
     loading: 'Loading...', error: 'Error', retry: 'Retry',
     save: 'Save', cancel: 'Cancel', confirm: 'Confirm',
     delete: 'Delete', close: 'Close', optional: 'Optional', deleting: 'Deleting...',
+    slowLoading: 'Taking longer than usual. Check your internet connection, then close and reopen Lock.',
   },
   paywall: {
     upgradeTitle: 'Upgrade to Pro',

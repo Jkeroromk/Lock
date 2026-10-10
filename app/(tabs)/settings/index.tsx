@@ -49,7 +49,7 @@ export default function SettingsScreen() {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
 
-  const languages: LanguageCode[] = ['zh-CN', 'en-US', 'zh-TW', 'ja-JP', 'ko-KR'];
+  const languages: LanguageCode[] = ['en-US', 'zh-CN', 'zh-TW', 'ja-JP', 'ko-KR'];
   const currentLanguageName = languageNames[language];
 
   const appState = useRef(AppState.currentState);

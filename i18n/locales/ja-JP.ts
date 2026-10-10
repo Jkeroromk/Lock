@@ -308,6 +308,7 @@ const jaJP = {
     loading: '読み込み中...', error: 'エラー', retry: '再試行',
     save: '保存', cancel: 'キャンセル', confirm: '確認',
     delete: '削除', close: '閉じる', optional: '任意', deleting: '削除中...',
+    slowLoading: '読み込みに時間がかかっています。インターネット接続を確認し、Lock を再起動してください。',
   },
   paywall: {
     upgradeTitle: 'Proにアップグレード',

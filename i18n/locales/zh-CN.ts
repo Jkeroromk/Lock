@@ -432,6 +432,7 @@ const zhCN = {
     loading: '加载中...', error: '错误', retry: '重试',
     save: '保存', cancel: '取消', confirm: '确认',
     delete: '删除', close: '关闭', optional: '可选', deleting: '删除中...',
+    slowLoading: '加载时间比平时长，请检查网络连接，然后关闭并重新打开 Lock。',
   },
   paywall: {
     upgradeTitle: '升级到 Pro',
