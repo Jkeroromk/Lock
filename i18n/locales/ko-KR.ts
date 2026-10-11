@@ -174,6 +174,7 @@ const koKR = {
     noChallengesHint: '챌린지를 만들고 친구를 초대해보세요!',
   },
   settings: {
+    groupGoals: '목표와 신체', groupPreferences: '환경설정', groupFriends: '친구 및 개인정보', groupAccount: '계정 및 구독', groupGeneral: '일반', groupConnections: '연결', groupData: '내 데이터', themeAuto: '자동', openSettings: '설정 열기',
     title: '설정',
     goals: '목표', clickToEdit: '클릭하여 일일 목표 편집', editGoals: '목표 편집',
     dailyGoalsSummary: '매일 {calories} kcal · {steps} 걸음',

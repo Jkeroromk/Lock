@@ -1,14 +1,19 @@
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
-import Animated, { FadeIn } from 'react-native-reanimated';
 import Skeleton from '@/components/ui/Skeleton';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { ScreenHeader } from '@/components/ui/bxc';
+import { Appear, ScreenHeader } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchMonthlyData, fetchWeeklyData, MonthlyData } from '@/services/api';
+
+type WeeklyDayData = Awaited<ReturnType<typeof fetchWeeklyData>>[number];
+
+// Survive tab switches and remounts for the whole app session.
+const monthCache = new Map<string, MonthlyData>();
+let weekCache: { uid: string; days: WeeklyDayData[] } | null = null;
 import CalendarView, { type DayMark } from '@/components/calendar/CalendarView';
 import WeeklyCaloriesChart from '@/components/calendar/WeeklyCaloriesChart';
 import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreakdown';
@@ -17,7 +22,8 @@ import AiInsightsCard from '@/components/calendar/AiInsightsCard';
 import DayMealsModal from '@/components/calendar/DayMealsModal';
 
 export default function CalendarScreen() {
-  const { language, dailyCalorieGoal } = useStore();
+  const { language, dailyCalorieGoal, user } = useStore();
+  const uid = user?.id ?? 'anon';
   const { t } = useTranslation();
   const colors = useTheme();
 
@@ -29,11 +35,17 @@ export default function CalendarScreen() {
     return `${y}-${m}-${d}`;
   };
 
-  const [loading, setLoading] = useState(true);
+  // Cache keys include the user so another account never sees stale data.
+  const monthKey = (d: Date) => `${uid}:${d.getFullYear()}-${d.getMonth() + 1}`;
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [monthlyData, setMonthlyData] = useState<MonthlyData>({});
+  const [monthlyData, setMonthlyData] = useState<MonthlyData>(() => monthCache.get(monthKey(new Date())) ?? {});
+  // Skeleton only on the very first visit; afterwards cached data shows instantly
+  // and fresh data is swapped in quietly.
+  const [loading, setLoading] = useState(() => !monthCache.has(monthKey(new Date())));
   const [chartData, setChartData] = useState<{ day: string; calories: number }[]>([]);
   const [weeklyNutrition, setWeeklyNutrition] = useState<{ protein: number; carbs: number; fat: number }>({ protein: 0, carbs: 0, fat: 0 });
+  const currentKey = useRef(monthKey(new Date()));
+  const monthRef = useRef(new Date());
 
   // 点击某天弹出餐食详情
   const [selectedMealDate, setSelectedMealDate] = useState<string | null>(null);
@@ -48,42 +60,46 @@ export default function CalendarScreen() {
     }
   };
 
+  const applyWeekly = (days: WeeklyDayData[]) => {
+    setChartData(days.map((d) => ({ day: getWeekdayLabel(d.date), calories: d.calories })));
+    const totals = days.reduce(
+      (acc, d) => ({ protein: acc.protein + (d.protein || 0), carbs: acc.carbs + (d.carbs || 0), fat: acc.fat + (d.fat || 0) }),
+      { protein: 0, carbs: 0, fat: 0 }
+    );
+    setWeeklyNutrition({ protein: Math.round(totals.protein), carbs: Math.round(totals.carbs), fat: Math.round(totals.fat) });
+  };
+
   const loadMonthlyData = useCallback(async (year: number, month: number) => {
+    const key = monthKey(new Date(year, month - 1, 1));
     try {
       const data = await fetchMonthlyData(year, month);
-      setMonthlyData(data);
+      monthCache.set(key, data);
+      if (currentKey.current === key) setMonthlyData(data);
     } catch {}
   }, []);
 
   const loadWeeklyData = useCallback(async () => {
     try {
       const days = await fetchWeeklyData();
-      setChartData(days.map((d) => ({ day: getWeekdayLabel(d.date), calories: d.calories })));
-      // 累加本周营养数据
-      const totals = days.reduce(
-        (acc, d) => ({
-          protein: acc.protein + (d.protein || 0),
-          carbs: acc.carbs + (d.carbs || 0),
-          fat: acc.fat + (d.fat || 0),
-        }),
-        { protein: 0, carbs: 0, fat: 0 }
-      );
-      setWeeklyNutrition({
-        protein: Math.round(totals.protein),
-        carbs: Math.round(totals.carbs),
-        fat: Math.round(totals.fat),
-      });
+      weekCache = { uid, days };
+      applyWeekly(days);
     } catch {}
   }, [language]);
 
+  // On every visit: refresh quietly. No skeleton unless there's nothing to show.
   useFocusEffect(
     useCallback(() => {
-      setLoading(true);
-      Promise.all([
-        loadMonthlyData(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
-        loadWeeklyData(),
-      ]).finally(() => setLoading(false));
-    }, [currentMonth])
+      const wc = weekCache;
+      if (wc && wc.uid === uid) applyWeekly(wc.days);
+      const m = monthRef.current;
+      Promise.all([loadMonthlyData(m.getFullYear(), m.getMonth() + 1), loadWeeklyData()])
+        .finally(() => setLoading(false));
+      // Warm the previous month so the back arrow is instant.
+      const prev = new Date(m.getFullYear(), m.getMonth() - 1, 1);
+      if (!monthCache.has(monthKey(prev))) {
+        fetchMonthlyData(prev.getFullYear(), prev.getMonth() + 1).then((d) => monthCache.set(monthKey(prev), d)).catch(() => {});
+      }
+    }, [])
   );
 
   const onDayPress = (dateStr: string) => {
@@ -91,7 +107,11 @@ export default function CalendarScreen() {
   };
 
   const onMonthChange = (month: Date) => {
+    const key = monthKey(month);
+    currentKey.current = key;
+    monthRef.current = month;
     setCurrentMonth(month);
+    setMonthlyData(monthCache.get(key) ?? {});
     loadMonthlyData(month.getFullYear(), month.getMonth() + 1);
   };
 
@@ -139,8 +159,8 @@ export default function CalendarScreen() {
               <Skeleton height={160} borderRadius={22} />
             </View>
           ) : (
-            <Animated.View entering={FadeIn.duration(400)}>
-              {/* 1. 月历 */}
+            <View>
+              <Appear index={0}>
               <CalendarView
                 currentMonth={currentMonth}
                 markedDates={markedDates}
@@ -149,18 +169,12 @@ export default function CalendarScreen() {
                 onMonthChange={onMonthChange}
               />
 
-              {/* 2. AI 饮食分析（上移） */}
-              <AiInsightsCard />
-
-              {/* 3. 本周热量柱状图 */}
-              <WeeklyCaloriesChart chartData={chartData} />
-
-              {/* 4. 本周营养分解（新接入） */}
-              <WeeklyNutritionBreakdown stats={nutritionStats} />
-
-              {/* 5. 本月统计 */}
-              <MonthlyStats markedDates={markedDates} avgDailyCalories={avgDailyCalories} />
-            </Animated.View>
+              </Appear>
+              <Appear index={1}><AiInsightsCard /></Appear>
+              <Appear index={2}><WeeklyCaloriesChart chartData={chartData} /></Appear>
+              <Appear index={3}><WeeklyNutritionBreakdown stats={nutritionStats} /></Appear>
+              <Appear index={4}><MonthlyStats markedDates={markedDates} avgDailyCalories={avgDailyCalories} /></Appear>
+            </View>
           )}
         </View>
       </ScrollView>

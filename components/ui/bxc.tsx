@@ -2,9 +2,13 @@
  * Lock "B×C" design primitives. Build screens from these so the look stays
  * consistent: Card (default / hero / inverse), Ring, Bar, Chip, Sticker, Label,
  * Button, IconButton, ScreenHeader, Segmented, Corners, TextField.
+ * Motion: PressScale (press feedback), Appear (staggered entrance); Ring and Bar animate.
  */
-import { ReactNode, forwardRef } from 'react';
-import { View, TouchableOpacity, ActivityIndicator, TextInput as RNTextInput, type ViewStyle, type StyleProp, type TouchableOpacityProps, type TextInputProps } from 'react-native';
+import { ReactNode, forwardRef, useEffect, useState } from 'react';
+import { View, Pressable, ActivityIndicator, TextInput as RNTextInput, type ViewStyle, type StyleProp, type PressableProps, type TextInputProps, type GestureResponderEvent } from 'react-native';
+import Animated, {
+  useSharedValue, useAnimatedStyle, useAnimatedProps, withSpring, withTiming, Easing, FadeInDown,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -14,6 +18,55 @@ import { useTheme } from '@/hooks/useTheme';
 export const RADIUS = { card: 22, hero: 24, control: 13, cell: 6 } as const;
 export const STROKE = { card: 2, control: 2, bar: 1.5 } as const;
 export const SHADOW_OFFSET = 5;
+
+
+// ── Motion ─────────────────────────────────────────────────────────────────
+/** Shared timing so every animated piece feels like the same app. */
+export const MOTION = {
+  press: { damping: 18, stiffness: 420, mass: 0.6 },
+  slide: { damping: 22, stiffness: 260, mass: 0.7 },
+  fill: { duration: 850, easing: Easing.out(Easing.cubic) },
+} as const;
+
+const APressable = Animated.createAnimatedComponent(Pressable);
+
+/** Pressable that squashes slightly while held — the base of every B×C control. */
+export function PressScale({ children, style, scaleTo = 0.96, onPressIn, onPressOut, ...rest }: Omit<PressableProps, 'style'> & {
+  children?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  scaleTo?: number;
+}) {
+  const scale = useSharedValue(1);
+  const animated = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return (
+    <APressable
+      {...rest}
+      onPressIn={(e: GestureResponderEvent) => { scale.value = withSpring(scaleTo, MOTION.press); onPressIn?.(e); }}
+      onPressOut={(e: GestureResponderEvent) => { scale.value = withSpring(1, MOTION.press); onPressOut?.(e); }}
+      style={[style, animated]}
+    >
+      {children}
+    </APressable>
+  );
+}
+
+/** Staggered rise-in for screen sections. `index` sets the delay (60 ms apart). */
+export function Appear({ children, index = 0, style }: { children: ReactNode; index?: number; style?: StyleProp<ViewStyle> }) {
+  return (
+    <Animated.View entering={FadeInDown.delay(index * 60).duration(420).easing(Easing.out(Easing.cubic))} style={style}>
+      {children}
+    </Animated.View>
+  );
+}
+
+/** Animates 0 → value on mount and value → value on change. */
+function useAnimatedProgress(target: number) {
+  const v = useSharedValue(0);
+  useEffect(() => {
+    v.value = withTiming(Math.max(0, Math.min(1, target || 0)), MOTION.fill);
+  }, [target, v]);
+  return v;
+}
 
 // ── HardShadow ─────────────────────────────────────────────────────────────
 /**
@@ -92,10 +145,12 @@ export function Label({ children, color, style }: { children: ReactNode; color?:
 }
 
 // ── Ring ───────────────────────────────────────────────────────────────────
+const ACircle = Animated.createAnimatedComponent(Circle);
+
 export function Ring({ size, stroke = 14, progress, color, trackColor, outlineColor, children, accessibilityLabel }: {
   size: number;
   stroke?: number;
-  /** 0..1 */
+  /** 0..1 — the arc sweeps to it on mount and whenever it changes */
   progress: number;
   color?: string;
   trackColor?: string;
@@ -107,21 +162,23 @@ export function Ring({ size, stroke = 14, progress, color, trackColor, outlineCo
   const c = useTheme();
   const r = (size - stroke - 4) / 2;
   const circumference = 2 * Math.PI * r;
-  const p = Math.max(0, Math.min(1, progress || 0));
-  const dash = `${circumference * p} ${circumference}`;
   const center = size / 2;
+  const p = useAnimatedProgress(progress);
+  const arcProps = useAnimatedProps(() => ({
+    strokeDashoffset: circumference * (1 - p.value),
+    strokeOpacity: p.value > 0.002 ? 1 : 0,
+  }));
+  const dash = `${circumference} ${circumference}`;
   return (
     <View style={{ width: size, height: size }} accessible={!!accessibilityLabel} accessibilityLabel={accessibilityLabel}>
       <Svg width={size} height={size}>
         <Circle cx={center} cy={center} r={r} stroke={trackColor ?? c.track} strokeWidth={stroke} fill="none" />
-        {p > 0 && outlineColor ? (
-          <Circle cx={center} cy={center} r={r} stroke={outlineColor} strokeWidth={stroke + 4} fill="none"
-            strokeLinecap="round" strokeDasharray={dash} rotation={-90} origin={`${center}, ${center}`} />
+        {outlineColor ? (
+          <ACircle cx={center} cy={center} r={r} stroke={outlineColor} strokeWidth={stroke + 4} fill="none"
+            strokeLinecap="round" strokeDasharray={dash} animatedProps={arcProps} rotation={-90} origin={`${center}, ${center}`} />
         ) : null}
-        {p > 0 ? (
-          <Circle cx={center} cy={center} r={r} stroke={color ?? c.accent} strokeWidth={stroke} fill="none"
-            strokeLinecap="round" strokeDasharray={dash} rotation={-90} origin={`${center}, ${center}`} />
-        ) : null}
+        <ACircle cx={center} cy={center} r={r} stroke={color ?? c.accent} strokeWidth={stroke} fill="none"
+          strokeLinecap="round" strokeDasharray={dash} animatedProps={arcProps} rotation={-90} origin={`${center}, ${center}`} />
       </Svg>
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
         {children}
@@ -131,7 +188,7 @@ export function Ring({ size, stroke = 14, progress, color, trackColor, outlineCo
 }
 
 // ── Bar ────────────────────────────────────────────────────────────────────
-/** Outlined progress bar (the chunky "C" bar). */
+/** Outlined progress bar (the chunky "C" bar). Fills in on mount and on change. */
 export function Bar({ progress, height = 10, color, style }: {
   progress: number;
   height?: number;
@@ -139,10 +196,15 @@ export function Bar({ progress, height = 10, color, style }: {
   style?: StyleProp<ViewStyle>;
 }) {
   const c = useTheme();
-  const p = Math.max(0, Math.min(1, progress || 0));
+  const [width, setWidth] = useState(0);
+  const p = useAnimatedProgress(progress);
+  const fill = useAnimatedStyle(() => ({ width: width * p.value }));
   return (
-    <View style={[{ height, borderRadius: height / 2, borderWidth: STROKE.bar, borderColor: c.textPrimary, overflow: 'hidden' }, style]}>
-      <View style={{ height: '100%', width: `${p * 100}%`, backgroundColor: color ?? c.textPrimary }} />
+    <View
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width - STROKE.bar * 2)}
+      style={[{ height, borderRadius: height / 2, borderWidth: STROKE.bar, borderColor: c.textPrimary, overflow: 'hidden' }, style]}
+    >
+      <Animated.View style={[{ height: '100%', backgroundColor: color ?? c.textPrimary }, fill]} />
     </View>
   );
 }
@@ -153,12 +215,11 @@ export function Chip({ label, selected, onPress, style, ...rest }: {
   selected?: boolean;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
-} & Omit<TouchableOpacityProps, 'style' | 'onPress'>) {
+} & Omit<PressableProps, 'style' | 'onPress' | 'children'>) {
   const c = useTheme();
   return (
-    <TouchableOpacity
+    <PressScale
       onPress={onPress}
-      activeOpacity={0.75}
       accessibilityRole="button"
       {...rest}
       style={[
@@ -178,7 +239,7 @@ export function Chip({ label, selected, onPress, style, ...rest }: {
       <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 13, color: selected ? c.backgroundPrimary : c.textPrimary }}>
         {label}
       </Text>
-    </TouchableOpacity>
+    </PressScale>
   );
 }
 
@@ -232,10 +293,9 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
   }[variant];
   const inactive = disabled || loading;
   return (
-    <TouchableOpacity
+    <PressScale
       onPress={onPress}
       disabled={inactive}
-      activeOpacity={0.8}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
@@ -254,7 +314,7 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
           <Text style={{ fontSize: 17, fontWeight: '800', color: palette.fg }}>{label}</Text>
         </>
       )}
-    </TouchableOpacity>
+    </PressScale>
   );
 }
 
@@ -268,9 +328,9 @@ export function IconButton({ icon, onPress, accessibilityLabel, filled, style }:
 }) {
   const c = useTheme();
   return (
-    <TouchableOpacity
+    <PressScale
       onPress={onPress}
-      activeOpacity={0.75}
+      scaleTo={0.9}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       style={[{
@@ -280,7 +340,7 @@ export function IconButton({ icon, onPress, accessibilityLabel, filled, style }:
       }, style]}
     >
       <Ionicons name={icon as any} size={20} color={filled ? c.onAccent : c.textPrimary} />
-    </TouchableOpacity>
+    </PressScale>
   );
 }
 
@@ -311,7 +371,10 @@ export function ScreenHeader({ title, caption, right, style }: {
 }
 
 // ── Segmented ──────────────────────────────────────────────────────────────
-/** Equal-width row of chips; exactly one selected. `badge` adds a yellow dot. */
+/**
+ * Equal-width segments with a solid pill that slides to the selected one.
+ * `badge` adds a yellow dot (e.g. pending friend requests).
+ */
 export function Segmented<K extends string>({ options, value, onChange, style }: {
   options: { key: K; label: string; badge?: boolean }[];
   value: K;
@@ -319,26 +382,64 @@ export function Segmented<K extends string>({ options, value, onChange, style }:
   style?: StyleProp<ViewStyle>;
 }) {
   const c = useTheme();
+  const GAP = 6;
+  const [width, setWidth] = useState(0);
+  const n = options.length;
+  const segment = width > 0 ? (width - GAP * (n - 1)) / n : 0;
+  const index = Math.max(0, options.findIndex((o) => o.key === value));
+  const x = useSharedValue(0);
+  const [placed, setPlaced] = useState(false);
+
+  useEffect(() => {
+    if (!segment) return;
+    const target = index * (segment + GAP);
+    if (!placed) { x.value = target; setPlaced(true); } // first layout: no slide
+    else x.value = withSpring(target, MOTION.slide);
+  }, [index, segment]);
+
+  const pill = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+
   return (
-    <View style={[{ flexDirection: 'row', gap: 6 }, style]} accessibilityRole="tablist">
-      {options.map((o) => (
-        <View key={o.key} style={{ flex: 1 }}>
-          <Chip
-            label={o.label.toUpperCase()}
-            selected={o.key === value}
-            onPress={() => onChange(o.key)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: o.key === value }}
-            style={{ paddingHorizontal: 4 }}
-          />
-          {o.badge ? (
-            <View pointerEvents="none" style={{
-              position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: 6,
-              backgroundColor: c.accent, borderWidth: 2, borderColor: c.ink,
-            }} />
-          ) : null}
-        </View>
-      ))}
+    <View
+      style={[{ flexDirection: 'row', gap: GAP }, style]}
+      accessibilityRole="tablist"
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
+      {segment > 0 ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[{ position: 'absolute', top: 0, bottom: 0, left: 0, width: segment, borderRadius: RADIUS.control, backgroundColor: c.textPrimary }, pill]}
+        />
+      ) : null}
+      {options.map((o) => {
+        const selected = o.key === value;
+        return (
+          <View key={o.key} style={{ flex: 1 }}>
+            <PressScale
+              onPress={() => onChange(o.key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              accessibilityLabel={o.label}
+              style={{
+                minHeight: 44, paddingHorizontal: 4, borderRadius: RADIUS.control, borderWidth: STROKE.control,
+                borderColor: selected ? c.textPrimary : c.borderPrimary,
+                backgroundColor: selected && !segment ? c.textPrimary : 'transparent',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 13, color: selected ? c.backgroundPrimary : c.textPrimary }}>
+                {o.label.toUpperCase()}
+              </Text>
+            </PressScale>
+            {o.badge ? (
+              <View pointerEvents="none" style={{
+                position: 'absolute', top: -3, right: -3, width: 12, height: 12, borderRadius: 6,
+                backgroundColor: c.accent, borderWidth: 2, borderColor: c.ink,
+              }} />
+            ) : null}
+          </View>
+        );
+      })}
     </View>
   );
 }

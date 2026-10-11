@@ -68,6 +68,7 @@ model Meal {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([userId, createdAt])
   @@map("meals")
 }
 

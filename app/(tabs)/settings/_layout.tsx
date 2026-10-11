@@ -5,6 +5,8 @@ export default function SettingsLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: 'slide_from_right',
+        gestureEnabled: true,
       }}
     >
       <Stack.Screen
@@ -43,6 +45,22 @@ export default function SettingsLayout() {
       />
       <Stack.Screen
         name="about"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="preferences"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="goals"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="friends"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="account"
         options={{ headerShown: false }}
       />
       <Stack.Screen

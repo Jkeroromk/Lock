@@ -224,6 +224,7 @@ const zhCN = {
     noChallengesHint: '创建一个挑战，邀请好友一起参与！',
   },
   settings: {
+    groupGoals: '目标与身体', groupPreferences: '偏好设置', groupFriends: '好友与隐私', groupAccount: '账号与订阅', groupGeneral: '通用', groupConnections: '连接', groupData: '你的数据', themeAuto: '跟随系统', openSettings: '打开设置',
     title: '设置',
     goals: '目标',
     clickToEdit: '点击编辑每日目标',

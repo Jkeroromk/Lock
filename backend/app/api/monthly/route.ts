@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const startOfNextMonth = new Date(new Date(Date.UTC(year, month, 1)).getTime() + tzOffset * 60 * 1000);
 
     const meals = await prisma.meal.findMany({
+      select: { createdAt: true, calories: true, protein: true, carbs: true, fat: true },
       where: {
         userId,
         createdAt: {

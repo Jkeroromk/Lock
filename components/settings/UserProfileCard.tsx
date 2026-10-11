@@ -23,22 +23,17 @@ interface User {
 interface UserProfileCardProps {
   user: User | null;
   onEdit: () => void;
-  themeMode: 'light' | 'dark';
-  onThemeChange: (mode: 'light' | 'dark') => void;
 }
 
-export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange }: UserProfileCardProps) {
+export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) {
   const { t } = useTranslation();
   const colors = useTheme();
-  const isLightMode = themeMode === 'light';
 
   const handleCopyInviteCode = async () => {
     if (!user?.inviteCode) return;
     await Clipboard.setStringAsync(user.inviteCode);
     Alert.alert(t('settings.success'), t('settings.inviteCodeCopied' as any));
   };
-  const nextTheme = isLightMode ? 'dark' : 'light';
-  const themeIcon = isLightMode ? 'sunny' : 'moon';
 
   const displayName = user?.username ? `@${user.username}` : user?.name || t('settings.userName');
 
@@ -66,10 +61,7 @@ export default function UserProfileCard({ user, onEdit, themeMode, onThemeChange
             <Label style={{ fontSize: 10, marginTop: 4 }}>{t(`settings.genderOptions.${user.gender}` as any) || user.gender}</Label>
           ) : null}
         </View>
-        <View style={{ gap: 6 }}>
-          <IconButton icon={themeIcon} onPress={() => onThemeChange(nextTheme)} accessibilityLabel={t('settings.theme' as any)} />
-          <IconButton icon="pencil-outline" onPress={onEdit} accessibilityLabel={t('settings.editProfile' as any)} />
-        </View>
+        <IconButton icon="pencil-outline" onPress={onEdit} accessibilityLabel={t('settings.editProfile' as any)} />
       </View>
 
       {user?.inviteCode ? (

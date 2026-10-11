@@ -183,6 +183,7 @@ const enUS = {
     noChallengesHint: 'Create a challenge and invite friends to join!',
   },
   settings: {
+    groupGoals: 'Goals & body', groupPreferences: 'Preferences', groupFriends: 'Friends & privacy', groupAccount: 'Account & subscription', groupGeneral: 'General', groupConnections: 'Connections', groupData: 'Your data', themeAuto: 'Auto', openSettings: 'Open Settings',
     title: 'Settings',
     goals: 'Goals', clickToEdit: 'Click to edit daily goals', editGoals: 'Edit Goals',
     dailyGoalsSummary: 'Daily {calories} kcal · {steps} steps',

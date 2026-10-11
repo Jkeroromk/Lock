@@ -16,13 +16,13 @@ interface SkeletonProps {
   style?: object;
 }
 
-export default function Skeleton({ width = '100%', height = 20, borderRadius = 8, style }: SkeletonProps) {
+export default function Skeleton({ width = '100%', height = 20, borderRadius = 22, style }: SkeletonProps) {
   const colors = useTheme();
   const opacity = useSharedValue(1);
 
   useEffect(() => {
     opacity.value = withRepeat(
-      withTiming(0.3, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+      withTiming(0.45, { duration: 700, easing: Easing.inOut(Easing.ease) }),
       -1,
       true
     );
@@ -37,9 +37,9 @@ export default function Skeleton({ width = '100%', height = 20, borderRadius = 8
           width,
           height,
           borderRadius,
-          backgroundColor: colors.cardBackgroundSecondary,
-          borderWidth: 1,
-          borderColor: colors.borderSecondary,
+          backgroundColor: colors.track,
+          borderWidth: 2,
+          borderColor: colors.borderPrimary,
         },
         animatedStyle,
         style,

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -58,6 +59,8 @@ interface StoreState {
   user: User | null;
   todayCalories: number;
   todayMeals: Meal[];
+  /** Local YYYY-MM-DD the today* fields belong to (persisted, so launches can show them instantly). */
+  todayDate: string | null;
   weeklyDays: WeeklyDay[];
   language: LanguageCode;
   hasSelectedLanguage?: boolean;
@@ -77,12 +80,18 @@ interface StoreState {
   clearSession: () => void;
 }
 
+/** Local calendar day, e.g. "2026-10-11". */
+export function localDateKey(d: Date = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export const useStore = create<StoreState>()(
   persist(
     (set) => ({
       user: null,
       todayCalories: 0,
       todayMeals: [],
+      todayDate: null,
       weeklyDays: [],
       language: 'en-US',
       hasSelectedLanguage: false,
@@ -109,6 +118,7 @@ export const useStore = create<StoreState>()(
           set({
             todayCalories: data.totalCalories,
             todayMeals: data.meals,
+            todayDate: localDateKey(),
           });
         } catch {}
       },
@@ -123,6 +133,7 @@ export const useStore = create<StoreState>()(
           user: null,
           todayCalories: 0,
           todayMeals: [],
+          todayDate: null,
           weeklyDays: [],
           hasSelectedLanguage: false,
         });
@@ -147,7 +158,20 @@ export const useStore = create<StoreState>()(
         themeMode: state.themeMode,
         dailyCalorieGoal: state.dailyCalorieGoal,
         dailyStepGoal: state.dailyStepGoal,
+        todayCalories: state.todayCalories,
+        todayMeals: state.todayMeals,
+        todayDate: state.todayDate,
       }),
     }
   )
 );
+
+/** True once the persisted store has been read from disk. */
+export function useStoreHydrated() {
+  const [hydrated, setHydrated] = useState(() => useStore.persist.hasHydrated());
+  useEffect(() => {
+    if (useStore.persist.hasHydrated()) setHydrated(true);
+    return useStore.persist.onFinishHydration(() => setHydrated(true));
+  }, []);
+  return hydrated;
+}
