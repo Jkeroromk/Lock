@@ -16,6 +16,7 @@ import MealsList from '@/components/today/MealsList';
 import WaterCard from '@/components/today/WaterCard';
 import { getHealthData, syncHealthData, isHealthAvailable, isHealthConnected, requestHealthPermissions } from '@/services/health';
 import ConnectHealthCard from '@/components/today/ConnectHealthCard';
+import TabFocusFade from '@/components/ui/TabFocusFade';
 
 export default function TodayScreen() {
   const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
@@ -127,6 +128,7 @@ export default function TodayScreen() {
   const ENERGY_GOAL = 500;
 
   return (
+    <TabFocusFade>
     <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
           showsVerticalScrollIndicator={false}
@@ -198,5 +200,6 @@ export default function TodayScreen() {
           </View>
         </ScrollView>
     </SafeAreaView>
+    </TabFocusFade>
   );
 }

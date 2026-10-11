@@ -86,7 +86,7 @@ export default function WaterCard({ waterMl, goalMl, canUndo, onAdd, onUndo, onS
       {/* Quick add */}
       <View style={{ flexDirection: 'row', gap: 6, marginTop: 12 }}>
         {QUICK_ADD_ML.map((ml) => (
-          <Chip key={ml} label={`+${ml}`} selected={ml === 250} onPress={() => onAdd(ml)} style={{ flex: 1, paddingHorizontal: 0 }} />
+          <Chip key={ml} label={`+${ml}`} onPress={() => onAdd(ml)} style={{ flex: 1, paddingHorizontal: 0 }} />
         ))}
         <TouchableOpacity
           onPress={() => setEditing('custom')}

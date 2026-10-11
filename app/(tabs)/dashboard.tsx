@@ -17,6 +17,7 @@ import {
   fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges, fetchMoments,
   LeaderboardEntry, FriendRequest, SentRequest, ChallengeData, Moment,
 } from '@/services/api';
+import TabFocusFade from '@/components/ui/TabFocusFade';
 
 type Tab = 'friends' | 'challenges' | 'moments';
 
@@ -106,6 +107,7 @@ export default function DashboardScreen() {
   };
 
   return (
+    <TabFocusFade>
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}
@@ -197,5 +199,6 @@ export default function DashboardScreen() {
         onSuccess={(moment) => setMoments((prev) => [moment, ...prev])}
       />
     </SafeAreaView>
+    </TabFocusFade>
   );
 }

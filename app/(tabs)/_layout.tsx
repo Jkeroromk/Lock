@@ -213,7 +213,10 @@ export default function TabLayout() {
         // Tabs mount on first visit. Mounting all five at launch fired every
         // screen's network requests at once and slowed startup.
         lazy: true,
-        animation: 'shift',
+        // No navigator transition: 'shift' could be interrupted by fast tab
+        // switching and leave a blank screen. Each tab fades in itself
+        // (components/ui/TabFocusFade), which always ends fully visible.
+        animation: 'none',
       }}
     >
       <Tabs.Screen
