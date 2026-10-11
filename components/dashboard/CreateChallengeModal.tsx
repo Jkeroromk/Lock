@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TouchableOpacity, Modal, ScrollView, KeyboardAvoidingView, Platform, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -59,6 +59,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
     }
   };
 
+  const { height: windowHeight } = useWindowDimensions();
   const unitKey = type === 'CALORIES' ? 'challenge.unitCalories' : type === 'STEPS' ? 'challenge.unitSteps' : 'challenge.unitStreak';
   const typeLabel = (key: string) => t(`challenge.type${key.charAt(0) + key.slice(1).toLowerCase()}` as any);
 
@@ -76,7 +77,9 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
             borderTopLeftRadius: 32, borderTopRightRadius: 32,
             padding: DIMENSIONS.CARD_PADDING,
             paddingBottom: DIMENSIONS.CARD_PADDING * 1.5,
-            maxHeight: '90%',
+            // Absolute height: a % here resolves against an auto-height parent and
+            // didn't constrain the sheet, which pushed the Create button off screen.
+            maxHeight: windowHeight * 0.9,
           }}>
             <View style={{
               width: 40, height: 4, borderRadius: 2,

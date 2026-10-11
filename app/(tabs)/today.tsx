@@ -109,9 +109,10 @@ export default function TodayScreen() {
       if (!loading) {
         refreshToday();
         loadWaterData();
-        refreshHealth(); // may have been connected from Settings
+        // Re-check only while disconnected (may have been connected from Settings).
+        if (healthConnected === false) refreshHealth();
       }
-    }, [loading])
+    }, [loading, healthConnected])
   );
 
   const macros = todayMeals.reduce(
