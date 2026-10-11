@@ -7,6 +7,7 @@ const zhCN = {
     user: '用户',
   },
   today: {
+    connectHealthTitle: '连接 Apple 健康', connectHealthBody: '自动同步步数和活动消耗，直接显示在这里。', connectHealthCta: '连接',
     todayCalories: '今日卡路里',
     target: '目标',
     remaining: '剩余',
@@ -48,6 +49,7 @@ const zhCN = {
     analysisFailed: '分析失败',
     saveFailed: '保存失败',
     saveSuccess: '餐食记录成功！',
+    savedToast: '已记录', undoWater: '撤销饮水',
     needPermission: '需要权限',
     saving: '保存中...',
     modePhoto: '拍照识别', modeLabel: '营养标签', modeBarcode: '扫条码',
@@ -525,6 +527,7 @@ const zhCN = {
     copyright: '© 2026 Lock. 保留所有权利。',
   },
   pricing: {
+    priceUnavailable: '暂不可用', offeringsError: '暂时无法获取价格，请检查网络后重试。',
     title: '订阅计划', currentPro: '您当前是 Pro 会员',
     free: '免费版', currentPlan: '当前套餐', basic: '基础',
     cancelAnytime: '随时可取消', loading: '加载中...',

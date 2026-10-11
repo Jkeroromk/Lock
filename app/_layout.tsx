@@ -9,6 +9,7 @@ import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { resourceCache } from '@clerk/clerk-expo/resource-cache';
 import * as SecureStore from 'expo-secure-store';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ToastHost } from '@/components/ui/Toast';
 import { enableScreens } from 'react-native-screens';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
@@ -106,6 +107,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
         </Stack>
+        <ToastHost />
         <StatusBar style={colors.backgroundPrimary === '#0A0A0A' ? 'light' : 'dark'} />
       </ClerkProvider>
     </GestureHandlerRootView>

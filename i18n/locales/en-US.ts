@@ -3,6 +3,7 @@ const enUS = {
     today: 'Today', calendar: 'Calendar', log: 'Log', social: 'Social', user: 'User',
   },
   today: {
+    connectHealthTitle: 'Connect Apple Health', connectHealthBody: 'See your steps and active energy here, synced automatically.', connectHealthCta: 'Connect',
     todayCalories: "Today's Calories", target: 'Target', remaining: 'Remaining',
     kcal: 'kcal', steps: 'Steps', stepsUnit: 'steps', energy: 'Energy',
     heartRate: 'Heart Rate', bpm: 'bpm', meals: 'Meals', recorded: 'Recorded',
@@ -26,6 +27,7 @@ const enUS = {
     selectOtherPhoto: 'Select Other Photo', analyzing: 'Analyzing...',
     analysisFailed: 'Analysis Failed', saveFailed: 'Save Failed',
     saveSuccess: 'Meal recorded successfully!', needPermission: 'Permission Required',
+    savedToast: 'Logged', undoWater: 'Undo water',
     saving: 'Saving...',
     modePhoto: 'Photo Scan', modeLabel: 'Nutrition Label', modeBarcode: 'Barcode',
     cameraPermissionTitle: 'Camera Permission Required',
@@ -430,6 +432,7 @@ const enUS = {
     copyright: '© 2026 Lock. All rights reserved.',
   },
   pricing: {
+    priceUnavailable: 'Unavailable', offeringsError: 'Couldn\'t load prices right now. Check your connection and try again.',
     title: 'Subscription', currentPro: 'You are a Pro member',
     free: 'Free', currentPlan: 'Current Plan', basic: 'Basic',
     cancelAnytime: 'Cancel anytime', loading: 'Loading...',
