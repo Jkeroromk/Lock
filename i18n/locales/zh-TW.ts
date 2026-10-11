@@ -409,6 +409,11 @@ const zhTW = {
     setting: '熱量超標提醒',
     settingDesc: '超過每日目標時溫和地提醒你',
   },
+  appUpdate: {
+    ready: '新版本已就緒',
+    detail: '重新啟動即可使用最新改動',
+    restart: '重新啟動',
+  },
   aiInsights: {
     dailyLimit: '今天的免費 AI 分析已用完，明天再來，或升級 Pro 不限次數。',
     title: 'AI 飲食分析',

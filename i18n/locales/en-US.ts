@@ -477,6 +477,11 @@ const enUS = {
     setting: 'Calorie warnings',
     settingDesc: 'Gently flag when you go over your daily goal',
   },
+  appUpdate: {
+    ready: 'New version ready',
+    detail: 'Restart to get the latest fixes',
+    restart: 'Restart',
+  },
   aiInsights: {
     dailyLimit: 'You\'ve used today\'s free AI review. Come back tomorrow, or go Pro for unlimited reviews.',
     title: 'AI Diet Analysis',

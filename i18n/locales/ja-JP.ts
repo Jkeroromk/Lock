@@ -415,6 +415,11 @@ const jaJP = {
     setting: 'カロリー超過のお知らせ',
     settingDesc: '1日の目標を超えたときにやさしくお知らせします',
   },
+  appUpdate: {
+    ready: '新しいバージョンの準備ができました',
+    detail: '再起動すると最新の修正が反映されます',
+    restart: '再起動',
+  },
   aiInsights: {
     dailyLimit: '今日の無料AI分析は使い切りました。明日また使えます。Proなら無制限です。',
     title: 'AI食事分析',
