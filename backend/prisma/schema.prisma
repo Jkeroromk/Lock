@@ -30,6 +30,10 @@ model User {
   subscription String?  // RevenueCat subscription product ID
   aiCallsToday    Int      @default(0) @map("ai_calls_today")
   aiCallsResetAt  DateTime @default(now()) @map("ai_calls_reset_at") @db.Timestamptz(6)
+  lastDietAnalysisAt DateTime? @map("last_diet_analysis_at") @db.Timestamptz(6)
+  bonusAiCalls    Int      @default(0) @map("bonus_ai_calls") // earned from invites, spent after the daily allowance
+  inviteRewards   Int      @default(0) @map("invite_rewards")  // how many invites have paid out (capped)
+  referredById    String?  @map("referred_by_id")             // who invited this user; set once
   pushToken       String?  @map("push_token")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)

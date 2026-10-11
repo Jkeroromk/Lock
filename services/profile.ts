@@ -20,6 +20,8 @@ export interface UserProfile {
   streak?: number;
   hasCompletedOnboarding: boolean;
   inviteCode?: string | null;
+  createdAt?: string;
+  bonusAiCalls?: number;
 }
 
 export const fetchProfile = async (): Promise<UserProfile> => {

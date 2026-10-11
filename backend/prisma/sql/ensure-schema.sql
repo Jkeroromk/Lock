@@ -30,3 +30,11 @@ ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "hidden_at" TIMESTAMPTZ(6);
 
 -- Calendar / weekly / today queries filter meals by user and date range.
 CREATE INDEX IF NOT EXISTS "meals_user_id_created_at_idx" ON "meals"("user_id", "created_at");
+
+-- Free plan: one AI diet review per local day, tracked separately from scans.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_diet_analysis_at" TIMESTAMPTZ(6);
+
+-- Invite rewards: bonus scans for the inviter, paid once per invited account.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "bonus_ai_calls" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "invite_rewards" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "referred_by_id" TEXT;

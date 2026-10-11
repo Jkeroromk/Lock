@@ -32,6 +32,14 @@ export default function LogScreen() {
   const { refreshToday, user } = useStore();
   const plan = user?.plan ?? 'FREE';
   const aiQuota = getQuota(plan, 'dailyAiCalls');
+  // Free accounts get unlimited scans for their first 7 days (enforced on the server too).
+  const trialDaysLeft = aiQuota === -1 || !user?.createdAt ? 0
+    : Math.ceil((new Date(user.createdAt).getTime() + 7 * 864e5 - Date.now()) / 864e5);
+  const bonusScans = user?.bonusAiCalls ?? 0;
+  const quotaBadge = trialDaysLeft > 0
+    ? (t('log.trialBadge' as any) as string).replace('{days}', String(trialDaysLeft))
+    : (t('log.freeQuotaBadge' as any) as string).replace('{quota}', String(aiQuota))
+      + (bonusScans > 0 ? (t('log.bonusBadge' as any) as string).replace('{n}', String(bonusScans)) : '');
 
   const [mode, setMode] = useState<LogMode>('photo');
   const [image, setImage] = useState<string | null>(null);
@@ -87,8 +95,10 @@ export default function LogScreen() {
           t('log.aiLimitTitle' as any),
           (t('log.aiLimitMsg' as any) as string).replace('{quota}', String(aiQuota)),
           [
-            { text: t('log.laterBtn' as any), style: 'cancel' },
+            // Barcode lookups are never limited, so offer that first.
+            { text: t('log.scanBarcodeInstead' as any), onPress: () => handleModeChange('barcode') },
             { text: t('log.upgradeBtn' as any), onPress: () => router.push('/(tabs)/settings/pricing') },
+            { text: t('log.laterBtn' as any), style: 'cancel' },
           ]
         );
       } else {
@@ -211,7 +221,7 @@ export default function LogScreen() {
                         style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'center', minHeight: 44, paddingHorizontal: 12, marginTop: 6 }}
                       >
                         <Ionicons name="flash" size={13} color={c.textSecondary} />
-                        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{(t('log.freeQuotaBadge' as any) as string).replace('{quota}', String(aiQuota))}</Text>
+                        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{quotaBadge}</Text>
                       </TouchableOpacity>
                     )}
                     <Button
