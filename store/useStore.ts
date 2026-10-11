@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { deviceLanguage } from '@/lib/deviceLanguage';
 import { fetchTodayData, fetchWeeklyData } from '@/services/api';
 
 export type Gender = 'male' | 'female' | 'other';
@@ -35,6 +36,8 @@ interface User {
   createdAt?: string;
   /** Extra AI scans earned from invites. */
   bonusAiCalls?: number;
+  /** Team account: no AI limits (server decides). */
+  isAdmin?: boolean;
 }
 
 interface Meal {
@@ -97,7 +100,8 @@ export const useStore = create<StoreState>()(
       todayMeals: [],
       todayDate: null,
       weeklyDays: [],
-      language: 'en-US',
+      // First launch follows the phone's language; the user can change it.
+      language: deviceLanguage(),
       hasSelectedLanguage: false,
       themeMode: 'auto',
       dailyCalorieGoal: 2000,
@@ -146,12 +150,12 @@ export const useStore = create<StoreState>()(
     {
       name: 'lock-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      // v1: default language changed from zh-CN to en-US. Installs where the
-      // user never explicitly picked a language switch to English.
-      version: 1,
+      // v2: the default language follows the phone. Installs where the user
+      // never explicitly picked a language switch to the phone's language.
+      version: 2,
       migrate: (persisted: any, version) => {
-        if (version < 1 && persisted && !persisted.hasSelectedLanguage) {
-          persisted.language = 'en-US';
+        if (version < 2 && persisted && !persisted.hasSelectedLanguage) {
+          persisted.language = deviceLanguage();
         }
         return persisted;
       },

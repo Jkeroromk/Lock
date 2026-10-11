@@ -33,6 +33,8 @@ CREATE INDEX IF NOT EXISTS "meals_user_id_created_at_idx" ON "meals"("user_id", 
 
 -- Free plan: one AI diet review per local day, tracked separately from scans.
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_diet_analysis_at" TIMESTAMPTZ(6);
+-- Switching app language allows one more review that day, in the new language.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "diet_analysis_langs" TEXT;
 
 -- Invite rewards: bonus scans for the inviter, paid once per invited account.
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "bonus_ai_calls" INTEGER NOT NULL DEFAULT 0;
