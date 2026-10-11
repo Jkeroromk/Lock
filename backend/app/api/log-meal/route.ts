@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { syncChallengeProgress } from '@/lib/challenge-progress';
+import { uploadMealPhoto, MAX_THUMBNAIL_BASE64 } from '@/lib/meal-photos';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
     const { userId } = authResult;
 
     const body = await request.json();
-    const { food_name, calories, protein, carbs, fat, image_url } = body;
+    const { food_name, calories, protein, carbs, fat, image_url, thumbnail } = body;
 
     if (!food_name || calories === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -26,6 +27,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (thumbnail !== undefined && thumbnail !== null) {
+      if (typeof thumbnail !== 'string' || thumbnail.length > MAX_THUMBNAIL_BASE64) {
+        return NextResponse.json({ error: 'Thumbnail too large' }, { status: 400 });
+      }
+    }
+
     // Ensure user row exists
     await prisma.user.upsert({
       where: { id: userId },
@@ -34,7 +41,7 @@ export async function POST(request: NextRequest) {
     });
 
     // 插入餐食记录
-    const meal = await prisma.meal.create({
+    let meal = await prisma.meal.create({
       data: {
         userId,
         foodName: food_name,
@@ -45,6 +52,14 @@ export async function POST(request: NextRequest) {
         imageUrl: image_url || null,
       },
     });
+
+    // Keep a small copy of the photo in Supabase Storage so it shows on every
+    // device and survives reinstalls. If storage is unavailable the meal keeps
+    // the device-local path the app sent.
+    if (thumbnail) {
+      const stored = await uploadMealPhoto(userId, meal.id, thumbnail);
+      if (stored) meal = await prisma.meal.update({ where: { id: meal.id }, data: { imageUrl: stored } });
+    }
 
     // ── 自动更新 Streak ──────────────────────────────────────────────────────
     await updateStreak(userId);

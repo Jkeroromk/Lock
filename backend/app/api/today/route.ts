@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { signMealPhotos } from '@/lib/meal-photos';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       totalCalories,
-      meals: meals.map((m) => ({
+      meals: await signMealPhotos(meals.map((m) => ({
         id: m.id,
         food_name: m.foodName,
         calories: Number(m.calories),
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
         fat: Number(m.fat || 0),
         image_url: m.imageUrl,
         created_at: m.createdAt,
-      })),
+      }))),
     });
   } catch (error: any) {
     return NextResponse.json(

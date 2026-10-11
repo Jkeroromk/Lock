@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 import { prisma } from '@/lib/prisma';
+import { deleteAllMealPhotos } from '@/lib/meal-photos';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
       const { id } = event.data as { id: string; deleted: boolean };
       if (id) {
         await prisma.user.deleteMany({ where: { id } });
+        await deleteAllMealPhotos(id);
       }
     }
   } catch (error) {

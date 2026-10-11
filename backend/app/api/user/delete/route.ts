@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { deleteAllMealPhotos } from '@/lib/meal-photos';
 
 // DELETE /api/user/delete — permanently delete all user data from the database.
 // Called by the client before Clerk user deletion; the Clerk webhook fires
@@ -14,6 +15,7 @@ export async function DELETE() {
     // Cascade deletes handle: meals, posts, likes, comments, friendships,
     // activity feed, weight records, challenges, push tokens, etc.
     await prisma.user.deleteMany({ where: { id: userId } });
+    await deleteAllMealPhotos(userId);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[DELETE /api/user/delete]', error);

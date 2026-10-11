@@ -24,8 +24,8 @@ interface MealsListProps {
   meals: Meal[];
 }
 
-/** Photo saved on this device when the meal was logged (see saveMealThumbnail). */
-const hasLocalPhoto = (url?: string | null) => !!url && url.startsWith('file://');
+/** Server copy (signed https URL) or, for older meals, the copy saved on this device. */
+const hasPhoto = (url?: string | null) => !!url && (url.startsWith('https://') || url.startsWith('file://'));
 
 export default function MealsList({ meals }: MealsListProps) {
   const { t } = useTranslation();
@@ -80,7 +80,7 @@ export default function MealsList({ meals }: MealsListProps) {
       ) : (
         <View style={{ gap: 8 }}>
           {meals.map((meal, index) => {
-            const photo = hasLocalPhoto(meal.image_url) && !brokenPhotos.has(meal.image_url!) ? meal.image_url! : null;
+            const photo = hasPhoto(meal.image_url) && !brokenPhotos.has(meal.image_url!) ? meal.image_url! : null;
             const rowId = meal.id ?? String(index);
             const isActive = activeMealId === rowId;
             const isDeleting = deletingId === meal.id;
