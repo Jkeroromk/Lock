@@ -465,6 +465,18 @@ const enUS = {
     cannotRemoveCurrent: 'Cannot remove the active language',
     sizeEstimate: '~{size}',
   },
+  calorieWarn: {
+    overTitle: '{kcal} kcal over today\'s goal',
+    overTip: 'No big deal — keep the next meal light and protein-forward.',
+    wayTip: 'Well above your goal today. Tomorrow is a fresh start: lighter, protein-rich meals help.',
+    nearTitle: 'Close to today\'s goal — {kcal} kcal left',
+    preview: 'After this: {total} / {goal} kcal',
+    previewOver: 'This puts you {kcal} kcal over today\'s goal',
+    toastOver: '{kcal} kcal over today\'s goal',
+    tabBadge: 'over calorie goal',
+    setting: 'Calorie warnings',
+    settingDesc: 'Gently flag when you go over your daily goal',
+  },
   aiInsights: {
     dailyLimit: 'You\'ve used today\'s free AI review. Come back tomorrow, or go Pro for unlimited reviews.',
     title: 'AI Diet Analysis',

@@ -5,6 +5,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useStore } from '@/store/useStore';
 import { FONTS } from '@/constants/fonts';
 import { Card, Ring, Bar, Label } from '@/components/ui/bxc';
+import { Ionicons } from '@expo/vector-icons';
+import { calorieLevel } from '@/lib/calorieStatus';
 
 interface CaloriesCardProps {
   todayCalories: number;
@@ -43,7 +45,7 @@ function MacroRow({ label, value, target }: { label: string; value: number; targ
 export default function CaloriesCard({ todayCalories, protein, carbs, fat }: CaloriesCardProps) {
   const { t } = useTranslation();
   const c = useTheme();
-  const { dailyCalorieGoal } = useStore();
+  const { dailyCalorieGoal, calorieWarnings, user } = useStore();
 
   const goal = dailyCalorieGoal || 2000;
   const eaten = Math.round(todayCalories);
@@ -51,6 +53,10 @@ export default function CaloriesCard({ todayCalories, protein, carbs, fat }: Cal
   const left = Math.abs(goal - eaten);
   const targets = macroTargets(goal);
   const isLight = c.backgroundPrimary !== c.ink;
+  const level = calorieWarnings ? calorieLevel(eaten, goal, user?.goal) : 'ok';
+  const warn = level === 'over' || level === 'way';
+  // Text on the solid red banner: white on light red, ink on the brighter dark-mode red.
+  const onDanger = isLight ? '#fff' : c.ink;
 
   return (
     <Card variant="hero" padding={18} style={{ marginBottom: 14 }}>
@@ -78,6 +84,31 @@ export default function CaloriesCard({ todayCalories, protein, carbs, fat }: Cal
           </Text>
         </View>
       </View>
+
+      {warn ? (
+        <View
+          accessibilityRole="alert"
+          style={{
+            flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginTop: 14, padding: 12,
+            borderRadius: 14, borderWidth: 2, borderColor: c.danger,
+            backgroundColor: level === 'way' ? c.danger : 'transparent',
+          }}
+        >
+          <Ionicons name="warning" size={18} color={level === 'way' ? onDanger : c.danger} style={{ marginTop: 1 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 15, fontWeight: '800', color: level === 'way' ? onDanger : c.textPrimary }}>
+              {t('calorieWarn.overTitle' as any, { kcal: (eaten - goal).toLocaleString() })}
+            </Text>
+            <Text style={{ fontSize: 13, lineHeight: 18, marginTop: 2, color: level === 'way' ? onDanger : c.textSecondary }}>
+              {t((level === 'way' ? 'calorieWarn.wayTip' : 'calorieWarn.overTip') as any)}
+            </Text>
+          </View>
+        </View>
+      ) : level === 'near' ? (
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 12 }}>
+          {t('calorieWarn.nearTitle' as any, { kcal: (goal - eaten).toLocaleString() })}
+        </Text>
+      ) : null}
     </Card>
   );
 }

@@ -403,6 +403,18 @@ const jaJP = {
     removeConfirm: '言語パックを削除', removeMessage: '{name}言語パックを削除しますか？',
     cannotRemoveCurrent: '現在使用中の言語は削除できません', sizeEstimate: '約{size}',
   },
+  calorieWarn: {
+    overTitle: '今日の目標を {kcal} kcal 超えています',
+    overTip: '気にしすぎず、次の食事は軽めでたんぱく質多めに。',
+    wayTip: '今日は目標を大きく超えました。明日はまた新しい一日、軽めで高たんぱくな食事がおすすめです。',
+    nearTitle: '今日の目標まであと {kcal} kcal',
+    preview: '記録後：{total} / {goal} kcal',
+    previewOver: '記録すると今日の目標を {kcal} kcal 超えます',
+    toastOver: '今日の目標を {kcal} kcal 超えています',
+    tabBadge: 'カロリー目標超過',
+    setting: 'カロリー超過のお知らせ',
+    settingDesc: '1日の目標を超えたときにやさしくお知らせします',
+  },
   aiInsights: {
     dailyLimit: '今日の無料AI分析は使い切りました。明日また使えます。Proなら無制限です。',
     title: 'AI食事分析',

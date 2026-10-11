@@ -560,6 +560,18 @@ const zhCN = {
     cannotRemoveCurrent: '无法移除当前使用的语言',
     sizeEstimate: '约 {size}',
   },
+  calorieWarn: {
+    overTitle: '今天已超出目标 {kcal} kcal',
+    overTip: '偶尔超一点没关系，下一餐清淡些、多点蛋白质就好。',
+    wayTip: '今天明显超出目标了。明天又是新的一天，清淡、高蛋白的餐食会有帮助。',
+    nearTitle: '快到今天的目标了，还剩 {kcal} kcal',
+    preview: '记录后：{total} / {goal} kcal',
+    previewOver: '记录后将超出今天目标 {kcal} kcal',
+    toastOver: '已超出今天目标 {kcal} kcal',
+    tabBadge: '已超出热量目标',
+    setting: '热量超标提醒',
+    settingDesc: '超过每日目标时温和地提醒你',
+  },
   aiInsights: {
     dailyLimit: '今天的免费 AI 分析已用完，明天再来，或升级 Pro 不限次数。',
     title: 'AI 饮食分析',

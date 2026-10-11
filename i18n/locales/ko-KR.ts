@@ -412,6 +412,18 @@ const koKR = {
     removeConfirm: '언어 팩 제거', removeMessage: '{name} 언어 팩을 제거하시겠습니까?',
     cannotRemoveCurrent: '현재 사용 중인 언어는 제거할 수 없습니다', sizeEstimate: '약 {size}',
   },
+  calorieWarn: {
+    overTitle: '오늘 목표보다 {kcal} kcal 초과했어요',
+    overTip: '괜찮아요. 다음 식사는 가볍게, 단백질 위주로 해 보세요.',
+    wayTip: '오늘은 목표를 꽤 넘었어요. 내일은 새로운 하루, 가볍고 단백질 많은 식사가 도움이 돼요.',
+    nearTitle: '오늘 목표까지 {kcal} kcal 남았어요',
+    preview: '기록 후: {total} / {goal} kcal',
+    previewOver: '기록하면 오늘 목표보다 {kcal} kcal 초과해요',
+    toastOver: '오늘 목표보다 {kcal} kcal 초과',
+    tabBadge: '칼로리 목표 초과',
+    setting: '칼로리 초과 알림',
+    settingDesc: '하루 목표를 넘으면 부드럽게 알려 드려요',
+  },
   aiInsights: {
     dailyLimit: '오늘의 무료 AI 분석을 모두 사용했어요. 내일 다시 쓸 수 있고, Pro는 무제한이에요.',
     title: 'AI 식단 분석',

@@ -19,7 +19,7 @@ import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoad
 
 /** Language, appearance, app icon, notifications and Apple Health. */
 export default function PreferencesScreen() {
-  const { language, setLanguage, themeMode, setThemeMode } = useStore();
+  const { language, setLanguage, themeMode, setThemeMode, calorieWarnings, setCalorieWarnings } = useStore();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -143,6 +143,15 @@ export default function PreferencesScreen() {
         showSwitch
         switchValue={notificationsEnabled}
         onSwitchChange={handleNotificationsToggle}
+        showChevron={false}
+      />
+      <SettingItem
+        icon="warning-outline"
+        title={t('calorieWarn.setting' as any)}
+        description={t('calorieWarn.settingDesc' as any)}
+        showSwitch
+        switchValue={calorieWarnings}
+        onSwitchChange={setCalorieWarnings}
         showChevron={false}
       />
 

@@ -14,6 +14,7 @@ import { Appear, Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
 import { detectLiquidMl, addWater } from '@/services/waterTracker';
+import { calorieLevel, isWarning, todaysCalories } from '@/lib/calorieStatus';
 import { makeMealThumbnail } from '@/lib/image';
 import { showToast } from '@/components/ui/Toast';
 import { getQuota } from '@/lib/plans';
@@ -150,6 +151,7 @@ export default function LogScreen() {
     const detectedMl = detectLiquidMl(result.food);
     const liquidMl = detectedMl > 0 && (await askCountAsWater(result.food, detectedMl)) ? detectedMl : 0;
     setSaving(true);
+    const before = todaysCalories();
     try {
       const thumb = image ? await makeMealThumbnail(image) : null;
       await logMeal({
@@ -163,11 +165,17 @@ export default function LogScreen() {
       clearImage(); setResult(null); refreshToday();
       // Back to Today so the ring fills up; a toast instead of an OK-only alert.
       router.navigate('/(tabs)/today');
+      const { calorieWarnings, dailyCalorieGoal, user: me } = useStore.getState();
+      const goal = dailyCalorieGoal || 2000;
+      const after = before + Math.round(saved.calories);
+      const overGoal = calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
+      const water = liquidMl > 0 ? (t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl)) : '';
       showToast({
         message: `${t('log.savedToast' as any)} · ${saved.food}`,
-        detail: liquidMl > 0
-          ? (t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl))
-          : `${Math.round(saved.calories)} kcal`,
+        detail: overGoal
+          ? [t('calorieWarn.toastOver' as any, { kcal: (after - goal).toLocaleString() }), water].filter(Boolean).join(' · ')
+          : water || `${Math.round(saved.calories)} kcal`,
+        icon: overGoal ? 'warning' : undefined,
       });
     } catch (error: any) { Alert.alert(t('log.saveFailed'), error.message || t('log.saveFailed')); }
     finally { setSaving(false); }

@@ -397,6 +397,18 @@ const zhTW = {
     removeConfirm: '移除語言包', removeMessage: '確定要移除 {name} 語言包嗎？',
     cannotRemoveCurrent: '無法移除當前使用的語言', sizeEstimate: '約 {size}',
   },
+  calorieWarn: {
+    overTitle: '今天已超出目標 {kcal} kcal',
+    overTip: '偶爾超一點沒關係，下一餐清淡些、多點蛋白質就好。',
+    wayTip: '今天明顯超出目標了。明天又是新的一天，清淡、高蛋白的餐點會有幫助。',
+    nearTitle: '快到今天的目標了，還剩 {kcal} kcal',
+    preview: '記錄後：{total} / {goal} kcal',
+    previewOver: '記錄後將超出今天目標 {kcal} kcal',
+    toastOver: '已超出今天目標 {kcal} kcal',
+    tabBadge: '已超出熱量目標',
+    setting: '熱量超標提醒',
+    settingDesc: '超過每日目標時溫和地提醒你',
+  },
   aiInsights: {
     dailyLimit: '今天的免費 AI 分析已用完，明天再來，或升級 Pro 不限次數。',
     title: 'AI 飲食分析',

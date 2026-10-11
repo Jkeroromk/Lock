@@ -80,6 +80,9 @@ interface StoreState {
   setHasSelectedLanguage: (hasSelected: boolean) => void;
   setThemeMode: (mode: ThemeMode) => void;
   setDailyCalorieGoal: (goal: number) => void;
+  /** Gently flag going over the daily calorie goal (Today, Log, tab bar). */
+  calorieWarnings: boolean;
+  setCalorieWarnings: (on: boolean) => void;
   setDailyStepGoal: (goal: number) => void;
   removeMealOptimistic: (mealId: string) => void;
   refreshToday: () => Promise<void>;
@@ -105,6 +108,7 @@ export const useStore = create<StoreState>()(
       hasSelectedLanguage: false,
       themeMode: 'auto',
       dailyCalorieGoal: 2000,
+      calorieWarnings: true,
       dailyStepGoal: 10000,
       setUser: (user) => set({ user }),
       setPlan: (plan) => set((state) => ({
@@ -114,6 +118,7 @@ export const useStore = create<StoreState>()(
       setHasSelectedLanguage: (hasSelected) => set({ hasSelectedLanguage: hasSelected }),
       setThemeMode: (mode) => set({ themeMode: mode }),
       setDailyCalorieGoal: (goal) => set({ dailyCalorieGoal: goal }),
+      setCalorieWarnings: (on) => set({ calorieWarnings: on }),
       setDailyStepGoal: (goal) => set({ dailyStepGoal: goal }),
       removeMealOptimistic: (mealId) => set((state) => {
         const updatedMeals = state.todayMeals.filter((m) => m.id !== mealId);
@@ -165,6 +170,7 @@ export const useStore = create<StoreState>()(
         hasSelectedLanguage: state.hasSelectedLanguage,
         themeMode: state.themeMode,
         dailyCalorieGoal: state.dailyCalorieGoal,
+        calorieWarnings: state.calorieWarnings,
         dailyStepGoal: state.dailyStepGoal,
         todayCalories: state.todayCalories,
         todayMeals: state.todayMeals,
