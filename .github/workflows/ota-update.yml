@@ -1,0 +1,69 @@
+# Push JS-only changes straight to installed builds (EAS Update), no rebuild.
+#
+# Trigger: add the "ota" label to a PR (later pushes re-publish), or run it by
+# hand from Actions → "OTA update" → Run workflow. Takes ~3 minutes; testers
+# get a "New version ready → Restart" toast the next time they open the app.
+#
+# Only builds with the same runtime fingerprint receive the update. If the PR
+# changes native code, app.json or native packages, the fingerprint changes and
+# existing builds won't pick it up — use the "testflight" label instead.
+name: OTA update
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+  workflow_dispatch:
+    inputs:
+      message:
+        description: Update message (shown on expo.dev)
+        required: false
+
+concurrency:
+  group: ota-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish update (production channel)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (contains(github.event.pull_request.labels.*.name, 'ota') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'ota'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install EAS CLI
+        run: |
+          npm install -g eas-cli@latest
+          eas whoami
+
+      # `eas update` doesn't read the build profile's env from eas.json, so
+      # export the production EXPO_PUBLIC_* values (API URL, public keys).
+      - name: App environment
+        run: |
+          node -e '
+            const env = require("./eas.json").build.production.env || {};
+            for (const [k, v] of Object.entries(env)) console.log(`${k}=${v}`);
+          ' >> "$GITHUB_ENV"
+
+      - name: Publish
+        env:
+          MESSAGE: ${{ github.event.pull_request.title && format('{0} (#{1})', github.event.pull_request.title, github.event.pull_request.number) || inputs.message || github.sha }}
+        run: |
+          eas update --channel production --environment production --message "$MESSAGE" --non-interactive
+          echo "### Published OTA update" >> "$GITHUB_STEP_SUMMARY"
+          echo "$MESSAGE" >> "$GITHUB_STEP_SUMMARY"

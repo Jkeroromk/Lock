@@ -424,6 +424,11 @@ const koKR = {
     setting: '칼로리 초과 알림',
     settingDesc: '하루 목표를 넘으면 부드럽게 알려 드려요',
   },
+  appUpdate: {
+    ready: '새 버전이 준비됐어요',
+    detail: '다시 시작하면 최신 수정 사항이 적용돼요',
+    restart: '다시 시작',
+  },
   aiInsights: {
     dailyLimit: '오늘의 무료 AI 분석을 모두 사용했어요. 내일 다시 쓸 수 있고, Pro는 무제한이에요.',
     title: 'AI 식단 분석',

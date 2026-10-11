@@ -572,6 +572,11 @@ const zhCN = {
     setting: '热量超标提醒',
     settingDesc: '超过每日目标时温和地提醒你',
   },
+  appUpdate: {
+    ready: '新版本已就绪',
+    detail: '重启即可使用最新改动',
+    restart: '重启',
+  },
   aiInsights: {
     dailyLimit: '今天的免费 AI 分析已用完，明天再来，或升级 Pro 不限次数。',
     title: 'AI 饮食分析',
