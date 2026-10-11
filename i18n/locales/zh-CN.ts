@@ -59,7 +59,7 @@ const zhCN = {
     lookingUp: '正在查询产品信息...',
     rescan: '重新扫描',
     aiLimitTitle: '今日次数已用完',
-    aiLimitMsg: '免费版每天限 {quota} 次 AI 识别\n升级 Pro 即可无限使用',
+    aiLimitMsg: '免费版每天 {quota} 次 AI 识别。扫条码和手动记录不限次数。', scanBarcodeInstead: '改用条码',
     laterBtn: '稍后再说', upgradeBtn: '升级 Pro',
     productNotFound: '未找到产品',
     productNotFoundMsg: '条码 {code} 在数据库中未找到，您可以手动填写营养信息。',
@@ -541,8 +541,8 @@ const zhCN = {
     currentMax: '您当前是 Max 会员',
     bestValue: '超值推荐',
     upgradeToMax: '升级到 Max',
-    freeFeatures: ['每天 3 次 AI 食物识别', '基础卡路里追踪', '参与好友挑战', '最多 5 位好友'],
-    proFeatures: ['无限 AI 食物识别', 'AI 饮食分析（手动触发）', '创建 & 参与挑战', '无限好友', '数据导出', '体重趋势图'],
+    freeFeatures: ['每天 8 次 AI 食物识别', '每天 1 次 AI 饮食分析', '条码与手动记录不限次数', '参与好友挑战', '最多 5 位好友'],
+    proFeatures: ['无限 AI 食物识别', '无限 AI 饮食分析', '创建 & 参与挑战', '无限好友', '数据导出', '体重趋势图'],
     maxFeatures: ['包含 Pro 全部功能', '每周自动 AI 饮食报告', 'AI 自定义营养目标', '优先客户支持'],
   },
   languagePack: {
@@ -558,6 +558,7 @@ const zhCN = {
     sizeEstimate: '约 {size}',
   },
   aiInsights: {
+    dailyLimit: '今天的免费 AI 分析已用完，明天再来，或升级 Pro 不限次数。',
     title: 'AI 饮食分析',
     description: '基于你的近7天饮食记录和身体目标，AI 将给出个性化建议',
     startAnalysis: '开始分析',

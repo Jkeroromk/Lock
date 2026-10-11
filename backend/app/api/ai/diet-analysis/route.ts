@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { checkAndIncrementAiQuota, refundAiQuota } from '@/lib/ai-rate-limit';
+import { checkDietAnalysisAllowance, requestTimeZone } from '@/lib/ai-rate-limit';
 import { TEXT_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 
 // The prompt is written in Chinese; this tells the model which language to answer in.
@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
     const responseLanguage = RESPONSE_LANGUAGE[lang] ?? RESPONSE_LANGUAGE['en-US'];
 
     // ── 限流检查 ────────────────────────────────────────────────────────────
-    const quota = await checkAndIncrementAiQuota(userId);
+    // Separate from scans: unlimited on paid plans, one per day on free.
+    const quota = await checkDietAnalysisAllowance(userId, requestTimeZone(request));
     if (!quota.ok) return quota.response;
     // ────────────────────────────────────────────────────────────────────────
 
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     if (!process.env.FIREWORKS_API_KEY?.trim()) {
-      await refundAiQuota(userId);
+      await quota.refund();
       console.error('[GET /api/ai/diet-analysis] FIREWORKS_API_KEY is not configured');
       return NextResponse.json({ error: 'AI service not configured' }, { status: 503 });
     }
@@ -110,12 +111,12 @@ export async function GET(request: NextRequest) {
       });
       analysis = extractJson(content);
     } catch (error) {
-      await refundAiQuota(userId);
+      await quota.refund();
       console.error('[GET /api/ai/diet-analysis] AI call failed', { model: TEXT_MODEL, reason: describeAiError(error) });
       return NextResponse.json({ error: 'Analysis failed' }, { status: 502 });
     }
 
-    return NextResponse.json({ ...analysis, remaining: quota.remaining });
+    return NextResponse.json(analysis);
   } catch (error: any) {
     console.error('[GET /api/ai/diet-analysis]', error);
     return NextResponse.json({ error: 'Analysis failed' }, { status: 500 });

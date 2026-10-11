@@ -1,6 +1,9 @@
 export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
-export const FREE_DAILY_AI_CALLS = 3;
+/** Photo + nutrition-label scans per day on the free plan. Barcode and manual logging are never limited. */
+export const FREE_DAILY_AI_CALLS = 8;
+/** AI diet reviews per day on the free plan (separate from scans). */
+export const FREE_DAILY_DIET_ANALYSES = 1;
 export const FREE_MAX_FRIENDS = 5;
 
 export function isPaidPlan(plan: PlanTier): boolean {

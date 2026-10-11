@@ -30,7 +30,7 @@ const koKR = {
     grantCamera: '카메라 허용', aimAtBarcode: '바코드를 프레임에 맞추세요',
     supportedFormats: 'EAN-13 / UPC / Code 128 / QR 지원', lookingUp: '상품 정보 검색 중...',
     rescan: '다시 스캔', aiLimitTitle: '오늘 한도 도달',
-    aiLimitMsg: '무료 플랜: 하루 {quota}회 AI 스캔\nPro로 업그레이드하면 무제한',
+    aiLimitMsg: '무료 플랜: 하루 {quota}회 AI 스캔. 바코드와 직접 입력은 무제한입니다.', scanBarcodeInstead: '바코드로 기록',
     laterBtn: '나중에', upgradeBtn: 'Pro 업그레이드', productNotFound: '상품을 찾을 수 없음',
     productNotFoundMsg: '바코드 {code}를 데이터베이스에서 찾을 수 없습니다. 직접 영양 정보를 입력할 수 있습니다.',
     manualEntry: '직접 입력', lookupFailed: '검색 실패', lookupFailedMsg: '네트워크 연결 확인 후 재시도해 주세요',
@@ -399,8 +399,8 @@ const koKR = {
     currentMax: '현재 Max 회원입니다',
     bestValue: '최고 가성비',
     upgradeToMax: 'Max로 업그레이드',
-    freeFeatures: ['하루 3회 AI 스캔', '기본 칼로리 추적', '친구 챌린지 참여', '최대 5명 친구'],
-    proFeatures: ['무제한 AI 스캔', 'AI 식단 분석 (수동)', '챌린지 생성 및 참여', '무제한 친구', '데이터 내보내기', '체중 차트'],
+    freeFeatures: ['하루 8회 AI 스캔', '하루 1회 AI 식단 분석', '바코드·직접 입력 무제한', '친구 챌린지 참여', '최대 5명 친구'],
+    proFeatures: ['무제한 AI 스캔', '무제한 AI 식단 분석', '챌린지 생성 및 참여', '무제한 친구', '데이터 내보내기', '체중 차트'],
     maxFeatures: ['Pro 모든 기능 포함', '주간 자동 AI 리포트', 'AI 맞춤 영양 플랜', '우선 고객 지원'],
   },
   languagePack: {
@@ -410,6 +410,7 @@ const koKR = {
     cannotRemoveCurrent: '현재 사용 중인 언어는 제거할 수 없습니다', sizeEstimate: '약 {size}',
   },
   aiInsights: {
+    dailyLimit: '오늘의 무료 AI 분석을 모두 사용했어요. 내일 다시 쓸 수 있고, Pro는 무제한이에요.',
     title: 'AI 식단 분석',
     description: '최근 7일간의 식사 기록과 신체 목표를 기반으로 AI가 맞춤형 제안을 드립니다',
     startAnalysis: '분석 시작',

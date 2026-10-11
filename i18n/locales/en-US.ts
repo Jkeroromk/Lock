@@ -36,7 +36,7 @@ const enUS = {
     lookingUp: 'Looking up product...',
     rescan: 'Rescan',
     aiLimitTitle: 'Daily limit reached',
-    aiLimitMsg: 'Free plan: {quota} AI scans/day. Upgrade to Pro for unlimited.',
+    aiLimitMsg: 'Free plan: {quota} AI scans a day. Barcode and manual logging are always unlimited.', scanBarcodeInstead: 'Scan a barcode',
     laterBtn: 'Later', upgradeBtn: 'Upgrade Pro',
     productNotFound: 'Product not found',
     productNotFoundMsg: 'Barcode {code} not in database. You can enter nutrition manually.',
@@ -446,8 +446,8 @@ const enUS = {
     currentMax: 'You are a Max member',
     bestValue: 'Best Value',
     upgradeToMax: 'Upgrade to Max',
-    freeFeatures: ['3 AI scans / day', 'Basic calorie tracking', 'Join friend challenges', 'Up to 5 friends'],
-    proFeatures: ['Unlimited AI scans', 'AI diet analysis (on demand)', 'Create & join challenges', 'Unlimited friends', 'Data export', 'Weight chart'],
+    freeFeatures: ['8 AI scans / day', '1 AI diet review / day', 'Unlimited barcode & manual logging', 'Join friend challenges', 'Up to 5 friends'],
+    proFeatures: ['Unlimited AI scans', 'Unlimited AI diet reviews', 'Create & join challenges', 'Unlimited friends', 'Data export', 'Weight chart'],
     maxFeatures: ['Everything in Pro', 'Weekly auto AI report', 'AI custom nutrition plan', 'Priority customer support'],
   },
   languagePack: {
@@ -463,6 +463,7 @@ const enUS = {
     sizeEstimate: '~{size}',
   },
   aiInsights: {
+    dailyLimit: 'You\'ve used today\'s free AI review. Come back tomorrow, or go Pro for unlimited reviews.',
     title: 'AI Diet Analysis',
     description: 'Based on your last 7 days of meals and body goals, AI will provide personalized suggestions',
     startAnalysis: 'Start Analysis',

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/auth';
-import { checkAndIncrementAiQuota, refundAiQuota } from '@/lib/ai-rate-limit';
+import { checkAndIncrementAiQuota, refundAiQuota, requestTimeZone } from '@/lib/ai-rate-limit';
 import { VISION_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 
 // Vercel rejects request bodies over 4.5 MB before they reach us; the app
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── 限流检查（与 diet-analysis 共享同一计数器）──────────────────────────
-    const quota = await checkAndIncrementAiQuota(userId);
+    const quota = await checkAndIncrementAiQuota(userId, requestTimeZone(request));
     if (!quota.ok) return quota.response;
     // ────────────────────────────────────────────────────────────────────────
 

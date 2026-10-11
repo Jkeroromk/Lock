@@ -12,5 +12,10 @@ export const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const token = await getStoredToken();
   if (token) config.headers['Authorization'] = `Bearer ${token}`;
+  // Daily AI allowances reset at the user's own midnight, not UTC's.
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz) config.headers['x-timezone'] = tz;
+  } catch {}
   return config;
 });

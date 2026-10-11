@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchDietAnalysis, DietAnalysis } from '@/services/api';
@@ -15,14 +16,23 @@ export default function AiInsightsCard() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DietAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [limited, setLimited] = useState(false);
+  const router = useRouter();
 
   const handleAnalyze = async () => {
     setLoading(true);
     setError(null);
+    setLimited(false);
     try {
       setData(await fetchDietAnalysis());
     } catch (err: any) {
-      setError(err?.response?.data?.error || err?.message || t('aiInsights.analysisFailed' as any));
+      const code = err?.response?.data?.error;
+      if (code === 'DIET_ANALYSIS_LIMIT_REACHED') {
+        setLimited(true);
+        setError(t('aiInsights.dailyLimit' as any));
+      } else {
+        setError(t('aiInsights.analysisFailed' as any));
+      }
     } finally {
       setLoading(false);
     }
@@ -77,6 +87,15 @@ export default function AiInsightsCard() {
           <Ionicons name="alert-circle" size={16} color={ink} style={{ marginTop: 2 }} />
           <Text style={[body, { flex: 1 }]}>{error}</Text>
         </View>
+      ) : null}
+      {limited ? (
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/settings/pricing')}
+          accessibilityRole="button"
+          style={{ alignSelf: 'flex-start', marginTop: 10, minHeight: 44, paddingHorizontal: 16, borderRadius: 14, borderWidth: 2, borderColor: ink, justifyContent: 'center' }}
+        >
+          <Text style={{ fontSize: 15, fontWeight: '800', color: ink }}>{t('log.upgradeBtn' as any)}</Text>
+        </TouchableOpacity>
       ) : null}
 
       {data && !loading ? (

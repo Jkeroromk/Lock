@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getDailyAiCallLimit } from '@/lib/plans';
+import { getDailyAiCallLimit, isPaidPlan, FREE_DAILY_DIET_ANALYSES } from '@/lib/plans';
 
 export interface RateLimitOk {
   ok: true;
@@ -22,7 +22,8 @@ export interface RateLimitDenied {
  * 采用"先扣后用"策略，防止并发绕过限制。
  */
 export async function checkAndIncrementAiQuota(
-  userId: string
+  userId: string,
+  timeZone?: string | null,
 ): Promise<RateLimitOk | RateLimitDenied> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -38,13 +39,9 @@ export async function checkAndIncrementAiQuota(
 
   const limit = getDailyAiCallLimit(user.plan as any);
 
-  // 判断是否跨天，需要重置计数器
+  // New day in the user's own time zone → counter starts over at their midnight.
   const now = new Date();
-  const resetAt = new Date(user.aiCallsResetAt);
-  const needsReset =
-    now.getUTCFullYear() !== resetAt.getUTCFullYear() ||
-    now.getUTCMonth() !== resetAt.getUTCMonth() ||
-    now.getUTCDate() !== resetAt.getUTCDate();
+  const needsReset = !sameLocalDay(now, new Date(user.aiCallsResetAt), timeZone);
 
   const currentCalls = needsReset ? 0 : user.aiCallsToday;
 
@@ -54,7 +51,7 @@ export async function checkAndIncrementAiQuota(
       response: NextResponse.json(
         {
           error: 'AI_LIMIT_REACHED',
-          message: `免费版每日限 ${limit} 次 AI 识别，今日已用完`,
+          message: `Free plan: ${limit} AI scans per day`,
           callsUsed: currentCalls,
           limit,
         },
@@ -89,4 +86,81 @@ export async function refundAiQuota(userId: string): Promise<void> {
   } catch (error) {
     console.error('[refundAiQuota]', error);
   }
+}
+
+/** The user's IANA time zone, sent by the app on every request. */
+export function requestTimeZone(request: Request): string | null {
+  return request.headers.get('x-timezone');
+}
+
+/** YYYY-MM-DD for `d` in `timeZone` (UTC when missing or invalid). */
+function localDay(d: Date, timeZone?: string | null): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: timeZone || 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  } catch {
+    return d.toISOString().slice(0, 10);
+  }
+}
+
+function sameLocalDay(a: Date, b: Date, timeZone?: string | null): boolean {
+  return localDay(a, timeZone) === localDay(b, timeZone);
+}
+
+export interface DietAllowanceOk {
+  ok: true;
+  /** Call on failure so a failed review doesn't use up the day's allowance. */
+  refund: () => Promise<void>;
+}
+
+/**
+ * AI diet review allowance, separate from scans: unlimited on paid plans,
+ * FREE_DAILY_DIET_ANALYSES (1) per local day on the free plan.
+ */
+export async function checkDietAnalysisAllowance(
+  userId: string,
+  timeZone?: string | null,
+): Promise<DietAllowanceOk | RateLimitDenied> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true, lastDietAnalysisAt: true },
+  });
+  if (!user) {
+    return { ok: false, response: NextResponse.json({ error: 'User not found' }, { status: 404 }) };
+  }
+  if (isPaidPlan(user.plan as any)) return { ok: true, refund: async () => {} };
+
+  const now = new Date();
+  const previous = user.lastDietAnalysisAt;
+  if (previous && sameLocalDay(now, previous, timeZone)) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: 'DIET_ANALYSIS_LIMIT_REACHED', message: `Free plan: ${FREE_DAILY_DIET_ANALYSES} AI review per day`, limit: FREE_DAILY_DIET_ANALYSES },
+        { status: 429 },
+      ),
+    };
+  }
+
+  // Claim today's review first so two quick taps can't both get through.
+  const claimed = await prisma.user.updateMany({
+    where: { id: userId, lastDietAnalysisAt: previous },
+    data: { lastDietAnalysisAt: now },
+  });
+  if (claimed.count === 0) {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: 'DIET_ANALYSIS_LIMIT_REACHED', limit: FREE_DAILY_DIET_ANALYSES }, { status: 429 }),
+    };
+  }
+
+  return {
+    ok: true,
+    refund: async () => {
+      try {
+        await prisma.user.updateMany({ where: { id: userId, lastDietAnalysisAt: now }, data: { lastDietAnalysisAt: previous } });
+      } catch (error) {
+        console.error('[refundDietAnalysis]', error);
+      }
+    },
+  };
 }

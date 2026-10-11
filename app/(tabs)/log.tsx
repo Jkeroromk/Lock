@@ -85,8 +85,10 @@ export default function LogScreen() {
           t('log.aiLimitTitle' as any),
           (t('log.aiLimitMsg' as any) as string).replace('{quota}', String(aiQuota)),
           [
-            { text: t('log.laterBtn' as any), style: 'cancel' },
+            // Barcode lookups are never limited, so offer that first.
+            { text: t('log.scanBarcodeInstead' as any), onPress: () => handleModeChange('barcode') },
             { text: t('log.upgradeBtn' as any), onPress: () => router.push('/(tabs)/settings/pricing') },
+            { text: t('log.laterBtn' as any), style: 'cancel' },
           ]
         );
       } else {

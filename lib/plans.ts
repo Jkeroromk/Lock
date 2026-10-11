@@ -23,7 +23,7 @@ export interface PlanFeatures {
 
 export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
   FREE: {
-    dailyAiCalls: 3,
+    dailyAiCalls: 8, // keep in sync with backend/lib/plans.ts FREE_DAILY_AI_CALLS
     aiDietAnalysis: false,
     maxFriends: 5,
     createChallenge: false,

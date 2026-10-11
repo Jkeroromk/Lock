@@ -30,7 +30,7 @@ const jaJP = {
     grantCamera: 'カメラを許可', aimAtBarcode: 'バーコードをフレームに合わせてください',
     supportedFormats: 'EAN-13 / UPC / Code 128 / QR 対応', lookingUp: '商品情報を検索中...',
     rescan: '再スキャン', aiLimitTitle: '本日の上限に達しました',
-    aiLimitMsg: '無料プラン: 1日{quota}回のAIスキャン\nProにアップグレードして無制限に',
+    aiLimitMsg: '無料プラン：AIスキャンは1日{quota}回。バーコードと手入力は無制限です。', scanBarcodeInstead: 'バーコードで記録',
     laterBtn: '後で', upgradeBtn: 'Proにアップグレード', productNotFound: '商品が見つかりません',
     productNotFoundMsg: 'バーコード{code}はデータベースにありません。手動で栄養情報を入力できます。',
     manualEntry: '手動入力', lookupFailed: '検索に失敗しました', lookupFailedMsg: 'ネットワーク接続を確認して再試行してください',
@@ -390,8 +390,8 @@ const jaJP = {
     currentMax: 'Max会員です',
     bestValue: 'おすすめ',
     upgradeToMax: 'Maxにアップグレード',
-    freeFeatures: ['1日3回のAIスキャン', '基本カロリー追跡', '友達チャレンジに参加', '最大5人の友達'],
-    proFeatures: ['無制限のAIスキャン', 'AI食事分析（手動）', 'チャレンジの作成・参加', '無制限の友達', 'データエクスポート', '体重グラフ'],
+    freeFeatures: ['1日8回のAIスキャン', '1日1回のAI食事分析', 'バーコード・手入力は無制限', '友達チャレンジに参加', '最大5人の友達'],
+    proFeatures: ['無制限のAIスキャン', 'AI食事分析が無制限', 'チャレンジの作成・参加', '無制限の友達', 'データエクスポート', '体重グラフ'],
     maxFeatures: ['Proの全機能', '毎週自動AIレポート', 'AIカスタム栄養プラン', '優先サポート'],
   },
   languagePack: {
@@ -401,6 +401,7 @@ const jaJP = {
     cannotRemoveCurrent: '現在使用中の言語は削除できません', sizeEstimate: '約{size}',
   },
   aiInsights: {
+    dailyLimit: '今日の無料AI分析は使い切りました。明日また使えます。Proなら無制限です。',
     title: 'AI食事分析',
     description: '過去7日間の食事記録と身体目標に基づいて、AIがパーソナライズされたアドバイスを提供します',
     startAnalysis: '分析開始',

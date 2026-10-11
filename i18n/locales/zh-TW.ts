@@ -30,7 +30,7 @@ const zhTW = {
     grantCamera: '授權相機', aimAtBarcode: '將條形碼對準框內',
     supportedFormats: '支援 EAN-13 / UPC / Code 128 / QR', lookingUp: '正在查詢產品資訊...',
     rescan: '重新掃描', aiLimitTitle: '今日次數已用完',
-    aiLimitMsg: '免費版每天限 {quota} 次 AI 識別\n升級 Pro 即可無限使用',
+    aiLimitMsg: '免費版每天 {quota} 次 AI 識別。掃條碼和手動記錄不限次數。', scanBarcodeInstead: '改用條碼',
     laterBtn: '稍後再說', upgradeBtn: '升級 Pro', productNotFound: '未找到產品',
     productNotFoundMsg: '條碼 {code} 在資料庫中未找到，您可以手動填寫營養資訊。',
     manualEntry: '手動填寫', lookupFailed: '查詢失敗', lookupFailedMsg: '請檢查網路後重試',
@@ -384,8 +384,8 @@ const zhTW = {
     currentMax: '您目前是 Max 會員',
     bestValue: '超值推薦',
     upgradeToMax: '升級到 Max',
-    freeFeatures: ['每天 3 次 AI 食物識別', '基礎卡路里追蹤', '參與好友挑戰', '最多 5 位好友'],
-    proFeatures: ['無限 AI 食物識別', 'AI 飲食分析（手動觸發）', '創建 & 參與挑戰', '無限好友', '數據導出', '體重趨勢圖'],
+    freeFeatures: ['每天 8 次 AI 食物識別', '每天 1 次 AI 飲食分析', '條碼與手動記錄不限次數', '參與好友挑戰', '最多 5 位好友'],
+    proFeatures: ['無限 AI 食物識別', '無限 AI 飲食分析', '創建 & 參與挑戰', '無限好友', '數據導出', '體重趨勢圖'],
     maxFeatures: ['包含 Pro 全部功能', '每週自動 AI 飲食報告', 'AI 自訂營養目標', '優先客戶支援'],
   },
   languagePack: {
@@ -395,6 +395,7 @@ const zhTW = {
     cannotRemoveCurrent: '無法移除當前使用的語言', sizeEstimate: '約 {size}',
   },
   aiInsights: {
+    dailyLimit: '今天的免費 AI 分析已用完，明天再來，或升級 Pro 不限次數。',
     title: 'AI 飲食分析',
     description: '基於你的近7天飲食記錄和身體目標，AI 將給出個性化建議',
     startAnalysis: '開始分析',
