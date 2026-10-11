@@ -1,0 +1,15 @@
+# One-off cleanup: expire every TestFlight build except the newest 3.
+# The same step also runs automatically at the end of testflight.yml.
+#
+# Run manually:  npx eas-cli workflow:run testflight-cleanup.yml
+name: TestFlight cleanup (keep newest 3)
+
+jobs:
+  cleanup_testflight:
+    name: Keep newest 3 TestFlight builds
+    environment: production
+    env:
+      TESTFLIGHT_KEEP: '3'
+    steps:
+      - uses: eas/checkout
+      - run: node scripts/expire-old-testflight-builds.mjs
