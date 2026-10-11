@@ -2,9 +2,9 @@ import { View, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import Animated, { FadeIn } from 'react-native-reanimated';
 import Skeleton from '@/components/ui/Skeleton';
-import { useStore } from '@/store/useStore';
+import { Appear } from '@/components/ui/bxc';
+import { useStore, localDateKey } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
@@ -17,11 +17,13 @@ import WaterCard from '@/components/today/WaterCard';
 import { getHealthData, requestHealthPermissions, syncHealthData } from '@/services/health';
 
 export default function TodayScreen() {
-  const { todayCalories, todayMeals, refreshToday, dailyCalorieGoal, user } = useStore();
+  const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
+  // Today's numbers from the last session are shown instantly; fresh data replaces them.
+  const hasFreshCache = todayDate === localDateKey();
   const streak = user?.streak ?? 0;
   const { t, language } = useTranslation();
   const colors = useTheme();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasFreshCache);
   const [refreshing, setRefreshing] = useState(false);
   const [healthData, setHealthData] = useState({ steps: 0, activeEnergy: 0 });
   const [waterMl, setWaterMl] = useState(0);
@@ -72,7 +74,10 @@ export default function TodayScreen() {
 
   useEffect(() => {
     requestHealthPermissions();
-    Promise.all([refreshToday(), loadHealthData(), loadWaterData()]).finally(() => setLoading(false));
+    // Health data can be slow (HealthKit query); it fills in on its own and
+    // never holds up the first render.
+    loadHealthData();
+    Promise.all([refreshToday(), loadWaterData()]).finally(() => setLoading(false));
   }, []);
 
   useFocusEffect(
@@ -115,15 +120,17 @@ export default function TodayScreen() {
                 <Skeleton height={120} borderRadius={18} />
               </View>
             ) : (
-              <Animated.View entering={FadeIn.duration(400)}>
+              <View>
+                <Appear index={0}>
                 <CaloriesCard
                   todayCalories={todayCalories}
                   protein={macros.protein}
                   carbs={macros.carbs}
                   fat={macros.fat}
                 />
+                </Appear>
 
-                <View style={{ flexDirection: 'row', alignItems: 'stretch', gap: 12, marginBottom: 14 }}>
+                <Appear index={1} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 12, marginBottom: 14 }}>
                   <HealthStatsCard
                     inverse
                     label={t('today.steps')}
@@ -138,8 +145,9 @@ export default function TodayScreen() {
                     goal={ENERGY_GOAL}
                     caption={t('today.ofGoal', { goal: `${ENERGY_GOAL} ${t('today.kcal')}` })}
                   />
-                </View>
+                </Appear>
 
+                <Appear index={2}>
                 <WaterCard
                   waterMl={waterMl}
                   goalMl={waterGoalMl}
@@ -148,10 +156,12 @@ export default function TodayScreen() {
                   onUndo={handleUndoWater}
                   onSetGoal={handleSetWaterGoal}
                 />
+                </Appear>
 
-                <MealsList meals={todayMeals} />
-
-              </Animated.View>
+                <Appear index={3}>
+                  <MealsList meals={todayMeals} />
+                </Appear>
+              </View>
             )}
           </View>
         </ScrollView>

@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useEffect, useState } from 'react';
+import Animated, { ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
@@ -63,8 +64,10 @@ export default function WaterCard({ waterMl, goalMl, canUndo, onAdd, onUndo, onS
         {Array.from({ length: CELLS }).map((_, i) => {
           const filled = i < filledCells;
           return (
-            <View
-              key={i}
+            <Animated.View
+              // New key when a cell fills → it remounts and pops in.
+              key={`${i}-${filled ? 'f' : 'e'}`}
+              entering={filled ? ZoomIn.springify().damping(13).stiffness(260) : undefined}
               style={{
                 flex: 1, height: 24, borderRadius: RADIUS.cell,
                 backgroundColor: filled ? c.accent : 'transparent',

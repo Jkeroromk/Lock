@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/i18n';
-import { IconButton, ScreenHeader, Segmented } from '@/components/ui/bxc';
+import { Appear, IconButton, ScreenHeader, Segmented } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard';
 import ChallengesList from '@/components/dashboard/ChallengesList';
@@ -149,7 +149,7 @@ export default function DashboardScreen() {
 
           {/* ── Friends Tab ── */}
           {!initialLoading && activeTab === 'friends' && (
-            <>
+            <Appear key="friends">
               {requests.length > 0 && (
                 <>
                   <FriendRequestsCard requests={requests} onUpdate={loadAll} />
@@ -157,21 +157,23 @@ export default function DashboardScreen() {
                 </>
               )}
               <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
-            </>
+            </Appear>
           )}
 
           {/* ── Challenges Tab ── */}
           {!initialLoading && activeTab === 'challenges' && (
-            <ChallengesList challenges={challengesForList} />
+            <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
           )}
 
           {/* ── Moments Tab ── */}
           {!initialLoading && activeTab === 'moments' && (
+            <Appear key="moments">
             <MomentsFeed
               items={moments}
               onRefresh={loadAll}
               onCreatePress={() => setShowCreateMoment(true)}
             />
+            </Appear>
           )}
         </View>
       </ScrollView>

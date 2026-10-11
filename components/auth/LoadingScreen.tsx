@@ -1,83 +1,45 @@
-import { View, Animated, Easing } from 'react-native';
+import { useEffect } from 'react';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay, Easing, FadeIn,
+} from 'react-native-reanimated';
 import { Text } from '@/components/ui/Text';
-import { useEffect, useRef } from 'react';
+import BootSplash from '@/components/ui/BootSplash';
 import { FONTS } from '@/constants/fonts';
-import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 
+const ACCENT = '#FFD43B';
+const MUTED = '#8C8B86';
+
+/**
+ * Shown while auth / profile load. It is the launch screen plus a small yellow
+ * progress track under the mark, so there is no visual jump from the native splash.
+ * The track only fades in after a beat, so fast launches never see it.
+ */
 export default function LoadingScreen({ hint }: { hint?: string } = {}) {
-  const colors = useTheme();
   const { t } = useTranslation();
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const x = useSharedValue(0);
 
   useEffect(() => {
-    // 脉冲动画
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.06,
-          duration: 800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    );
+    x.value = withDelay(400, withRepeat(withTiming(1, { duration: 1100, easing: Easing.inOut(Easing.cubic) }), -1, true));
+  }, [x]);
 
-    // 旋转动画
-    const rotate = Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 2000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-
-    pulse.start();
-    rotate.start();
-
-    return () => {
-      pulse.stop();
-      rotate.stop();
-    };
-  }, []);
-
-  const rotateInterpolate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  const bar = useAnimatedStyle(() => ({ transform: [{ translateX: x.value * 56 }] }));
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.backgroundPrimary }}>
-      <View style={{ width: 128, height: 128, alignItems: 'center', justifyContent: 'center' }}>
-        <Animated.View
-          style={{
-            position: 'absolute', width: 128, height: 128, borderRadius: 64,
-            borderWidth: 5, borderColor: colors.track, borderTopColor: colors.accent, borderRightColor: colors.accent,
-            transform: [{ rotate: rotateInterpolate }],
-          }}
-        />
-        <Animated.Image
-          source={require('@/assets/icons/preview-open-lock.png')}
-          style={{ width: 84, height: 84, borderRadius: 19, transform: [{ scale: pulseAnim }] }}
-          accessibilityIgnoresInvertColors
-        />
-      </View>
-      <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginTop: 24, textTransform: 'uppercase' }}>
-        {t('common.loading')}
-      </Text>
-      {hint ? (
-        <Text style={{ fontSize: 14, lineHeight: 20, color: colors.textSecondary, marginTop: 12, paddingHorizontal: 40, textAlign: 'center' }}>
-          {hint}
+    <BootSplash>
+      <Animated.View entering={FadeIn.delay(500).duration(400)} style={{ alignItems: 'center' }}>
+        <Animated.View style={{ width: 84, height: 6, borderRadius: 3, backgroundColor: '#262626', overflow: 'hidden' }}>
+          <Animated.View style={[{ width: 28, height: 6, borderRadius: 3, backgroundColor: ACCENT }, bar]} />
+        </Animated.View>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: MUTED, marginTop: 14, textTransform: 'uppercase' }}>
+          {t('common.loading')}
         </Text>
-      ) : null}
-    </View>
+        {hint ? (
+          <Text style={{ fontSize: 14, lineHeight: 20, color: MUTED, marginTop: 10, paddingHorizontal: 40, textAlign: 'center' }}>
+            {hint}
+          </Text>
+        ) : null}
+      </Animated.View>
+    </BootSplash>
   );
 }

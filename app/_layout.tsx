@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import { FONT_FILES } from '@/constants/fonts';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
+import { resourceCache } from '@clerk/clerk-expo/resource-cache';
 import * as SecureStore from 'expo-secure-store';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
@@ -14,6 +15,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { setTokenGetter } from '@/services/tokenStore';
 import { initRevenueCat, identifyUser, resetUser } from '@/lib/revenuecat';
 import { registerAndSavePushToken } from '@/services/notifications';
+import BootSplash from '@/components/ui/BootSplash';
 import '../global.css';
 
 // 启用原生屏幕管理，减少内存占用并提升导航性能
@@ -81,20 +83,26 @@ export default function RootLayout() {
     );
   }
 
+  // Same picture as the native launch screen, so the hand-off is seamless.
   if (!fontsLoaded && !fontError) {
-    return <View style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} />;
+    return <BootSplash />;
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache}>
+      {/* resourceCache: Clerk starts from its last known state instead of waiting
+          on the network, so signed-in launches don't block on a round-trip. */}
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache} __experimental_resourceCache={resourceCache}>
         <ClerkTokenBridge />
         <Stack
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: colors.backgroundPrimary },
+            animation: 'fade',
+            animationDuration: 280,
           }}
         >
+          <Stack.Screen name="index" options={{ animation: 'none' }} />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
         </Stack>

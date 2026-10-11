@@ -1,276 +1,57 @@
-import { View, ScrollView, TouchableOpacity, Alert, Platform, Linking, AppState } from 'react-native';
-import { Text } from '@/components/ui/Text';
+import { useState } from 'react';
+import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useStore } from '@/store/useStore';
-import { LanguageCode, languageNames } from '@/i18n/locales';
-import { useTranslation } from '@/i18n';
-import Constants from 'expo-constants';
-import { FONTS } from '@/constants/fonts';
-import { ScreenHeader } from '@/components/ui/bxc';
-
-const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
-import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@clerk/clerk-expo';
-import {
-  requestNotificationPermissions,
-  scheduleDailyMealReminders,
-  cancelAllNotifications,
-  getNotificationPermissionStatus,
-} from '@/services/notifications';
-import { requestHealthPermissions, syncHealthData } from '@/services/health';
+import Constants from 'expo-constants';
+import { Text } from '@/components/ui/Text';
+import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
+import { languageNames } from '@/i18n/locales';
+import { useTheme } from '@/hooks/useTheme';
+import { FONTS } from '@/constants/fonts';
+import { Appear, ScreenHeader } from '@/components/ui/bxc';
 import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
-import GoalsModal from '@/components/settings/GoalsModal';
-import LanguageModal from '@/components/settings/LanguageModal';
-import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoadingModal';
 import EditProfileModal from '@/components/settings/EditProfileModal';
-import { getAppIconOption, getCurrentAppIcon } from '@/lib/appIcon';
 
+const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
+
+/**
+ * Settings home: profile card plus one row per category. Each category opens
+ * its own page, so this screen stays short.
+ */
 export default function SettingsScreen() {
-  const {
-    user,
-    language,
-    setLanguage: setStoreLanguage,
-    setUser,
-    themeMode,
-    setThemeMode,
-    dailyCalorieGoal,
-    dailyStepGoal,
-    setDailyCalorieGoal,
-    setDailyStepGoal,
-  } = useStore();
+  const { user, setUser, language, dailyCalorieGoal } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
   const router = useRouter();
   const { signOut } = useAuth();
-
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [healthConnected, setHealthConnected] = useState(false);
-  const [healthSyncing, setHealthSyncing] = useState(false);
-  const [showGoalsModal, setShowGoalsModal] = useState(false);
-  const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
-  const [isChangingLanguage, setIsChangingLanguage] = useState(false);
 
-  const languages: LanguageCode[] = ['en-US', 'zh-CN', 'zh-TW', 'ja-JP', 'ko-KR'];
-  const currentLanguageName = languageNames[language];
-  const [appIconLabel, setAppIconLabel] = useState(() => getAppIconOption(getCurrentAppIcon()).labelKey);
-  // Refresh when coming back from the icon picker.
-  useFocusEffect(useCallback(() => {
-    setAppIconLabel(getAppIconOption(getCurrentAppIcon()).labelKey);
-  }, []));
-
-  const appState = useRef(AppState.currentState);
-
-  // Check notification permission on mount and when app returns to foreground
-  useEffect(() => {
-    getNotificationPermissionStatus().then(setNotificationsEnabled);
-
-    const sub = AppState.addEventListener('change', (nextState) => {
-      if (appState.current.match(/inactive|background/) && nextState === 'active') {
-        getNotificationPermissionStatus().then(setNotificationsEnabled);
-      }
-      appState.current = nextState;
-    });
-
-    return () => sub.remove();
-  }, []);
-
-  const handleSaveGoals = (
-    goals: { dailyCalorieGoal: number; dailyStepGoal: number },
-    body: Partial<{ height?: number; weight?: number; age?: number; gender?: string; goal?: string; exerciseFrequency?: string }>,
-  ) => {
-    setDailyCalorieGoal(goals.dailyCalorieGoal);
-    setDailyStepGoal(goals.dailyStepGoal);
-    if (Object.keys(body).length > 0) {
-      setUser({ ...user, ...body } as any);
-    }
-    setShowGoalsModal(false);
-    Alert.alert(t('settings.success'), t('settings.goalsUpdated'));
-  };
-
-  const handleNotificationsToggle = async (value: boolean) => {
-    if (value) {
-      const granted = await requestNotificationPermissions();
-      if (granted) {
-        await scheduleDailyMealReminders();
-        setNotificationsEnabled(true);
-        Alert.alert(t('settings.success'), t('settings.notificationDescription'));
-      } else {
-        Alert.alert(
-          t('settings.notifications'),
-          t('settings.notificationDescription'),
-          [
-            { text: t('settings.cancel'), style: 'cancel' },
-            { text: t('settings.syncHealthData'), onPress: () => Linking.openSettings() },
-          ]
-        );
-      }
-    } else {
-      await cancelAllNotifications();
-      setNotificationsEnabled(false);
-    }
-  };
-
-  const handleHealthConnect = async () => {
-    if (Platform.OS !== 'ios') {
-      Alert.alert('Apple Health', t('settings.healthConnectionsDescription'));
-      return;
-    }
-    setHealthSyncing(true);
-    try {
-      const granted = await requestHealthPermissions();
-      if (granted) {
-        await syncHealthData();
-        setHealthConnected(true);
-        Alert.alert(t('settings.healthConnections'), t('settings.connectionEnabled'));
-      } else {
-        Alert.alert(
-          t('settings.healthConnections'),
-          t('settings.healthConnectionsDescription'),
-          [
-            { text: t('settings.cancel'), style: 'cancel' },
-            { text: t('settings.syncHealthData'), onPress: () => Linking.openSettings() },
-          ]
-        );
-      }
-    } finally {
-      setHealthSyncing(false);
-    }
-  };
-
-  const handleLanguageChange = async (langCode: LanguageCode) => {
-    if (langCode === language) {
-      setShowLanguageModal(false);
-      return;
-    }
-
-    setIsChangingLanguage(true);
-    setShowLanguageModal(false);
-
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    setStoreLanguage(langCode);
-    setIsChangingLanguage(false);
-
-    const newTranslations = require('@/i18n/locales').translations[langCode];
-    Alert.alert(
-      newTranslations.settings.languageChanged,
-      newTranslations.settings.languageUpdated + ' ' + languageNames[langCode]
-    );
-  };
+  const groups = [
+    { icon: 'flag-outline', title: t('settings.groupGoals' as any), description: `${dailyCalorieGoal.toLocaleString()} kcal · ${t('settings.weightTracker' as any)}`, route: '/(tabs)/settings/goals' },
+    { icon: 'options-outline', title: t('settings.groupPreferences' as any), description: `${languageNames[language]} · ${t('settings.appIcon')} · ${t('settings.notifications')}`, route: '/(tabs)/settings/preferences' },
+    { icon: 'people-outline', title: t('settings.groupFriends' as any), description: `${t('settings.contacts' as any)} · ${t('block.blockedUsers')}`, route: '/(tabs)/settings/friends' },
+    { icon: 'person-circle-outline', title: t('settings.groupAccount' as any), description: `${t('settings.accountSecurity')} · ${t('settings.subscriptionPlan')}`, route: '/(tabs)/settings/account' },
+    { icon: 'information-circle-outline', title: t('settings.about'), description: t('settings.aboutDescription'), route: '/(tabs)/settings/about' },
+  ] as const;
 
   return (
-    <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
         <View style={{ paddingHorizontal: 18 }}>
           <ScreenHeader title={t('settings.title' as any)} />
-          <UserProfileCard
-            user={user}
-            themeMode={themeMode === 'auto' ? 'dark' : themeMode}
-            onThemeChange={(mode) => setThemeMode(mode)}
-            onEdit={() => setShowEditProfileModal(true)}
-          />
+          <Appear index={0}>
+            <UserProfileCard user={user} onEdit={() => setShowEditProfileModal(true)} />
+          </Appear>
 
-          <SettingItem
-            icon="flag"
-            title={t('settings.goals')}
-            description={t('settings.dailyGoalsSummary', { calories: String(dailyCalorieGoal), steps: String(dailyStepGoal) })}
-            onPress={() => setShowGoalsModal(true)}
-          />
-
-          <SettingItem
-            icon="people-outline"
-            title={t('settings.contacts' as any)}
-            description={t('settings.contactsDescription' as any)}
-            onPress={() => router.push('/(tabs)/settings/contacts')}
-          />
-
-          <SettingItem
-            icon="ban-outline"
-            title={t('block.blockedUsers')}
-            description={t('block.blockedUsersDescription')}
-            onPress={() => router.push('/(tabs)/settings/blocked-users')}
-          />
-
-          <SettingItem
-            icon="language"
-            title={t('settings.language')}
-            value={currentLanguageName}
-            onPress={() => setShowLanguageModal(true)}
-          />
-
-          {Platform.OS === 'ios' && (
-            <SettingItem
-              icon="apps-outline"
-              title={t('settings.appIcon')}
-              value={t(appIconLabel)}
-              onPress={() => router.push('/(tabs)/settings/app-icon')}
-            />
-          )}
-
-          <SettingItem
-            icon="notifications"
-            title={t('settings.notifications')}
-            showSwitch={true}
-            switchValue={notificationsEnabled}
-            onSwitchChange={handleNotificationsToggle}
-            showChevron={false}
-          />
-
-          {Platform.OS === 'ios' && (
-            <SettingItem
-              icon="heart"
-              title={t('settings.healthConnections')}
-              description={healthConnected ? t('settings.connectionEnabled') : t('settings.healthConnectionsDescription')}
-              onPress={healthSyncing ? undefined : handleHealthConnect}
-              value={healthConnected ? t('settings.connectedTo') : undefined}
-            />
-          )}
-
-          <SettingItem
-            icon="shield-checkmark"
-            title={t('settings.accountSecurity')}
-            description={t('settings.accountSecurityDescription')}
-            onPress={() => router.push('/(tabs)/settings/account-security')}
-          />
-
-          <SettingItem
-            icon="card-outline"
-            title={t('settings.subscriptionPlan')}
-            description={t('settings.subscriptionPlanDescription')}
-            onPress={() => router.push('/(tabs)/settings/pricing')}
-          />
-
-          {user?.plan && user.plan !== 'FREE' && (
-            <SettingItem
-              icon="storefront-outline"
-              title={t('settings.manageSubscription' as any)}
-              description={t('settings.manageSubscriptionDescription' as any)}
-              onPress={() => Linking.openURL('https://apps.apple.com/account/subscriptions')}
-            />
-          )}
-
-          <SettingItem
-            icon="download-outline"
-            title={t('settings.exportData')}
-            description={t('settings.exportDataDescription')}
-            onPress={() => router.push('/(tabs)/settings/export-data')}
-          />
-
-          <SettingItem
-            icon="information-circle-outline"
-            title={t('settings.about')}
-            description={t('settings.aboutDescription')}
-            onPress={() => router.push('/(tabs)/settings/about')}
-          />
+          {groups.map((g, i) => (
+            <Appear key={g.route} index={i + 1}>
+              <SettingItem icon={g.icon} title={g.title} description={g.description} onPress={() => router.push(g.route as any)} />
+            </Appear>
+          ))}
 
           {/* Logout */}
           <TouchableOpacity
@@ -305,25 +86,6 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-
-      <GoalsModal
-        visible={showGoalsModal}
-        user={user}
-        dailyCalorieGoal={dailyCalorieGoal}
-        dailyStepGoal={dailyStepGoal}
-        onSave={handleSaveGoals}
-        onCancel={() => setShowGoalsModal(false)}
-      />
-
-      <LanguageModal
-        visible={showLanguageModal}
-        currentLanguage={language}
-        languages={[]}
-        onLanguageSelect={handleLanguageChange}
-        onClose={() => setShowLanguageModal(false)}
-      />
-
-      <LanguageChangeLoadingModal visible={isChangingLanguage} />
 
       <EditProfileModal
         visible={showEditProfileModal}

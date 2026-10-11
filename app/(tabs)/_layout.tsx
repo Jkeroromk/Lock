@@ -1,12 +1,13 @@
 import { Tabs, usePathname, useSegments, useRouter } from 'expo-router';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HardShadow } from '@/components/ui/bxc';
+import { HardShadow, PressScale, MOTION } from '@/components/ui/bxc';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity, View, Alert, Platform } from 'react-native';
+import { View, Alert, Platform } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Constants from 'expo-constants';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
@@ -83,9 +84,9 @@ function LogTabButton(props: any) {
   };
   
   return (
-    <TouchableOpacity
+    <PressScale
       onPress={handlePress}
-      activeOpacity={0.85}
+      scaleTo={0.88}
       disabled={isOpeningCamera}
       accessibilityRole="button"
       accessibilityLabel={t('tabs.log')}
@@ -110,7 +111,7 @@ function LogTabButton(props: any) {
           </View>
         </HardShadow>
       </View>
-    </TouchableOpacity>
+    </PressScale>
   );
 }
 
@@ -121,23 +122,48 @@ const TAB_ICONS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof
   settings: { on: 'person', off: 'person-outline' },
 };
 
-/** Floating pill tab bar (B×C). Sits in the layout flow so screens need no extra padding. */
+/**
+ * Floating pill tab bar (B×C). Sits in the layout flow so screens need no extra
+ * padding. The yellow dot slides to the active tab; icons squash on press.
+ */
 function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colors = useTheme();
   const insets = useSafeAreaInsets();
+  const [barWidth, setBarWidth] = useState(0);
+  const PAD = 6;
+  const slot = barWidth > 0 ? (barWidth - PAD * 2) / state.routes.length : 0;
+  const activeName = state.routes[state.index]?.name;
+  const dotX = useSharedValue(0);
+  const dotVisible = useSharedValue(0);
+  const placed = useRef(false);
+
+  useEffect(() => {
+    if (!slot) return;
+    const target = PAD + state.index * slot + slot / 2 - 2.5;
+    if (!placed.current) { dotX.value = target; placed.current = true; }
+    else dotX.value = withSpring(target, MOTION.slide);
+    dotVisible.value = withTiming(activeName === 'log' ? 0 : 1, { duration: 160 });
+  }, [state.index, slot, activeName]);
+
+  const dotStyle = useAnimatedStyle(() => ({ opacity: dotVisible.value, transform: [{ translateX: dotX.value }] }));
 
   return (
     <View style={{ backgroundColor: colors.backgroundPrimary, paddingHorizontal: 16, paddingTop: 30, paddingBottom: Math.max(insets.bottom, 12) }}>
       <View
+        onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         style={{
           height: 66,
           borderRadius: 33,
           backgroundColor: colors.tabBar,
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 6,
+          paddingHorizontal: PAD,
         }}
       >
+        <Animated.View
+          pointerEvents="none"
+          style={[{ position: 'absolute', left: 0, bottom: 13, width: 5, height: 5, borderRadius: 2.5, backgroundColor: colors.accent }, dotStyle]}
+        />
         {state.routes.map((route, index) => {
           const focused = state.index === index;
           const { options } = descriptors[route.key];
@@ -153,26 +179,21 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           const icons = TAB_ICONS[route.name];
           if (!icons) return null;
           return (
-            <TouchableOpacity
+            <PressScale
               key={route.key}
               onPress={onPress}
+              scaleTo={0.86}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
               accessibilityLabel={typeof options.title === 'string' ? options.title : route.name}
-              style={{ flex: 1, height: 66, alignItems: 'center', justifyContent: 'center' }}
+              style={{ flex: 1, height: 66, alignItems: 'center', justifyContent: 'center', paddingBottom: 8 }}
             >
               <Ionicons
                 name={focused ? icons.on : icons.off}
                 size={23}
                 color={focused ? colors.tabIconActive : colors.tabIconInactive}
               />
-              <View
-                style={{
-                  marginTop: 5, width: 5, height: 5, borderRadius: 2.5,
-                  backgroundColor: focused ? colors.accent : 'transparent',
-                }}
-              />
-            </TouchableOpacity>
+            </PressScale>
           );
         })}
       </View>
@@ -189,7 +210,10 @@ export default function TabLayout() {
       tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        lazy: false,
+        // Tabs mount on first visit. Mounting all five at launch fired every
+        // screen's network requests at once and slowed startup.
+        lazy: true,
+        animation: 'shift',
       }}
     >
       <Tabs.Screen

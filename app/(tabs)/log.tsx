@@ -3,14 +3,14 @@ import {
 } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented, Sticker } from '@/components/ui/bxc';
+import { Appear, Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented, Sticker } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
 import { detectLiquidMl, addWaterMl } from '@/services/waterTracker';
@@ -39,6 +39,17 @@ export default function LogScreen() {
   const [result, setResult] = useState<FoodResult | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ food: '', calories: '', protein: '', carbs: '', fat: '' });
+
+  // Photo taken from the yellow camera button in the tab bar arrives as a param.
+  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
+  useEffect(() => {
+    if (!imageUri) return;
+    setMode('photo');
+    setImage(imageUri);
+    setResult(null);
+    setIsEditing(false);
+    router.setParams({ imageUri: undefined } as any);
+  }, [imageUri]);
 
   const pickImage = async () => {
     const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -158,7 +169,7 @@ export default function LogScreen() {
             ) : result ? null : (
               <BarcodeScanner onScanned={handleBarcodeScan} />
             )}
-            {result && <ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} />}
+            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} /></Appear>}
             {result && !isEditing && (
               <Button label={t('log.rescan' as any)} icon="barcode-outline" variant="outline" onPress={() => { setResult(null); setLookingUp(false); }} />
             )}
@@ -205,7 +216,7 @@ export default function LogScreen() {
                 )}
               </View>
             )}
-            {result && <ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} />}
+            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} /></Appear>}
             {!image && <ImagePickerButtons mode={mode as 'photo' | 'label'} onTakePhoto={takePhoto} onPickImage={pickImage} />}
             {image && !isEditing && !analyzing && (
               <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} />

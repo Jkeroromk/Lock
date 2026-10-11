@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgo = new Date(localStartMidnight.getTime() + tzOffset * 60 * 1000);
 
     const meals = await prisma.meal.findMany({
+      select: { createdAt: true, calories: true, protein: true, carbs: true, fat: true },
       where: {
         userId,
         createdAt: { gte: sevenDaysAgo },

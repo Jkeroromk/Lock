@@ -27,3 +27,6 @@ BEGIN
 END $$;
 
 ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "hidden_at" TIMESTAMPTZ(6);
+
+-- Calendar / weekly / today queries filter meals by user and date range.
+CREATE INDEX IF NOT EXISTS "meals_user_id_created_at_idx" ON "meals"("user_id", "created_at");
