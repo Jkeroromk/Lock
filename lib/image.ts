@@ -21,24 +21,26 @@ export async function toCompressedBase64(
 }
 
 /**
- * Keeps a small copy of a meal photo in the app's documents folder so the
- * Today list can show it (the picker's original lives in a cache that iOS may
- * clear). Returns a file:// URI, or null if anything goes wrong.
+ * Makes a small meal-photo thumbnail: keeps a copy in the app's documents
+ * folder (instant display on this device) and returns it as base64 for the
+ * server, which stores it in Supabase Storage so it shows on every device.
+ * Returns null if anything goes wrong — the meal still saves without a photo.
  */
-export async function saveMealThumbnail(uri: string): Promise<string | null> {
+export async function makeMealThumbnail(uri: string): Promise<{ uri: string; base64: string } | null> {
   try {
     // Lazy so the module only loads when a photo is actually saved.
     const FileSystem = require('expo-file-system/legacy');
     const small = await ImageManipulator.manipulateAsync(
       uri,
-      [{ resize: { width: 240 } }],
-      { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
+      [{ resize: { width: 320 } }],
+      { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true }
     );
+    if (!small.base64) return null;
     const dir = `${FileSystem.documentDirectory}meals/`;
     await FileSystem.makeDirectoryAsync(dir, { intermediates: true }).catch(() => {});
     const dest = `${dir}${Date.now()}.jpg`;
     await FileSystem.copyAsync({ from: small.uri, to: dest });
-    return dest;
+    return { uri: dest, base64: small.base64 };
   } catch {
     return null;
   }

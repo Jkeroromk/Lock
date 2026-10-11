@@ -14,7 +14,7 @@ import { Appear, Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
 import { detectLiquidMl, addWater, undoLastWater } from '@/services/waterTracker';
-import { saveMealThumbnail } from '@/lib/image';
+import { makeMealThumbnail } from '@/lib/image';
 import { showToast } from '@/components/ui/Toast';
 import { getQuota } from '@/lib/plans';
 import BarcodeScanner from '@/components/log/BarcodeScanner';
@@ -139,8 +139,12 @@ export default function LogScreen() {
     if (isEditing) { handleSaveEdit(); return; }
     setSaving(true);
     try {
-      const thumb = image ? await saveMealThumbnail(image) : null;
-      await logMeal({ food_name: result.food, calories: result.calories, protein: result.protein, carbs: result.carbs, fat: result.fat, image_url: thumb || '' });
+      const thumb = image ? await makeMealThumbnail(image) : null;
+      await logMeal({
+        food_name: result.food, calories: result.calories, protein: result.protein, carbs: result.carbs, fat: result.fat,
+        image_url: thumb?.uri || '',
+        thumbnail: thumb?.base64, // stored server-side so the photo shows on every device
+      });
       const saved = result;
       const liquidMl = detectLiquidMl(saved.food);
       if (liquidMl > 0) await addWater(liquidMl);

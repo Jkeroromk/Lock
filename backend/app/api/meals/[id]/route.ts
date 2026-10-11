@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { deleteMealPhoto } from '@/lib/meal-photos';
 
 // DELETE /api/meals/[id] — delete a meal
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
@@ -14,6 +15,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Meal not found' }, { status: 404 });
     }
     await prisma.meal.delete({ where: { id: params.id } });
+    await deleteMealPhoto(meal.imageUrl);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

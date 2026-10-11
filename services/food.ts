@@ -18,6 +18,8 @@ export interface MealData {
   carbs: number;
   fat: number;
   image_url: string;
+  /** Base64 JPEG thumbnail; the server keeps it in Supabase Storage. */
+  thumbnail?: string;
 }
 
 export interface MealRecord {
