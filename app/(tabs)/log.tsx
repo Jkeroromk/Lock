@@ -20,6 +20,7 @@ import { getQuota } from '@/lib/plans';
 import BarcodeScanner from '@/components/log/BarcodeScanner';
 import ResultCard, { FoodResult } from '@/components/log/ResultCard';
 import ImagePickerButtons from '@/components/log/ImagePickerButtons';
+import TabFocusFade from '@/components/ui/TabFocusFade';
 
 type LogMode = 'photo' | 'label' | 'barcode';
 
@@ -168,6 +169,7 @@ export default function LogScreen() {
   const modeCaption = mode === 'barcode' ? t('log.barcodeScanDesc' as any) : mode === 'label' ? t('log.labelScanDesc' as any) : t('log.takeOrSelect');
 
   return (
+    <TabFocusFade>
     <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
@@ -248,5 +250,6 @@ export default function LogScreen() {
         )}
       </ScrollView>
     </SafeAreaView>
+    </TabFocusFade>
   );
 }

@@ -20,6 +20,7 @@ import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreak
 import MonthlyStats from '@/components/calendar/MonthlyStats';
 import AiInsightsCard from '@/components/calendar/AiInsightsCard';
 import DayMealsModal from '@/components/calendar/DayMealsModal';
+import TabFocusFade from '@/components/ui/TabFocusFade';
 
 export default function CalendarScreen() {
   const { language, dailyCalorieGoal, user } = useStore();
@@ -143,6 +144,7 @@ export default function CalendarScreen() {
   ];
 
   return (
+    <TabFocusFade>
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}
@@ -185,5 +187,6 @@ export default function CalendarScreen() {
         onClose={() => setSelectedMealDate(null)}
       />
     </SafeAreaView>
+    </TabFocusFade>
   );
 }

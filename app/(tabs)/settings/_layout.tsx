@@ -1,7 +1,9 @@
 import { Stack } from 'expo-router';
+import TabFocusFade from '@/components/ui/TabFocusFade';
 
 export default function SettingsLayout() {
   return (
+    <TabFocusFade>
     <Stack
       screenOptions={{
         headerShown: false,
@@ -72,6 +74,7 @@ export default function SettingsLayout() {
         options={{ headerShown: false }}
       />
     </Stack>
+    </TabFocusFade>
   );
 }
 
