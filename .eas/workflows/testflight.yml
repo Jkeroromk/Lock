@@ -1,16 +1,10 @@
 # Build the iOS app and send it to TestFlight.
 #
-# Trigger: add the "testflight" label to a pull request. The PR's branch is
-# built with the production profile and submitted to App Store Connect, so it
-# can be tested on device before merging.
-#
-# Can also be run manually: npx eas-cli workflow:run testflight.yml
-name: iOS → TestFlight
-
-on:
-  pull_request_labeled:
-    labels:
-      - testflight
+# Manual only. The "testflight" PR label now builds on a GitHub macOS runner
+# (.github/workflows/testflight.yml), because Expo's Free plan only includes
+# a few iOS cloud builds a month. Run this one by hand if ever needed:
+#   npx eas-cli workflow:run testflight.yml
+name: iOS → TestFlight (EAS cloud, manual)
 
 jobs:
   build_ios:
