@@ -174,7 +174,7 @@ const koKR = {
     noChallengesHint: '챌린지를 만들고 친구를 초대해보세요!',
   },
   settings: {
-    groupGoals: '목표와 신체', groupPreferences: '환경설정', groupFriends: '친구 및 개인정보', groupAccount: '계정 및 구독', groupGeneral: '일반', groupConnections: '연결', groupData: '내 데이터', themeAuto: '자동', openSettings: '설정 열기',
+    groupGoals: '목표와 신체', groupPreferences: '환경설정', groupFriends: '친구 및 개인정보', groupAccount: '계정 및 구독', groupGeneral: '일반', groupConnections: '연결', groupData: '내 데이터', themeAuto: '자동', openSettings: '설정 열기', openHealth: '건강 앱 열기', healthManageHint: 'iOS에서는 건강 권한을 건강 앱에서 관리합니다: 오른쪽 위 프로필 → 앱 → Lock에서 걸음 수와 활동 에너지를 켜 주세요.', healthUnavailable: '이 빌드에서는 Apple 건강을 사용할 수 없습니다.',
     title: '설정',
     goals: '목표', clickToEdit: '클릭하여 일일 목표 편집', editGoals: '목표 편집',
     dailyGoalsSummary: '매일 {calories} kcal · {steps} 걸음',
