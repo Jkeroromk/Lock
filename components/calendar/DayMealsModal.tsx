@@ -22,6 +22,8 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
   const [loading, setLoading] = useState(false);
   const [meals, setMeals] = useState<MealRecord[]>([]);
   const [totalCalories, setTotalCalories] = useState(0);
+  // Old meals point at photo files the phone has since cleared; show the icon instead of a blank square.
+  const [brokenPhotos, setBrokenPhotos] = useState<Set<string>>(() => new Set());
   const [fetchError, setFetchError] = useState(false);
   const [mounted, setMounted] = useState(false);
   const slideAnim = useRef(new Animated.Value(600)).current;
@@ -191,10 +193,11 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
                 }}
               >
                 {/* Image or icon */}
-                {meal.image_url ? (
+                {meal.image_url && !brokenPhotos.has(meal.image_url) ? (
                   <Image
                     source={{ uri: meal.image_url }}
                     style={{ width: 52, height: 52, borderRadius: 12 }}
+                    onError={() => setBrokenPhotos((prev) => new Set(prev).add(meal.image_url))}
                   />
                 ) : (
                   <View style={{
