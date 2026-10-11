@@ -15,10 +15,22 @@ if (!process.env.POSTGRES_PRISMA_URL) {
   process.exit(1);
 }
 
-console.log('[ensure-schema] applying prisma/sql/ensure-schema.sql');
+// `prisma db execute` hangs on Supabase's *transaction* pooler (port 6543,
+// pgbouncer=true). Run the DDL through the *session* pooler instead: same
+// host, port 5432, no pgbouncer flag. It speaks full Postgres and is IPv4.
+function sessionPoolerUrl(raw) {
+  const url = new URL(raw);
+  if (url.port === '6543') url.port = '5432';
+  for (const key of ['pgbouncer', 'connection_limit']) url.searchParams.delete(key);
+  return url.toString();
+}
+
+console.log('[ensure-schema] applying prisma/sql/ensure-schema.sql (session pooler)');
 execFileSync(
   'npx',
-  ['prisma', 'db', 'execute', '--file', 'prisma/sql/ensure-schema.sql', '--schema', 'prisma/schema.prisma'],
-  { stdio: 'inherit' }
+  ['prisma', 'db', 'execute', '--file', 'prisma/sql/ensure-schema.sql', '--url', sessionPoolerUrl(process.env.POSTGRES_PRISMA_URL)],
+  // Never let a stuck connection hold the build for 45 minutes; failing the
+  // build keeps the previous deployment live.
+  { stdio: 'inherit', timeout: 120_000 }
 );
 console.log('[ensure-schema] done');
