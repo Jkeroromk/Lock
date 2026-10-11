@@ -27,3 +27,17 @@ jobs:
     params:
       build_id: ${{ needs.build_ios.outputs.build_id }}
       profile: production
+
+  # Keep only the newest 3 TestFlight builds; expire the older ones.
+  # Needs ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY in the EAS "production"
+  # environment; without them this job just logs "skipping" and passes.
+  cleanup_testflight:
+    name: Keep newest 3 TestFlight builds
+    needs: [build_ios, submit_ios]
+    environment: production
+    env:
+      NEW_BUILD_NUMBER: ${{ needs.build_ios.outputs.app_build_version }}
+      TESTFLIGHT_KEEP: '3'
+    steps:
+      - uses: eas/checkout
+      - run: node scripts/expire-old-testflight-builds.mjs
