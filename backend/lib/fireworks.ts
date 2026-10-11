@@ -14,6 +14,8 @@ const DEFAULT_MODEL = 'accounts/fireworks/models/glm-5p3-flash';
 export const VISION_MODEL = process.env.FIREWORKS_VISION_MODEL?.trim() || DEFAULT_MODEL;
 export const TEXT_MODEL = process.env.FIREWORKS_TEXT_MODEL?.trim() || VISION_MODEL;
 
+const MAX_RETRIES = 2;
+
 export class AiNotConfiguredError extends Error {
   constructor() {
     super('FIREWORKS_API_KEY is not configured');
@@ -40,20 +42,36 @@ export async function fireworksChat(opts: {
   const key = process.env.FIREWORKS_API_KEY?.trim();
   if (!key) throw new AiNotConfiguredError();
 
-  const response = await axios.post(
-    FIREWORKS_API_URL,
-    {
-      model: opts.model,
-      messages: opts.messages,
-      temperature: opts.temperature ?? 0.1,
-      // Generous: some models emit reasoning before the answer.
-      max_tokens: opts.maxTokens ?? 2000,
-    },
-    {
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      timeout: opts.timeoutMs ?? 45_000,
+  const body = {
+    model: opts.model,
+    messages: opts.messages,
+    temperature: opts.temperature ?? 0.1,
+    // Generous: some models emit reasoning before the answer.
+    max_tokens: opts.maxTokens ?? 2000,
+  };
+  const config = {
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    timeout: opts.timeoutMs ?? 45_000,
+  };
+
+  // Bursts (many people scanning at once) can hit Fireworks' rate limit (429)
+  // or load shedding (503). Both come back fast, so retry a couple of times
+  // with backoff instead of failing the scan. Timeouts are not retried.
+  let response;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      response = await axios.post(FIREWORKS_API_URL, body, config);
+      break;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (attempt >= MAX_RETRIES || (status !== 429 && status !== 503)) throw error;
+      const retryAfter = Number(error.response?.headers?.['retry-after']);
+      const wait = Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter * 1000, 5_000)
+        : 700 * 2 ** attempt + Math.random() * 400;
+      await new Promise((r) => setTimeout(r, wait));
     }
-  );
+  }
 
   const raw = response.data?.choices?.[0]?.message?.content;
   const text = Array.isArray(raw)
