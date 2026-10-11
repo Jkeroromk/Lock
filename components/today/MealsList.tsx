@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Alert } from 'react-native';
+import { View, TouchableOpacity, Alert, Image } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -17,13 +17,15 @@ interface Meal {
   protein: number;
   carbs: number;
   fat: number;
+  image_url?: string | null;
 }
 
 interface MealsListProps {
   meals: Meal[];
 }
 
-const MEAL_ICONS = ['sunny', 'cafe', 'restaurant', 'moon'] as const;
+/** Photo saved on this device when the meal was logged (see saveMealThumbnail). */
+const hasLocalPhoto = (url?: string | null) => !!url && url.startsWith('file://');
 
 export default function MealsList({ meals }: MealsListProps) {
   const { t } = useTranslation();
@@ -32,6 +34,8 @@ export default function MealsList({ meals }: MealsListProps) {
   const [activeMealId, setActiveMealId] = useState<string | null>(null);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // Thumbnails whose file is gone (reinstall, other device) fall back to the icon.
+  const [brokenPhotos, setBrokenPhotos] = useState<Set<string>>(() => new Set());
 
   const totalCalories = meals.reduce((s, m) => s + m.calories, 0);
 
@@ -76,7 +80,7 @@ export default function MealsList({ meals }: MealsListProps) {
       ) : (
         <View style={{ gap: 8 }}>
           {meals.map((meal, index) => {
-            const mealIcon = MEAL_ICONS[Math.min(index, MEAL_ICONS.length - 1)];
+            const photo = hasLocalPhoto(meal.image_url) && !brokenPhotos.has(meal.image_url!) ? meal.image_url! : null;
             const rowId = meal.id ?? String(index);
             const isActive = activeMealId === rowId;
             const isDeleting = deletingId === meal.id;
@@ -98,12 +102,22 @@ export default function MealsList({ meals }: MealsListProps) {
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9, paddingLeft: 9, paddingRight: 14 }}
                 >
                   <View style={{
-                    width: 46, height: 46, borderRadius: 12,
+                    width: 46, height: 46, borderRadius: 12, overflow: 'hidden',
                     backgroundColor: c.cardBackgroundSecondary,
                     borderWidth: isLight ? 1.5 : 0, borderColor: c.ink,
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <Ionicons name={mealIcon as any} size={20} color={c.textPrimary} />
+                    {photo ? (
+                      <Image
+                        source={{ uri: photo }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                        accessibilityIgnoresInvertColors
+                        onError={() => setBrokenPhotos((prev) => new Set(prev).add(photo))}
+                      />
+                    ) : (
+                      <Ionicons name="restaurant-outline" size={20} color={c.textPrimary} />
+                    )}
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }} numberOfLines={1}>{meal.food_name}</Text>

@@ -3,6 +3,7 @@ const koKR = {
     today: '오늘', calendar: '캘린더', log: '기록', social: '소셜', user: '사용자',
   },
   today: {
+    connectHealthTitle: 'Apple 건강 연결', connectHealthBody: '걸음 수와 활동 에너지를 자동으로 동기화해 여기에 보여줘요.', connectHealthCta: '연결',
     todayCalories: '오늘의 칼로리', target: '목표', remaining: '남음', kcal: 'kcal',
     steps: '걸음', stepsUnit: '걸음', energy: '에너지', heartRate: '심박수', bpm: '회/분',
     meals: '식사', recorded: '기록됨', noMeals: '식사가 기록되지 않았습니다',
@@ -37,6 +38,7 @@ const koKR = {
     noMealsLogged: '이 날의 식사 기록이 없습니다',
     fetchFailed: '불러오기 실패, 다시 시도해주세요',
     freeQuotaBadge: '무료 · 하루 {quota}회 AI 스캔 · Pro로 무제한',
+    savedToast: '기록됨', undoWater: '물 기록 취소',
     labelMode: '영양 라벨 스캔', labelDesc: '카메라를 영양성분표에 향하면 AI가 칼로리, 단백질, 탄수화물, 지방을 자동 추출',
     labelScanDesc: '영양성분표 스캔하여 데이터 추출', barcodeScanDesc: '바코드 스캔하여 영양 정보 조회',
     extractNutrition: '영양 정보 추출',
@@ -383,6 +385,7 @@ const koKR = {
     madeWith: '❤️ 로 만들었습니다', copyright: '© 2026 Lock. All rights reserved.',
   },
   pricing: {
+    priceUnavailable: '이용 불가', offeringsError: '지금은 가격을 불러올 수 없어요. 연결을 확인하고 다시 시도해 주세요.',
     title: '구독 플랜', currentPro: '현재 Pro 회원입니다',
     free: '무료', currentPlan: '현재 플랜', basic: '기본',
     cancelAnytime: '언제든지 취소 가능', loading: '로딩 중...',

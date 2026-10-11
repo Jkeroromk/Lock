@@ -3,6 +3,7 @@ const zhTW = {
     today: '今天', calendar: '日曆', log: '記錄', social: '社交', user: '用戶',
   },
   today: {
+    connectHealthTitle: '連結 Apple 健康', connectHealthBody: '自動同步步數和活動消耗，直接顯示在這裡。', connectHealthCta: '連結',
     todayCalories: '今日卡路里', target: '目標', remaining: '剩餘', kcal: '大卡',
     steps: '步數', stepsUnit: '步', energy: '能量', heartRate: '心率', bpm: '次/分',
     meals: '餐食', recorded: '已記錄', noMeals: '尚未記錄餐食',
@@ -37,6 +38,7 @@ const zhTW = {
     noMealsLogged: '當天沒有餐食記錄',
     fetchFailed: '載入失敗，請重試',
     freeQuotaBadge: '免費版 · 每日限 {quota} 次 AI 識別 · 升級 Pro 解鎖無限',
+    savedToast: '已記錄', undoWater: '撤銷飲水',
     labelMode: '拍攝營養標籤', labelDesc: '將相機對準營養成分表，AI 將自動提取數據',
     labelScanDesc: '拍攝營養成分表提取數據', barcodeScanDesc: '掃描產品條形碼查詢營養資訊',
     extractNutrition: '提取營養資訊',
@@ -368,6 +370,7 @@ const zhTW = {
     madeWith: '用 ❤️ 打造', copyright: '© 2026 Lock. 保留所有權利。',
   },
   pricing: {
+    priceUnavailable: '暫不可用', offeringsError: '暫時無法取得價格，請檢查網路後重試。',
     title: '訂閱方案', currentPro: '您目前是 Pro 會員',
     free: '免費版', currentPlan: '目前方案', basic: '基礎',
     cancelAnytime: '隨時可取消', loading: '載入中...',

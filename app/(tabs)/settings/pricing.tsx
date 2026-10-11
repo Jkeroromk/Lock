@@ -30,6 +30,8 @@ export default function PricingScreen() {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<'pro' | 'max' | null>(null);
   const [restoring, setRestoring] = useState(false);
+  // Store prices couldn't be fetched (offline, or products not set up yet).
+  const [unavailable, setUnavailable] = useState(false);
 
   const currentPlan = user?.plan ?? 'FREE';
   const isPro = currentPlan === 'PRO';
@@ -40,10 +42,17 @@ export default function PricingScreen() {
 
   async function loadOfferings() {
     setLoading(true);
+    setUnavailable(false);
     try {
       const [proOff, maxOff] = await Promise.all([fetchProOffering(), fetchMaxOffering()]);
-      setProPackage(proOff?.availablePackages?.[0] ?? null);
-      setMaxPackage(maxOff?.availablePackages?.[0] ?? null);
+      const pro = proOff?.availablePackages?.[0] ?? null;
+      const max = maxOff?.availablePackages?.[0] ?? null;
+      setProPackage(pro);
+      setMaxPackage(max);
+      if (!pro && !max) setUnavailable(true);
+    } catch (err) {
+      console.warn('[pricing] offerings failed', err);
+      setUnavailable(true);
     } finally {
       setLoading(false);
     }
@@ -96,8 +105,8 @@ export default function PricingScreen() {
   }
 
   function priceLabel(pkg: PurchasesPackage | null) {
-    if (loading) return '—';
-    if (!pkg) return t('pricing.loading' as any);
+    if (loading) return '…';
+    if (!pkg) return t('pricing.priceUnavailable' as any);
     const period = pkg.packageType === 'ANNUAL' ? t('pricing.annual' as any) : t('pricing.monthly' as any);
     return `${pkg.product.priceString} / ${period}`;
   }
@@ -121,6 +130,16 @@ export default function PricingScreen() {
           right={isPaid ? <Sticker>{isMax ? t('pricing.currentMax' as any) : t('pricing.currentPro' as any)}</Sticker> : undefined}
         />
 
+        {unavailable && !loading ? (
+          <Card padding={16} style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="cloud-offline-outline" size={20} color={colors.textSecondary} />
+              <Text style={{ flex: 1, fontSize: 14, lineHeight: 20, color: colors.textSecondary }}>{t('pricing.offeringsError' as any)}</Text>
+            </View>
+            <Button label={t('common.retry')} variant="outline" onPress={loadOfferings} style={{ marginTop: 12 }} />
+          </Card>
+        ) : null}
+
         {/* FREE */}
         <PlanCard
           variant="default"
@@ -141,7 +160,7 @@ export default function PricingScreen() {
           features={Array.isArray(proFeatures) ? proFeatures : []}
         />
         {!isPro && !isMax && (
-          <Button label={t('pricing.upgradeToPro' as any)} icon="star" loading={purchasing === 'pro' || loading} onPress={() => handlePurchase('pro')} style={{ marginBottom: 18 }} />
+          <Button label={t('pricing.upgradeToPro' as any)} icon="star" loading={purchasing === 'pro'} disabled={loading} onPress={() => (proPackage ? handlePurchase('pro') : loadOfferings())} style={{ marginBottom: 18 }} />
         )}
 
         {/* MAX */}
@@ -155,7 +174,7 @@ export default function PricingScreen() {
           features={Array.isArray(maxFeatures) ? maxFeatures : []}
         />
         {!isMax && (
-          <Button label={t('pricing.upgradeToMax' as any)} icon="diamond" variant="solid" loading={purchasing === 'max' || loading} onPress={() => handlePurchase('max')} style={{ marginBottom: 12 }} />
+          <Button label={t('pricing.upgradeToMax' as any)} icon="diamond" variant="solid" loading={purchasing === 'max'} disabled={loading} onPress={() => (maxPackage ? handlePurchase('max') : loadOfferings())} style={{ marginBottom: 12 }} />
         )}
 
         <TouchableOpacity onPress={handleRestore} disabled={restoring} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 4 }}>

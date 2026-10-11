@@ -3,6 +3,7 @@ const jaJP = {
     today: '今日', calendar: 'カレンダー', log: '記録', social: 'ソーシャル', user: 'ユーザー',
   },
   today: {
+    connectHealthTitle: 'Apple ヘルスケアと連携', connectHealthBody: '歩数とアクティブエネルギーを自動で同期してここに表示します。', connectHealthCta: '連携する',
     todayCalories: '今日のカロリー', target: '目標', remaining: '残り', kcal: 'kcal',
     steps: '歩数', stepsUnit: '歩', energy: 'エネルギー', heartRate: '心拍数', bpm: '回/分',
     meals: '食事', recorded: '記録済み', noMeals: '食事が記録されていません',
@@ -37,6 +38,7 @@ const jaJP = {
     noMealsLogged: 'この日の食事記録はありません',
     fetchFailed: '読み込みに失敗しました。再試行してください',
     freeQuotaBadge: '無料 · 1日{quota}回のAIスキャン · Proで無制限',
+    savedToast: '記録しました', undoWater: '水分を取り消す',
     labelMode: '栄養ラベルをスキャン', labelDesc: 'カメラを栄養成分表に向けると、AIがカロリー・タンパク質・炭水化物・脂肪を自動抽出',
     labelScanDesc: '栄養成分表をスキャンしてデータを抽出', barcodeScanDesc: '商品バーコードをスキャンして栄養情報を取得',
     extractNutrition: '栄養情報を抽出',
@@ -374,6 +376,7 @@ const jaJP = {
     madeWith: '❤️ を込めて制作', copyright: '© 2026 Lock. All rights reserved.',
   },
   pricing: {
+    priceUnavailable: '利用できません', offeringsError: '価格を取得できませんでした。接続を確認して再試行してください。',
     title: 'サブスクリプション', currentPro: 'Pro会員です',
     free: '無料', currentPlan: '現在のプラン', basic: '基本',
     cancelAnytime: 'いつでもキャンセル可能', loading: '読み込み中...',

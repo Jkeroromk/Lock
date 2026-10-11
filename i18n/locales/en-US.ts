@@ -3,6 +3,7 @@ const enUS = {
     today: 'Today', calendar: 'Calendar', log: 'Log', social: 'Social', user: 'User',
   },
   today: {
+    connectHealthTitle: 'Connect Apple Health', connectHealthBody: 'See your steps and active energy here, synced automatically.', connectHealthCta: 'Connect',
     todayCalories: "Today's Calories", target: 'Target', remaining: 'Remaining',
     kcal: 'kcal', steps: 'Steps', stepsUnit: 'steps', energy: 'Energy',
     heartRate: 'Heart Rate', bpm: 'bpm', meals: 'Meals', recorded: 'Recorded',
@@ -45,6 +46,7 @@ const enUS = {
     noMealsLogged: 'No meals recorded for this day',
     fetchFailed: 'Failed to load, please try again',
     freeQuotaBadge: 'Free · {quota} AI scans/day · Upgrade Pro for unlimited',
+    savedToast: 'Logged', undoWater: 'Undo water',
     labelMode: 'Scan Nutrition Label', labelDesc: 'Point camera at nutrition facts — AI extracts calories, protein, carbs & fat',
     labelScanDesc: 'Scan nutrition facts to extract data', barcodeScanDesc: 'Scan product barcode for nutrition info',
     extractNutrition: 'Extract Nutrition',
@@ -430,6 +432,7 @@ const enUS = {
     copyright: '© 2026 Lock. All rights reserved.',
   },
   pricing: {
+    priceUnavailable: 'Unavailable', offeringsError: 'Couldn\'t load prices right now. Check your connection and try again.',
     title: 'Subscription', currentPro: 'You are a Pro member',
     free: 'Free', currentPlan: 'Current Plan', basic: 'Basic',
     cancelAnytime: 'Cancel anytime', loading: 'Loading...',

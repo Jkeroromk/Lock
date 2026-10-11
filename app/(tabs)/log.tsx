@@ -13,7 +13,9 @@ import { FONTS } from '@/constants/fonts';
 import { Appear, Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented, Sticker } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
-import { detectLiquidMl, addWaterMl } from '@/services/waterTracker';
+import { detectLiquidMl, addWater, undoLastWater } from '@/services/waterTracker';
+import { saveMealThumbnail } from '@/lib/image';
+import { showToast } from '@/components/ui/Toast';
 import { getQuota } from '@/lib/plans';
 import BarcodeScanner from '@/components/log/BarcodeScanner';
 import ResultCard, { FoodResult } from '@/components/log/ResultCard';
@@ -127,15 +129,22 @@ export default function LogScreen() {
     if (isEditing) { handleSaveEdit(); return; }
     setSaving(true);
     try {
-      await logMeal({ food_name: result.food, calories: result.calories, protein: result.protein, carbs: result.carbs, fat: result.fat, image_url: image || '' });
-      const liquidMl = detectLiquidMl(result.food);
-      if (liquidMl > 0) {
-        await addWaterMl(liquidMl);
-        Alert.alert(t('settings.success'), `${t('log.saveSuccess')}\n${(t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl))}`);
-      } else {
-        Alert.alert(t('settings.success'), t('log.saveSuccess'));
-      }
+      const thumb = image ? await saveMealThumbnail(image) : null;
+      await logMeal({ food_name: result.food, calories: result.calories, protein: result.protein, carbs: result.carbs, fat: result.fat, image_url: thumb || '' });
+      const saved = result;
+      const liquidMl = detectLiquidMl(saved.food);
+      if (liquidMl > 0) await addWater(liquidMl);
+
       clearImage(); setResult(null); refreshToday();
+      // Back to Today so the ring fills up; a toast instead of an OK-only alert.
+      router.navigate('/(tabs)/today');
+      showToast({
+        message: `${t('log.savedToast' as any)} · ${saved.food}`,
+        detail: liquidMl > 0
+          ? (t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl))
+          : `${Math.round(saved.calories)} kcal`,
+        action: liquidMl > 0 ? { label: t('log.undoWater' as any), onPress: () => { undoLastWater().catch(() => {}); } } : undefined,
+      });
     } catch (error: any) { Alert.alert(t('log.saveFailed'), error.message || t('log.saveFailed')); }
     finally { setSaving(false); }
   };

@@ -31,11 +31,20 @@ export async function loadWater(): Promise<WaterState> {
   return fresh;
 }
 
+const waterListeners = new Set<() => void>();
+
+/** Notified whenever today's water changes from anywhere (e.g. undo from a toast). */
+export function onWaterChange(fn: () => void): () => void {
+  waterListeners.add(fn);
+  return () => { waterListeners.delete(fn); };
+}
+
 async function saveWater(state: WaterState): Promise<void> {
   await AsyncStorage.setItem(
     WATER_KEY,
     JSON.stringify({ date: today(), ml: Math.max(0, state.ml), log: state.log.slice(-50) })
   );
+  waterListeners.forEach((fn) => fn());
 }
 
 /** Adds an amount (e.g. a glass, or a drink detected from a logged meal). */

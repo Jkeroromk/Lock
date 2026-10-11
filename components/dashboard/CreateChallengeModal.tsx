@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Modal, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TouchableOpacity, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { createChallenge } from '@/services/api';
 import { useTranslation } from '@/i18n';
+import { FONTS } from '@/constants/fonts';
+import { Button } from '@/components/ui/bxc';
 
 interface CreateChallengeModalProps {
   visible: boolean;
@@ -73,7 +75,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
             backgroundColor: colors.backgroundPrimary,
             borderTopLeftRadius: 32, borderTopRightRadius: 32,
             padding: DIMENSIONS.CARD_PADDING,
-            paddingBottom: DIMENSIONS.CARD_PADDING * 2,
+            paddingBottom: DIMENSIONS.CARD_PADDING * 1.5,
             maxHeight: '90%',
           }}>
             <View style={{
@@ -82,15 +84,16 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
               alignSelf: 'center', marginBottom: DIMENSIONS.SPACING * 1.2,
             }} />
             <Text style={{
-              fontSize: TYPOGRAPHY.bodyL, fontWeight: '900',
-              color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 1.5,
+              fontSize: 26, fontWeight: '800', letterSpacing: -0.8,
+              color: colors.textPrimary, marginBottom: DIMENSIONS.SPACING * 1.2,
             }}>
               {t('challenge.create' as any)}
             </Text>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Scrolls if the screen is short; the Create button below stays visible. */}
+            <ScrollView showsVerticalScrollIndicator={false} style={{ flexShrink: 1 }} keyboardShouldPersistTaps="handled">
               {/* Title */}
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
                 {t('challenge.name' as any)}
               </Text>
               <TextInput
@@ -108,7 +111,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
               />
 
               {/* Type */}
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
                 {t('challenge.type' as any)}
               </Text>
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
@@ -140,7 +143,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
               </View>
 
               {/* Goal value */}
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
                 {t('challenge.dailyGoal' as any)} ({t(unitKey as any)})
               </Text>
               <TextInput
@@ -159,7 +162,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
               />
 
               {/* Duration */}
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginBottom: DIMENSIONS.SPACING * 0.5 }}>
                 {t('challenge.duration' as any)}
               </Text>
               <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6, marginBottom: DIMENSIONS.SPACING * 1.5 }}>
@@ -184,29 +187,16 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
                 ))}
               </View>
 
+            </ScrollView>
+
+            <View style={{ paddingTop: DIMENSIONS.SPACING * 0.8 }}>
               {error ? (
-                <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.danger, marginBottom: DIMENSIONS.SPACING, fontWeight: '600' }}>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.danger, marginBottom: DIMENSIONS.SPACING * 0.6, fontWeight: '600' }}>
                   {error}
                 </Text>
               ) : null}
-
-              <TouchableOpacity
-                onPress={handleCreate}
-                disabled={loading}
-                style={{
-                  borderRadius: 16, paddingVertical: DIMENSIONS.SPACING * 0.9,
-                  backgroundColor: colors.textPrimary, alignItems: 'center',
-                }}
-              >
-                {loading ? (
-                  <ActivityIndicator color={colors.backgroundPrimary} />
-                ) : (
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.backgroundPrimary }}>
-                    {t('challenge.create' as any)}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </ScrollView>
+              <Button label={t('challenge.create' as any)} icon="trophy" loading={loading} onPress={handleCreate} />
+            </View>
           </View>
         </TouchableOpacity>
         </TouchableOpacity>

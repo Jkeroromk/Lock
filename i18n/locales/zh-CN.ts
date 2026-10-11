@@ -7,6 +7,7 @@ const zhCN = {
     user: '用户',
   },
   today: {
+    connectHealthTitle: '连接 Apple 健康', connectHealthBody: '自动同步步数和活动消耗，直接显示在这里。', connectHealthCta: '连接',
     todayCalories: '今日卡路里',
     target: '目标',
     remaining: '剩余',
@@ -68,6 +69,7 @@ const zhCN = {
     noMealsLogged: '当天没有餐食记录',
     fetchFailed: '加载失败，请重试',
     freeQuotaBadge: '免费版 · 每日限 {quota} 次 AI 识别 · 升级 Pro 解锁无限',
+    savedToast: '已记录', undoWater: '撤销饮水',
     labelMode: '拍摄营养标签', labelDesc: '将相机对准营养成分表，AI 将自动提取每份卡路里、蛋白质、碳水和脂肪',
     labelScanDesc: '拍摄营养成分表提取数据', barcodeScanDesc: '扫描产品条形码查询营养信息',
     extractNutrition: '提取营养信息',
@@ -525,6 +527,7 @@ const zhCN = {
     copyright: '© 2026 Lock. 保留所有权利。',
   },
   pricing: {
+    priceUnavailable: '暂不可用', offeringsError: '暂时无法获取价格，请检查网络后重试。',
     title: '订阅计划', currentPro: '您当前是 Pro 会员',
     free: '免费版', currentPlan: '当前套餐', basic: '基础',
     cancelAnytime: '随时可取消', loading: '加载中...',
