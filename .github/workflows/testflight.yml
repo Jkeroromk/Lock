@@ -57,15 +57,18 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - run: npm ci
 
-      - uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+      # Install EAS CLI with npm (the Expo action's yarn global install failed
+      # on the macOS runner). EAS reads EXPO_TOKEN from the environment.
+      - name: Install EAS CLI
+        run: |
+          npm install -g eas-cli@latest
+          eas --version
+          eas whoami
 
       # Lets `eas submit` use the App Store Connect key from secrets; without
       # it, the key already saved on EAS is used.
