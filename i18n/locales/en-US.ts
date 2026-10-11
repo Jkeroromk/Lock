@@ -183,7 +183,7 @@ const enUS = {
     noChallengesHint: 'Create a challenge and invite friends to join!',
   },
   settings: {
-    groupGoals: 'Goals & body', groupPreferences: 'Preferences', groupFriends: 'Friends & privacy', groupAccount: 'Account & subscription', groupGeneral: 'General', groupConnections: 'Connections', groupData: 'Your data', themeAuto: 'Auto', openSettings: 'Open Settings',
+    groupGoals: 'Goals & body', groupPreferences: 'Preferences', groupFriends: 'Friends & privacy', groupAccount: 'Account & subscription', groupGeneral: 'General', groupConnections: 'Connections', groupData: 'Your data', themeAuto: 'Auto', openSettings: 'Open Settings', openHealth: 'Open Health', healthManageHint: 'iOS manages Health access in the Health app: tap your profile → Apps → Lock, then turn on Steps and Active Energy.', healthUnavailable: 'Apple Health isn’t available in this build.',
     title: 'Settings',
     goals: 'Goals', clickToEdit: 'Click to edit daily goals', editGoals: 'Edit Goals',
     dailyGoalsSummary: 'Daily {calories} kcal · {steps} steps',

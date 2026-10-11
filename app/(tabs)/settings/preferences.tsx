@@ -7,7 +7,9 @@ import { LanguageCode, languageNames } from '@/i18n/locales';
 import {
   requestNotificationPermissions, scheduleDailyMealReminders, cancelAllNotifications, getNotificationPermissionStatus,
 } from '@/services/notifications';
-import { requestHealthPermissions, syncHealthData } from '@/services/health';
+import {
+  requestHealthPermissions, syncHealthData, isHealthConnected, isHealthAvailable, HEALTH_APP_URL,
+} from '@/services/health';
 import { getAppIconOption, getCurrentAppIcon } from '@/lib/appIcon';
 import { Segmented } from '@/components/ui/bxc';
 import SettingItem from '@/components/settings/SettingItem';
@@ -36,6 +38,7 @@ export default function PreferencesScreen() {
   // Notification permission can change in iOS Settings while we're backgrounded.
   const appState = useRef(AppState.currentState);
   useEffect(() => {
+    isHealthConnected().then(setHealthConnected);
     getNotificationPermissionStatus().then(setNotificationsEnabled);
     const sub = AppState.addEventListener('change', (next) => {
       if (appState.current.match(/inactive|background/) && next === 'active') {
@@ -66,15 +69,32 @@ export default function PreferencesScreen() {
     }
   };
 
+  // iOS keeps Health permissions in the Health app, not in this app's page in
+  // Settings, so point people there instead of Linking.openSettings().
+  const openHealthApp = () => Linking.openURL(HEALTH_APP_URL).catch(() => {});
+
+  const showHealthManageHint = () => Alert.alert(t('settings.healthConnections'), t('settings.healthManageHint' as any), [
+    { text: t('settings.cancel'), style: 'cancel' },
+    { text: t('settings.openHealth' as any), onPress: openHealthApp },
+  ]);
+
   const handleHealthConnect = async () => {
+    if (!isHealthAvailable()) {
+      Alert.alert(t('settings.healthConnections'), t('settings.healthUnavailable' as any));
+      return;
+    }
+    if (healthConnected) {
+      showHealthManageHint();
+      return;
+    }
     setHealthSyncing(true);
     try {
-      const granted = await requestHealthPermissions();
-      if (granted) {
-        await syncHealthData();
+      const ok = await requestHealthPermissions();
+      if (ok) {
         setHealthConnected(true);
+        syncHealthData().catch(() => {});
       } else {
-        openSettingsAlert(t('settings.healthConnections'), t('settings.healthConnectionsDescription'));
+        showHealthManageHint();
       }
     } finally {
       setHealthSyncing(false);

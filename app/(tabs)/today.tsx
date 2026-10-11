@@ -14,7 +14,7 @@ import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
 import MealsList from '@/components/today/MealsList';
 import WaterCard from '@/components/today/WaterCard';
-import { getHealthData, requestHealthPermissions, syncHealthData } from '@/services/health';
+import { getHealthData, syncHealthData } from '@/services/health';
 
 export default function TodayScreen() {
   const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
@@ -73,9 +73,8 @@ export default function TodayScreen() {
   };
 
   useEffect(() => {
-    requestHealthPermissions();
-    // Health data can be slow (HealthKit query); it fills in on its own and
-    // never holds up the first render.
+    // Health data can be slow (permission sheet on first launch, then the
+    // HealthKit query); it fills in on its own and never holds up the first render.
     loadHealthData();
     Promise.all([refreshToday(), loadWaterData()]).finally(() => setLoading(false));
   }, []);

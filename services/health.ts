@@ -1,4 +1,5 @@
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { syncHealthDataToBackend } from './api';
 
 let AppleHealthKit: any = null;
@@ -7,7 +8,18 @@ let Scopes: any = null;
 
 try {
   if (Platform.OS === 'ios') {
-    AppleHealthKit = require('react-native-health').default;
+    // react-native-health uses `module.exports = HealthKit` (no `.default`), so
+    // `require(...).default` was always undefined and HealthKit never started.
+    // Under the new architecture the merged object can also come back without
+    // its methods, so fall back to the native module for those.
+    const pkg = require('react-native-health');
+    const hk = pkg?.default ?? pkg;
+    const native = NativeModules.AppleHealthKit;
+    if (hk || native) {
+      AppleHealthKit = new Proxy({}, {
+        get: (_t, key: string) => hk?.[key] ?? native?.[key],
+      });
+    }
   }
   if (Platform.OS === 'android') {
     const googleFitModule = require('react-native-google-fit');
@@ -15,6 +27,19 @@ try {
     Scopes = googleFitModule.Scopes;
   }
 } catch {}
+
+const CONNECTED_KEY = 'lock_health_connected';
+
+/** True once the user has gone through the Health permission sheet on this device. */
+export const isHealthConnected = async (): Promise<boolean> =>
+  (await AsyncStorage.getItem(CONNECTED_KEY).catch(() => null)) === 'true';
+
+/** Whether this build can talk to Apple Health at all. */
+export const isHealthAvailable = (): boolean =>
+  Platform.OS === 'ios' && typeof AppleHealthKit?.initHealthKit === 'function';
+
+/** Opens the Health app, where iOS keeps per-app Health permissions. */
+export const HEALTH_APP_URL = 'x-apple-health://';
 
 interface HealthValue {
   value: number;
@@ -31,33 +56,44 @@ export interface HealthData {
   activeEnergy: number;
 }
 
-export const requestHealthPermissions = async (): Promise<boolean> => {
-  if (Platform.OS !== 'ios' || !AppleHealthKit) {
-    return false;
-  }
+let initPromise: Promise<boolean> | null = null;
 
-  try {
-    const permissions: HealthKitPermissions = {
-      permissions: {
-        read: [
-          AppleHealthKit.Constants.Permissions.Steps,
-          AppleHealthKit.Constants.Permissions.ActiveEnergyBurned,
-        ],
-      },
-    };
+/**
+ * Shows the Health permission sheet the first time; afterwards iOS returns
+ * immediately. Apple never tells apps whether *read* access was granted, so
+ * `true` means "HealthKit is set up", not "the user allowed everything".
+ */
+export const requestHealthPermissions = (): Promise<boolean> => {
+  if (!isHealthAvailable()) return Promise.resolve(false);
+  if (initPromise) return initPromise;
 
-    return new Promise((resolve) => {
+  const Permissions = AppleHealthKit.Constants?.Permissions ?? {};
+  const permissions: HealthKitPermissions = {
+    permissions: {
+      read: [Permissions.Steps ?? 'Steps', Permissions.ActiveEnergyBurned ?? 'ActiveEnergyBurned'],
+    },
+  };
+
+  initPromise = new Promise<boolean>((resolve) => {
+    try {
       AppleHealthKit.initHealthKit(permissions, (error: string) => {
         if (error) {
+          console.warn('[health] initHealthKit failed:', error);
           resolve(false);
         } else {
+          AsyncStorage.setItem(CONNECTED_KEY, 'true').catch(() => {});
           resolve(true);
         }
       });
-    });
-  } catch {
-    return false;
-  }
+    } catch (e) {
+      console.warn('[health] initHealthKit threw:', e);
+      resolve(false);
+    }
+  }).then((ok) => {
+    if (!ok) initPromise = null; // allow a retry later
+    return ok;
+  });
+  return initPromise;
 };
 
 export const getHealthData = async (): Promise<HealthData> => {
@@ -70,7 +106,7 @@ export const getHealthData = async (): Promise<HealthData> => {
 };
 
 const getAppleHealthData = async (): Promise<HealthData> => {
-  if (!AppleHealthKit) {
+  if (!(await requestHealthPermissions())) {
     return { steps: 0, activeEnergy: 0 };
   }
 

@@ -224,7 +224,7 @@ const zhCN = {
     noChallengesHint: '创建一个挑战，邀请好友一起参与！',
   },
   settings: {
-    groupGoals: '目标与身体', groupPreferences: '偏好设置', groupFriends: '好友与隐私', groupAccount: '账号与订阅', groupGeneral: '通用', groupConnections: '连接', groupData: '你的数据', themeAuto: '跟随系统', openSettings: '打开设置',
+    groupGoals: '目标与身体', groupPreferences: '偏好设置', groupFriends: '好友与隐私', groupAccount: '账号与订阅', groupGeneral: '通用', groupConnections: '连接', groupData: '你的数据', themeAuto: '跟随系统', openSettings: '打开设置', openHealth: '打开健康', healthManageHint: 'iOS 的健康权限在「健康」App 里管理：点右上角头像 → App → Lock，打开「步数」和「活动能量」。', healthUnavailable: '当前版本暂不支持 Apple 健康。',
     title: '设置',
     goals: '目标',
     clickToEdit: '点击编辑每日目标',
