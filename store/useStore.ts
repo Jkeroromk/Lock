@@ -31,6 +31,10 @@ interface User {
   plan?: PlanTier;
   streak?: number;
   inviteCode?: string;
+  /** Account creation time (ISO) — drives the free first-week trial. */
+  createdAt?: string;
+  /** Extra AI scans earned from invites. */
+  bonusAiCalls?: number;
 }
 
 interface Meal {

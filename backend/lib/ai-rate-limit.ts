@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getDailyAiCallLimit, isPaidPlan, FREE_DAILY_DIET_ANALYSES } from '@/lib/plans';
+import { getDailyAiCallLimit, isPaidPlan, isInTrialWeek, FREE_DAILY_DIET_ANALYSES } from '@/lib/plans';
 
 export interface RateLimitOk {
   ok: true;
-  remaining: number; // -1 = unlimited
+  remaining: number; // -1 = unlimited; includes bonus scans
   currentCalls: number;
   needsReset: boolean;
+  /** Give the unit back when the AI call fails on our side. */
+  refund: () => Promise<void>;
 }
 
 export interface RateLimitDenied {
@@ -15,11 +17,11 @@ export interface RateLimitDenied {
 }
 
 /**
- * 检查并扣减用户的每日 AI 调用配额（所有 AI 接口共享同一计数器）。
- * - FREE 用户：每日限 getDailyAiCallLimit() 次
- * - PRO / MAX：不限次数
+ * Checks and takes one AI scan from the user's daily allowance (photo + label).
+ * - FREE: getDailyAiCallLimit() per local day, unlimited in the first week, then bonus scans
+ * - PRO / MAX: unlimited
  *
- * 采用"先扣后用"策略，防止并发绕过限制。
+ * Takes the unit before the AI call so parallel requests can't slip past the limit.
  */
 export async function checkAndIncrementAiQuota(
   userId: string,
@@ -27,25 +29,48 @@ export async function checkAndIncrementAiQuota(
 ): Promise<RateLimitOk | RateLimitDenied> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { plan: true, aiCallsToday: true, aiCallsResetAt: true },
+    select: { plan: true, aiCallsToday: true, aiCallsResetAt: true, bonusAiCalls: true, createdAt: true },
   });
 
   if (!user) {
     return {
       ok: false,
-      response: NextResponse.json({ error: '用户不存在' }, { status: 404 }),
+      response: NextResponse.json({ error: 'User not found' }, { status: 404 }),
     };
   }
 
-  const limit = getDailyAiCallLimit(user.plan as any);
+  const now = new Date();
+  // Paid plans and a new account's first week are unlimited.
+  const limit = isInTrialWeek(user.createdAt, now) ? -1 : getDailyAiCallLimit(user.plan as any);
 
   // New day in the user's own time zone → counter starts over at their midnight.
-  const now = new Date();
   const needsReset = !sameLocalDay(now, new Date(user.aiCallsResetAt), timeZone);
-
   const currentCalls = needsReset ? 0 : user.aiCallsToday;
+  const bonus = Math.max(0, user.bonusAiCalls ?? 0);
 
+  // Daily allowance used up → spend a bonus scan (earned from invites) if there is one.
   if (limit !== -1 && currentCalls >= limit) {
+    if (bonus > 0) {
+      const spent = await prisma.user.updateMany({
+        where: { id: userId, bonusAiCalls: { gt: 0 } },
+        data: { bonusAiCalls: { decrement: 1 } },
+      });
+      if (spent.count > 0) {
+        return {
+          ok: true,
+          remaining: bonus - 1,
+          currentCalls,
+          needsReset,
+          refund: async () => {
+            try {
+              await prisma.user.update({ where: { id: userId }, data: { bonusAiCalls: { increment: 1 } } });
+            } catch (error) {
+              console.error('[refundBonusAiCall]', error);
+            }
+          },
+        };
+      }
+    }
     return {
       ok: false,
       response: NextResponse.json(
@@ -60,7 +85,7 @@ export async function checkAndIncrementAiQuota(
     };
   }
 
-  // 先扣减再调用，防止并发绕过
+  // Take the unit before calling the AI so parallel requests can't slip past the limit.
   await prisma.user.update({
     where: { id: userId },
     data: {
@@ -69,8 +94,8 @@ export async function checkAndIncrementAiQuota(
     },
   });
 
-  const remaining = limit === -1 ? -1 : limit - (currentCalls + 1);
-  return { ok: true, remaining, currentCalls, needsReset };
+  const remaining = limit === -1 ? -1 : limit - (currentCalls + 1) + bonus;
+  return { ok: true, remaining, currentCalls, needsReset, refund: () => refundAiQuota(userId) };
 }
 
 /**

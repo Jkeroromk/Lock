@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '@/lib/auth';
-import { checkAndIncrementAiQuota, refundAiQuota, requestTimeZone } from '@/lib/ai-rate-limit';
+import { checkAndIncrementAiQuota, requestTimeZone } from '@/lib/ai-rate-limit';
 import { VISION_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 
 // Vercel rejects request bodies over 4.5 MB before they reach us; the app
@@ -118,7 +118,7 @@ Return only the JSON, no other text.`;
       });
     } catch (error) {
       // AI failed after we took a quota unit — give it back and log why.
-      await refundAiQuota(userId);
+      await quota.refund();
       console.error('[POST /api/vision] AI call failed', { model: VISION_MODEL, mode: analysisMode, reason: describeAiError(error) });
       return NextResponse.json({ error: 'Image analysis failed' }, { status: 502 });
     }

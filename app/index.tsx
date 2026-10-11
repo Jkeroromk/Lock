@@ -69,6 +69,8 @@ export default function Index() {
           plan: (profile.plan ?? 'FREE') as any,
           streak: profile.streak ?? current?.streak ?? 0,
           inviteCode: profile.inviteCode ?? undefined,
+          createdAt: profile.createdAt ?? current?.createdAt,
+          bonusAiCalls: profile.bonusAiCalls ?? 0,
         } as any);
       })
       .catch(async () => {
