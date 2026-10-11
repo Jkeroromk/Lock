@@ -9,7 +9,8 @@
  * Env (set as EAS environment variables, "production" environment):
  *   ASC_KEY_ID        App Store Connect API key ID          (secret)
  *   ASC_ISSUER_ID     API issuer ID                          (secret)
- *   ASC_PRIVATE_KEY   contents of the .p8 file, raw or base64 (secret)
+ *   ASC_PRIVATE_KEY   the .p8 key: an EAS *file* variable (its value is a path
+ *                     to the file), the raw PEM text, or base64 of it (secret)
  *   ASC_APP_ID        optional, defaults to the app in eas.json
  *   TESTFLIGHT_KEEP   optional, defaults to 3
  *   NEW_BUILD_NUMBER  optional; if set, wait for this build to show up first
@@ -17,6 +18,7 @@
  * Never fails the workflow: problems are logged and the script exits 0.
  */
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 
 const API = 'https://api.appstoreconnect.apple.com/v1';
 const APP_ID = process.env.ASC_APP_ID || '6762630080';
@@ -24,9 +26,12 @@ const KEEP = Math.max(1, parseInt(process.env.TESTFLIGHT_KEEP || '3', 10));
 const NEW_BUILD = process.env.NEW_BUILD_NUMBER || '';
 
 function privateKey() {
-  const raw = process.env.ASC_PRIVATE_KEY || '';
+  let raw = (process.env.ASC_PRIVATE_KEY || '').trim();
+  // EAS "file" variables are exposed as a path to the uploaded file.
+  if (raw && !raw.includes('BEGIN') && fs.existsSync(raw)) raw = fs.readFileSync(raw, 'utf8').trim();
   if (raw.includes('BEGIN PRIVATE KEY')) return raw.replace(/\\n/g, '\n');
-  try { return Buffer.from(raw, 'base64').toString('utf8'); } catch { return ''; }
+  const decoded = Buffer.from(raw, 'base64').toString('utf8');
+  return decoded.includes('BEGIN PRIVATE KEY') ? decoded : '';
 }
 
 function token() {
@@ -54,7 +59,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
   if (!process.env.ASC_KEY_ID || !process.env.ASC_ISSUER_ID || !privateKey()) {
-    console.log('[testflight-cleanup] ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY not set — skipping.');
+    console.log('[testflight-cleanup] ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY missing or unreadable — skipping.');
     return;
   }
 
