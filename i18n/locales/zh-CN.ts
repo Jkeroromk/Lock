@@ -49,7 +49,7 @@ const zhCN = {
     analysisFailed: '分析失败',
     saveFailed: '保存失败',
     saveSuccess: '餐食记录成功！',
-    savedToast: '已记录', undoWater: '撤销饮水',
+    savedToast: '已记录', undoWater: '撤销饮水', waterAskTitle: '也算作饮水吗？', waterAskMsg: '「{food}」看起来是饮品，要把 {ml}ml 记入今天的饮水吗？', waterAskYes: '记入 {ml}ml', waterAskNo: '只记食物',
     needPermission: '需要权限',
     saving: '保存中...',
     modePhoto: '拍照识别', modeLabel: '营养标签', modeBarcode: '扫条码',

@@ -27,7 +27,7 @@ const enUS = {
     selectOtherPhoto: 'Select Other Photo', analyzing: 'Analyzing...',
     analysisFailed: 'Analysis Failed', saveFailed: 'Save Failed',
     saveSuccess: 'Meal recorded successfully!', needPermission: 'Permission Required',
-    savedToast: 'Logged', undoWater: 'Undo water',
+    savedToast: 'Logged', undoWater: 'Undo water', waterAskTitle: 'Count it as water too?', waterAskMsg: '{food} looks like a drink. Add {ml} ml to today\'s water?', waterAskYes: 'Add {ml} ml', waterAskNo: 'Food only',
     saving: 'Saving...',
     modePhoto: 'Photo Scan', modeLabel: 'Nutrition Label', modeBarcode: 'Barcode',
     cameraPermissionTitle: 'Camera Permission Required',

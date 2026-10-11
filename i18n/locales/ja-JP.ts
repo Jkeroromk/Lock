@@ -26,7 +26,7 @@ const jaJP = {
     selectOtherPhoto: '他の写真を選択', analyzing: '分析中...',
     analysisFailed: '分析失敗', saveFailed: '保存失敗',
     saveSuccess: '食事が正常に記録されました！', needPermission: '権限が必要',
-    savedToast: '記録しました', undoWater: '水分を取り消す',
+    savedToast: '記録しました', undoWater: '水分を取り消す', waterAskTitle: '水分としても記録しますか？', waterAskMsg: '「{food}」は飲み物のようです。今日の水分に {ml}ml 追加しますか？', waterAskYes: '{ml}ml 追加', waterAskNo: '食事のみ',
     saving: '保存中...', modePhoto: '写真スキャン', modeLabel: '栄養ラベル', modeBarcode: 'バーコード',
     cameraPermissionTitle: 'カメラ権限が必要', cameraPermissionDesc: 'バーコードをスキャンするためカメラへのアクセスを許可してください',
     grantCamera: 'カメラを許可', aimAtBarcode: 'バーコードをフレームに合わせてください',

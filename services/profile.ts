@@ -22,6 +22,8 @@ export interface UserProfile {
   inviteCode?: string | null;
   createdAt?: string;
   bonusAiCalls?: number;
+  /** Team account: no AI limits. */
+  isAdmin?: boolean;
 }
 
 export const fetchProfile = async (): Promise<UserProfile> => {

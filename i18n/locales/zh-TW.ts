@@ -26,7 +26,7 @@ const zhTW = {
     selectOtherPhoto: '選擇其他照片', analyzing: '分析中...',
     analysisFailed: '分析失敗', saveFailed: '保存失敗',
     saveSuccess: '餐食記錄成功！', needPermission: '需要權限',
-    savedToast: '已記錄', undoWater: '撤銷飲水',
+    savedToast: '已記錄', undoWater: '撤銷飲水', waterAskTitle: '也算作飲水嗎？', waterAskMsg: '「{food}」看起來是飲品，要把 {ml}ml 記入今天的飲水嗎？', waterAskYes: '記入 {ml}ml', waterAskNo: '只記食物',
     saving: '保存中...', modePhoto: '拍照識別', modeLabel: '營養標籤', modeBarcode: '掃條碼',
     cameraPermissionTitle: '需要相機權限', cameraPermissionDesc: '請允許相機訪問以掃描條形碼',
     grantCamera: '授權相機', aimAtBarcode: '將條形碼對準框內',

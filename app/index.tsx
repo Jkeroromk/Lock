@@ -71,6 +71,7 @@ export default function Index() {
           inviteCode: profile.inviteCode ?? undefined,
           createdAt: profile.createdAt ?? current?.createdAt,
           bonusAiCalls: profile.bonusAiCalls ?? 0,
+          isAdmin: profile.isAdmin === true,
         } as any);
       })
       .catch(async () => {

@@ -26,7 +26,7 @@ const koKR = {
     selectOtherPhoto: '다른 사진 선택', analyzing: '분석 중...',
     analysisFailed: '분석 실패', saveFailed: '저장 실패',
     saveSuccess: '식사가 성공적으로 기록되었습니다!', needPermission: '권한 필요',
-    savedToast: '기록됨', undoWater: '물 기록 취소',
+    savedToast: '기록됨', undoWater: '물 기록 취소', waterAskTitle: '수분으로도 기록할까요?', waterAskMsg: '"{food}"은(는) 음료 같아요. 오늘 수분에 {ml}ml를 추가할까요?', waterAskYes: '{ml}ml 추가', waterAskNo: '음식만 기록',
     saving: '저장 중...', modePhoto: '사진 스캔', modeLabel: '영양 라벨', modeBarcode: '바코드',
     cameraPermissionTitle: '카메라 권한 필요', cameraPermissionDesc: '바코드를 스캔하려면 카메라 접근을 허용해 주세요',
     grantCamera: '카메라 허용', aimAtBarcode: '바코드를 프레임에 맞추세요',

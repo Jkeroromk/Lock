@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { isAdmin } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,16 +27,18 @@ export async function GET(request: NextRequest) {
   const { userId } = authResult;
 
   try {
+    // isAdmin lets the app show "unlimited" instead of the free scan counter.
+    const admin = isAdmin(userId);
     const existing = await prisma.user.findUnique({ where: { id: userId } });
-    if (existing) return NextResponse.json(existing);
+    if (existing) return NextResponse.json({ ...existing, isAdmin: admin });
 
     const inviteCode = await getUniqueInviteCode();
     const user = await prisma.user.create({ data: { id: userId, inviteCode } });
-    return NextResponse.json(user);
+    return NextResponse.json({ ...user, isAdmin: admin });
   } catch (error: any) {
     if (error?.code === 'P2002') {
       const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (user) return NextResponse.json(user);
+      if (user) return NextResponse.json({ ...user, isAdmin: isAdmin(userId) });
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -79,7 +82,7 @@ export async function PUT(request: NextRequest) {
       update: data,
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json({ ...user, isAdmin: isAdmin(userId) });
   } catch (error: any) {
     if (error?.code === 'P2002') {
       return NextResponse.json({ error: '用户名已被占用，请选择其他用户名' }, { status: 409 });
