@@ -13,6 +13,28 @@ const RESPONSE_LANGUAGE: Record<string, string> = {
   'ko-KR': '한국어',
 };
 
+/** Maps any BCP-47 tag (zh, zh-Hans-CN, zh-Hant-TW, ja, ...) to a supported language. */
+function toSupportedLanguage(tag: string | null | undefined): string | null {
+  if (!tag) return null;
+  const t = tag.trim().replace(/_/g, '-').toLowerCase();
+  if (t.startsWith('zh')) return /hant|-tw|-hk|-mo/.test(t) ? 'zh-TW' : 'zh-CN';
+  if (t.startsWith('ja')) return 'ja-JP';
+  if (t.startsWith('ko')) return 'ko-KR';
+  if (t.startsWith('en')) return 'en-US';
+  return null;
+}
+
+/** The app's language (?lang=), else the request's Accept-Language, else English. */
+function resolveLanguage(request: NextRequest): string {
+  const fromApp = toSupportedLanguage(request.nextUrl.searchParams.get('lang'));
+  if (fromApp) return fromApp;
+  for (const part of (request.headers.get('accept-language') ?? '').split(',')) {
+    const lang = toSupportedLanguage(part.split(';')[0]);
+    if (lang) return lang;
+  }
+  return 'en-US';
+}
+
 const GOAL_LABELS: Record<string, string> = { lose_weight: '减重', lose_fat: '减脂', gain_muscle: '增肌' };
 const GENDER_LABELS: Record<string, string> = { male: '男', female: '女', other: '其他' };
 
@@ -24,12 +46,13 @@ export async function GET(request: NextRequest) {
     const authResult = await authenticateRequest();
     if (authResult instanceof NextResponse) return authResult;
     const { userId } = authResult;
-    const lang = request.nextUrl.searchParams.get('lang') ?? 'en-US';
-    const responseLanguage = RESPONSE_LANGUAGE[lang] ?? RESPONSE_LANGUAGE['en-US'];
+    const lang = resolveLanguage(request);
+    const responseLanguage = RESPONSE_LANGUAGE[lang];
 
     // ── 限流检查 ────────────────────────────────────────────────────────────
-    // Separate from scans: unlimited on paid plans, one per day on free.
-    const quota = await checkDietAnalysisAllowance(userId, requestTimeZone(request));
+    // Separate from scans: unlimited on paid plans, one per day on free
+    // (plus one more after switching the app language).
+    const quota = await checkDietAnalysisAllowance(userId, requestTimeZone(request), lang);
     if (!quota.ok) return quota.response;
     // ────────────────────────────────────────────────────────────────────────
 
@@ -106,7 +129,15 @@ export async function GET(request: NextRequest) {
     try {
       const content = await fireworksChat({
         model: TEXT_MODEL,
-        messages: [{ role: 'user', content: `${prompt}\n\nWrite all text values in ${responseLanguage}.` }],
+        messages: [
+          {
+            role: 'system',
+            content: `You are a nutrition coach. Reply ONLY in ${responseLanguage}: every text value in the JSON `
+              + `(summary, suggestions, exercise) must be written in ${responseLanguage}, whatever language the `
+              + `instructions or food names are in. Keep the JSON keys in English.`,
+          },
+          { role: 'user', content: `${prompt}\n\nWrite all text values in ${responseLanguage}.` },
+        ],
         temperature: 0.3,
       });
       analysis = extractJson(content);

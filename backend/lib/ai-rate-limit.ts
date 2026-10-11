@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { isAdmin } from '@/lib/admin';
 import { getDailyAiCallLimit, isPaidPlan, isInTrialWeek, FREE_DAILY_DIET_ANALYSES } from '@/lib/plans';
 
 export interface RateLimitOk {
@@ -19,7 +20,7 @@ export interface RateLimitDenied {
 /**
  * Checks and takes one AI scan from the user's daily allowance (photo + label).
  * - FREE: getDailyAiCallLimit() per local day, unlimited in the first week, then bonus scans
- * - PRO / MAX: unlimited
+ * - PRO / MAX and admins (ADMIN_USER_IDS): unlimited
  *
  * Takes the unit before the AI call so parallel requests can't slip past the limit.
  */
@@ -27,6 +28,11 @@ export async function checkAndIncrementAiQuota(
   userId: string,
   timeZone?: string | null,
 ): Promise<RateLimitOk | RateLimitDenied> {
+  // Admins: unlimited, nothing counted.
+  if (isAdmin(userId)) {
+    return { ok: true, remaining: -1, currentCalls: 0, needsReset: false, refund: async () => {} };
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { plan: true, aiCallsToday: true, aiCallsResetAt: true, bonusAiCalls: true, createdAt: true },
@@ -139,50 +145,61 @@ export interface DietAllowanceOk {
 
 /**
  * AI diet review allowance, separate from scans: unlimited on paid plans,
- * FREE_DAILY_DIET_ANALYSES (1) per local day on the free plan.
+ * FREE_DAILY_DIET_ANALYSES (1) per local day on the free plan. If the user
+ * switches the app language, they get one more review that day in the new
+ * language (at most one per supported language), so the review never gets
+ * stuck in a language they no longer use.
  */
 export async function checkDietAnalysisAllowance(
   userId: string,
   timeZone?: string | null,
+  lang?: string | null,
 ): Promise<DietAllowanceOk | RateLimitDenied> {
+  if (isAdmin(userId)) return { ok: true, refund: async () => {} };
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { plan: true, lastDietAnalysisAt: true },
+    select: { plan: true, lastDietAnalysisAt: true, dietAnalysisLangs: true },
   });
   if (!user) {
     return { ok: false, response: NextResponse.json({ error: 'User not found' }, { status: 404 }) };
   }
   if (isPaidPlan(user.plan as any)) return { ok: true, refund: async () => {} };
 
+  const limited = () => ({
+    ok: false as const,
+    response: NextResponse.json(
+      { error: 'DIET_ANALYSIS_LIMIT_REACHED', message: `Free plan: ${FREE_DAILY_DIET_ANALYSES} AI review per day`, limit: FREE_DAILY_DIET_ANALYSES },
+      { status: 429 },
+    ),
+  });
+
   const now = new Date();
   const previous = user.lastDietAnalysisAt;
-  if (previous && sameLocalDay(now, previous, timeZone)) {
-    return {
-      ok: false,
-      response: NextResponse.json(
-        { error: 'DIET_ANALYSIS_LIMIT_REACHED', message: `Free plan: ${FREE_DAILY_DIET_ANALYSES} AI review per day`, limit: FREE_DAILY_DIET_ANALYSES },
-        { status: 429 },
-      ),
-    };
+  const previousLangs = user.dietAnalysisLangs;
+  const today = !!previous && sameLocalDay(now, previous, timeZone);
+  // Before this column existed a day's review had no language recorded; treat
+  // that as "a review was used" so it still counts against the allowance.
+  const usedLangs = today ? (previousLangs ?? '?').split(',').filter(Boolean) : [];
+  const langKey = (lang || '?').slice(0, 10);
+  if (usedLangs.length >= FREE_DAILY_DIET_ANALYSES && (lang == null || usedLangs.includes(langKey))) {
+    return limited();
   }
 
-  // Claim today's review first so two quick taps can't both get through.
+  // Claim the review first so two quick taps can't both get through.
   const claimed = await prisma.user.updateMany({
-    where: { id: userId, lastDietAnalysisAt: previous },
-    data: { lastDietAnalysisAt: now },
+    where: { id: userId, lastDietAnalysisAt: previous, dietAnalysisLangs: previousLangs },
+    data: { lastDietAnalysisAt: now, dietAnalysisLangs: [...usedLangs, langKey].join(',') },
   });
-  if (claimed.count === 0) {
-    return {
-      ok: false,
-      response: NextResponse.json({ error: 'DIET_ANALYSIS_LIMIT_REACHED', limit: FREE_DAILY_DIET_ANALYSES }, { status: 429 }),
-    };
-  }
+  if (claimed.count === 0) return limited();
 
   return {
     ok: true,
     refund: async () => {
       try {
-        await prisma.user.updateMany({ where: { id: userId, lastDietAnalysisAt: now }, data: { lastDietAnalysisAt: previous } });
+        await prisma.user.updateMany({
+          where: { id: userId, lastDietAnalysisAt: now },
+          data: { lastDietAnalysisAt: previous, dietAnalysisLangs: previousLangs },
+        });
       } catch (error) {
         console.error('[refundDietAnalysis]', error);
       }

@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/Text';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
@@ -12,19 +12,30 @@ import { RADIUS } from '@/components/ui/bxc';
 /** Yellow "sticker" card: AI review of the last week, generated on demand. */
 export default function AiInsightsCard() {
   const c = useTheme();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DietAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [limited, setLimited] = useState(false);
   const router = useRouter();
 
+  // A review written in another language is stale once the app language
+  // changes, so drop it and offer a fresh one in the new language.
+  const lastLanguage = useRef(language);
+  useEffect(() => {
+    if (lastLanguage.current === language) return;
+    lastLanguage.current = language;
+    setData(null);
+    setError(null);
+    setLimited(false);
+  }, [language]);
+
   const handleAnalyze = async () => {
     setLoading(true);
     setError(null);
     setLimited(false);
     try {
-      setData(await fetchDietAnalysis());
+      setData(await fetchDietAnalysis(language));
     } catch (err: any) {
       const code = err?.response?.data?.error;
       if (code === 'DIET_ANALYSIS_LIMIT_REACHED') {

@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import Constants from 'expo-constants';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
+import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
 
 function LogTabButton(props: any) {
   const pathname = usePathname();
@@ -129,6 +130,9 @@ const TAB_ICONS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof
 function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colors = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+  // Red dot on Today while over the calorie goal, visible from every tab.
+  const overGoal = isWarning(useCalorieStatus().level);
   const [barWidth, setBarWidth] = useState(0);
   const PAD = 6;
   const slot = barWidth > 0 ? (barWidth - PAD * 2) / state.routes.length : 0;
@@ -185,14 +189,28 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               scaleTo={0.86}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
-              accessibilityLabel={typeof options.title === 'string' ? options.title : route.name}
+              accessibilityLabel={[
+                typeof options.title === 'string' ? options.title : route.name,
+                route.name === 'today' && overGoal ? t('calorieWarn.tabBadge' as any) : '',
+              ].filter(Boolean).join(', ')}
               style={{ flex: 1, height: 66, alignItems: 'center', justifyContent: 'center', paddingBottom: 8 }}
             >
-              <Ionicons
-                name={focused ? icons.on : icons.off}
-                size={23}
-                color={focused ? colors.tabIconActive : colors.tabIconInactive}
-              />
+              <View>
+                <Ionicons
+                  name={focused ? icons.on : icons.off}
+                  size={23}
+                  color={focused ? colors.tabIconActive : colors.tabIconInactive}
+                />
+                {route.name === 'today' && overGoal ? (
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: 'absolute', top: -3, right: -5, width: 10, height: 10, borderRadius: 5,
+                      backgroundColor: colors.danger, borderWidth: 2, borderColor: colors.tabBar,
+                    }}
+                  />
+                ) : null}
+              </View>
             </PressScale>
           );
         })}

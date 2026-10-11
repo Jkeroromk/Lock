@@ -13,7 +13,8 @@ import { FONTS } from '@/constants/fonts';
 import { Appear, Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented, Sticker } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
-import { detectLiquidMl, addWater, undoLastWater } from '@/services/waterTracker';
+import { detectLiquidMl, addWater } from '@/services/waterTracker';
+import { calorieLevel, isWarning, todaysCalories } from '@/lib/calorieStatus';
 import { makeMealThumbnail } from '@/lib/image';
 import { showToast } from '@/components/ui/Toast';
 import { getQuota } from '@/lib/plans';
@@ -32,7 +33,7 @@ export default function LogScreen() {
   const router = useRouter();
   const { refreshToday, user } = useStore();
   const plan = user?.plan ?? 'FREE';
-  const aiQuota = getQuota(plan, 'dailyAiCalls');
+  const aiQuota = user?.isAdmin ? -1 : getQuota(plan, 'dailyAiCalls');
   // Free accounts get unlimited scans for their first 7 days (enforced on the server too).
   const trialDaysLeft = aiQuota === -1 || !user?.createdAt ? 0
     : Math.ceil((new Date(user.createdAt).getTime() + 7 * 864e5 - Date.now()) / 864e5);
@@ -135,10 +136,22 @@ export default function LogScreen() {
     setIsEditing(false);
   };
 
+  /** Drinks: ask before counting them as water, rather than adding it and offering an undo. */
+  const askCountAsWater = (food: string, ml: number) => new Promise<boolean>((resolve) => {
+    const fill = (key: string) => (t(key as any) as string).replace('{ml}', String(ml)).replace('{food}', food);
+    Alert.alert(fill('log.waterAskTitle'), fill('log.waterAskMsg'), [
+      { text: fill('log.waterAskNo'), style: 'cancel', onPress: () => resolve(false) },
+      { text: fill('log.waterAskYes'), style: 'default', onPress: () => resolve(true) },
+    ], { cancelable: true, onDismiss: () => resolve(false) });
+  });
+
   const saveMeal = async () => {
     if (!result) return;
     if (isEditing) { handleSaveEdit(); return; }
+    const detectedMl = detectLiquidMl(result.food);
+    const liquidMl = detectedMl > 0 && (await askCountAsWater(result.food, detectedMl)) ? detectedMl : 0;
     setSaving(true);
+    const before = todaysCalories();
     try {
       const thumb = image ? await makeMealThumbnail(image) : null;
       await logMeal({
@@ -147,18 +160,22 @@ export default function LogScreen() {
         thumbnail: thumb?.base64, // stored server-side so the photo shows on every device
       });
       const saved = result;
-      const liquidMl = detectLiquidMl(saved.food);
       if (liquidMl > 0) await addWater(liquidMl);
 
       clearImage(); setResult(null); refreshToday();
       // Back to Today so the ring fills up; a toast instead of an OK-only alert.
       router.navigate('/(tabs)/today');
+      const { calorieWarnings, dailyCalorieGoal, user: me } = useStore.getState();
+      const goal = dailyCalorieGoal || 2000;
+      const after = before + Math.round(saved.calories);
+      const overGoal = calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
+      const water = liquidMl > 0 ? (t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl)) : '';
       showToast({
         message: `${t('log.savedToast' as any)} · ${saved.food}`,
-        detail: liquidMl > 0
-          ? (t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl))
-          : `${Math.round(saved.calories)} kcal`,
-        action: liquidMl > 0 ? { label: t('log.undoWater' as any), onPress: () => { undoLastWater().catch(() => {}); } } : undefined,
+        detail: overGoal
+          ? [t('calorieWarn.toastOver' as any, { kcal: (after - goal).toLocaleString() }), water].filter(Boolean).join(' · ')
+          : water || `${Math.round(saved.calories)} kcal`,
+        icon: overGoal ? 'warning' : undefined,
       });
     } catch (error: any) { Alert.alert(t('log.saveFailed'), error.message || t('log.saveFailed')); }
     finally { setSaving(false); }

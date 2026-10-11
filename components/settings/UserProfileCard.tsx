@@ -1,4 +1,5 @@
-import { View, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, TouchableOpacity, Image } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -29,10 +30,17 @@ export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) 
   const { t } = useTranslation();
   const colors = useTheme();
 
+  // Copy → the icon turns into a checkmark for a moment instead of an alert.
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (copiedTimer.current) clearTimeout(copiedTimer.current); }, []);
+
   const handleCopyInviteCode = async () => {
     if (!user?.inviteCode) return;
     await Clipboard.setStringAsync(user.inviteCode);
-    Alert.alert(t('settings.success'), t('settings.inviteCodeCopied' as any));
+    setCopied(true);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 1800);
   };
 
   const displayName = user?.username ? `@${user.username}` : user?.name || t('settings.userName');
@@ -72,14 +80,15 @@ export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) 
               onPress={handleCopyInviteCode}
               activeOpacity={0.8}
               accessibilityRole="button"
-              accessibilityLabel={`${t('settings.inviteCode' as any)} ${user.inviteCode}`}
+              accessibilityLabel={copied ? t('settings.inviteCodeCopied' as any) : `${t('settings.inviteCode' as any)} ${user.inviteCode}`}
+              accessibilityLiveRegion="polite"
               style={{
                 flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, paddingHorizontal: 14,
                 borderRadius: 13, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink,
               }}
             >
               <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 17, letterSpacing: 3, color: colors.onAccent }}>{user.inviteCode}</Text>
-              <Ionicons name="copy-outline" size={16} color={colors.onAccent} />
+              <Ionicons name={copied ? 'checkmark-circle' : 'copy-outline'} size={copied ? 18 : 16} color={colors.onAccent} />
             </TouchableOpacity>
           </View>
           <Text style={{ fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 8 }}>{t('settings.inviteCodeDesc' as any)}</Text>

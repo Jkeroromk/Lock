@@ -1,8 +1,10 @@
 import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useStore } from '@/store/useStore';
+import { useCalorieStatus } from '@/lib/calorieStatus';
 import { FONTS } from '@/constants/fonts';
 import { Bar, Button, Card, IconButton, Label, RADIUS, STROKE } from '@/components/ui/bxc';
 import { macroTargets } from '@/components/today/CaloriesCard';
@@ -35,6 +37,8 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
   const c = useTheme();
   const { t } = useTranslation();
   const { dailyCalorieGoal } = useStore();
+  const projected = useCalorieStatus(result.calories);
+  const projectedWarn = projected.level === 'over' || projected.level === 'way';
   const targets = macroTargets(dailyCalorieGoal || 2000);
 
   const inputStyle = {
@@ -108,6 +112,23 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
           </View>
         ))}
       </View>
+
+      {/* What today looks like after saving this */}
+      {!isEditing && projected.enabled ? (
+        <View
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14, paddingVertical: 9, paddingHorizontal: 12,
+            borderRadius: 12, borderWidth: 2, borderColor: projectedWarn ? c.danger : c.divider,
+          }}
+        >
+          <Ionicons name={projectedWarn ? 'warning' : 'flag-outline'} size={16} color={projectedWarn ? c.danger : c.textSecondary} />
+          <Text style={{ flex: 1, fontSize: 13, lineHeight: 18, fontWeight: projectedWarn ? '700' : '500', color: projectedWarn ? c.textPrimary : c.textSecondary }}>
+            {projectedWarn
+              ? t('calorieWarn.previewOver' as any, { kcal: projected.over.toLocaleString() })
+              : t('calorieWarn.preview' as any, { total: projected.eaten.toLocaleString(), goal: projected.goal.toLocaleString() })}
+          </Text>
+        </View>
+      ) : null}
 
       {/* Actions */}
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
