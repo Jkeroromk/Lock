@@ -118,7 +118,7 @@
 .site { overflow-x: clip; }
 .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 .mono { font-family: var(--mono); text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
-.lang-zh .mono { letter-spacing: .02em; }
+.lang-zh .mono, .lang-zh .eyebrow { letter-spacing: .02em; font-family: 'Geist Mono', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif; }
 .small { font-size: 12px; }
 .tnum { font-variant-numeric: tabular-nums; }
 .skip { position: absolute; left: -999px; top: 8px; z-index: 100; background: var(--accent); color: var(--ink); padding: 8px 14px; border: 2px solid var(--ink); border-radius: 10px; font-weight: 700; }
@@ -209,6 +209,8 @@
 @media (max-width: 920px) {
   .hero { grid-template-columns: 1fr; gap: 48px; padding-top: 32px; padding-bottom: 64px; }
   .stage { max-width: 400px; transform: rotate(1deg); }
+  .ticket { transform: rotate(calc(var(--r) / 2)) translateX(10px); }
+  .ticket.on { transform: rotate(calc(var(--r) / 2)); }
 }
 
 /* ── ticker ───────────────────────────── */
