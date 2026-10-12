@@ -16,6 +16,7 @@
   ],
   "exclude": [
     "backend/**",
+    "website/**",
     "node_modules"
   ]
 }
