@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ThemeToggle } from './ThemeToggle';
+import { SubpageShell } from './SubpageShell';
 
 export interface LegalSection {
   title: string;
@@ -19,52 +19,25 @@ export function LegalPage({
   sections: LegalSection[];
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border px-10 h-[60px] flex items-center justify-between">
-        <a href="/" className="text-[18px] font-black tracking-[-0.04em] text-foreground">Lock</a>
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <a href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
-        </div>
-      </header>
+    <SubpageShell eyebrow="Legal" title={title} sub={<span className="mono small">Last updated: {lastUpdated}</span>}>
+      <div className="text-[16px] leading-[1.75] mb-12" style={{ color: 'var(--fg-2)' }}>{intro}</div>
 
-      <main className="max-w-[720px] mx-auto px-8 py-[72px] pb-24">
-        <p className="text-[11px] font-bold text-muted-foreground tracking-[0.12em] uppercase mb-4">Legal</p>
-        <h1 className="text-[clamp(32px,5vw,48px)] font-black tracking-[-0.03em] text-foreground mb-3">
-          {title}
-        </h1>
-        <p className="text-sm text-muted-foreground/60 mb-16">Last updated: {lastUpdated}</p>
-
-        <div className="text-[15px] text-muted-foreground leading-[1.8] mb-12">{intro}</div>
-
-        {sections.map((s) => (
-          <div key={s.title} className="border-t border-border py-9">
-            <h2 className="text-[15px] font-extrabold tracking-[-0.01em] text-foreground mb-4">{s.title}</h2>
-            <div className="text-[15px] text-muted-foreground leading-[1.8] space-y-3">{s.content}</div>
-          </div>
-        ))}
-      </main>
-
-      <footer className="border-t border-border px-10 py-6">
-        <div className="flex justify-between items-center max-w-[720px] mx-auto flex-wrap gap-3">
-          <a href="/" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">← Lock</a>
-          <div className="flex gap-6">
-            <a href="/privacy" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Privacy</a>
-            <a href="/terms" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Terms</a>
-            <a href="/support" className="text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors">Support</a>
-          </div>
-        </div>
-      </footer>
-    </div>
+      {sections.map((s) => (
+        <section key={s.title} className="py-9" style={{ borderTop: '2px solid var(--line)' }}>
+          <h2 className="text-[20px] font-extrabold tracking-[-0.02em] mb-4" style={{ color: 'var(--fg)' }}>{s.title}</h2>
+          <div className="text-[16px] leading-[1.75] space-y-3" style={{ color: 'var(--fg-2)' }}>{s.content}</div>
+        </section>
+      ))}
+    </SubpageShell>
   );
 }
 
 export const B = ({ children }: { children: ReactNode }) => (
-  <strong className="text-foreground font-bold">{children}</strong>
+  <strong className="font-bold" style={{ color: 'var(--fg)' }}>{children}</strong>
 );
 
 export const Mail = () => (
-  <a href="mailto:support@jkeroro.com" className="text-foreground underline underline-offset-4 hover:opacity-70 transition-opacity">
+  <a href="mailto:support@jkeroro.com" className="font-bold underline underline-offset-4 decoration-2" style={{ color: 'var(--fg)', textDecorationColor: 'var(--accent)' }}>
     support@jkeroro.com
   </a>
 );
