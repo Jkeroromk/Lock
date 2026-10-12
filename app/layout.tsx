@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 };
 
 /* Runs before paint: stored choice wins, otherwise follow the system. */
-const themeInit = `(function(){try{var s=localStorage.getItem('lock-theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
+const themeInit = `(function(){document.documentElement.classList.add('js');try{var s=localStorage.getItem('lock-theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -30,11 +30,13 @@ function useReducedMotion() {
   return reduced;
 }
 
-function Reveal({ children, delay = 0, className = '', as: Tag = 'div' }: {
-  children: ReactNode; delay?: number; className?: string; as?: 'div' | 'section' | 'li' | 'h2' | 'p';
+function Reveal({ children, delay = 0, className = '', as: Tag = 'div', onLoad = false }: {
+  children: ReactNode; delay?: number; className?: string; as?: 'div' | 'section' | 'li' | 'h2' | 'p'; onLoad?: boolean;
 }) {
-  const [ref, seen] = useInView<HTMLElement>(0.12);
-  return createElement(Tag, { ref, className: `rv ${seen ? 'in' : ''} ${className}`, style: { transitionDelay: `${delay * 80}ms` } }, children);
+  const [ref, seen] = useInView<HTMLElement>(0.05);
+  /* onLoad: plain CSS entrance (hero), so above-the-fold copy never waits on JS */
+  if (onLoad) return createElement(Tag, { className: `rv-load ${className}`, style: { animationDelay: `${delay * 70}ms` } }, children);
+  return createElement(Tag, { ref, className: `rv ${seen ? 'in' : ''} ${className}`, style: { transitionDelay: `${delay * 60}ms` } }, children);
 }
 
 /* ── icons (stroke, currentColor) ─────── */
@@ -179,23 +181,23 @@ function Hero({ t }: { t: T }) {
   return (
     <section className="hero wrap" id="top">
       <div className="hero-copy">
-        <Reveal><p className="eyebrow">{t.hero.eyebrow}</p></Reveal>
+        <Reveal onLoad><p className="eyebrow">{t.hero.eyebrow}</p></Reveal>
         <h1 className="hero-title">
           {t.hero.lines.map((l, i) => (
-            <Reveal key={i} delay={i + 1} className={`hl ${i === 2 ? 'hl-mark' : ''}`}><span>{l}</span></Reveal>
+            <Reveal onLoad key={i} delay={i + 1} className={`hl ${i === 2 ? 'hl-mark' : ''}`}><span>{l}</span></Reveal>
           ))}
         </h1>
-        <Reveal delay={4}><p className="lead">{t.hero.sub}</p></Reveal>
-        <Reveal delay={5} className="hero-cta">
+        <Reveal onLoad delay={4}><p className="lead">{t.hero.sub}</p></Reveal>
+        <Reveal onLoad delay={5} className="hero-cta">
           <a href={APPSTORE_URL} className="btn btn-ink btn-lg">{I.apple(18)}<span>{t.hero.cta}</span></a>
           <a href="#how" className="btn btn-ghost btn-lg"><span>{t.hero.cta2}</span>{I.arrow(18)}</a>
         </Reveal>
-        <Reveal delay={6}>
+        <Reveal onLoad delay={6}>
           <ul className="meta mono">{t.hero.meta.map((m) => <li key={m}>{m}</li>)}</ul>
         </Reveal>
       </div>
 
-      <Reveal delay={2} className="stage-wrap">
+      <Reveal onLoad delay={2} className="stage-wrap">
         <div className="stage" role="img" aria-label={`${t.hero.today}: ${fmt(goal)} / ${fmt(goal)} ${t.hero.kcal}. ${t.hero.locked}.`}>
           <div className="stage-top mono">
             <span>{t.hero.today}</span>
