@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSignIn, useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
+import { useSignIn, useSignUp, useOAuth, useAuth, useSignInWithApple } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setTokenGetter } from '@/services/tokenStore';
 import * as Linking from 'expo-linking';
@@ -33,8 +33,8 @@ export default function LoginScreen() {
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
   const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
-  const { startOAuthFlow: appleOAuth } = useOAuth({ strategy: 'oauth_apple' });
-  const { startOAuthFlow: facebookOAuth } = useOAuth({ strategy: 'oauth_facebook' });
+  // Native Sign in with Apple (system sheet / Face ID) instead of a browser redirect.
+  const { startAppleAuthenticationFlow } = useSignInWithApple();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -164,16 +164,19 @@ export default function LoginScreen() {
   const handleAppleLogin = async () => {
     if (Platform.OS !== 'ios') return;
     setIsLoading(true);
-    try { const result = await appleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') }); await activateOAuthSession(result); }
-    catch (err: any) { if (!isOAuthCancel(err)) Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Apple login failed'); }
-    finally { setIsLoading(false); }
-  };
-
-  const handleFacebookLogin = async () => {
-    setIsLoading(true);
-    try { const result = await facebookOAuth({ redirectUrl: Linking.createURL('/oauth-callback') }); await activateOAuthSession(result); }
-    catch (err: any) { if (!isOAuthCancel(err)) Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Facebook login failed'); }
-    finally { setIsLoading(false); }
+    try {
+      const result = await startAppleAuthenticationFlow();
+      if (!result.createdSessionId) {
+        // No session and no error: the user closed the Apple sheet.
+        if (result.signUp?.status === 'missing_requirements') Alert.alert(t('auth.error'), t('auth.loginFailed'));
+        return;
+      }
+      await activateOAuthSession(result);
+    } catch (err: any) {
+      if (err?.code !== 'ERR_REQUEST_CANCELED' && !isOAuthCancel(err)) {
+        Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Apple login failed');
+      }
+    } finally { setIsLoading(false); }
   };
 
   const handleForgotPassword = async () => {
@@ -246,7 +249,6 @@ export default function LoginScreen() {
                 <SocialButton provider="apple" label={t('auth.continueWithApple')} onPress={handleAppleLogin} disabled={isLoading} />
               )}
               <SocialButton provider="google" label={t('auth.continueWithGoogle')} onPress={handleGoogleLogin} disabled={isLoading} />
-              <SocialButton provider="facebook" label={t('auth.continueWithFacebook')} onPress={handleFacebookLogin} disabled={isLoading} />
             </View>
 
             {/* Divider */}

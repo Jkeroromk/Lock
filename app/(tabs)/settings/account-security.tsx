@@ -171,7 +171,6 @@ export default function AccountSecurityScreen() {
   const providers: { key: string; strategy: OAuthStrategy; icon: any; label: string; iosOnly?: boolean }[] = [
     { key: 'google', strategy: 'oauth_google', icon: 'logo-google', label: 'Google' },
     { key: 'apple', strategy: 'oauth_apple', icon: 'logo-apple', label: 'Apple', iosOnly: true },
-    { key: 'facebook', strategy: 'oauth_facebook', icon: 'logo-facebook', label: 'Facebook' },
   ];
 
   return (
