@@ -32,8 +32,5 @@ yarn-error.*
 # Local Netlify folder
 .netlify
 
-# Website is a separate repo
-website/
-
 # Claude Code local settings (machine-specific, may contain secrets)
 .claude/settings.local.json
