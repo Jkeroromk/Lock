@@ -1,15 +1,17 @@
 export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
 /** Photo + nutrition-label scans per day on the free plan. Barcode and manual logging are never limited. */
-export const FREE_DAILY_AI_CALLS = 8;
+export const FREE_DAILY_AI_CALLS = 3;
 /** New accounts get unlimited scans for their first week. */
 export const FREE_TRIAL_DAYS = 7;
 /** Extra scans an inviter earns when a new user joins with their invite code. */
 export const INVITE_BONUS_AI_CALLS = 5;
 /** Cap on invite rewards per account, so the bonus can't be farmed. */
 export const MAX_INVITE_REWARDS = 10;
-/** AI diet reviews per day on the free plan (separate from scans). */
-export const FREE_DAILY_DIET_ANALYSES = 1;
+/** AI diet reviews per week on the free plan (separate from scans). */
+export const FREE_WEEKLY_DIET_ANALYSES = 1;
+/** Length of the free plan's diet-review window. */
+export const DIET_ANALYSIS_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 export const FREE_MAX_FRIENDS = 5;
 
 export function isPaidPlan(plan: PlanTier): boolean {

@@ -19,14 +19,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
-import { FONTS } from '@/constants/fonts';
-import { Button, Card } from '@/components/ui/bxc';
-import { fetchProOffering, fetchMaxOffering, purchasePackage, restorePurchases, planFromCustomerInfo, type PurchasesPackage } from '@/lib/revenuecat';
+import { Card } from '@/components/ui/bxc';
+import { restorePurchases, planFromCustomerInfo } from '@/lib/revenuecat';
+import { useProPlans, ProPlanPicker } from '@/components/pricing/ProPlanPicker';
 import { syncSubscriptionPlan } from '@/services/api';
 import type { Feature } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
 
-const PRO_HIGHLIGHT_ICONS = ['sparkles', 'bar-chart', 'people', 'download', 'headset'];
+const PRO_HIGHLIGHT_ICONS = ['sparkles', 'bar-chart', 'people', 'download', 'trending-down'];
 
 interface PaywallModalProps {
   visible: boolean;
@@ -51,49 +51,11 @@ export default function PaywallModal({
   const displayTitle = title ?? defaultTitle;
   const displayDesc = description ?? defaultDesc;
 
-  const [proPackage, setProPackage] = useState<PurchasesPackage | null>(null);
-  const [loadingOfferings, setLoadingOfferings] = useState(false);
-  const [purchasing, setPurchasing] = useState(false);
+  const plans = useProPlans();
   const [restoring, setRestoring] = useState(false);
 
-  useEffect(() => {
-    if (visible) loadOffering();
-  }, [visible]);
-
-  const loadOffering = async () => {
-    setLoadingOfferings(true);
-    try {
-      const [proOff, maxOff] = await Promise.all([fetchProOffering(), fetchMaxOffering()]);
-      setProPackage(maxOff?.availablePackages?.[0] ?? proOff?.availablePackages?.[0] ?? null);
-    } finally {
-      setLoadingOfferings(false);
-    }
-  };
-
-  const handlePurchase = async () => {
-    if (!proPackage) {
-      router.push('/(tabs)/settings/pricing');
-      onClose();
-      return;
-    }
-    setPurchasing(true);
-    try {
-      const info = await purchasePackage(proPackage);
-      const newPlan = planFromCustomerInfo(info);
-      if (newPlan !== 'FREE') {
-        setPlan(newPlan);
-        await syncSubscriptionPlan();
-        onClose();
-      }
-    } catch (err: any) {
-      if (!err.userCancelled) {
-        router.push('/(tabs)/settings/pricing');
-        onClose();
-      }
-    } finally {
-      setPurchasing(false);
-    }
-  };
+  // Refresh prices and trial eligibility each time the sheet opens.
+  useEffect(() => { if (visible) plans.reload(); }, [visible]);
 
   const handleRestore = async () => {
     setRestoring(true);
@@ -109,10 +71,6 @@ export default function PaywallModal({
       setRestoring(false);
     }
   };
-
-  const priceLabel = proPackage
-    ? `${proPackage.product.priceString} / ${proPackage.packageType === 'ANNUAL' ? t('paywall.annual' as any) : t('paywall.monthly' as any)}`
-    : t('paywall.viewPlans' as any);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -157,17 +115,14 @@ export default function PaywallModal({
               ))}
             </Card>
 
-            <Button
-              label={t('paywall.upgradePro' as any)}
-              icon="star"
-              loading={purchasing || loadingOfferings}
-              onPress={handlePurchase}
-            />
-            {priceLabel ? (
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, textAlign: 'center', marginTop: 8, textTransform: 'uppercase' }}>
-                {priceLabel}
-              </Text>
-            ) : null}
+            <ProPlanPicker plans={plans} onPurchased={onClose} />
+            <TouchableOpacity
+              onPress={() => { onClose(); router.push('/(tabs)/settings/pricing'); }}
+              accessibilityRole="button"
+              style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 4 }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textSecondary }}>{t('paywall.viewPlans' as any)}</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={handleRestore} disabled={restoring} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 4 }}>
               {restoring
