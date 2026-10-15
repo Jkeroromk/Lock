@@ -3,7 +3,7 @@ import {
 } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '@/store/useStore';
@@ -11,12 +11,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { Button, Card, Label, ScreenHeader, Sticker } from '@/components/ui/bxc';
-import {
-  fetchProOffering, fetchMaxOffering,
-  purchasePackage, restorePurchases,
-  planFromCustomerInfo,
-  type PurchasesPackage,
-} from '@/lib/revenuecat';
+import { restorePurchases, planFromCustomerInfo } from '@/lib/revenuecat';
+import { useProPlans, ProPlanPicker } from '@/components/pricing/ProPlanPicker';
 import { syncSubscriptionPlan } from '@/services/api';
 
 export default function PricingScreen() {
@@ -25,65 +21,18 @@ export default function PricingScreen() {
   const { t } = useTranslation();
   const { user, setPlan } = useStore();
 
-  const [proPackage, setProPackage] = useState<PurchasesPackage | null>(null);
-  const [maxPackage, setMaxPackage] = useState<PurchasesPackage | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [purchasing, setPurchasing] = useState<'pro' | 'max' | null>(null);
+  const plans = useProPlans();
   const [restoring, setRestoring] = useState(false);
-  // Store prices couldn't be fetched (offline, or products not set up yet).
-  const [unavailable, setUnavailable] = useState(false);
 
   const currentPlan = user?.plan ?? 'FREE';
-  const isPro = currentPlan === 'PRO';
-  const isMax = currentPlan === 'MAX';
-  const isPaid = isPro || isMax;
+  // Max is retired; anyone still on it is shown as a Pro member.
+  const isPaid = currentPlan === 'PRO' || currentPlan === 'MAX';
 
-  useEffect(() => { loadOfferings(); }, []);
-
-  async function loadOfferings() {
-    setLoading(true);
-    setUnavailable(false);
-    try {
-      const [proOff, maxOff] = await Promise.all([fetchProOffering(), fetchMaxOffering()]);
-      const pro = proOff?.availablePackages?.[0] ?? null;
-      const max = maxOff?.availablePackages?.[0] ?? null;
-      setProPackage(pro);
-      setMaxPackage(max);
-      if (!pro && !max) setUnavailable(true);
-    } catch (err) {
-      console.warn('[pricing] offerings failed', err);
-      setUnavailable(true);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handlePurchase(tier: 'pro' | 'max') {
-    const pkg = tier === 'pro' ? proPackage : maxPackage;
-    if (!pkg) {
-      Alert.alert(t('pricing.noPackages' as any), t('pricing.tryLater' as any));
-      return;
-    }
-    setPurchasing(tier);
-    try {
-      const info = await purchasePackage(pkg);
-      const newPlan = planFromCustomerInfo(info);
-      if (newPlan !== 'FREE') {
-        setPlan(newPlan);
-        await syncSubscriptionPlan();
-        Alert.alert(
-          t('pricing.purchaseSuccess' as any),
-          t('pricing.purchaseSuccessMsg' as any),
-          [{ text: t('common.confirm'), onPress: () => router.back() }],
-        );
-      }
-    } catch (err: any) {
-      if (err.userCancelled) return;
-      Alert.alert(t('pricing.purchaseFailed' as any), err.message || t('common.retry'));
-    } finally {
-      setPurchasing(null);
-    }
-  }
+  const onPurchased = () => Alert.alert(
+    t('pricing.purchaseSuccess' as any),
+    t('pricing.purchaseSuccessMsg' as any),
+    [{ text: t('common.confirm'), onPress: () => router.back() }],
+  );
 
   async function handleRestore() {
     setRestoring(true);
@@ -104,16 +53,8 @@ export default function PricingScreen() {
     }
   }
 
-  function priceLabel(pkg: PurchasesPackage | null) {
-    if (loading) return '…';
-    if (!pkg) return t('pricing.priceUnavailable' as any);
-    const period = pkg.packageType === 'ANNUAL' ? t('pricing.annual' as any) : t('pricing.monthly' as any);
-    return `${pkg.product.priceString} / ${period}`;
-  }
-
   const freeFeatures: string[] = t('pricing.freeFeatures' as any) as any;
   const proFeatures: string[] = t('pricing.proFeatures' as any) as any;
-  const maxFeatures: string[] = t('pricing.maxFeatures' as any) as any;
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
@@ -127,18 +68,29 @@ export default function PricingScreen() {
         <ScreenHeader
           title={t('pricing.title' as any)}
           style={{ marginTop: 0 }}
-          right={isPaid ? <Sticker>{isMax ? t('pricing.currentMax' as any) : t('pricing.currentPro' as any)}</Sticker> : undefined}
+          right={isPaid ? <Sticker>{t('pricing.currentPro' as any)}</Sticker> : undefined}
         />
 
-        {unavailable && !loading ? (
+        {plans.unavailable && !plans.loading ? (
           <Card padding={16} style={{ marginBottom: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Ionicons name="cloud-offline-outline" size={20} color={colors.textSecondary} />
               <Text style={{ flex: 1, fontSize: 14, lineHeight: 20, color: colors.textSecondary }}>{t('pricing.offeringsError' as any)}</Text>
             </View>
-            <Button label={t('common.retry')} variant="outline" onPress={loadOfferings} style={{ marginTop: 12 }} />
+            <Button label={t('common.retry')} variant="outline" onPress={plans.reload} style={{ marginTop: 12 }} />
           </Card>
         ) : null}
+
+        {/* PRO */}
+        <PlanCard
+          variant="hero"
+          title="Pro"
+          icon="star"
+          badge={isPaid ? t('pricing.currentPlan' as any) : undefined}
+          features={Array.isArray(proFeatures) ? proFeatures : []}
+        >
+          {!isPaid ? <ProPlanPicker plans={plans} onPurchased={onPurchased} /> : null}
+        </PlanCard>
 
         {/* FREE */}
         <PlanCard
@@ -148,34 +100,6 @@ export default function PricingScreen() {
           price="$0"
           features={Array.isArray(freeFeatures) ? freeFeatures : []}
         />
-
-        {/* PRO */}
-        <PlanCard
-          variant="hero"
-          title="Pro"
-          icon="star"
-          badge={isPro ? t('pricing.currentPlan' as any) : undefined}
-          price={priceLabel(proPackage)}
-          subPrice={t('pricing.cancelAnytime' as any)}
-          features={Array.isArray(proFeatures) ? proFeatures : []}
-        />
-        {!isPro && !isMax && (
-          <Button label={t('pricing.upgradeToPro' as any)} icon="star" loading={purchasing === 'pro'} disabled={loading} onPress={() => (proPackage ? handlePurchase('pro') : loadOfferings())} style={{ marginBottom: 18 }} />
-        )}
-
-        {/* MAX */}
-        <PlanCard
-          variant="inverse"
-          title="Max"
-          icon="diamond"
-          badge={isMax ? t('pricing.currentPlan' as any) : t('pricing.bestValue' as any)}
-          price={priceLabel(maxPackage)}
-          subPrice={t('pricing.cancelAnytime' as any)}
-          features={Array.isArray(maxFeatures) ? maxFeatures : []}
-        />
-        {!isMax && (
-          <Button label={t('pricing.upgradeToMax' as any)} icon="diamond" variant="solid" loading={purchasing === 'max'} disabled={loading} onPress={() => (maxPackage ? handlePurchase('max') : loadOfferings())} style={{ marginBottom: 12 }} />
-        )}
 
         <TouchableOpacity onPress={handleRestore} disabled={restoring} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 4 }}>
           {restoring
@@ -220,14 +144,15 @@ function LegalNote({ colors, router, legalNote, t }: { colors: any; router: any;
   );
 }
 
-function PlanCard({ variant, title, icon, badge, price, subPrice, features }: {
+function PlanCard({ variant, title, icon, badge, price, subPrice, features, children }: {
   variant: 'default' | 'hero' | 'inverse';
   title: string;
   icon?: string;
   badge?: string;
-  price: string;
+  price?: string;
   subPrice?: string;
   features: string[];
+  children?: ReactNode;
 }) {
   const c = useTheme();
   const inverse = variant === 'inverse';
@@ -250,7 +175,7 @@ function PlanCard({ variant, title, icon, badge, price, subPrice, features }: {
             : <Sticker rotate={3}>{badge}</Sticker>
         ) : null}
       </View>
-      <Text style={{ fontSize: 34, fontWeight: '800', letterSpacing: -1.4, color: fg, marginTop: 10 }}>{price}</Text>
+      {price ? <Text style={{ fontSize: 34, fontWeight: '800', letterSpacing: -1.4, color: fg, marginTop: 10 }}>{price}</Text> : null}
       {subPrice ? (
         <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: muted, opacity: inverse ? 0.75 : 1, marginTop: 2, textTransform: 'uppercase' }}>{subPrice}</Text>
       ) : null}
@@ -262,6 +187,7 @@ function PlanCard({ variant, title, icon, badge, price, subPrice, features }: {
           </View>
         ))}
       </View>
+      {children ? <View style={{ marginTop: 16 }}>{children}</View> : null}
     </Card>
   );
 }

@@ -1,5 +1,6 @@
 import Purchases, {
   LOG_LEVEL,
+  INTRO_ELIGIBILITY_STATUS,
   type PurchasesPackage,
   type CustomerInfo,
   type PurchasesOffering,
@@ -50,10 +51,48 @@ export async function fetchProOffering(): Promise<PurchasesOffering | null> {
   return offerings.all['pro'] ?? offerings.current;
 }
 
-/** 获取 MAX 套餐（来自 'max' offering） */
-export async function fetchMaxOffering(): Promise<PurchasesOffering | null> {
-  const offerings = await Purchases.getOfferings();
-  return offerings.all['max'] ?? null;
+/** Lock Pro's two plans from the Pro offering (annual is the one we lead with). */
+export interface ProPackages {
+  annual: PurchasesPackage | null;
+  monthly: PurchasesPackage | null;
+}
+
+export async function fetchProPackages(): Promise<ProPackages> {
+  const offering = await fetchProOffering();
+  const pkgs = offering?.availablePackages ?? [];
+  return {
+    annual: offering?.annual ?? pkgs.find((p) => p.packageType === 'ANNUAL') ?? null,
+    monthly: offering?.monthly ?? pkgs.find((p) => p.packageType === 'MONTHLY') ?? null,
+  };
+}
+
+/**
+ * Free-trial length (days) this user would actually get on `pkg`; 0 when the
+ * product has no free trial or the user already used it (Apple: one trial per
+ * subscription group). Shown on the paywall, so it must be accurate.
+ */
+export async function freeTrialDays(pkg: PurchasesPackage | null): Promise<number> {
+  const intro = pkg?.product.introPrice;
+  if (!pkg || !intro || intro.price !== 0) return 0;
+  try {
+    const result = await Purchases.checkTrialOrIntroductoryPriceEligibility([pkg.product.identifier]);
+    const status = result[pkg.product.identifier]?.status;
+    if (status === INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE) return 0;
+  } catch {}
+  const n = intro.periodNumberOfUnits;
+  switch (intro.periodUnit) {
+    case 'DAY': return n;
+    case 'WEEK': return n * 7;
+    case 'MONTH': return n * 30;
+    default: return n * 365;
+  }
+}
+
+/** How much cheaper the annual plan is than 12 monthly payments, in whole percent. */
+export function annualSavingsPercent(annual: PurchasesPackage | null, monthly: PurchasesPackage | null): number | null {
+  if (!annual || !monthly || monthly.product.price <= 0) return null;
+  const pct = Math.round((1 - annual.product.price / (monthly.product.price * 12)) * 100);
+  return pct > 0 ? pct : null;
 }
 
 /** 兼容旧接口，返回当前 offering（PRO） */
