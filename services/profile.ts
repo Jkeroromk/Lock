@@ -57,6 +57,12 @@ export const syncSubscriptionPlan = async (): Promise<'FREE' | 'PRO' | 'MAX' | n
   }
 };
 
-export const deleteAccount = async (): Promise<void> => {
-  await api.delete('/api/user/delete');
+/**
+ * Deletes the account on the server (data, photos, Clerk user). Pass a fresh
+ * Sign in with Apple authorization code so the server can revoke the Apple grant.
+ */
+export const deleteAccount = async (appleAuthorizationCode?: string | null): Promise<void> => {
+  await api.delete('/api/user/delete', {
+    data: appleAuthorizationCode ? { appleAuthorizationCode } : undefined,
+  });
 };

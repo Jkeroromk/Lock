@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { View, Image, Linking } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
 import { Text } from '@/components/ui/Text';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
@@ -12,6 +13,15 @@ import SettingItem from '@/components/settings/SettingItem';
 import SettingsPage, { SettingsSection } from '@/components/settings/SettingsPage';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
+
+// Which JS bundle is running: lets us check whether an OTA update arrived.
+const BUILD_INFO = Updates.isEnabled
+  ? [
+    Updates.channel || 'no channel',
+    `rt ${(Updates.runtimeVersion || '?').slice(0, 7)}`,
+    Updates.isEmbeddedLaunch ? 'embedded' : `ota ${(Updates.updateId || '').slice(0, 8)}`,
+  ].join(' · ')
+  : 'updates off';
 
 /** About Lock: what it is, version, legal links and contact. (App icon lives in Preferences.) */
 export default function AboutScreen() {
@@ -34,6 +44,9 @@ export default function AboutScreen() {
             <Text style={{ fontSize: 30, fontWeight: '800', letterSpacing: -1.2, color: c.textPrimary }}>Lock in.</Text>
             <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 2, textTransform: 'uppercase' }}>
               {t('about.version')} {APP_VERSION}
+            </Text>
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary, marginTop: 2, opacity: 0.7 }}>
+              {BUILD_INFO}
             </Text>
           </View>
         </View>

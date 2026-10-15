@@ -97,6 +97,11 @@ jobs:
           unzip -p "$RUNNER_TEMP/lock.ipa" 'Payload/*.app/Info.plist' > "$plist"
           echo "build=$(plutil -extract CFBundleVersion raw "$plist")" >> "$GITHUB_OUTPUT"
           echo "### Build $(plutil -extract CFBundleShortVersionString raw "$plist") ($(plutil -extract CFBundleVersion raw "$plist"))" >> "$GITHUB_STEP_SUMMARY"
+          # OTA updates only reach builds with the same runtime version.
+          expo="$RUNNER_TEMP/Expo.plist"
+          if unzip -p "$RUNNER_TEMP/lock.ipa" 'Payload/*.app/Expo.plist' > "$expo" 2>/dev/null; then
+            echo "Runtime version: \`$(plutil -extract EXUpdatesRuntimeVersion raw "$expo" 2>/dev/null || echo '?')\`" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload to TestFlight
         run: eas submit --platform ios --profile production --path "$RUNNER_TEMP/lock.ipa" --non-interactive --wait
