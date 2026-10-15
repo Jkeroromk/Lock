@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { isAdmin } from '@/lib/admin';
-import { getDailyAiCallLimit, isPaidPlan, isInTrialWeek, FREE_DAILY_DIET_ANALYSES } from '@/lib/plans';
+import { getDailyAiCallLimit, isPaidPlan, isInTrialWeek, FREE_WEEKLY_DIET_ANALYSES, DIET_ANALYSIS_WINDOW_MS } from '@/lib/plans';
 
 export interface RateLimitOk {
   ok: true;
@@ -145,14 +145,15 @@ export interface DietAllowanceOk {
 
 /**
  * AI diet review allowance, separate from scans: unlimited on paid plans,
- * FREE_DAILY_DIET_ANALYSES (1) per local day on the free plan. If the user
- * switches the app language, they get one more review that day in the new
- * language (at most one per supported language), so the review never gets
- * stuck in a language they no longer use.
+ * FREE_WEEKLY_DIET_ANALYSES (1) per 7 days on the free plan. The window starts
+ * at the first review and doesn't slide. If the user switches the app language,
+ * they get one more review in that window in the new language (at most one per
+ * supported language), so the review never gets stuck in a language they no
+ * longer use.
  */
 export async function checkDietAnalysisAllowance(
   userId: string,
-  timeZone?: string | null,
+  _timeZone?: string | null,
   lang?: string | null,
 ): Promise<DietAllowanceOk | RateLimitDenied> {
   if (isAdmin(userId)) return { ok: true, refund: async () => {} };
@@ -165,30 +166,39 @@ export async function checkDietAnalysisAllowance(
   }
   if (isPaidPlan(user.plan as any)) return { ok: true, refund: async () => {} };
 
+  const now = new Date();
+  const previous = user.lastDietAnalysisAt;
+  const previousLangs = user.dietAnalysisLangs;
+  // lastDietAnalysisAt marks the start of the current 7-day window.
+  const inWindow = !!previous && now.getTime() - previous.getTime() < DIET_ANALYSIS_WINDOW_MS;
+
   const limited = () => ({
     ok: false as const,
     response: NextResponse.json(
-      { error: 'DIET_ANALYSIS_LIMIT_REACHED', message: `Free plan: ${FREE_DAILY_DIET_ANALYSES} AI review per day`, limit: FREE_DAILY_DIET_ANALYSES },
+      {
+        error: 'DIET_ANALYSIS_LIMIT_REACHED',
+        message: `Free plan: ${FREE_WEEKLY_DIET_ANALYSES} AI review per week`,
+        limit: FREE_WEEKLY_DIET_ANALYSES,
+        nextAvailableAt: previous ? new Date(previous.getTime() + DIET_ANALYSIS_WINDOW_MS).toISOString() : null,
+      },
       { status: 429 },
     ),
   });
 
-  const now = new Date();
-  const previous = user.lastDietAnalysisAt;
-  const previousLangs = user.dietAnalysisLangs;
-  const today = !!previous && sameLocalDay(now, previous, timeZone);
-  // Before this column existed a day's review had no language recorded; treat
-  // that as "a review was used" so it still counts against the allowance.
-  const usedLangs = today ? (previousLangs ?? '?').split(',').filter(Boolean) : [];
+  // Before the language column existed a review had no language recorded;
+  // treat that as "a review was used" so it still counts against the allowance.
+  const usedLangs = inWindow ? (previousLangs ?? '?').split(',').filter(Boolean) : [];
   const langKey = (lang || '?').slice(0, 10);
-  if (usedLangs.length >= FREE_DAILY_DIET_ANALYSES && (lang == null || usedLangs.includes(langKey))) {
+  if (usedLangs.length >= FREE_WEEKLY_DIET_ANALYSES && (lang == null || usedLangs.includes(langKey))) {
     return limited();
   }
 
   // Claim the review first so two quick taps can't both get through.
+  const windowStart = inWindow ? previous! : now;
+  const nextLangs = [...usedLangs, langKey].join(',');
   const claimed = await prisma.user.updateMany({
     where: { id: userId, lastDietAnalysisAt: previous, dietAnalysisLangs: previousLangs },
-    data: { lastDietAnalysisAt: now, dietAnalysisLangs: [...usedLangs, langKey].join(',') },
+    data: { lastDietAnalysisAt: windowStart, dietAnalysisLangs: nextLangs },
   });
   if (claimed.count === 0) return limited();
 
@@ -197,7 +207,7 @@ export async function checkDietAnalysisAllowance(
     refund: async () => {
       try {
         await prisma.user.updateMany({
-          where: { id: userId, lastDietAnalysisAt: now },
+          where: { id: userId, lastDietAnalysisAt: windowStart, dietAnalysisLangs: nextLangs },
           data: { lastDietAnalysisAt: previous, dietAnalysisLangs: previousLangs },
         });
       } catch (error) {
