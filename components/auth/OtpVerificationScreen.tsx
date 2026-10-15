@@ -1,5 +1,6 @@
 import { View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
+import type { TextInput as RNTextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +21,7 @@ export default function OtpVerificationScreen({ email, isLoading, onVerify, onRe
   const { t } = useTranslation();
   const colors = useTheme();
   const [codeDigits, setCodeDigits] = useState(['', '', '', '', '', '']);
-  const codeRefs = useRef<(TextInput | null)[]>([null, null, null, null, null, null]);
+  const codeRefs = useRef<(RNTextInput | null)[]>([null, null, null, null, null, null]);
   const currentCode = codeDigits.join('');
 
   return (
