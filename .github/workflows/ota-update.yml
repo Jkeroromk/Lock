@@ -7,6 +7,10 @@
 # Only builds with the same runtime fingerprint receive the update. If the PR
 # changes native code, app.json or native packages, the fingerprint changes and
 # existing builds won't pick it up — use the "testflight" label instead.
+#
+# Runs on macOS like the TestFlight build, so the fingerprint is computed in
+# the same environment as the build's. The job summary shows the runtime
+# version; compare it with the one in the TestFlight run's summary.
 name: OTA update
 
 on:
@@ -32,8 +36,8 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (contains(github.event.pull_request.labels.*.name, 'ota') &&
        (github.event.action != 'labeled' || github.event.label.name == 'ota'))
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: macos-15
+    timeout-minutes: 30
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
@@ -59,6 +63,11 @@ jobs:
             const env = require("./eas.json").build.production.env || {};
             for (const [k, v] of Object.entries(env)) console.log(`${k}=${v}`);
           ' >> "$GITHUB_ENV"
+
+      - name: Runtime version
+        run: |
+          rt=$( (npx expo-updates runtimeversion:resolve --platform ios 2>/dev/null || echo '{}') | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).runtimeVersion)}catch{console.log("?")}})')
+          echo "iOS runtime version: \`$rt\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish
         env:

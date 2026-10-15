@@ -355,7 +355,7 @@ const zhCN = {
     deleteAccount: '删除账号',
     deleteAccountDescription: '永久删除您的账号及所有数据',
     deleteAccountConfirm: '确定要永久删除您的账号吗？此操作无法撤销。',
-    deleteAccountWarning: '此操作将永久清除您的所有数据，无法恢复。',
+    deleteAccountWarning: '此操作将永久清除您的所有数据，无法恢复。如果你订阅了 Lock Pro，删除账号不会自动取消订阅，请在 设置 → Apple 账户 → 订阅 中取消。', deleteAccountFailed: '删除账号失败，请检查网络后重试。',
     never: '从未',
   },
   onboarding: {
@@ -544,7 +544,7 @@ const zhCN = {
     currentMax: '您当前是 Max 会员',
     bestValue: '超值推荐',
     upgradeToMax: '升级到 Max',
-    yearly: '年付', monthlyPlan: '月付', perMonth: '{price}/月', save: '省 {pct}%', freeTrialBadge: '免费试用 {days} 天', startTrial: '开始 {days} 天免费试用', subscribe: '订阅', trialThen: '前 {days} 天免费，之后 {price}/年。可随时取消。', billedThen: '{price}/{period}。可随时取消。',
+    yearly: '年付', monthlyPlan: '月付', perMonth: '{price}/月', save: '省 {pct}%', freeTrialBadge: '免费试用 {days} 天', startTrial: '开始 {days} 天免费试用', subscribe: '订阅', trialThen: '前 {days} 天免费，之后 {price}/年。可随时取消。', billedThen: '{price}/{period}。可随时取消。', trialReminderNote: '试用结束前 2 天会提醒你', trialReminderTitle: '免费试用还剩 2 天', trialReminderBody: '之后 Lock Pro 按 {price}/年 续费。可在 设置 → Apple 账户 → 订阅 中随时取消。',
     freeFeatures: ['首周 AI 识别不限次数', '之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '每邀请一位好友 +5 次', '参与挑战 · 最多 5 位好友'],
     proFeatures: ['无限 AI 食物识别', '无限 AI 饮食分析', '创建 & 参与挑战', '无限好友', '数据导出', '体重趋势图'],
     maxFeatures: ['包含 Pro 全部功能', '每周自动 AI 饮食报告', 'AI 自定义营养目标', '优先客户支持'],

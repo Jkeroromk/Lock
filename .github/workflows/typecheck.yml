@@ -1,0 +1,46 @@
+# TypeScript check for the app and the backend on every PR.
+# Informational for now (doesn't block merging); errors show up as
+# annotations on the PR's "Files changed" tab.
+name: Typecheck
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: typecheck-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: tsc (app)
+        continue-on-error: true
+        run: npx tsc --noEmit --pretty false
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci || npm install --no-audit --no-fund
+      - name: tsc (backend)
+        continue-on-error: true
+        run: npx prisma generate >/dev/null 2>&1 || true; npx tsc --noEmit --pretty false

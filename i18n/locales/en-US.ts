@@ -275,7 +275,7 @@ const enUS = {
     deleteAccount: 'Delete Account',
     deleteAccountDescription: 'Permanently delete your account and all data',
     deleteAccountConfirm: 'Are you sure you want to permanently delete your account? This cannot be undone.',
-    deleteAccountWarning: 'This will permanently erase all your data and cannot be recovered.',
+    deleteAccountWarning: 'This will permanently erase all your data and cannot be recovered. If you subscribe to Lock Pro, deleting your account does not cancel it — cancel in Settings → Apple ID → Subscriptions.', deleteAccountFailed: 'Couldn\'t delete your account. Check your connection and try again.',
     never: 'Never',
   },
   onboarding: {
@@ -449,7 +449,7 @@ const enUS = {
     currentMax: 'You are a Max member',
     bestValue: 'Best Value',
     upgradeToMax: 'Upgrade to Max',
-    yearly: 'Yearly', monthlyPlan: 'Monthly', perMonth: '{price}/mo', save: 'Save {pct}%', freeTrialBadge: '{days} days free', startTrial: 'Start {days}-day free trial', subscribe: 'Subscribe', trialThen: '{days} days free, then {price}/year. Cancel anytime.', billedThen: '{price} per {period}. Cancel anytime.',
+    yearly: 'Yearly', monthlyPlan: 'Monthly', perMonth: '{price}/mo', save: 'Save {pct}%', freeTrialBadge: '{days} days free', startTrial: 'Start {days}-day free trial', subscribe: 'Subscribe', trialThen: '{days} days free, then {price}/year. Cancel anytime.', billedThen: '{price} per {period}. Cancel anytime.', trialReminderNote: "We'll remind you 2 days before your trial ends.", trialReminderTitle: 'Your free trial ends in 2 days', trialReminderBody: 'Lock Pro renews at {price}/year after that. Cancel anytime in Settings → Apple ID → Subscriptions.',
     freeFeatures: ['Unlimited AI scans your first week', 'Then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', '+5 scans for every friend you invite', 'Challenges · up to 5 friends'],
     proFeatures: ['Unlimited AI scans', 'Unlimited AI diet reviews', 'Create & join challenges', 'Unlimited friends', 'Data export', 'Weight chart'],
     maxFeatures: ['Everything in Pro', 'Weekly auto AI report', 'AI custom nutrition plan', 'Priority customer support'],

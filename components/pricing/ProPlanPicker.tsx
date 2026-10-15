@@ -8,6 +8,7 @@ import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useStore } from '@/store/useStore';
 import { syncSubscriptionPlan } from '@/services/api';
+import { scheduleTrialReminder } from '@/services/notifications';
 import {
   fetchProPackages, freeTrialDays, annualSavingsPercent,
   purchasePackage, planFromCustomerInfo, type PurchasesPackage,
@@ -76,6 +77,13 @@ export function ProPlanPicker({ plans, onPurchased }: { plans: Plans; onPurchase
       if (plan !== 'FREE') {
         setPlan(plan);
         await syncSubscriptionPlan();
+        if (trialDays > 0) {
+          // Keeps the promise made under the button.
+          scheduleTrialReminder(trialDays, {
+            title: t('pricing.trialReminderTitle' as any),
+            body: fill('pricing.trialReminderBody', { price: pkg.product.priceString }),
+          });
+        }
         onPurchased?.();
       }
     } catch (err: any) {
@@ -87,6 +95,10 @@ export function ProPlanPicker({ plans, onPurchased }: { plans: Plans; onPurchase
 
   const fill = (key: string, vars: Record<string, string | number>) =>
     Object.entries(vars).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), t(key as any) as string);
+
+  // Twelve months at the monthly price, struck through next to the yearly
+  // price: a real comparison, not a made-up "original" price.
+  const yearAtMonthly = monthly && annual ? formatPrice(monthly.product.price * 12, monthly.product.currencyCode) : null;
 
   const disclosure = !pkg
     ? ''
@@ -106,6 +118,7 @@ export function ProPlanPicker({ plans, onPurchased }: { plans: Plans; onPurchase
             onPress={() => setSelected('annual')}
             title={t('pricing.yearly' as any)}
             price={`${annual.product.priceString} / ${t('pricing.annual' as any)}`}
+            wasPrice={yearAtMonthly && annual.product.price < monthly!.product.price * 12 ? yearAtMonthly : undefined}
             sub={annual.product.pricePerMonthString ? fill('pricing.perMonth', { price: annual.product.pricePerMonthString }) : undefined}
             badges={[
               savings ? fill('pricing.save', { pct: savings }) : null,
@@ -134,15 +147,30 @@ export function ProPlanPicker({ plans, onPurchased }: { plans: Plans; onPurchase
       {disclosure ? (
         <Text style={{ fontSize: 12, lineHeight: 17, color: c.textSecondary, textAlign: 'center', marginTop: 8 }}>{disclosure}</Text>
       ) : null}
+      {trialDays > 0 ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6 }}>
+          <Ionicons name="notifications-outline" size={13} color={c.textSecondary} />
+          <Text style={{ fontSize: 12, lineHeight: 17, color: c.textSecondary }}>{t('pricing.trialReminderNote' as any)}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
 
-function PlanOption({ selected, onPress, title, price, sub, badges = [] }: {
+function formatPrice(amount: number, currency: string): string | null {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+  } catch {
+    return null;
+  }
+}
+
+function PlanOption({ selected, onPress, title, price, wasPrice, sub, badges = [] }: {
   selected: boolean;
   onPress: () => void;
   title: string;
   price: string;
+  wasPrice?: string;
   sub?: string;
   badges?: (string | null)[];
 }) {
@@ -172,7 +200,13 @@ function PlanOption({ selected, onPress, title, price, sub, badges = [] }: {
             <Sticker key={b!} rotate={0} background={selected ? c.ink : c.accent} color={selected ? c.accent : c.onAccent} style={{ paddingHorizontal: 7, paddingVertical: 3 }}>{b}</Sticker>
           ))}
         </View>
-        <Text style={{ fontSize: 14, marginTop: 2, color: selected ? c.onAccent : c.textSecondary }}>{price}</Text>
+        <Text style={{ fontSize: 14, marginTop: 2, color: selected ? c.onAccent : c.textSecondary }}>
+          {wasPrice ? (
+            <Text style={{ textDecorationLine: 'line-through', opacity: 0.6 }}>{wasPrice}</Text>
+          ) : null}
+          {wasPrice ? '  ' : ''}
+          <Text style={{ fontWeight: '700' }}>{price}</Text>
+        </Text>
       </View>
       {sub ? (
         <Text style={{ fontFamily: FONTS.mono, fontSize: 12, fontWeight: '600', color: selected ? c.onAccent : c.textPrimary }}>{sub}</Text>

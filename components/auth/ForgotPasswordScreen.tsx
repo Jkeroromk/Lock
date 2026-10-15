@@ -1,5 +1,6 @@
 import { View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
+import type { TextInput as RNTextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,7 +22,7 @@ export default function ForgotPasswordScreen({ isLoading, onReset, onBack }: Pro
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const newPasswordRef = useRef<TextInput>(null);
+  const newPasswordRef = useRef<RNTextInput>(null);
 
   const ready = resetCode.length === 6 && newPassword.length >= 8;
 

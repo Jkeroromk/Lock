@@ -12,6 +12,7 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { deleteAccount } from '@/services/api';
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 type OAuthStrategy = 'oauth_google' | 'oauth_apple' | 'oauth_facebook';
 
@@ -118,13 +119,32 @@ export default function AccountSecurityScreen() {
                   style: 'destructive',
                   onPress: async () => {
                     setDeletingAccount(true);
+                    // Apple requires revoking the Sign in with Apple grant on
+                    // deletion; a fresh authorization code lets the server do it.
+                    let appleCode: string | null = null;
+                    if (Platform.OS === 'ios' && isLinked('apple')) {
+                      try {
+                        const credential = await AppleAuthentication.signInAsync({ requestedScopes: [] });
+                        appleCode = credential.authorizationCode;
+                      } catch (err: any) {
+                        if (err?.code === 'ERR_REQUEST_CANCELED') {
+                          setDeletingAccount(false);
+                          return;
+                        }
+                      }
+                    }
                     try {
-                      // 1. Delete all data from our database first
-                      await deleteAccount();
-                      // 2. Delete from Clerk (triggers webhook as secondary cleanup)
-                      await user?.delete();
+                      // Server deletes data, photos, the Apple grant and the Clerk user.
+                      await deleteAccount(appleCode);
                     } catch {
-                      // Clerk deletion may fail if session already gone — proceed anyway
+                      setDeletingAccount(false);
+                      Alert.alert(t('settings.error'), t('settings.deleteAccountFailed'));
+                      return;
+                    }
+                    try {
+                      await signOut();
+                    } catch {
+                      // The Clerk user is already gone server-side.
                     }
                     // 3. Clear local store and redirect regardless of errors
                     clearSession();

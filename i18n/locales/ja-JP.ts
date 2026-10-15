@@ -256,7 +256,7 @@ const jaJP = {
     dangerZone: '危険ゾーン', deleteAccount: 'アカウントを削除',
     deleteAccountDescription: 'アカウントとすべてのデータを完全に削除します',
     deleteAccountConfirm: 'アカウントを完全に削除しますか？この操作は取り消せません。',
-    deleteAccountWarning: 'すべてのデータが完全に消去され、復元できません。',
+    deleteAccountWarning: 'すべてのデータが完全に消去され、復元できません。Lock Pro に登録している場合、アカウントを削除しても解約されません。設定 → Apple アカウント → サブスクリプション から解約してください。', deleteAccountFailed: 'アカウントを削除できませんでした。接続を確認してもう一度お試しください。',
     never: 'なし',
   },
   onboarding: {
@@ -393,7 +393,7 @@ const jaJP = {
     currentMax: 'Max会員です',
     bestValue: 'おすすめ',
     upgradeToMax: 'Maxにアップグレード',
-    yearly: '年額プラン', monthlyPlan: '月額プラン', perMonth: '月あたり{price}', save: '{pct}%お得', freeTrialBadge: '{days}日間無料', startTrial: '{days}日間の無料トライアルを開始', subscribe: '登録する', trialThen: '{days}日間無料、その後{price}/年。いつでも解約できます。', billedThen: '{price}/{period}。いつでも解約できます。',
+    yearly: '年額プラン', monthlyPlan: '月額プラン', perMonth: '月あたり{price}', save: '{pct}%お得', freeTrialBadge: '{days}日間無料', startTrial: '{days}日間の無料トライアルを開始', subscribe: '登録する', trialThen: '{days}日間無料、その後{price}/年。いつでも解約できます。', billedThen: '{price}/{period}。いつでも解約できます。', trialReminderNote: 'トライアル終了の2日前にお知らせします', trialReminderTitle: '無料トライアル終了まであと2日', trialReminderBody: 'その後 Lock Pro は {price}/年 で更新されます。設定 → Apple アカウント → サブスクリプション からいつでも解約できます。',
     freeFeatures: ['最初の1週間はAIスキャン無制限', 'その後は1日3回のAIスキャン', '週1回のAI食事分析', 'バーコード・手入力は無制限', '友達を招待するたびに+5回', 'チャレンジ参加 · 友達は最大5人'],
     proFeatures: ['無制限のAIスキャン', 'AI食事分析が無制限', 'チャレンジの作成・参加', '無制限の友達', 'データエクスポート', '体重グラフ'],
     maxFeatures: ['Proの全機能', '毎週自動AIレポート', 'AIカスタム栄養プラン', '優先サポート'],

@@ -14,6 +14,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { Text, TextInput } from '@/components/ui/Text';
 import { FONTS } from '@/constants/fonts';
 import { useTheme } from '@/hooks/useTheme';
+import { hasCJK } from '@/lib/cjk';
 
 export const RADIUS = { card: 22, hero: 24, control: 13, cell: 6 } as const;
 export const STROKE = { card: 2, control: 2, bar: 1.5 } as const;
@@ -353,10 +354,18 @@ export function ScreenHeader({ title, caption, right, style }: {
   style?: StyleProp<ViewStyle>;
 }) {
   const c = useTheme();
+  // CJK glyphs read larger than Latin at the same size; step down so a
+  // two-character title like 日历 doesn't dominate the screen.
+  const cjk = hasCJK(title);
   return (
     <View style={[{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 8, marginBottom: 16 }, style]}>
       <View style={{ flex: 1 }}>
-        <Text accessibilityRole="header" style={{ fontSize: 40, fontWeight: '800', letterSpacing: -1.6, lineHeight: 42, color: c.textPrimary }}>
+        <Text
+          accessibilityRole="header"
+          style={cjk
+            ? { fontSize: 34, fontWeight: '700', lineHeight: 44, color: c.textPrimary }
+            : { fontSize: 40, fontWeight: '800', letterSpacing: -1.6, lineHeight: 44, color: c.textPrimary }}
+        >
           {title}
         </Text>
         {caption ? (

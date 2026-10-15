@@ -46,9 +46,21 @@ export const requestNotificationPermissions = async (): Promise<boolean> => {
   return true;
 };
 
+const TRIAL_REMINDER_ID = 'trial-reminder';
+
+/** Cancels scheduled notifications except the free-trial reminder. */
+const cancelScheduledExceptTrial = async (): Promise<void> => {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  await Promise.all(
+    scheduled
+      .filter((n) => n.identifier !== TRIAL_REMINDER_ID)
+      .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+  );
+};
+
 export const scheduleDailyMealReminders = async (): Promise<void> => {
-  // Cancel existing scheduled notifications first
-  await Notifications.cancelAllScheduledNotificationsAsync();
+  // Cancel existing meal reminders first (keeps the trial reminder)
+  await cancelScheduledExceptTrial();
 
   // Morning reminder: 8:00 AM
   await Notifications.scheduleNotificationAsync({
@@ -91,7 +103,32 @@ export const scheduleDailyMealReminders = async (): Promise<void> => {
 };
 
 export const cancelAllNotifications = async (): Promise<void> => {
-  await Notifications.cancelAllScheduledNotificationsAsync();
+  await cancelScheduledExceptTrial();
+};
+
+/**
+ * Reminds the user `daysBefore` days before their free trial turns into a
+ * paid subscription. Best effort: does nothing without notification permission.
+ */
+export const scheduleTrialReminder = async (
+  trialDays: number,
+  content: { title: string; body: string },
+  daysBefore = 2,
+): Promise<void> => {
+  if (isExpoGo || trialDays <= daysBefore) return;
+  try {
+    const granted = await requestNotificationPermissions();
+    if (!granted) return;
+    await Notifications.cancelScheduledNotificationAsync(TRIAL_REMINDER_ID).catch(() => {});
+    await Notifications.scheduleNotificationAsync({
+      identifier: TRIAL_REMINDER_ID,
+      content,
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: new Date(Date.now() + (trialDays - daysBefore) * 24 * 60 * 60 * 1000),
+      },
+    });
+  } catch {}
 };
 
 export const getNotificationPermissionStatus = async (): Promise<boolean> => {
