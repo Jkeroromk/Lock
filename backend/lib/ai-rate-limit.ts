@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { isAdmin } from '@/lib/admin';
-import { getDailyAiCallLimit, isPaidPlan, isInTrialWeek, FREE_WEEKLY_DIET_ANALYSES, DIET_ANALYSIS_WINDOW_MS } from '@/lib/plans';
+import { getDailyAiCallLimit, isPaidPlan, isInTrialWeek, FREE_TRIAL_DAILY_AI_CALLS, FREE_WEEKLY_DIET_ANALYSES, DIET_ANALYSIS_WINDOW_MS } from '@/lib/plans';
 
 export interface RateLimitOk {
   ok: true;
@@ -19,7 +19,7 @@ export interface RateLimitDenied {
 
 /**
  * Checks and takes one AI scan from the user's daily allowance (photo + label).
- * - FREE: getDailyAiCallLimit() per local day, unlimited in the first week, then bonus scans
+ * - FREE: getDailyAiCallLimit() per local day (FREE_TRIAL_DAILY_AI_CALLS in the first week), then bonus scans
  * - PRO / MAX and admins (ADMIN_USER_IDS): unlimited
  *
  * Takes the unit before the AI call so parallel requests can't slip past the limit.
@@ -46,8 +46,9 @@ export async function checkAndIncrementAiQuota(
   }
 
   const now = new Date();
-  // Paid plans and a new account's first week are unlimited.
-  const limit = isInTrialWeek(user.createdAt, now) ? -1 : getDailyAiCallLimit(user.plan as any);
+  // Paid plans are unlimited; a free account's first week gets a higher daily cap.
+  const planLimit = getDailyAiCallLimit(user.plan as any);
+  const limit = planLimit === -1 ? -1 : isInTrialWeek(user.createdAt, now) ? FREE_TRIAL_DAILY_AI_CALLS : planLimit;
 
   // New day in the user's own time zone → counter starts over at their midnight.
   const needsReset = !sameLocalDay(now, new Date(user.aiCallsResetAt), timeZone);

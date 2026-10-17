@@ -1,8 +1,7 @@
 import {
-  View, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, Image,
+  View, TouchableOpacity, Alert, Platform, Keyboard,
 } from 'react-native';
 import { Text } from '@/components/ui/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,7 +13,8 @@ import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Button, HardShadow, TextField } from '@/components/ui/bxc';
+import { Button, TextField } from '@/components/ui/bxc';
+import { AuthRingLayout } from '@/components/auth/AuthRingLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchProfile, updateProfile } from '@/services/api';
 import { SocialButton } from '@/components/auth/SocialButton';
@@ -45,6 +45,7 @@ export default function LoginScreen() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [pendingPasswordReset, setPendingPasswordReset] = useState(false);
   const passwordRef = useRef<any>(null);
+  const signupPasswordRef = useRef<any>(null);
 
   useEffect(() => {
     AsyncStorage.getItem('lock_saved_email').then((saved) => { if (saved) setEmail(saved); });
@@ -202,6 +203,14 @@ export default function LoginScreen() {
     finally { setIsLoading(false); }
   };
 
+  const switchMode = (toSignUp: boolean) => {
+    if (toSignUp === isSignUp || isLoading) return;
+    Keyboard.dismiss();
+    setIsSignUp(toSignUp);
+    setPassword('');
+    setShowPassword(false);
+  };
+
   if (pendingVerification) {
     return (
       <OtpVerificationScreen
@@ -224,125 +233,141 @@ export default function LoginScreen() {
     );
   }
 
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={{ paddingHorizontal: 22, paddingVertical: 24 }}>
+  const subtle = { fontSize: 15, fontWeight: '600' as const, color: colors.textSecondary };
+  const switchLink = (lead: string, action: string, toSignUp: boolean) => (
+    <TouchableOpacity
+      onPress={() => switchMode(toSignUp)}
+      accessibilityRole="button"
+      style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+    >
+      <Text style={subtle}>{lead}</Text>
+      <Text style={{ fontSize: 15, fontWeight: '800', color: colors.textPrimary, textDecorationLine: 'underline' }}>{action}</Text>
+    </TouchableOpacity>
+  );
+  const socialRow = (
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      {Platform.OS === 'ios' && (
+        <SocialButton provider="apple" label="Apple" onPress={handleAppleLogin} disabled={isLoading} style={{ flex: 1 }} />
+      )}
+      <SocialButton provider="google" label="Google" onPress={handleGoogleLogin} disabled={isLoading} style={{ flex: 1 }} />
+    </View>
+  );
+  const divider = (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ flex: 1, height: 1.5, backgroundColor: colors.borderPrimary }} />
+      <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, textTransform: 'uppercase' }}>{t('auth.or' as any)}</Text>
+      <View style={{ flex: 1, height: 1.5, backgroundColor: colors.borderPrimary }} />
+    </View>
+  );
+  const eye = (
+    <TouchableOpacity
+      onPress={() => setShowPassword(!showPassword)}
+      accessibilityRole="button"
+      accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+      style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textSecondary} />
+    </TouchableOpacity>
+  );
 
-            {/* Brand */}
-            <View style={{ alignItems: 'flex-start', marginBottom: 28 }}>
-              <HardShadow color={colors.cardShadow} radius={20} offset={5} style={{ transform: [{ rotate: '-4deg' }] }}>
-                <Image source={require('@/assets/icons/preview-open-lock.png')} style={{ width: 84, height: 84, borderRadius: 19 }} accessibilityIgnoresInvertColors accessibilityLabel="Lock" />
-              </HardShadow>
-              <Text accessibilityRole="header" style={{ fontSize: 52, fontWeight: '800', letterSpacing: -2.2, lineHeight: 54, color: colors.textPrimary, marginTop: 22 }}>
-                Lock in.
-              </Text>
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginTop: 8, textTransform: 'uppercase' }}>
-                {t('auth.welcome')}
-              </Text>
-            </View>
-
-            {/* Social */}
-            <View style={{ gap: 8 }}>
-              {Platform.OS === 'ios' && (
-                <SocialButton provider="apple" label={t('auth.continueWithApple')} onPress={handleAppleLogin} disabled={isLoading} />
-              )}
-              <SocialButton provider="google" label={t('auth.continueWithGoogle')} onPress={handleGoogleLogin} disabled={isLoading} />
-            </View>
-
-            {/* Divider */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 20 }}>
-              <View style={{ flex: 1, height: 1.5, backgroundColor: colors.borderPrimary }} />
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, textTransform: 'uppercase' }}>
-                {t('auth.orContinueWith')}
-              </Text>
-              <View style={{ flex: 1, height: 1.5, backgroundColor: colors.borderPrimary }} />
-            </View>
-
-            {/* Email / Password */}
-            <View style={{ gap: 8 }}>
-              <TextField
-                accessibilityLabel={t('auth.email')}
-                placeholder={t('auth.emailPlaceholder')}
-                keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
-                returnKeyType="next" value={email} onChangeText={setEmail}
-                onSubmitEditing={() => passwordRef.current?.focus()}
-              />
-              <TextField
-                ref={passwordRef}
-                accessibilityLabel={t('auth.password')}
-                placeholder={t('auth.passwordPlaceholder')}
-                secureTextEntry={!showPassword} returnKeyType="done" value={password}
-                autoComplete={isSignUp ? 'new-password' : 'current-password'} textContentType={isSignUp ? 'newPassword' : 'password'}
-                onChangeText={setPassword} onSubmitEditing={handleAuth}
-                right={
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    accessibilityRole="button"
-                    accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
-                    style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textSecondary} />
-                  </TouchableOpacity>
-                }
-              />
-            </View>
-
-            {/* Remember me + Forgot */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-              <TouchableOpacity
-                onPress={() => { const next = !rememberMe; setRememberMe(next); if (!next) AsyncStorage.removeItem('lock_saved_email').catch(() => {}); }}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: rememberMe }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 }}
-                activeOpacity={0.7}
-              >
-                <View style={{
-                  width: 20, height: 20, borderRadius: 6, borderWidth: 2,
-                  borderColor: rememberMe ? colors.ink : colors.borderPrimary,
-                  backgroundColor: rememberMe ? colors.accent : 'transparent',
-                  alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {rememberMe && <Ionicons name="checkmark" size={13} color={colors.onAccent} />}
-                </View>
-                <Text style={{ fontSize: 14, color: colors.textSecondary }}>{t('auth.rememberEmail' as any)}</Text>
-              </TouchableOpacity>
-              {!isSignUp && (
-                <TouchableOpacity onPress={handleForgotPassword} accessibilityRole="button" style={{ minHeight: 44, justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>{t('auth.forgotPassword')}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <Button
-              label={isSignUp ? t('auth.signUp') : t('auth.login')}
-              loading={isLoading}
-              onPress={handleAuth}
-              style={{ marginTop: 8 }}
-            />
-
-            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 6 }}>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>
-                {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Terms agreement (required before posting user content — App Store 1.2) */}
-            <Text style={{ fontSize: 12, lineHeight: 18, color: colors.textSecondary, textAlign: 'center', marginTop: 14, paddingHorizontal: 8 }}>
-              {t('auth.agreePrefix')}
-              <Text style={{ fontWeight: '700', color: colors.textPrimary, textDecorationLine: 'underline' }} onPress={() => router.push('/legal/terms')}>
-                {t('settings.termsOfService')}
-              </Text>
-              {t('auth.agreeAnd')}
-              <Text style={{ fontWeight: '700', color: colors.textPrimary, textDecorationLine: 'underline' }} onPress={() => router.push('/legal/privacy')}>
-                {t('settings.privacyPolicy')}
-              </Text>
-              {t('auth.agreeSuffix')}
-            </Text>
+  const loginForm = (
+    <View style={{ gap: 12 }}>
+      <Text accessibilityRole="header" style={{ fontSize: 30, fontWeight: '800', letterSpacing: -1, color: colors.textPrimary }}>{t('auth.login')}</Text>
+      <TextField
+        accessibilityLabel={t('auth.email')} placeholder={t('auth.emailPlaceholder')}
+        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
+        returnKeyType="next" value={email} onChangeText={setEmail}
+        onSubmitEditing={() => passwordRef.current?.focus()}
+      />
+      <TextField
+        ref={passwordRef}
+        accessibilityLabel={t('auth.password')} placeholder={t('auth.passwordPlaceholder')}
+        secureTextEntry={!showPassword} returnKeyType="done" value={password}
+        autoComplete="current-password" textContentType="password"
+        onChangeText={setPassword} onSubmitEditing={handleAuth}
+        right={eye}
+      />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <TouchableOpacity
+          onPress={() => { const next = !rememberMe; setRememberMe(next); if (!next) AsyncStorage.removeItem('lock_saved_email').catch(() => {}); }}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: rememberMe }}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 40 }}
+          activeOpacity={0.7}
+        >
+          <View style={{
+            width: 20, height: 20, borderRadius: 6, borderWidth: 2,
+            borderColor: rememberMe ? colors.ink : colors.borderPrimary,
+            backgroundColor: rememberMe ? colors.accent : 'transparent',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            {rememberMe && <Ionicons name="checkmark" size={13} color={colors.onAccent} />}
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          <Text style={{ fontSize: 14, color: colors.textSecondary }}>{t('auth.rememberEmail' as any)}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleForgotPassword} accessibilityRole="button" style={{ minHeight: 40, justifyContent: 'center' }}>
+          <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>{t('auth.forgotPassword')}</Text>
+        </TouchableOpacity>
+      </View>
+      <Button label={t('auth.login')} icon="arrow-forward" loading={isLoading && !isSignUp} onPress={handleAuth} />
+      {divider}
+      {socialRow}
+      {switchLink(t('auth.newHere' as any), t('auth.createAccount' as any), true)}
+    </View>
+  );
+
+  const signupForm = (
+    <View style={{ gap: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text accessibilityRole="header" style={{ fontSize: 30, fontWeight: '800', letterSpacing: -1, color: colors.textPrimary }}>{t('auth.createAccount' as any)}</Text>
+        <View style={{ transform: [{ rotate: '4deg' }], backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 10, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', color: colors.onAccent }}>{t('auth.freeToStart' as any)}</Text>
+        </View>
+      </View>
+      <TextField
+        accessibilityLabel={t('auth.email')} placeholder={t('auth.emailPlaceholder')}
+        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
+        returnKeyType="next" value={email} onChangeText={setEmail}
+        onSubmitEditing={() => signupPasswordRef.current?.focus()}
+      />
+      <TextField
+        ref={signupPasswordRef}
+        accessibilityLabel={t('auth.password')} placeholder={t('auth.passwordHint' as any)}
+        secureTextEntry={!showPassword} returnKeyType="done" value={password}
+        autoComplete="new-password" textContentType="newPassword"
+        onChangeText={setPassword} onSubmitEditing={handleAuth}
+        right={eye}
+      />
+      <Button label={t('auth.createAccount' as any)} icon="arrow-forward" variant="solid" loading={isLoading && isSignUp} onPress={handleAuth} style={{ marginTop: 4 }} />
+      {divider}
+      {socialRow}
+      {switchLink(t('auth.haveAccount' as any), t('auth.login'), false)}
+    </View>
+  );
+
+  // Terms agreement (required before posting user content — App Store 1.2)
+  const terms = (
+    <Text style={{ fontSize: 11, lineHeight: 16, color: colors.textSecondary, textAlign: 'center' }}>
+      {t('auth.agreePrefix')}
+      <Text style={{ fontWeight: '700', color: colors.textPrimary, textDecorationLine: 'underline' }} onPress={() => router.push('/legal/terms')}>
+        {t('settings.termsOfService')}
+      </Text>
+      {t('auth.agreeAnd')}
+      <Text style={{ fontWeight: '700', color: colors.textPrimary, textDecorationLine: 'underline' }} onPress={() => router.push('/legal/privacy')}>
+        {t('settings.privacyPolicy')}
+      </Text>
+      {t('auth.agreeSuffix')}
+    </Text>
+  );
+
+  return (
+    <AuthRingLayout
+      signUp={isSignUp}
+      captionLogin={t('auth.welcomeBack' as any)}
+      captionSignup={t('auth.dayOne' as any)}
+      login={loginForm}
+      signup={signupForm}
+      footer={terms}
+    />
   );
 }

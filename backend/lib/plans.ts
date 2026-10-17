@@ -2,8 +2,10 @@ export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
 /** Photo + nutrition-label scans per day on the free plan. Barcode and manual logging are never limited. */
 export const FREE_DAILY_AI_CALLS = 3;
-/** New accounts get unlimited scans for their first week. */
+/** A new account's first week ("new-user week"): a higher daily allowance, not unlimited. */
 export const FREE_TRIAL_DAYS = 7;
+/** Scans per day during the new-user week. Capped so a fresh account can't burn through the AI budget. */
+export const FREE_TRIAL_DAILY_AI_CALLS = 10;
 /** Extra scans an inviter earns when a new user joins with their invite code. */
 export const INVITE_BONUS_AI_CALLS = 5;
 /** Cap on invite rewards per account, so the bonus can't be farmed. */
