@@ -434,6 +434,7 @@ const zhCN = {
     enterCode: '请输入验证码',
     hasAccount: '已有账号？点击登录',
     noAccount: '没有账号？点击注册',
+    or: '或', welcomeBack: '欢迎回来', dayOne: '第 1 天，从现在开始', freeToStart: '免费开始', createAccount: '创建账号', passwordHint: '密码 · 至少 8 位', newHere: '第一次来？', haveAccount: '已有账号？',
     socialLoginComingSoon: '社交登录即将推出',
     rememberEmail: '记住邮箱',
     continueWithGoogle: '使用 Google 继续',

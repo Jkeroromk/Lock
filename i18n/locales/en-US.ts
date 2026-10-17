@@ -339,6 +339,7 @@ const enUS = {
     back: 'Back', enterCode: 'Please enter verification code',
     hasAccount: 'Already have an account? Log in',
     noAccount: "Don't have an account? Sign up",
+    or: 'or', welcomeBack: 'Welcome back', dayOne: 'Day 1 starts now', freeToStart: 'Free to start', createAccount: 'Create account', passwordHint: 'Password · at least 8 characters', newHere: 'New here?', haveAccount: 'Have an account?',
     socialLoginComingSoon: 'Social login coming soon',
     rememberEmail: 'Remember email',
     continueWithGoogle: 'Continue with Google',

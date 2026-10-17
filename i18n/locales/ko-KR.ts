@@ -319,6 +319,7 @@ const koKR = {
     resetPasswordSent: '인증 코드를 이메일로 발송했습니다', resetFailed: '재설정 이메일 발송에 실패했습니다',
     newPassword: '새 비밀번호', verificationCode: '인증 코드', back: '뒤로', enterCode: '인증 코드를 입력하세요',
     hasAccount: '이미 계정이 있으신가요? 로그인', noAccount: '계정이 없으신가요? 회원가입',
+    or: '또는', welcomeBack: '다시 오신 걸 환영해요', dayOne: '오늘이 1일차', freeToStart: '무료로 시작', createAccount: '계정 만들기', passwordHint: '비밀번호 · 8자 이상', newHere: '처음이신가요?', haveAccount: '계정이 있으신가요?',
     socialLoginComingSoon: '소셜 로그인 곧 출시 예정',
     rememberEmail: '이메일 기억',
     continueWithGoogle: 'Google로 계속',
