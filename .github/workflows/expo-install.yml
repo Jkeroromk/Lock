@@ -1,11 +1,12 @@
 name: Expo install
 
 # Adds native-compatible dependency versions from CI, where the npm registry is
-# reachable: list packages in .github/expo-install.txt on a branch and push.
+# reachable: list packages to add in .github/expo-install.txt and packages to
+# remove in .github/npm-uninstall.txt on a branch, then push.
 on:
   push:
     branches-ignore: [main]
-    paths: ['.github/expo-install.txt']
+    paths: ['.github/expo-install.txt', '.github/npm-uninstall.txt']
 
 permissions:
   contents: write
@@ -22,12 +23,15 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npx expo install $(cat .github/expo-install.txt)
+      - name: Remove packages
+        run: if [ -s .github/npm-uninstall.txt ]; then npm uninstall $(cat .github/npm-uninstall.txt); fi
+      - name: Add packages
+        run: if [ -s .github/expo-install.txt ]; then npx expo install $(cat .github/expo-install.txt); fi
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json
           if [ -f app.json ]; then git add app.json; fi
-          git commit -m "Install $(cat .github/expo-install.txt) (expo install)" || echo "nothing to commit"
+          git commit -m "Dependencies: +$(cat .github/expo-install.txt 2>/dev/null) -$(cat .github/npm-uninstall.txt 2>/dev/null)" || echo "nothing to commit"
           git push
