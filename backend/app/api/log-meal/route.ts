@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { syncChallengeProgress } from '@/lib/challenge-progress';
 import { uploadMealPhoto, MAX_THUMBNAIL_BASE64 } from '@/lib/meal-photos';
+import { requestTimeZone } from '@/lib/ai-rate-limit';
+import { createMealEncounter } from '@/lib/game/game';
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,7 +71,13 @@ export async function POST(request: NextRequest) {
     syncChallengeProgress(userId).catch(() => {});
     // ────────────────────────────────────────────────────────────────────────
 
-    return NextResponse.json({ success: true, data: meal });
+    // ── Lockling: a logged meal may bring an encounter (never blocks saving) ──
+    const encounter = await createMealEncounter(userId, meal, requestTimeZone(request)).catch((e) => {
+      console.error('[log-meal encounter]', e);
+      return null;
+    });
+
+    return NextResponse.json({ success: true, data: meal, encounter });
   } catch (error: any) {
     return NextResponse.json({ error: 'Failed to save meal' }, { status: 500 });
   }
