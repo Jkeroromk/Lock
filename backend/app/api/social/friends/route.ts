@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isBlockedEitherWay } from '@/lib/blocks';
+import { findUserByHandle } from '@/lib/find-user';
 import { getMaxFriends } from '@/lib/plans';
-import { redeemReferral } from '@/lib/referral';
 import { sendPushToUser } from '@/lib/notify';
 
 // GET /api/social/friends — list accepted friends
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/social/friends — send friend request by username or invite code
+// POST /api/social/friends — send a friend request by username or Friend ID (always needs approval)
 export async function POST(request: NextRequest) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
@@ -77,12 +77,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const identifier: string = typeof body?.identifier === 'string' ? body.identifier.trim().replace(/^@/, '') : '';
     if (!identifier) {
-      return NextResponse.json({ error: 'Username or invite code required' }, { status: 400 });
+      return NextResponse.json({ error: 'Username or Friend ID required' }, { status: 400 });
     }
 
-    const target = await prisma.user.findFirst({
-      where: { OR: [{ username: { equals: identifier, mode: 'insensitive' } }, { inviteCode: identifier.toUpperCase() }] },
-    });
+    const target = await findUserByHandle(identifier, { id: true });
 
     // A block in either direction looks the same as "no such user".
     if (!target || (target.id !== userId && (await isBlockedEitherWay(userId, target.id)))) {
@@ -145,14 +143,8 @@ export async function POST(request: NextRequest) {
       select: { name: true, username: true },
     }));
     const displayName = senderName?.name || senderName?.username || '有人';
-    sendPushToUser(target.id, '新好友请求 👋', `${displayName} 想添加你为好友`, { type: 'FRIEND_REQUEST' })
+    await sendPushToUser(target.id, '新好友请求 👋', `${displayName} 想添加你为好友`, { type: 'FRIEND_REQUEST' })
       .catch(() => {});
-
-    // A brand-new account joining through someone's invite code: both get
-    // bonus scans (once per invited account, inviter capped).
-    if (target.inviteCode && identifier.toUpperCase() === target.inviteCode) {
-      redeemReferral(userId, target.id).catch((e) => console.error('[invite reward]', e));
-    }
 
     return NextResponse.json(friendship, { status: 201 });
   } catch (error: any) {

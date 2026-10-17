@@ -6,8 +6,8 @@ import { redeemReferral } from '@/lib/referral';
 
 const STATUS = { INVALID_CODE: 404, SELF: 400, NOT_NEW: 403, ALREADY_REDEEMED: 409 } as const;
 
-// POST /api/social/redeem-invite { code } — a new account enters a friend's invite code:
-// both get bonus scans and they become friends.
+// POST /api/social/redeem-invite { code } — a new account enters the invite code of
+// whoever invited it: both get bonus scans. Becoming friends is a separate request.
 export async function POST(request: NextRequest) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'INVALID_CODE' }, { status: 404 });
     }
 
-    const result = await redeemReferral(userId, inviter.id, { makeFriends: true });
+    const result = await redeemReferral(userId, inviter.id);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: STATUS[result.error] });
     return NextResponse.json(result);
   } catch (error) {

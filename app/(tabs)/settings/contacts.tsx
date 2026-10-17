@@ -60,10 +60,10 @@ function MyCard({ user, todayCalories, colors, t }: {
   user: any; todayCalories: number; colors: any; t: (k: any, p?: any) => string;
 }) {
   const handleShare = async () => {
-    if (!user?.inviteCode) return;
-    const msg = (t('settings.shareCardMessage' as any) as string).replace('{code}', user.inviteCode);
+    if (!user?.friendCode) return;
+    const msg = (t('settings.shareCardMessage' as any) as string).replace('{code}', user.friendCode);
     try {
-      await Share.share({ message: msg, url: `lock://invite/${user.inviteCode}` });
+      await Share.share({ message: msg, url: `lock://add/${user.friendCode}` });
     } catch { /* user cancelled */ }
   };
 
@@ -101,7 +101,7 @@ function MyCard({ user, todayCalories, colors, t }: {
         <StatPill icon="🍽️" value={todayCalories} label="kcal" colors={colors} />
       </View>
 
-      {user?.inviteCode && (
+      {user?.friendCode && (
         <TouchableOpacity
           onPress={handleShare}
           activeOpacity={0.85}

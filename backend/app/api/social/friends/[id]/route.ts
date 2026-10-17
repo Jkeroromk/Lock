@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       ],
     });
 
-    sendPushToUser(friendship.requesterId, '好友请求已通过 🎉', `${acceptorDisplay} 接受了你的好友请求`, { type: 'FRIEND_ACCEPTED' })
+    await sendPushToUser(friendship.requesterId, '好友请求已通过 🎉', `${acceptorDisplay} 接受了你的好友请求`, { type: 'FRIEND_ACCEPTED' })
       .catch(() => {});
   }
 

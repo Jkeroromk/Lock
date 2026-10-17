@@ -103,7 +103,8 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
     if (!foundUser) return;
     setSending(true); setError(''); setIsLimitError(false);
     try {
-      await sendFriendRequest(foundUser.username ?? foundUser.id);
+      // Username when they have one, otherwise the Friend ID that found them.
+      await sendFriendRequest(foundUser.username ?? query.trim());
       setSent(true); setRelationStatus('pending_sent'); onSuccess();
     } catch (e: any) {
       const errCode = e.response?.data?.error;

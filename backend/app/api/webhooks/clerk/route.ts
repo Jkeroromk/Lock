@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 import { prisma } from '@/lib/prisma';
-import { getUniqueInviteCode } from '@/lib/invite-code';
+import { getUniqueFriendCode, getUniqueInviteCode } from '@/lib/invite-code';
 import { deleteAllMealPhotos } from '@/lib/meal-photos';
 
 export const dynamic = 'force-dynamic';
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
           name,
           username: username ?? null,
           inviteCode: await getUniqueInviteCode(),
+          friendCode: await getUniqueFriendCode(),
         },
         update: {},
       });

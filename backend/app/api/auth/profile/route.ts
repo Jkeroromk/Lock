@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isAdmin } from '@/lib/admin';
-import { getUniqueInviteCode } from '@/lib/invite-code';
+import { getUniqueFriendCode, getUniqueInviteCode } from '@/lib/invite-code';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +17,16 @@ export async function GET(request: NextRequest) {
     const admin = isAdmin(userId);
     const existing = await prisma.user.findUnique({ where: { id: userId } });
     if (existing) {
-      // Rows created by the Clerk webhook have no invite code yet: give them one.
-      if (!existing.inviteCode) {
+      // Older rows may lack an invite code or Friend ID: give them one.
+      if (!existing.inviteCode || !existing.friendCode) {
         try {
-          const withCode = await prisma.user.update({ where: { id: userId }, data: { inviteCode: await getUniqueInviteCode() } });
+          const withCode = await prisma.user.update({
+            where: { id: userId },
+            data: {
+              ...(existing.inviteCode ? {} : { inviteCode: await getUniqueInviteCode() }),
+              ...(existing.friendCode ? {} : { friendCode: await getUniqueFriendCode() }),
+            },
+          });
           return NextResponse.json({ ...withCode, isAdmin: admin });
         } catch {
           // A rare code collision: the next profile fetch tries again.
@@ -29,8 +35,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ...existing, isAdmin: admin });
     }
 
-    const inviteCode = await getUniqueInviteCode();
-    const user = await prisma.user.create({ data: { id: userId, inviteCode } });
+    const user = await prisma.user.create({
+      data: { id: userId, inviteCode: await getUniqueInviteCode(), friendCode: await getUniqueFriendCode() },
+    });
     return NextResponse.json({ ...user, isAdmin: admin });
   } catch (error: any) {
     if (error?.code === 'P2002') {

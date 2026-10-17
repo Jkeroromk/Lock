@@ -40,3 +40,19 @@ ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "diet_analysis_langs" TEXT;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "bonus_ai_calls" INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "invite_rewards" INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "referred_by_id" TEXT;
+
+-- Friend ID: 8 digits for adding friends, separate from the invite code
+-- (which only pays the sign-up reward). Existing accounts get one here.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "friend_code" TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS "users_friend_code_key" ON "users"("friend_code");
+DO $$
+DECLARE r RECORD; c TEXT;
+BEGIN
+  FOR r IN SELECT "id" FROM "users" WHERE "friend_code" IS NULL LOOP
+    LOOP
+      c := (10000000 + floor(random() * 90000000))::BIGINT::TEXT;
+      EXIT WHEN NOT EXISTS (SELECT 1 FROM "users" WHERE "friend_code" = c);
+    END LOOP;
+    UPDATE "users" SET "friend_code" = c WHERE "id" = r."id";
+  END LOOP;
+END $$;

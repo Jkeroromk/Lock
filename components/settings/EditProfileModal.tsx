@@ -1,8 +1,9 @@
 import {
-  View, Modal, TouchableOpacity, Image, Alert, Platform, ScrollView, KeyboardAvoidingView,
+  View, Modal, TouchableOpacity, Image, Alert, Platform, ScrollView, Keyboard, LayoutAnimation, useWindowDimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput } from '@/components/ui/Text';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '@/i18n';
@@ -43,6 +44,37 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
   const [avatarImage, setAvatarImage] = useState<string | undefined>(undefined);
   const [showGender, setShowGender] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Keyboard: on iOS the sheet rises by the keyboard's height (Android's modal
+  // window already resizes), and the focused field scrolls into view.
+  const { height: windowH } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const [kb, setKb] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+  const fieldY = useRef<{ username: number; bio: number }>({ username: 0, bio: 0 });
+  const focused = useRef<'username' | 'bio' | null>(null);
+
+  const scrollToField = (field: 'username' | 'bio') => {
+    focused.current = field;
+    setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(0, fieldY.current[field] - 12), animated: true }), 80);
+  };
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    const show = Keyboard.addListener('keyboardWillShow', (e) => {
+      LayoutAnimation.configureNext(LayoutAnimation.create(e.duration || 250, 'keyboard', 'opacity'));
+      setKb(e.endCoordinates.height);
+    });
+    const shown = Keyboard.addListener('keyboardDidShow', () => {
+      if (focused.current) scrollToField(focused.current);
+    });
+    const hide = Keyboard.addListener('keyboardWillHide', (e) => {
+      LayoutAnimation.configureNext(LayoutAnimation.create(e.duration || 250, 'keyboard', 'opacity'));
+      setKb(0);
+      focused.current = null;
+    });
+    return () => { show.remove(); shown.remove(); hide.remove(); };
+  }, []);
 
   useEffect(() => {
     if (visible && user) {
@@ -105,12 +137,12 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
 
   return (
     <Modal animationType="fade" transparent visible={visible} onRequestClose={onCancel}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)', paddingBottom: kb }}>
           <View style={{
             backgroundColor: colors.backgroundPrimary,
             borderTopLeftRadius: 32, borderTopRightRadius: 32,
-            maxHeight: '92%',
+            maxHeight: windowH - kb - insets.top - 12,
             borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 2,
             borderColor: colors.borderPrimary,
           }}>
@@ -138,8 +170,11 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
             </View>
 
             <ScrollView
+              ref={scrollRef}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
+              contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: kb ? 16 : Math.max(40, insets.bottom + 16) }}
             >
               {/* Avatar picker */}
               <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.5 }}>
@@ -194,7 +229,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
               </View>
 
               {/* Username */}
-              <View style={{ marginBottom: DIMENSIONS.SPACING * 1 }}>
+              <View style={{ marginBottom: DIMENSIONS.SPACING * 1 }} onLayout={(e) => { fieldY.current.username = e.nativeEvent.layout.y; }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.4 }}>
                   {t('settings.userName')}
                 </Text>
@@ -214,8 +249,10 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                     placeholderTextColor={colors.textSecondary}
                     value={username}
                     onChangeText={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    onFocus={() => scrollToField('username')}
                     autoCapitalize="none"
                     autoCorrect={false}
+                    returnKeyType="done"
                   />
                 </View>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, marginTop: 4, marginLeft: 2 }}>
@@ -224,7 +261,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
               </View>
 
               {/* Bio */}
-              <View style={{ marginBottom: DIMENSIONS.SPACING * 1.5 }}>
+              <View style={{ marginBottom: DIMENSIONS.SPACING * 1.5 }} onLayout={(e) => { fieldY.current.bio = e.nativeEvent.layout.y; }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.4 }}>
                   {t('settings.profileInfo')}
                 </Text>
@@ -239,6 +276,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                   placeholderTextColor={colors.textSecondary}
                   value={bio}
                   onChangeText={(v) => v.length <= 100 && setBio(v)}
+                  onFocus={() => scrollToField('bio')}
                   multiline
                   maxLength={100}
                 />
@@ -316,7 +354,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
             </ScrollView>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
