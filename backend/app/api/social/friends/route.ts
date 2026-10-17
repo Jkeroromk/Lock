@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isBlockedEitherWay } from '@/lib/blocks';
-import { getMaxFriends, isInTrialWeek, INVITE_BONUS_AI_CALLS, MAX_INVITE_REWARDS } from '@/lib/plans';
+import { getMaxFriends } from '@/lib/plans';
+import { redeemReferral } from '@/lib/referral';
 import { sendPushToUser } from '@/lib/notify';
 
 // GET /api/social/friends — list accepted friends
@@ -146,37 +147,14 @@ export async function POST(request: NextRequest) {
     sendPushToUser(target.id, '新好友请求 👋', `${displayName} 想添加你为好友`, { type: 'FRIEND_REQUEST' })
       .catch(() => {});
 
-    // A brand-new account joining through someone's invite code earns the
-    // inviter bonus scans (once per invited account, capped per inviter).
+    // A brand-new account joining through someone's invite code: both get
+    // bonus scans (once per invited account, inviter capped).
     if (target.inviteCode && identifier === target.inviteCode) {
-      rewardInviter(userId, target.id).catch((e) => console.error('[invite reward]', e));
+      redeemReferral(userId, target.id).catch((e) => console.error('[invite reward]', e));
     }
 
     return NextResponse.json(friendship, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: 'Failed to send friend request' }, { status: 500 });
   }
-}
-
-async function rewardInviter(newUserId: string, inviterId: string): Promise<void> {
-  const newUser = await prisma.user.findUnique({ where: { id: newUserId }, select: { createdAt: true, referredById: true, name: true, username: true } });
-  if (!newUser || newUser.referredById || !isInTrialWeek(newUser.createdAt)) return;
-
-  // Claim the referral first; a second request from the same account does nothing.
-  const claimed = await prisma.user.updateMany({
-    where: { id: newUserId, referredById: null },
-    data: { referredById: inviterId },
-  });
-  if (claimed.count === 0) return;
-
-  const paid = await prisma.user.updateMany({
-    where: { id: inviterId, inviteRewards: { lt: MAX_INVITE_REWARDS } },
-    data: { bonusAiCalls: { increment: INVITE_BONUS_AI_CALLS }, inviteRewards: { increment: 1 } },
-  });
-  if (paid.count === 0) return;
-
-  // Same language as the app's other pushes (see the friend-request push above).
-  const who = newUser.name || newUser.username || '你的好友';
-  sendPushToUser(inviterId, `+${INVITE_BONUS_AI_CALLS} 次 AI 识别 🎁`, `${who} 通过你的邀请加入了 Lock`, { type: 'INVITE_REWARD' })
-    .catch(() => {});
 }

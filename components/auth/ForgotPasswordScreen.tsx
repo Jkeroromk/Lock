@@ -85,8 +85,10 @@ export default function ForgotPasswordScreen({ isLoading, onReset, onBack }: Pro
               placeholder="— — — — — —"
               placeholderTextColor={colors.textSecondary}
               keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
               value={resetCode}
-              onChangeText={(text) => { setResetCode(text); if (text.length === 6) newPasswordRef.current?.focus(); }}
+              onChangeText={(raw) => { const text = raw.replace(/\D/g, '').slice(0, 6); setResetCode(text); if (text.length === 6) newPasswordRef.current?.focus(); }}
               maxLength={6}
               returnKeyType="next"
               onSubmitEditing={() => newPasswordRef.current?.focus()}

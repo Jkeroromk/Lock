@@ -28,7 +28,7 @@ export const COPY = {
         { n: 'Greek yogurt', k: 250 },
       ],
     },
-    ticker: ['Snap it', 'Scan it', 'Log it', 'Lock it', '3 free AI scans a day', 'Barcodes never limited', '+5 scans per invite'],
+    ticker: ['Snap it', 'Scan it', 'Log it', 'Lock it', '3 free AI scans a day', 'Barcodes never limited', 'Invite a friend: both +5'],
     how: {
       eyebrow: 'How it works',
       title: 'Snap it. Logged.',
@@ -55,7 +55,7 @@ export const COPY = {
       title: 'Lock in together.',
       sub: 'Add friends, keep a check-in streak and climb the friends leaderboard. Start a streak or step challenge, and share meals in Moments when you want to.',
       bullets: ['Friends leaderboard', 'Check-in streaks', 'Streak & step challenges', 'Moments feed'],
-      invite: 'Invite a friend, get 5 bonus AI scans.',
+      invite: 'Invite a friend: you both get 5 bonus AI scans.',
       board: 'Friends leaderboard',
       you: 'You',
       days: 'days',
@@ -71,7 +71,7 @@ export const COPY = {
     pricing: {
       eyebrow: 'Pricing',
       title: 'Free to start. Pro when you’re ready.',
-      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['First week: 10 AI scans / day', 'Then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', '+5 scans for every friend you invite', 'Challenges · up to 5 friends'] },
+      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['First week: 10 AI scans / day', 'Then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Invite a friend: you both get +5 scans', 'Challenges · up to 5 friends'] },
       pro: { name: 'Pro', price: 'Monthly or yearly', note: 'Price shown in the App Store.', list: ['Unlimited AI scans', 'Unlimited AI diet reviews', 'Create & join challenges', 'Unlimited friends', 'Data export', 'Weight chart'] },
       cta: 'Get Lock',
     },
@@ -80,7 +80,7 @@ export const COPY = {
       title: 'Things people ask.',
       items: [
         { q: 'How accurate is the photo scan?', a: 'Lock’s AI estimates calories, protein, carbs and fat from your photo. Like any estimate it can be off, so every entry is editable. For packaged food, scan the barcode or nutrition label for exact numbers.' },
-        { q: 'Is Lock free?', a: 'Yes. Your first week includes 10 AI scans a day. After that, the free plan includes 3 AI scans a day, one AI diet review a week, and unlimited barcode and manual logging. Every friend you invite adds 5 bonus scans. Pro removes the limits.' },
+        { q: 'Is Lock free?', a: 'Yes. Your first week includes 10 AI scans a day. After that, the free plan includes 3 AI scans a day, one AI diet review a week, and unlimited barcode and manual logging. Invite a friend and you both get 5 bonus scans. Pro removes the limits.' },
         { q: 'Will my friends see what I eat?', a: 'Only what you choose to share. Meal photos show up in Moments only when you post them.' },
         { q: 'Does it work with Apple Health?', a: 'Yes. Connect Apple Health and your steps and active energy sync automatically.' },
         { q: 'Which languages does Lock support?', a: 'English, 简体中文, 繁體中文, 日本語 and 한국어.' },
@@ -121,7 +121,7 @@ export const COPY = {
         { n: '希腊酸奶', k: 250 },
       ],
     },
-    ticker: ['拍一下', '扫一下', '记下来', '锁上它', '每天 3 次免费 AI 识别', '条码记录不限次数', '每邀请一人 +5 次'],
+    ticker: ['拍一下', '扫一下', '记下来', '锁上它', '每天 3 次免费 AI 识别', '条码记录不限次数', '邀请好友，双方各 +5 次'],
     how: {
       eyebrow: '怎么用',
       title: '拍一下，就记好了。',
@@ -148,7 +148,7 @@ export const COPY = {
       title: '一起 Lock in。',
       sub: '加好友、保持打卡连胜、冲好友排行榜。发起打卡或步数挑战，想分享时就把餐食发到 Moments。',
       bullets: ['好友排行榜', '打卡连胜', '连胜与步数挑战', 'Moments 动态'],
-      invite: '每邀请一位好友，多得 5 次 AI 识别。',
+      invite: '邀请好友加入，你们俩各得 5 次 AI 识别。',
       board: '好友排行榜',
       you: '你',
       days: '天',
@@ -164,7 +164,7 @@ export const COPY = {
     pricing: {
       eyebrow: '价格',
       title: '免费开始，准备好再升级 Pro。',
-      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周每天 10 次 AI 识别', '之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '每邀请一位好友 +5 次', '参与挑战 · 最多 5 位好友'] },
+      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周每天 10 次 AI 识别', '之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '邀请好友：双方各 +5 次', '参与挑战 · 最多 5 位好友'] },
       pro: { name: 'Pro', price: '按月或按年', note: '价格以 App Store 显示为准。', list: ['无限 AI 食物识别', '无限 AI 饮食分析', '创建 & 参与挑战', '无限好友', '数据导出', '体重趋势图'] },
       cta: '下载 Lock',
     },
@@ -173,7 +173,7 @@ export const COPY = {
       title: '大家常问的。',
       items: [
         { q: '拍照识别准吗？', a: 'Lock 的 AI 会根据照片估算卡路里、蛋白质、碳水和脂肪。估算难免有偏差，所以每条记录都可以修改。包装食品可以扫条形码或营养成分表，拿到准确数字。' },
-        { q: 'Lock 收费吗？', a: '可以免费用。首周每天 10 次 AI 识别；之后免费版每天 3 次 AI 识别、每周 1 次 AI 饮食分析，条码和手动记录不限次数。每邀请一位好友多得 5 次。Pro 没有这些限制。' },
+        { q: 'Lock 收费吗？', a: '可以免费用。首周每天 10 次 AI 识别；之后免费版每天 3 次 AI 识别、每周 1 次 AI 饮食分析，条码和手动记录不限次数。邀请好友，双方各得 5 次。Pro 没有这些限制。' },
         { q: '朋友会看到我吃什么吗？', a: '只看得到你主动分享的内容。餐食照片只有你发到 Moments 时才会出现。' },
         { q: '能连 Apple 健康吗？', a: '可以。连接 Apple 健康后，步数和活动能量会自动同步。' },
         { q: '支持哪些语言？', a: 'English、简体中文、繁體中文、日本語 和 한국어。' },
