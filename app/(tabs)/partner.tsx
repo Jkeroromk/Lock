@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/Text';
 import { Button, ScreenHeader } from '@/components/ui/bxc';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { showToast } from '@/components/ui/Toast';
-import GameView, { type GameViewHandle } from '@/components/game/GameView';
+import GameView, { type GameViewHandle } from '@/components/game/GameCanvas';
 import AvatarEditor from '@/components/game/AvatarEditor';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
