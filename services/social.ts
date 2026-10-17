@@ -80,8 +80,15 @@ export const searchUser = async (q: string): Promise<{
   return res.data;
 };
 
-export const sendFriendRequest = async (identifier: string): Promise<void> => {
-  await api.post('/api/social/friends', { identifier });
+export interface FriendRequestResult {
+  status?: 'PENDING' | 'ACCEPTED';
+  /** Present when added by invite code from a new account: both sides got bonus scans. */
+  reward?: { bonus: number; inviterName: string; friends: boolean };
+}
+
+export const sendFriendRequest = async (identifier: string): Promise<FriendRequestResult> => {
+  const res = await api.post<FriendRequestResult>('/api/social/friends', { identifier });
+  return res.data ?? {};
 };
 
 export const fetchFriendRequests = async (): Promise<FriendRequest[]> => {

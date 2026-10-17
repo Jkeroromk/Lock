@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         select: { name: true, username: true },
       });
       const displayName = joinerName?.name || joinerName?.username || '有人';
-      sendPushToUser(challenge.creatorId, '有人加入了你的挑战 🏆', `${displayName} 加入了「${challenge.title}」`, { type: 'CHALLENGE_JOINED', challengeId: params.id })
+      await sendPushToUser(challenge.creatorId, '有人加入了你的挑战 🏆', `${displayName} 加入了「${challenge.title}」`, { type: 'CHALLENGE_JOINED', challengeId: params.id })
         .catch(() => {});
     }
 

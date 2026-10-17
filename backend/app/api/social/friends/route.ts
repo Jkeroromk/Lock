@@ -139,20 +139,31 @@ export async function POST(request: NextRequest) {
       data: { requesterId: userId, addresseeId: target.id, status: 'PENDING' },
     });
 
+    // Added by invite code from a brand-new account: both get bonus scans and
+    // become friends straight away (the code is the invitation). Awaited, since a
+    // serverless function can be frozen as soon as the response is sent.
+    const viaInviteCode = !!target.inviteCode && identifier.toUpperCase() === target.inviteCode;
+    if (viaInviteCode) {
+      const reward = await redeemReferral(userId, target.id, { makeFriends: true }).catch((e) => {
+        console.error('[invite reward]', e);
+        return null;
+      });
+      if (reward?.ok) {
+        return NextResponse.json(
+          { ...friendship, status: reward.friends ? 'ACCEPTED' : 'PENDING', reward: { bonus: reward.bonus, inviterName: reward.inviterName, friends: reward.friends } },
+          { status: 201 },
+        );
+      }
+    }
+
     // 通知被请求方
     const senderName = (await prisma.user.findUnique({
       where: { id: userId },
       select: { name: true, username: true },
     }));
     const displayName = senderName?.name || senderName?.username || '有人';
-    sendPushToUser(target.id, '新好友请求 👋', `${displayName} 想添加你为好友`, { type: 'FRIEND_REQUEST' })
+    await sendPushToUser(target.id, '新好友请求 👋', `${displayName} 想添加你为好友`, { type: 'FRIEND_REQUEST' })
       .catch(() => {});
-
-    // A brand-new account joining through someone's invite code: both get
-    // bonus scans (once per invited account, inviter capped).
-    if (target.inviteCode && identifier.toUpperCase() === target.inviteCode) {
-      redeemReferral(userId, target.id).catch((e) => console.error('[invite reward]', e));
-    }
 
     return NextResponse.json(friendship, { status: 201 });
   } catch (error: any) {

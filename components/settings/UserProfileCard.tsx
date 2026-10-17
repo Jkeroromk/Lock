@@ -19,6 +19,7 @@ interface User {
   gender?: string;
   showGender?: boolean;
   inviteCode?: string;
+  bonusAiCalls?: number;
 }
 
 interface UserProfileCardProps {
@@ -92,6 +93,14 @@ export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) 
             </TouchableOpacity>
           </View>
           <Text style={{ fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 8 }}>{t('settings.inviteCodeDesc' as any)}</Text>
+          {(user.bonusAiCalls ?? 0) > 0 ? (
+            <View accessibilityLiveRegion="polite" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 }}>
+              <Ionicons name="gift" size={15} color={colors.textPrimary} />
+              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textPrimary }}>
+                {(t('settings.bonusScansLeft' as any) as string).replace('{n}', String(user.bonusAiCalls))}
+              </Text>
+            </View>
+          ) : null}
         </View>
       ) : null}
     </Card>

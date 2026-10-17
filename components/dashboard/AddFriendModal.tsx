@@ -33,7 +33,7 @@ interface FoundUser {
 export default function AddFriendModal({ visible, onClose, onSuccess, initialValue }: AddFriendModalProps) {
   const colors = useTheme();
   const router = useRouter();
-  const { user } = useStore();
+  const { user, setUser } = useStore();
   const { t } = useTranslation();
 
   const [query, setQuery] = useState(initialValue ?? '');
@@ -45,6 +45,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   const [error, setError] = useState('');
   const [isLimitError, setIsLimitError] = useState(false);
   const [sent, setSent] = useState(false);
+  const [reward, setReward] = useState<{ bonus: number; name: string } | null>(null);
 
   const slideAnim = useRef(new Animated.Value(600)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -74,7 +75,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   useEffect(() => {
     if (!visible) {
       setQuery(''); setFoundUser(null); setNotFound(false);
-      setError(''); setIsLimitError(false); setSent(false); setRelationStatus('none');
+      setError(''); setIsLimitError(false); setSent(false); setRelationStatus('none'); setReward(null);
     }
   }, [visible]);
 
@@ -103,8 +104,19 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
     if (!foundUser) return;
     setSending(true); setError(''); setIsLimitError(false);
     try {
-      await sendFriendRequest(foundUser.username ?? foundUser.id);
-      setSent(true); setRelationStatus('pending_sent'); onSuccess();
+      // Send what was typed: when it's the person's invite code, the server
+      // rewards both sides and makes them friends right away.
+      const res = await sendFriendRequest(query.trim() || foundUser.username || foundUser.id);
+      if (res.reward) {
+        setReward({ bonus: res.reward.bonus, name: res.reward.inviterName || foundUser.name });
+        const me = useStore.getState().user;
+        if (me) setUser({ ...me, bonusAiCalls: (me.bonusAiCalls ?? 0) + res.reward.bonus });
+        setRelationStatus(res.reward.friends ? 'friends' : 'pending_sent');
+        setSent(!res.reward.friends);
+      } else {
+        setSent(true); setRelationStatus('pending_sent');
+      }
+      onSuccess();
     } catch (e: any) {
       const errCode = e.response?.data?.error;
       if (errCode === 'FRIEND_LIMIT_REACHED') {
@@ -214,6 +226,23 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: DIMENSIONS.SPACING, backgroundColor: colors.cardBackground, borderRadius: 14, borderWidth: 1, borderColor: colors.borderPrimary, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
                   <Ionicons name="person-outline" size={TYPOGRAPHY.iconXS} color={colors.textSecondary} />
                   <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textSecondary }}>{t('dashboard.userNotFound' as any)}</Text>
+                </View>
+              )}
+
+              {/* Invite reward */}
+              {reward && (
+                <View
+                  accessibilityLiveRegion="polite"
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 12, padding: DIMENSIONS.SPACING,
+                    borderRadius: 18, borderWidth: 2, borderColor: colors.ink, backgroundColor: colors.accent,
+                    marginBottom: DIMENSIONS.SPACING * 1.2,
+                  }}
+                >
+                  <Ionicons name="gift" size={24} color={colors.onAccent} />
+                  <Text style={{ flex: 1, fontSize: TYPOGRAPHY.bodyS, lineHeight: 20, fontWeight: '800', color: colors.onAccent }}>
+                    {(t('dashboard.inviteRewardDone' as any) as string).replace('{name}', reward.name).replace('{n}', String(reward.bonus))}
+                  </Text>
                 </View>
               )}
 

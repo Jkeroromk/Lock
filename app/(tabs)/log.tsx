@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useStore } from '@/store/useStore';
+import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { Appear, Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented, Sticker } from '@/components/ui/bxc';
@@ -32,6 +33,7 @@ export default function LogScreen() {
   const c = useTheme();
   const router = useRouter();
   const { refreshToday, user } = useStore();
+  useRefreshRewards();
   const plan = user?.plan ?? 'FREE';
   const aiQuota = user?.isAdmin ? -1 : getQuota(plan, 'dailyAiCalls');
   // Free accounts get a higher daily allowance in their first 7 days (enforced on the server).

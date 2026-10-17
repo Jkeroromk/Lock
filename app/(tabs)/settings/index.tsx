@@ -15,6 +15,7 @@ import { Appear, ScreenHeader } from '@/components/ui/bxc';
 import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
 import EditProfileModal from '@/components/settings/EditProfileModal';
+import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -29,6 +30,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  useRefreshRewards();
 
   const groups = [
     { icon: 'flag-outline', title: t('settings.groupGoals' as any), description: `${dailyCalorieGoal.toLocaleString()} kcal · ${t('settings.weightTracker' as any)}`, route: '/(tabs)/settings/goals' },

@@ -48,7 +48,8 @@ export async function redeemReferral(
 
   const who = newUser.name || newUser.username || '你的好友';
   if (paid.count > 0) {
-    sendPushToUser(inviterId, `+${INVITE_BONUS_AI_CALLS} 次 AI 识别 🎁`, `${who} 通过你的邀请加入了 Lock`, { type: 'INVITE_REWARD' })
+    // Awaited: a serverless function may be frozen once the response is sent.
+    await sendPushToUser(inviterId, `+${INVITE_BONUS_AI_CALLS} 次 AI 识别 🎁`, `${who} 通过你的邀请加入了 Lock`, { type: 'INVITE_REWARD' })
       .catch(() => {});
   }
 
