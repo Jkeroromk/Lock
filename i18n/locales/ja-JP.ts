@@ -310,7 +310,7 @@ const jaJP = {
     newPassword: '新しいパスワード', verificationCode: '確認コード', back: '戻る', enterCode: '確認コードを入力してください',
     hasAccount: 'アカウントをお持ちですか？ログイン',
     noAccount: 'アカウントをお持ちでないですか？サインアップ',
-    or: 'または', welcomeBack: 'おかえりなさい', dayOne: '今日が1日目', freeToStart: '無料ではじめる', createAccount: 'アカウント作成', passwordHint: 'パスワード（8文字以上）', newHere: 'はじめての方', haveAccount: 'アカウントをお持ちの方',
+    or: 'または', welcomeBack: 'おかえりなさい', dayOne: '今日が1日目', freeToStart: '無料ではじめる', createAccount: 'アカウント作成', passwordHint: 'パスワード（8文字以上）', newHere: 'はじめての方', haveAccount: 'アカウントをお持ちの方', pwRuleLength: '8文字以上', errPwned: 'このパスワードは過去のデータ漏えいで見つかっています。Lock専用のものにしてください。', errTooShort: 'パスワードは8文字以上にしてください。', errWeak: '推測されやすいパスワードです。数字や記号を加えてください。', errExists: 'このメールはすでに登録済みです。ログインしてください。', errNotFound: 'このメールのアカウントが見つかりません。確認するか新規作成してください。', errWrongPassword: 'パスワードが違います。もう一度試すか「パスワードを忘れた」をタップ。', errEmailFormat: 'メールアドレスの形式が正しくないようです。', errTooMany: '試行回数が多すぎます。1分ほど待ってから再試行してください。', errUseSocial: 'このアカウントはAppleまたはGoogleでログインします。下のボタンを使ってください。',
     socialLoginComingSoon: 'ソーシャルログインは近日公開',
     rememberEmail: 'メールを記憶',
     continueWithGoogle: 'Googleで続ける',

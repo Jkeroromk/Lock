@@ -44,6 +44,8 @@ export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [pendingPasswordReset, setPendingPasswordReset] = useState(false);
+  // Inline error under the form (instead of a raw Clerk alert).
+  const [authError, setAuthError] = useState<string | null>(null);
   const passwordRef = useRef<any>(null);
   const signupPasswordRef = useRef<any>(null);
 
@@ -100,9 +102,34 @@ export default function LoginScreen() {
     else { useStore.getState().setHasSelectedLanguage(false); router.replace('/(auth)/language-selection'); }
   };
 
+  /** Clerk error → a short, localized sentence the user can act on. */
+  const friendlyAuthError = (err: any): string => {
+    const e = err?.errors?.[0];
+    const code: string = e?.code ?? '';
+    const param: string = e?.meta?.paramName ?? '';
+    switch (code) {
+      case 'form_password_pwned': return t('auth.errPwned' as any);
+      case 'form_password_length_too_short': return t('auth.errTooShort' as any);
+      case 'form_password_not_strong_enough':
+      case 'form_password_validation_failed': return t('auth.errWeak' as any);
+      case 'form_identifier_exists': return t('auth.errExists' as any);
+      case 'form_identifier_not_found': return t('auth.errNotFound' as any);
+      case 'form_password_incorrect': return t('auth.errWrongPassword' as any);
+      case 'strategy_for_user_invalid': return t('auth.errUseSocial' as any);
+      case 'too_many_requests':
+      case 'user_locked': return t('auth.errTooMany' as any);
+      case 'form_param_format_invalid':
+        if (param.includes('email')) return t('auth.errEmailFormat' as any);
+        break;
+    }
+    return e?.longMessage || e?.message || t('auth.loginFailed');
+  };
+
   const handleAuth = async () => {
-    if (!email || !password) { Alert.alert(t('auth.error'), t('auth.fillAllFields')); return; }
-    if (password.length < 8) { Alert.alert(t('auth.error'), t('auth.passwordTooShort')); return; }
+    setAuthError(null);
+    if (!email || !password) { setAuthError(t('auth.fillAllFields')); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setAuthError(t('auth.errEmailFormat' as any)); return; }
+    if (password.length < 8) { setAuthError(t('auth.errTooShort' as any)); return; }
     if (!signInLoaded || !signUpLoaded) return;
     setIsLoading(true);
     try {
@@ -121,9 +148,7 @@ export default function LoginScreen() {
         setTokenGetter(getToken); await onAuthSuccess();
       }
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? err?.message ?? '';
-      const code = err?.errors?.[0]?.code ?? '';
-      Alert.alert(t('auth.error'), `${code ? `[${code}] ` : ''}${msg || t('auth.loginFailed')}`);
+      setAuthError(friendlyAuthError(err));
     } finally { setIsLoading(false); }
   };
 
@@ -135,7 +160,7 @@ export default function LoginScreen() {
       await setSignUpActive({ session: result.createdSessionId });
       setTokenGetter(getToken); await onAuthSuccess();
     } catch (err: any) {
-      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
+      Alert.alert(t('auth.error'), friendlyAuthError(err));
     } finally { setIsLoading(false); }
   };
 
@@ -184,7 +209,7 @@ export default function LoginScreen() {
     if (!email) { Alert.alert(t('auth.error'), t('auth.enterEmailFirst')); return; }
     if (!signInLoaded) return;
     try { await signIn.create({ strategy: 'reset_password_email_code', identifier: email }); setPendingPasswordReset(true); }
-    catch (err: any) { Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.resetFailed')); }
+    catch (err: any) { Alert.alert(t('auth.error'), friendlyAuthError(err)); }
   };
 
   const handlePasswordReset = async (code: string, newPassword: string) => {
@@ -199,7 +224,7 @@ export default function LoginScreen() {
           setTokenGetter(getToken); setPendingPasswordReset(false); await onAuthSuccess();
         }
       }
-    } catch (err: any) { Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed')); }
+    } catch (err: any) { Alert.alert(t('auth.error'), friendlyAuthError(err)); }
     finally { setIsLoading(false); }
   };
 
@@ -207,6 +232,7 @@ export default function LoginScreen() {
     if (toSignUp === isSignUp || isLoading) return;
     Keyboard.dismiss();
     setIsSignUp(toSignUp);
+    setAuthError(null);
     setPassword('');
     setShowPassword(false);
   };
@@ -270,13 +296,23 @@ export default function LoginScreen() {
     </TouchableOpacity>
   );
 
+  const errorRow = authError ? (
+    <View
+      accessibilityLiveRegion="polite"
+      style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 10, borderRadius: 12, backgroundColor: 'rgba(214,69,51,0.12)' }}
+    >
+      <Ionicons name="alert-circle" size={17} color="#D64533" style={{ marginTop: 1 }} />
+      <Text style={{ flex: 1, fontSize: 14, lineHeight: 19, fontWeight: '600', color: '#D64533' }}>{authError}</Text>
+    </View>
+  ) : null;
+
   const loginForm = (
     <View style={{ gap: 12 }}>
       <Text accessibilityRole="header" style={{ fontSize: 30, fontWeight: '800', letterSpacing: -1, color: colors.textPrimary }}>{t('auth.login')}</Text>
       <TextField
         accessibilityLabel={t('auth.email')} placeholder={t('auth.emailPlaceholder')}
-        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
-        returnKeyType="next" value={email} onChangeText={setEmail}
+        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="username" textContentType="username"
+        returnKeyType="next" value={email} onChangeText={(v) => { setEmail(v); setAuthError(null); }}
         onSubmitEditing={() => passwordRef.current?.focus()}
       />
       <TextField
@@ -284,9 +320,10 @@ export default function LoginScreen() {
         accessibilityLabel={t('auth.password')} placeholder={t('auth.passwordPlaceholder')}
         secureTextEntry={!showPassword} returnKeyType="done" value={password}
         autoComplete="current-password" textContentType="password"
-        onChangeText={setPassword} onSubmitEditing={handleAuth}
+        onChangeText={(v) => { setPassword(v); setAuthError(null); }} onSubmitEditing={handleAuth}
         right={eye}
       />
+      {!isSignUp ? errorRow : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <TouchableOpacity
           onPress={() => { const next = !rememberMe; setRememberMe(next); if (!next) AsyncStorage.removeItem('lock_saved_email').catch(() => {}); }}
@@ -326,8 +363,8 @@ export default function LoginScreen() {
       </View>
       <TextField
         accessibilityLabel={t('auth.email')} placeholder={t('auth.emailPlaceholder')}
-        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
-        returnKeyType="next" value={email} onChangeText={setEmail}
+        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="username" textContentType="username"
+        returnKeyType="next" value={email} onChangeText={(v) => { setEmail(v); setAuthError(null); }}
         onSubmitEditing={() => signupPasswordRef.current?.focus()}
       />
       <TextField
@@ -335,9 +372,14 @@ export default function LoginScreen() {
         accessibilityLabel={t('auth.password')} placeholder={t('auth.passwordHint' as any)}
         secureTextEntry={!showPassword} returnKeyType="done" value={password}
         autoComplete="new-password" textContentType="newPassword"
-        onChangeText={setPassword} onSubmitEditing={handleAuth}
+        onChangeText={(v) => { setPassword(v); setAuthError(null); }} onSubmitEditing={handleAuth}
         right={eye}
       />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+        <Ionicons name={password.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'} size={15} color={password.length >= 8 ? colors.textPrimary : colors.textSecondary} />
+        <Text style={{ fontSize: 13, color: password.length >= 8 ? colors.textPrimary : colors.textSecondary }}>{t('auth.pwRuleLength' as any)}</Text>
+      </View>
+      {isSignUp ? errorRow : null}
       <Button label={t('auth.createAccount' as any)} icon="arrow-forward" variant="solid" loading={isLoading && isSignUp} onPress={handleAuth} style={{ marginTop: 4 }} />
       {divider}
       {socialRow}
