@@ -3,34 +3,37 @@ import { ActivityIndicator, InteractionManager, Pressable, View } from 'react-na
 import { Canvas, Picture, Skia, type SkPicture } from '@shopify/react-native-skia';
 import { useSharedValue } from 'react-native-reanimated';
 import { useIsFocused } from '@react-navigation/native';
-import { createEngine, W, H, type Engine, type EngineCmd } from '@/lib/game/engine/core';
+import { createEngine, W, type Engine, type EngineCmd, type GameAction } from '@/lib/game/engine/core';
 import { makeSkiaGfx } from '@/lib/game/engine/gfxSkia';
 
 export type GameCmd = EngineCmd;
 export type GameViewHandle = { send: (cmd: GameCmd) => void };
-export const GAME_ASPECT = H / W;
 
 const emptyPicture = (): SkPicture => { const r = Skia.PictureRecorder(); r.beginRecording(Skia.XYWHRect(0, 0, 1, 1)); return r.finishRecordingAsPicture(); };
 
 /**
- * The Lockling game drawn with React Native Skia. The engine
- * (lib/game/engine/core.js) records one picture per frame (~30 fps) while the
- * screen is focused; tapping advances its dialogue.
+ * The Lockling game drawn with React Native Skia, filling width × height. The
+ * engine (lib/game/engine/core.js) records one picture per frame (~30 fps)
+ * while the screen is focused. Taps go to the engine: they advance dialogue or
+ * press the in-game buttons (reported through onAction).
  */
 const GameCanvas = forwardRef<GameViewHandle, {
   width: number;
+  height: number;
+  /** Space at the top to keep clear (status bar), in points. */
+  insetTop?: number;
   onReady?: () => void;
   onBusy?: (busy: boolean) => void;
   onDone?: (kind: string) => void;
-}>(function GameCanvas({ width, onReady, onBusy, onDone }, ref) {
-  const height = Math.round(width * GAME_ASPECT);
+  onAction?: (action: GameAction) => void;
+}>(function GameCanvas({ width, height, insetTop = 0, onReady, onBusy, onDone, onAction }, ref) {
   const scale = width / W;
   const picture = useSharedValue<SkPicture>(emptyPicture());
   const engine = useRef<Engine | null>(null);
   const gfx = useRef<ReturnType<typeof makeSkiaGfx> | null>(null);
   const queue = useRef<GameCmd[]>([]);
-  const hooks = useRef({ onReady, onBusy, onDone });
-  hooks.current = { onReady, onBusy, onDone };
+  const hooks = useRef({ onReady, onBusy, onDone, onAction });
+  hooks.current = { onReady, onBusy, onDone, onAction };
   const [ready, setReady] = useState(false);
   const focused = useIsFocused();
 
@@ -45,7 +48,8 @@ const GameCanvas = forwardRef<GameViewHandle, {
       engine.current = createEngine(gfx.current, {
         onBusy: (b) => hooks.current.onBusy?.(b),
         onDone: (k) => hooks.current.onDone?.(k),
-      });
+        onAction: (a) => hooks.current.onAction?.(a),
+      }, { height: height / scale, top: insetTop / scale });
       const pending = queue.current; queue.current = [];
       pending.forEach((c) => engine.current!.cmd(c));
       setReady(true);
@@ -75,16 +79,23 @@ const GameCanvas = forwardRef<GameViewHandle, {
   }, [ready, focused, width, height, scale]);
 
   return (
-    <Pressable onPress={() => engine.current?.tap()} accessibilityRole="button" accessibilityLabel="Lockling" style={{ width, height, borderRadius: 22, overflow: 'hidden', backgroundColor: '#151729' }}>
-      <Canvas style={{ width, height }}>
+    <View style={{ width, height, backgroundColor: '#151729' }}>
+      <Canvas style={{ width, height }} pointerEvents="none">
         <Picture picture={picture} />
       </Canvas>
+      {/* A plain view on top takes every tap, so the canvas never swallows them. */}
+      <Pressable
+        onPress={(e) => engine.current?.tap(e.nativeEvent.locationX / scale, e.nativeEvent.locationY / scale)}
+        accessibilityRole="button"
+        accessibilityLabel="Lockling"
+        style={{ position: 'absolute', left: 0, top: 0, width, height }}
+      />
       {!ready ? (
-        <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, width, height, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color="#ffd43b" />
         </View>
       ) : null}
-    </Pressable>
+    </View>
   );
 });
 

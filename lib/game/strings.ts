@@ -5,6 +5,7 @@ const KEYS = [
   'hatchReadyA', 'hatchReadyB', 'hatchA', 'hatchB', 'hatchNoteA', 'hatchNoteB', 'newEggA', 'newEggB',
   'unlockA', 'unlockB', 'unlockedA', 'unlockedB', 'greet1a', 'greet1b', 'greet2a', 'greet2b',
   'dexTitle', 'dexBack', 'notMet', 'mysteryHint1', 'mysteryHint2',
+  'capture', 'hatch', 'dex', 'dress',
 ] as const;
 export const GAME_SPECIES = ['sprig', 'brawn', 'grano', 'drip', 'puff', 'mystery'] as const;
 

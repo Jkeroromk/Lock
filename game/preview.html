@@ -5,14 +5,15 @@
 <body><canvas id="c"></canvas>
 <script type="module">
 // Browser preview of lib/game/engine/core.js (serve the repo root, open /game/preview.html).
-import { createEngine, W, H } from '../lib/game/engine/core.js';
+import { createEngine, W } from '../lib/game/engine/core.js';
 import { makeWebGfx } from './gfx-web.js';
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
-const S = Math.max(1, Math.round((window.innerWidth / W) * (window.devicePixelRatio || 1)));
-cv.width = W * S; cv.height = H * S; ctx.imageSmoothingEnabled = false;
-const engine = createEngine(makeWebGfx(ctx), { onBusy: (b, k) => (window.__busy = b), onDone: (k) => (window.__done = k) });
+const css = window.innerWidth / W, S = css * (window.devicePixelRatio || 1);
+const H = Math.round(window.innerHeight / css), TOP = Number(new URLSearchParams(location.search).get('top') || 0);
+cv.width = Math.round(W * S); cv.height = Math.round(H * S); cv.style.height = window.innerHeight + 'px'; ctx.imageSmoothingEnabled = false;
+const engine = createEngine(makeWebGfx(ctx), { onBusy: (b, k) => (window.__busy = b), onDone: (k) => (window.__done = k), onAction: (a) => (window.__action = a) }, { height: H, top: TOP });
 window.engine = engine;
-cv.addEventListener('click', () => engine.tap());
+cv.addEventListener('click', (e) => engine.tap(e.offsetX / css, e.offsetY / css));
 const loop = (t) => { ctx.setTransform(S, 0, 0, S, 0, 0); ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, W, H); engine.render(t); requestAnimationFrame(loop); };
 requestAnimationFrame(loop);
 window.__ready = true;
