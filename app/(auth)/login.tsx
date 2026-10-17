@@ -5,10 +5,10 @@ import { Text } from '@/components/ui/Text';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSignIn, useSignUp, useOAuth, useAuth, useSignInWithApple } from '@clerk/clerk-expo';
+import { useSignIn, useSignUp, useSSO, useAuth, useSignInWithApple } from '@clerk/clerk-expo';
+import * as AuthSession from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setTokenGetter } from '@/services/tokenStore';
-import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
@@ -32,7 +32,8 @@ export default function LoginScreen() {
   const { getToken, userId: clerkUserId } = useAuth();
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
-  const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
+  // useSSO replaces the deprecated useOAuth (which left new Google users stuck in needs_identifier).
+  const { startSSOFlow } = useSSO();
   // Native Sign in with Apple (system sheet / Face ID) instead of a browser redirect.
   const { startAppleAuthenticationFlow } = useSignInWithApple();
 
@@ -191,15 +192,26 @@ export default function LoginScreen() {
     if (sessionType && sessionType !== 'success') return;
 
     let sessionId = result.createdSessionId ?? result.signUp?.createdSessionId ?? result.signIn?.createdSessionId;
-    if (!sessionId && result.signUp?.status === 'missing_requirements') {
-      try { sessionId = await completeOAuthSignUp(result.signUp); } catch (err) { console.warn('[oauth] complete sign-up failed', err); }
+    let pendingSignUp = result.signUp?.status === 'missing_requirements' ? result.signUp : null;
+    // New account that Clerk didn't hand over to sign-up yet: transfer it ourselves.
+    const fv = result.signIn?.firstFactorVerification;
+    if (!sessionId && !pendingSignUp && fv?.status === 'transferable' && signUp) {
+      try {
+        const su = await signUp.create({ transfer: true });
+        if (su.status === 'complete') sessionId = su.createdSessionId;
+        else if (su.status === 'missing_requirements') pendingSignUp = su;
+      } catch (err) { console.warn('[oauth] transfer failed', err); }
+    }
+    if (!sessionId && pendingSignUp) {
+      try { sessionId = await completeOAuthSignUp(pendingSignUp); } catch (err) { console.warn('[oauth] complete sign-up failed', err); }
     }
     if (sessionId && result.setActive) {
       await result.setActive({ session: sessionId }); setTokenGetter(getToken); await onAuthSuccess(); return;
     }
     // Still stuck: say why, so the cause can be fixed in Clerk.
-    const missing: string[] = result.signUp?.missingFields ?? [];
-    const detail = missing.length ? ` (${missing.join(', ')})` : result.signUp?.status || result.signIn?.status ? ` (${result.signUp?.status ?? result.signIn?.status})` : '';
+    const missing: string[] = pendingSignUp?.missingFields ?? result.signUp?.missingFields ?? [];
+    const parts = missing.length ? missing : [result.signUp?.status ?? result.signIn?.status, fv?.status, fv?.error?.code].filter(Boolean);
+    const detail = parts.length ? ` (${parts.join(' · ')})` : '';
     setAuthError(`${t('auth.oauthIncomplete' as any)}${detail}`);
   };
 
@@ -212,7 +224,13 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     setAuthError(null);
     setIsLoading(true);
-    try { const result = await googleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') }); await activateOAuthSession(result); }
+    try {
+      const result = await startSSOFlow({
+        strategy: 'oauth_google',
+        redirectUrl: AuthSession.makeRedirectUri({ scheme: 'lock', path: 'oauth-callback' }),
+      });
+      await activateOAuthSession(result as any);
+    }
     catch (err: any) { if (!isOAuthCancel(err)) setAuthError(friendlyAuthError(err)); }
     finally { setIsLoading(false); }
   };
