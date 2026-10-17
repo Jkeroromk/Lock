@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const target = await prisma.user.findFirst({
-      where: { OR: [{ username: q }, { inviteCode: q }] },
+      // Usernames match case-insensitively; invite codes are stored upper-case.
+      where: { OR: [{ username: { equals: q.replace(/^@/, ''), mode: 'insensitive' } }, { inviteCode: q.toUpperCase() }] },
       select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, bio: true },
     });
 

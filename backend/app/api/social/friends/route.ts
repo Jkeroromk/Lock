@@ -74,13 +74,14 @@ export async function POST(request: NextRequest) {
   const { userId } = auth;
 
   try {
-    const { identifier } = await request.json();
+    const body = await request.json();
+    const identifier: string = typeof body?.identifier === 'string' ? body.identifier.trim().replace(/^@/, '') : '';
     if (!identifier) {
       return NextResponse.json({ error: 'Username or invite code required' }, { status: 400 });
     }
 
     const target = await prisma.user.findFirst({
-      where: { OR: [{ username: identifier }, { inviteCode: identifier }] },
+      where: { OR: [{ username: { equals: identifier, mode: 'insensitive' } }, { inviteCode: identifier.toUpperCase() }] },
     });
 
     // A block in either direction looks the same as "no such user".
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     // A brand-new account joining through someone's invite code: both get
     // bonus scans (once per invited account, inviter capped).
-    if (target.inviteCode && identifier === target.inviteCode) {
+    if (target.inviteCode && identifier.toUpperCase() === target.inviteCode) {
       redeemReferral(userId, target.id).catch((e) => console.error('[invite reward]', e));
     }
 
