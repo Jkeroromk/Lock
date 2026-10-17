@@ -14,7 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Button, HardShadow, TextField } from '@/components/ui/bxc';
+import { Button, HardShadow, Segmented, TextField } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchProfile, updateProfile } from '@/services/api';
 import { SocialButton } from '@/components/auth/SocialButton';
@@ -202,6 +202,13 @@ export default function LoginScreen() {
     finally { setIsLoading(false); }
   };
 
+  const switchMode = (signUp: boolean) => {
+    if (signUp === isSignUp) return;
+    setIsSignUp(signUp);
+    setPassword('');
+    setShowPassword(false);
+  };
+
   if (pendingVerification) {
     return (
       <OtpVerificationScreen
@@ -239,9 +246,20 @@ export default function LoginScreen() {
                 Lock in.
               </Text>
               <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginTop: 8, textTransform: 'uppercase' }}>
-                {t('auth.welcome')}
+                {isSignUp ? t('auth.createAccountCaption') : t('auth.welcomeBack')}
               </Text>
             </View>
+
+            {/* Log in / Sign up: an explicit switch so the mode is obvious */}
+            <Segmented
+              options={[
+                { key: 'login', label: t('auth.login') },
+                { key: 'signup', label: t('auth.signUp') },
+              ]}
+              value={isSignUp ? 'signup' : 'login'}
+              onChange={(k) => switchMode(k === 'signup')}
+              style={{ marginBottom: 16 }}
+            />
 
             {/* Social */}
             <View style={{ gap: 8 }}>
@@ -287,6 +305,12 @@ export default function LoginScreen() {
                   </TouchableOpacity>
                 }
               />
+              {isSignUp ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+                  <Ionicons name="information-circle-outline" size={14} color={colors.textSecondary} />
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>{t('auth.passwordHint')}</Text>
+                </View>
+              ) : null}
             </View>
 
             {/* Remember me + Forgot */}
@@ -316,13 +340,14 @@ export default function LoginScreen() {
             </View>
 
             <Button
-              label={isSignUp ? t('auth.signUp') : t('auth.login')}
+              label={isSignUp ? t('auth.createAccount') : t('auth.login')}
+              icon={isSignUp ? 'person-add' : 'arrow-forward'}
               loading={isLoading}
               onPress={handleAuth}
               style={{ marginTop: 8 }}
             />
 
-            <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 6 }}>
+            <TouchableOpacity onPress={() => switchMode(!isSignUp)} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 6 }}>
               <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>
                 {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}
               </Text>
