@@ -106,6 +106,14 @@ export const removeFriend = async (friendshipId: string): Promise<void> => {
   await api.delete(`/api/social/friends/${friendshipId}`);
 };
 
+export type RedeemInviteResult = { ok: true; inviterName: string; bonus: number; friends: boolean };
+
+/** New account enters a friend's invite code: both get bonus scans and become friends. Throws with `error` code. */
+export const redeemInviteCode = async (code: string): Promise<RedeemInviteResult> => {
+  const res = await api.post<RedeemInviteResult>('/api/social/redeem-invite', { code });
+  return res.data;
+};
+
 export const fetchInviteCode = async (): Promise<string> => {
   const res = await api.get<{ inviteCode: string }>('/api/social/invite-code');
   return res.data.inviteCode;

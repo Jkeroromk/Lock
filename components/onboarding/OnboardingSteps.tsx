@@ -7,6 +7,7 @@ import GoalSelection from './steps/GoalSelection';
 import ExerciseFrequencySelection from './steps/ExerciseFrequencySelection';
 import ExpectedTimeframeSelection from './steps/ExpectedTimeframeSelection';
 import ThemeSelection from './steps/ThemeSelection';
+import InviteCodeStep from './steps/InviteCodeStep';
 
 interface OnboardingStepsProps {
   step: string;
@@ -141,6 +142,9 @@ export default function OnboardingSteps({
           setExpectedTimeframe={setExpectedTimeframe}
         />
       );
+
+    case 'invite':
+      return <InviteCodeStep />;
 
     case 'theme':
       return (

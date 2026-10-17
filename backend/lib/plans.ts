@@ -8,6 +8,8 @@ export const FREE_TRIAL_DAYS = 7;
 export const FREE_TRIAL_DAILY_AI_CALLS = 10;
 /** Extra scans an inviter earns when a new user joins with their invite code. */
 export const INVITE_BONUS_AI_CALLS = 5;
+/** Extra scans the new user gets for joining with a friend's invite code. */
+export const INVITEE_BONUS_AI_CALLS = 5;
 /** Cap on invite rewards per account, so the bonus can't be farmed. */
 export const MAX_INVITE_REWARDS = 10;
 /** AI diet reviews per week on the free plan (separate from scans). */

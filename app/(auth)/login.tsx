@@ -5,10 +5,10 @@ import { Text } from '@/components/ui/Text';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSignIn, useSignUp, useOAuth, useAuth, useSignInWithApple } from '@clerk/clerk-expo';
+import { useSignIn, useSignUp, useSSO, useAuth, useSignInWithApple } from '@clerk/clerk-expo';
+import * as AuthSession from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setTokenGetter } from '@/services/tokenStore';
-import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
@@ -32,7 +32,8 @@ export default function LoginScreen() {
   const { getToken, userId: clerkUserId } = useAuth();
   const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
   const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
-  const { startOAuthFlow: googleOAuth } = useOAuth({ strategy: 'oauth_google' });
+  // useSSO replaces the deprecated useOAuth (which left new Google users stuck in needs_identifier).
+  const { startSSOFlow } = useSSO();
   // Native Sign in with Apple (system sheet / Face ID) instead of a browser redirect.
   const { startAppleAuthenticationFlow } = useSignInWithApple();
 
@@ -44,6 +45,8 @@ export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [pendingPasswordReset, setPendingPasswordReset] = useState(false);
+  // Inline error under the form (instead of a raw Clerk alert).
+  const [authError, setAuthError] = useState<string | null>(null);
   const passwordRef = useRef<any>(null);
   const signupPasswordRef = useRef<any>(null);
 
@@ -100,9 +103,34 @@ export default function LoginScreen() {
     else { useStore.getState().setHasSelectedLanguage(false); router.replace('/(auth)/language-selection'); }
   };
 
+  /** Clerk error → a short, localized sentence the user can act on. */
+  const friendlyAuthError = (err: any): string => {
+    const e = err?.errors?.[0];
+    const code: string = e?.code ?? '';
+    const param: string = e?.meta?.paramName ?? '';
+    switch (code) {
+      case 'form_password_pwned': return t('auth.errPwned' as any);
+      case 'form_password_length_too_short': return t('auth.errTooShort' as any);
+      case 'form_password_not_strong_enough':
+      case 'form_password_validation_failed': return t('auth.errWeak' as any);
+      case 'form_identifier_exists': return t('auth.errExists' as any);
+      case 'form_identifier_not_found': return t('auth.errNotFound' as any);
+      case 'form_password_incorrect': return t('auth.errWrongPassword' as any);
+      case 'strategy_for_user_invalid': return t('auth.errUseSocial' as any);
+      case 'too_many_requests':
+      case 'user_locked': return t('auth.errTooMany' as any);
+      case 'form_param_format_invalid':
+        if (param.includes('email')) return t('auth.errEmailFormat' as any);
+        break;
+    }
+    return e?.longMessage || e?.message || t('auth.loginFailed');
+  };
+
   const handleAuth = async () => {
-    if (!email || !password) { Alert.alert(t('auth.error'), t('auth.fillAllFields')); return; }
-    if (password.length < 8) { Alert.alert(t('auth.error'), t('auth.passwordTooShort')); return; }
+    setAuthError(null);
+    if (!email || !password) { setAuthError(t('auth.fillAllFields')); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setAuthError(t('auth.errEmailFormat' as any)); return; }
+    if (password.length < 8) { setAuthError(t('auth.errTooShort' as any)); return; }
     if (!signInLoaded || !signUpLoaded) return;
     setIsLoading(true);
     try {
@@ -121,9 +149,7 @@ export default function LoginScreen() {
         setTokenGetter(getToken); await onAuthSuccess();
       }
     } catch (err: any) {
-      const msg = err?.errors?.[0]?.longMessage ?? err?.errors?.[0]?.message ?? err?.message ?? '';
-      const code = err?.errors?.[0]?.code ?? '';
-      Alert.alert(t('auth.error'), `${code ? `[${code}] ` : ''}${msg || t('auth.loginFailed')}`);
+      setAuthError(friendlyAuthError(err));
     } finally { setIsLoading(false); }
   };
 
@@ -135,18 +161,58 @@ export default function LoginScreen() {
       await setSignUpActive({ session: result.createdSessionId });
       setTokenGetter(getToken); await onAuthSuccess();
     } catch (err: any) {
-      Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed'));
+      Alert.alert(t('auth.error'), friendlyAuthError(err));
     } finally { setIsLoading(false); }
   };
 
-  const activateOAuthSession = async (result: { createdSessionId: string | null; setActive?: any; signIn?: any; signUp?: any }) => {
-    const sessionId = result.createdSessionId ?? result.signUp?.createdSessionId ?? result.signIn?.createdSessionId;
+  /**
+   * A new Apple/Google account can come back "missing_requirements" when the Clerk
+   * instance requires a field the provider doesn't supply. Fill what we can
+   * (legal consent is given by the terms line on this screen; a username is
+   * derived from the email) and finish the sign-up. Returns the session id or null.
+   */
+  const completeOAuthSignUp = async (su: any): Promise<string | null> => {
+    const missing: string[] = su?.missingFields ?? [];
+    const patch: Record<string, any> = {};
+    if (missing.includes('legal_accepted')) patch.legalAccepted = true;
+    if (missing.includes('username')) {
+      const base = String(su?.emailAddress ?? 'lock').split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || 'lock';
+      patch.username = `${base.length < 3 ? `${base}user` : base}${Math.floor(100 + Math.random() * 900)}`;
+    }
+    if (missing.includes('first_name')) patch.firstName = String(su?.emailAddress ?? 'Lock').split('@')[0];
+    if (missing.includes('last_name')) patch.lastName = '-';
+    if (Object.keys(patch).length === 0) return null;
+    const res = await su.update(patch);
+    return res?.status === 'complete' ? res.createdSessionId ?? null : null;
+  };
+
+  const activateOAuthSession = async (result: { createdSessionId: string | null; setActive?: any; signIn?: any; signUp?: any; authSessionResult?: any }) => {
+    // Browser closed / Google screen dismissed: not an error.
+    const sessionType = result.authSessionResult?.type;
+    if (sessionType && sessionType !== 'success') return;
+
+    let sessionId = result.createdSessionId ?? result.signUp?.createdSessionId ?? result.signIn?.createdSessionId;
+    let pendingSignUp = result.signUp?.status === 'missing_requirements' ? result.signUp : null;
+    // New account that Clerk didn't hand over to sign-up yet: transfer it ourselves.
+    const fv = result.signIn?.firstFactorVerification;
+    if (!sessionId && !pendingSignUp && fv?.status === 'transferable' && signUp) {
+      try {
+        const su = await signUp.create({ transfer: true });
+        if (su.status === 'complete') sessionId = su.createdSessionId;
+        else if (su.status === 'missing_requirements') pendingSignUp = su;
+      } catch (err) { console.warn('[oauth] transfer failed', err); }
+    }
+    if (!sessionId && pendingSignUp) {
+      try { sessionId = await completeOAuthSignUp(pendingSignUp); } catch (err) { console.warn('[oauth] complete sign-up failed', err); }
+    }
     if (sessionId && result.setActive) {
       await result.setActive({ session: sessionId }); setTokenGetter(getToken); await onAuthSuccess(); return;
     }
-    if (result.signUp?.status === 'missing_requirements' || !sessionId) {
-      Alert.alert(t('auth.error'), t('auth.loginFailed'));
-    }
+    // Still stuck: say why, so the cause can be fixed in Clerk.
+    const missing: string[] = pendingSignUp?.missingFields ?? result.signUp?.missingFields ?? [];
+    const parts = missing.length ? missing : [result.signUp?.status ?? result.signIn?.status, fv?.status, fv?.error?.code].filter(Boolean);
+    const detail = parts.length ? ` (${parts.join(' · ')})` : '';
+    setAuthError(`${t('auth.oauthIncomplete' as any)}${detail}`);
   };
 
   const isOAuthCancel = (err: any) => {
@@ -156,26 +222,34 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
+    setAuthError(null);
     setIsLoading(true);
-    try { const result = await googleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') }); await activateOAuthSession(result); }
-    catch (err: any) { if (!isOAuthCancel(err)) Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Google login failed'); }
+    try {
+      const result = await startSSOFlow({
+        strategy: 'oauth_google',
+        redirectUrl: AuthSession.makeRedirectUri({ scheme: 'lock', path: 'oauth-callback' }),
+      });
+      await activateOAuthSession(result as any);
+    }
+    catch (err: any) { if (!isOAuthCancel(err)) setAuthError(friendlyAuthError(err)); }
     finally { setIsLoading(false); }
   };
 
   const handleAppleLogin = async () => {
     if (Platform.OS !== 'ios') return;
+    setAuthError(null);
     setIsLoading(true);
     try {
       const result = await startAppleAuthenticationFlow();
       if (!result.createdSessionId) {
         // No session and no error: the user closed the Apple sheet.
-        if (result.signUp?.status === 'missing_requirements') Alert.alert(t('auth.error'), t('auth.loginFailed'));
+        if (result.signUp?.status === 'missing_requirements') await activateOAuthSession(result);
         return;
       }
       await activateOAuthSession(result);
     } catch (err: any) {
       if (err?.code !== 'ERR_REQUEST_CANCELED' && !isOAuthCancel(err)) {
-        Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Apple login failed');
+        setAuthError(friendlyAuthError(err));
       }
     } finally { setIsLoading(false); }
   };
@@ -184,7 +258,7 @@ export default function LoginScreen() {
     if (!email) { Alert.alert(t('auth.error'), t('auth.enterEmailFirst')); return; }
     if (!signInLoaded) return;
     try { await signIn.create({ strategy: 'reset_password_email_code', identifier: email }); setPendingPasswordReset(true); }
-    catch (err: any) { Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.resetFailed')); }
+    catch (err: any) { Alert.alert(t('auth.error'), friendlyAuthError(err)); }
   };
 
   const handlePasswordReset = async (code: string, newPassword: string) => {
@@ -199,7 +273,7 @@ export default function LoginScreen() {
           setTokenGetter(getToken); setPendingPasswordReset(false); await onAuthSuccess();
         }
       }
-    } catch (err: any) { Alert.alert(t('auth.error'), err.errors?.[0]?.longMessage || t('auth.loginFailed')); }
+    } catch (err: any) { Alert.alert(t('auth.error'), friendlyAuthError(err)); }
     finally { setIsLoading(false); }
   };
 
@@ -207,6 +281,7 @@ export default function LoginScreen() {
     if (toSignUp === isSignUp || isLoading) return;
     Keyboard.dismiss();
     setIsSignUp(toSignUp);
+    setAuthError(null);
     setPassword('');
     setShowPassword(false);
   };
@@ -270,13 +345,23 @@ export default function LoginScreen() {
     </TouchableOpacity>
   );
 
+  const errorRow = authError ? (
+    <View
+      accessibilityLiveRegion="polite"
+      style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 10, borderRadius: 12, backgroundColor: 'rgba(214,69,51,0.12)' }}
+    >
+      <Ionicons name="alert-circle" size={17} color="#D64533" style={{ marginTop: 1 }} />
+      <Text style={{ flex: 1, fontSize: 14, lineHeight: 19, fontWeight: '600', color: '#D64533' }}>{authError}</Text>
+    </View>
+  ) : null;
+
   const loginForm = (
     <View style={{ gap: 12 }}>
       <Text accessibilityRole="header" style={{ fontSize: 30, fontWeight: '800', letterSpacing: -1, color: colors.textPrimary }}>{t('auth.login')}</Text>
       <TextField
         accessibilityLabel={t('auth.email')} placeholder={t('auth.emailPlaceholder')}
-        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
-        returnKeyType="next" value={email} onChangeText={setEmail}
+        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="username" textContentType="username"
+        returnKeyType="next" value={email} onChangeText={(v) => { setEmail(v); setAuthError(null); }}
         onSubmitEditing={() => passwordRef.current?.focus()}
       />
       <TextField
@@ -284,9 +369,10 @@ export default function LoginScreen() {
         accessibilityLabel={t('auth.password')} placeholder={t('auth.passwordPlaceholder')}
         secureTextEntry={!showPassword} returnKeyType="done" value={password}
         autoComplete="current-password" textContentType="password"
-        onChangeText={setPassword} onSubmitEditing={handleAuth}
+        onChangeText={(v) => { setPassword(v); setAuthError(null); }} onSubmitEditing={handleAuth}
         right={eye}
       />
+      {!isSignUp ? errorRow : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <TouchableOpacity
           onPress={() => { const next = !rememberMe; setRememberMe(next); if (!next) AsyncStorage.removeItem('lock_saved_email').catch(() => {}); }}
@@ -326,8 +412,8 @@ export default function LoginScreen() {
       </View>
       <TextField
         accessibilityLabel={t('auth.email')} placeholder={t('auth.emailPlaceholder')}
-        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email" textContentType="emailAddress"
-        returnKeyType="next" value={email} onChangeText={setEmail}
+        keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="username" textContentType="username"
+        returnKeyType="next" value={email} onChangeText={(v) => { setEmail(v); setAuthError(null); }}
         onSubmitEditing={() => signupPasswordRef.current?.focus()}
       />
       <TextField
@@ -335,9 +421,14 @@ export default function LoginScreen() {
         accessibilityLabel={t('auth.password')} placeholder={t('auth.passwordHint' as any)}
         secureTextEntry={!showPassword} returnKeyType="done" value={password}
         autoComplete="new-password" textContentType="newPassword"
-        onChangeText={setPassword} onSubmitEditing={handleAuth}
+        onChangeText={(v) => { setPassword(v); setAuthError(null); }} onSubmitEditing={handleAuth}
         right={eye}
       />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+        <Ionicons name={password.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'} size={15} color={password.length >= 8 ? colors.textPrimary : colors.textSecondary} />
+        <Text style={{ fontSize: 13, color: password.length >= 8 ? colors.textPrimary : colors.textSecondary }}>{t('auth.pwRuleLength' as any)}</Text>
+      </View>
+      {isSignUp ? errorRow : null}
       <Button label={t('auth.createAccount' as any)} icon="arrow-forward" variant="solid" loading={isLoading && isSignUp} onPress={handleAuth} style={{ marginTop: 4 }} />
       {divider}
       {socialRow}

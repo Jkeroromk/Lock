@@ -2,23 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isAdmin } from '@/lib/admin';
+import { getUniqueInviteCode } from '@/lib/invite-code';
 
 export const dynamic = 'force-dynamic';
-
-function generateInviteCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
-async function getUniqueInviteCode(): Promise<string> {
-  let code = generateInviteCode();
-  while (await prisma.user.findUnique({ where: { inviteCode: code } })) {
-    code = generateInviteCode();
-  }
-  return code;
-}
 
 // GET /api/auth/profile — get or create the user record for the current Clerk user
 export async function GET(request: NextRequest) {
@@ -30,7 +16,18 @@ export async function GET(request: NextRequest) {
     // isAdmin lets the app show "unlimited" instead of the free scan counter.
     const admin = isAdmin(userId);
     const existing = await prisma.user.findUnique({ where: { id: userId } });
-    if (existing) return NextResponse.json({ ...existing, isAdmin: admin });
+    if (existing) {
+      // Rows created by the Clerk webhook have no invite code yet: give them one.
+      if (!existing.inviteCode) {
+        try {
+          const withCode = await prisma.user.update({ where: { id: userId }, data: { inviteCode: await getUniqueInviteCode() } });
+          return NextResponse.json({ ...withCode, isAdmin: admin });
+        } catch {
+          // A rare code collision: the next profile fetch tries again.
+        }
+      }
+      return NextResponse.json({ ...existing, isAdmin: admin });
+    }
 
     const inviteCode = await getUniqueInviteCode();
     const user = await prisma.user.create({ data: { id: userId, inviteCode } });
