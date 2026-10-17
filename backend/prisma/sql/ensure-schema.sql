@@ -60,7 +60,9 @@ END $$;
 -- Lockling (game): partner profile, caught creatures, encounters waiting to be caught.
 CREATE TABLE IF NOT EXISTS "game_profiles" (
   "user_id" TEXT PRIMARY KEY,
-  "stage_seen" INTEGER NOT NULL DEFAULT 1,
+  "stage_seen" INTEGER NOT NULL DEFAULT 0,
+  "look" TEXT,
+  "avatar_name" TEXT,
   "egg_baseline" INTEGER NOT NULL DEFAULT 0,
   "eggs_hatched" INTEGER NOT NULL DEFAULT 0,
   "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),

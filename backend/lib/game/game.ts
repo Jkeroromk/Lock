@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { localDay } from '@/lib/ai-rate-limit';
-import { DAILY_ENCOUNTERS, EGG_STEPS, EVOLVE_DAYS, rollShiny, speciesForMeal, type Species } from './species';
+import { DAILY_ENCOUNTERS, EGG_STEPS, rollShiny, speciesForMeal, type Species } from './species';
+import { MILESTONES, cleanName, milestonesReached, parseLook, sanitizeLook } from './avatar';
 
 export type EncounterView = { id: string; species: string; shiny: boolean; origin: string };
 
@@ -78,9 +79,20 @@ export async function hatchEgg(userId: string) {
   return { id: creature.id, species: creature.species, shiny: creature.shiny };
 }
 
-export async function markStageSeen(userId: string, stage: number) {
+/** The app has celebrated milestones up to `count`. */
+export async function markMilestonesSeen(userId: string, count: number) {
   await ensureProfile(userId);
-  await prisma.gameProfile.update({ where: { userId }, data: { stageSeen: Math.max(1, Math.min(2, Math.round(stage))) } });
+  await prisma.gameProfile.update({ where: { userId }, data: { stageSeen: Math.max(0, Math.min(MILESTONES.length, Math.round(count))) } });
+}
+
+/** Save the avatar; locked items fall back to defaults. */
+export async function saveAvatar(userId: string, look: unknown, name: unknown, timeZone?: string | null) {
+  await ensureProfile(userId);
+  const reached = milestonesReached(await loggedDays(userId, validZone(timeZone)));
+  const clean = sanitizeLook(look, reached);
+  const nm = cleanName(name);
+  await prisma.gameProfile.update({ where: { userId }, data: { look: JSON.stringify(clean), ...(nm ? { avatarName: nm } : {}) } });
+  return { look: clean, name: nm };
 }
 
 /** Days (in the user's zone) with at least one logged meal. */
@@ -108,9 +120,20 @@ export async function gameState(userId: string, timeZone?: string | null) {
     d.count += row._count._all;
     if (row.shiny) d.shiny = true;
   }
-  const stage = days >= EVOLVE_DAYS ? 2 : 1;
+  const reached = milestonesReached(days);
+  const next = MILESTONES[reached];
   return {
-    partner: { level: Math.max(1, days), loggedDays: days, stage, stageSeen: profile.stageSeen, evolveDays: EVOLVE_DAYS },
+    avatar: {
+      created: !!profile.look,
+      look: parseLook(profile.look, reached),
+      name: profile.avatarName,
+      level: Math.max(1, days),
+      loggedDays: days,
+      milestones: reached,
+      milestonesSeen: Math.min(profile.stageSeen, reached),
+      unlocked: MILESTONES.slice(0, reached).map((m) => ({ days: m.days, field: m.field, value: m.value })),
+      next: next ? { days: next.days, field: next.field, value: next.value } : null,
+    },
     egg: { progress: Math.max(0, Math.min(EGG_STEPS, steps - profile.eggBaseline)), target: EGG_STEPS, hatched: profile.eggsHatched },
     today: { encounters: todayCount, cap: DAILY_ENCOUNTERS, waterDone: waterToday > 0 },
     pending: pending.map((e) => ({ id: e.id, species: e.species, shiny: e.shiny, origin: e.origin })),
