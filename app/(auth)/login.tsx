@@ -14,7 +14,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Button, HardShadow, Segmented, TextField } from '@/components/ui/bxc';
+import { Button, HardShadow, TextField } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchProfile, updateProfile } from '@/services/api';
 import { SocialButton } from '@/components/auth/SocialButton';
@@ -250,17 +250,6 @@ export default function LoginScreen() {
               </Text>
             </View>
 
-            {/* Log in / Sign up: an explicit switch so the mode is obvious */}
-            <Segmented
-              options={[
-                { key: 'login', label: t('auth.login') },
-                { key: 'signup', label: t('auth.signUp') },
-              ]}
-              value={isSignUp ? 'signup' : 'login'}
-              onChange={(k) => switchMode(k === 'signup')}
-              style={{ marginBottom: 16 }}
-            />
-
             {/* Social */}
             <View style={{ gap: 8 }}>
               {Platform.OS === 'ios' && (
@@ -347,11 +336,13 @@ export default function LoginScreen() {
               style={{ marginTop: 8 }}
             />
 
-            <TouchableOpacity onPress={() => switchMode(!isSignUp)} accessibilityRole="button" style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 6 }}>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>
-                {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}
-              </Text>
-            </TouchableOpacity>
+            {/* Switch between log in and sign up */}
+            <Button
+              variant="outline"
+              label={isSignUp ? t('auth.switchToLogin') : t('auth.switchToSignUp')}
+              onPress={() => switchMode(!isSignUp)}
+              style={{ marginTop: 10 }}
+            />
 
             {/* Terms agreement (required before posting user content — App Store 1.2) */}
             <Text style={{ fontSize: 12, lineHeight: 18, color: colors.textSecondary, textAlign: 'center', marginTop: 14, paddingHorizontal: 8 }}>

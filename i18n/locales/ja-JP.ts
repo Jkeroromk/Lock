@@ -310,7 +310,7 @@ const jaJP = {
     newPassword: '新しいパスワード', verificationCode: '確認コード', back: '戻る', enterCode: '確認コードを入力してください',
     hasAccount: 'アカウントをお持ちですか？ログイン',
     noAccount: 'アカウントをお持ちでないですか？サインアップ',
-    welcomeBack: 'おかえりなさい', createAccountCaption: 'Lock アカウントを作成', createAccount: 'アカウントを作成', passwordHint: '8文字以上',
+    welcomeBack: 'おかえりなさい', createAccountCaption: 'Lock アカウントを作成', createAccount: 'アカウントを作成', passwordHint: '8文字以上', switchToSignUp: 'はじめての方：アカウントを作成', switchToLogin: 'アカウントをお持ちの方：ログイン',
     socialLoginComingSoon: 'ソーシャルログインは近日公開',
     rememberEmail: 'メールを記憶',
     continueWithGoogle: 'Googleで続ける',

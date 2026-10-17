@@ -304,7 +304,7 @@ const zhTW = {
     resetPasswordSent: '驗證碼已發送至您的信箱', resetFailed: '發送重置郵件失敗',
     newPassword: '新密碼', verificationCode: '驗證碼', back: '返回', enterCode: '請輸入驗證碼',
     hasAccount: '已有賬號？點擊登錄', noAccount: '沒有賬號？點擊註冊',
-    welcomeBack: '歡迎回來', createAccountCaption: '建立你的 Lock 帳號', createAccount: '建立帳號', passwordHint: '密碼至少 8 位',
+    welcomeBack: '歡迎回來', createAccountCaption: '建立你的 Lock 帳號', createAccount: '建立帳號', passwordHint: '密碼至少 8 位', switchToSignUp: '沒有帳號？建立一個', switchToLogin: '已有帳號？去登入',
     socialLoginComingSoon: '社交登錄即將推出',
     rememberEmail: '記住信箱',
     continueWithGoogle: '使用 Google 繼續',

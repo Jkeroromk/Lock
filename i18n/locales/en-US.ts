@@ -339,7 +339,7 @@ const enUS = {
     back: 'Back', enterCode: 'Please enter verification code',
     hasAccount: 'Already have an account? Log in',
     noAccount: "Don't have an account? Sign up",
-    welcomeBack: 'Welcome back', createAccountCaption: 'Create your Lock account', createAccount: 'Create account', passwordHint: 'At least 8 characters',
+    welcomeBack: 'Welcome back', createAccountCaption: 'Create your Lock account', createAccount: 'Create account', passwordHint: 'At least 8 characters', switchToSignUp: 'New here? Create an account', switchToLogin: 'Have an account? Log in',
     socialLoginComingSoon: 'Social login coming soon',
     rememberEmail: 'Remember email',
     continueWithGoogle: 'Continue with Google',
