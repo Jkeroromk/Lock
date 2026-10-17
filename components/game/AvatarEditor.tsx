@@ -15,12 +15,14 @@ const ORDER: AvatarField[] = ['gender', 'skin', 'hair', 'hairColor', 'top', 'bot
  * Bottom sheet for making / restyling the avatar. Every change previews live in
  * the game above the sheet; items unlock with days logged.
  */
-export default function AvatarEditor({ visible, create, initialLook, initialName, milestones, saving, onPreview, onCancel, onSave }: {
+export default function AvatarEditor({ visible, create, initialLook, initialName, milestones, lockedGender, saving, onPreview, onCancel, onSave }: {
   visible: boolean;
   create: boolean;
   initialLook: AvatarLook | null;
   initialName: string;
   milestones: number;
+  /** Body type fixed by the gender chosen at sign-up; the editor then hides that row. */
+  lockedGender?: 'boy' | 'girl' | null;
   saving: boolean;
   onPreview: (look: AvatarLook) => void;
   onCancel: () => void;
@@ -42,7 +44,9 @@ export default function AvatarEditor({ visible, create, initialLook, initialName
 
   const choose = (field: AvatarField, value: string) => {
     if (lockedAt(field, value)) return;
+    if (field === 'gender' && lockedGender) return;
     let next = { ...look, [field]: value } as AvatarLook;
+    if (lockedGender) next.gender = lockedGender;
     // Switching body type while still on the starter look swaps to that type's starter hair and outfit.
     if (field === 'gender') {
       const starter = value === 'girl' ? DEFAULT_GIRL : { gender: 'boy', hair: DEFAULT_LOOK.hair, hairColor: DEFAULT_LOOK.hairColor, bottom: DEFAULT_LOOK.bottom, bottomColor: DEFAULT_LOOK.bottomColor };
@@ -83,7 +87,7 @@ export default function AvatarEditor({ visible, create, initialLook, initialName
               <Label>{t('game.nameLabel')}</Label>
               <TextField value={name} onChangeText={(v) => setName(v.slice(0, 12))} placeholder={t('game.namePlaceholder')} maxLength={12} returnKeyType="done" autoCorrect={false} />
             </View>
-            {ORDER.map((field) => (
+            {ORDER.filter((f) => !(lockedGender && f === 'gender')).map((field) => (
               <View key={field} style={{ gap: 6 }}>
                 <Label>{t(`game.field.${field}`)}</Label>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>

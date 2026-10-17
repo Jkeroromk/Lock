@@ -1,6 +1,6 @@
 // Types for core.js (the engine is plain JS so the browser preview can load it without a build step).
 export const W: number;
-export const H: number;
+export const BASE_H: number;
 export class Buf { w: number; h: number; d: Uint32Array; }
 export const DEFAULT_LOOK: Record<string, string>;
 
@@ -19,13 +19,16 @@ export interface Gfx<Img = unknown> {
 export type EngineCmd = { type: 'strings' | 'state' | 'look' | 'play'; [key: string]: unknown };
 export interface Engine {
   cmd(c: EngineCmd): void;
-  tap(): void;
+  /** Tap at virtual coordinates; finishes/advances dialogue or presses a game button. */
+  tap(x?: number, y?: number): void;
   render(timeMs: number): void;
   W: number;
   H: number;
 }
+export type GameAction = 'catch' | 'hatch' | 'dex' | 'dress';
 export function createEngine(gfx: Gfx<any>, hooks?: {
   onBusy?: (busy: boolean, kind: string) => void;
   onDone?: (kind: string) => void;
+  onAction?: (action: GameAction) => void;
   sound?: (name: string) => void;
-}): Engine;
+}, opts?: { height?: number; top?: number }): Engine;

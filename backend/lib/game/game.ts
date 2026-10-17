@@ -90,6 +90,10 @@ export async function saveAvatar(userId: string, look: unknown, name: unknown, t
   await ensureProfile(userId);
   const reached = milestonesReached(await loggedDays(userId, validZone(timeZone)));
   const clean = sanitizeLook(look, reached);
+  // The avatar's body type follows the gender chosen at sign-up.
+  const u = await prisma.user.findUnique({ where: { id: userId }, select: { gender: true } });
+  if (u?.gender === 'male') clean.gender = 'boy';
+  else if (u?.gender === 'female') clean.gender = 'girl';
   const nm = cleanName(name);
   await prisma.gameProfile.update({ where: { userId }, data: { look: JSON.stringify(clean), ...(nm ? { avatarName: nm } : {}) } });
   return { look: clean, name: nm };
