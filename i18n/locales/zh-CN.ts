@@ -434,7 +434,7 @@ const zhCN = {
     enterCode: '请输入验证码',
     hasAccount: '已有账号？点击登录',
     noAccount: '没有账号？点击注册',
-    or: '或', welcomeBack: '欢迎回来', dayOne: '第 1 天，从现在开始', freeToStart: '免费开始', createAccount: '创建账号', passwordHint: '密码 · 至少 8 位', newHere: '第一次来？', haveAccount: '已有账号？', pwRuleLength: '至少 8 位', errPwned: '这个密码出现在已知的数据泄露里，换一个只在 Lock 用的密码吧。', errTooShort: '密码至少需要 8 位。', errWeak: '密码太容易被猜到，加点数字或符号。', errExists: '这个邮箱已经注册过了，直接登录吧。', errNotFound: '没有找到这个邮箱的账号，检查一下或创建新账号。', errWrongPassword: '密码不对，再试一次或点「忘记密码」。', errEmailFormat: '邮箱格式好像不对。', errTooMany: '尝试次数太多，等一分钟再试。', errUseSocial: '这个账号是用 Apple 或 Google 登录的，请点下面对应的按钮。',
+    or: '或', welcomeBack: '欢迎回来', dayOne: '第 1 天，从现在开始', freeToStart: '免费开始', createAccount: '创建账号', passwordHint: '密码 · 至少 8 位', newHere: '第一次来？', haveAccount: '已有账号？', pasteCode: '粘贴验证码', pwRuleLength: '至少 8 位', errPwned: '这个密码出现在已知的数据泄露里，换一个只在 Lock 用的密码吧。', errTooShort: '密码至少需要 8 位。', errWeak: '密码太容易被猜到，加点数字或符号。', errExists: '这个邮箱已经注册过了，直接登录吧。', errNotFound: '没有找到这个邮箱的账号，检查一下或创建新账号。', errWrongPassword: '密码不对，再试一次或点「忘记密码」。', errEmailFormat: '邮箱格式好像不对。', errTooMany: '尝试次数太多，等一分钟再试。', errUseSocial: '这个账号是用 Apple 或 Google 登录的，请点下面对应的按钮。',
     socialLoginComingSoon: '社交登录即将推出',
     rememberEmail: '记住邮箱',
     continueWithGoogle: '使用 Google 继续',

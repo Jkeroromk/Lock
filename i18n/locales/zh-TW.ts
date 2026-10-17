@@ -304,7 +304,7 @@ const zhTW = {
     resetPasswordSent: '驗證碼已發送至您的信箱', resetFailed: '發送重置郵件失敗',
     newPassword: '新密碼', verificationCode: '驗證碼', back: '返回', enterCode: '請輸入驗證碼',
     hasAccount: '已有賬號？點擊登錄', noAccount: '沒有賬號？點擊註冊',
-    or: '或', welcomeBack: '歡迎回來', dayOne: '第 1 天，從現在開始', freeToStart: '免費開始', createAccount: '建立帳號', passwordHint: '密碼 · 至少 8 位', newHere: '第一次來？', haveAccount: '已有帳號？', pwRuleLength: '至少 8 位', errPwned: '這個密碼出現在已知的資料外洩裡，換一個只在 Lock 用的密碼吧。', errTooShort: '密碼至少需要 8 位。', errWeak: '密碼太容易被猜到，加點數字或符號。', errExists: '這個信箱已經註冊過了，直接登入吧。', errNotFound: '找不到這個信箱的帳號，檢查一下或建立新帳號。', errWrongPassword: '密碼不對，再試一次或點「忘記密碼」。', errEmailFormat: '信箱格式好像不對。', errTooMany: '嘗試次數太多，等一分鐘再試。', errUseSocial: '這個帳號是用 Apple 或 Google 登入的，請點下面對應的按鈕。',
+    or: '或', welcomeBack: '歡迎回來', dayOne: '第 1 天，從現在開始', freeToStart: '免費開始', createAccount: '建立帳號', passwordHint: '密碼 · 至少 8 位', newHere: '第一次來？', haveAccount: '已有帳號？', pasteCode: '貼上驗證碼', pwRuleLength: '至少 8 位', errPwned: '這個密碼出現在已知的資料外洩裡，換一個只在 Lock 用的密碼吧。', errTooShort: '密碼至少需要 8 位。', errWeak: '密碼太容易被猜到，加點數字或符號。', errExists: '這個信箱已經註冊過了，直接登入吧。', errNotFound: '找不到這個信箱的帳號，檢查一下或建立新帳號。', errWrongPassword: '密碼不對，再試一次或點「忘記密碼」。', errEmailFormat: '信箱格式好像不對。', errTooMany: '嘗試次數太多，等一分鐘再試。', errUseSocial: '這個帳號是用 Apple 或 Google 登入的，請點下面對應的按鈕。',
     socialLoginComingSoon: '社交登錄即將推出',
     rememberEmail: '記住信箱',
     continueWithGoogle: '使用 Google 繼續',
