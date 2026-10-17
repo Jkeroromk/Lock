@@ -80,15 +80,9 @@ export const searchUser = async (q: string): Promise<{
   return res.data;
 };
 
-export interface FriendRequestResult {
-  status?: 'PENDING' | 'ACCEPTED';
-  /** Present when added by invite code from a new account: both sides got bonus scans. */
-  reward?: { bonus: number; inviterName: string; friends: boolean };
-}
-
-export const sendFriendRequest = async (identifier: string): Promise<FriendRequestResult> => {
-  const res = await api.post<FriendRequestResult>('/api/social/friends', { identifier });
-  return res.data ?? {};
+/** `identifier`: a username or an 8-digit Friend ID. Always needs the other side to accept. */
+export const sendFriendRequest = async (identifier: string): Promise<void> => {
+  await api.post('/api/social/friends', { identifier });
 };
 
 export const fetchFriendRequests = async (): Promise<FriendRequest[]> => {
@@ -113,9 +107,9 @@ export const removeFriend = async (friendshipId: string): Promise<void> => {
   await api.delete(`/api/social/friends/${friendshipId}`);
 };
 
-export type RedeemInviteResult = { ok: true; inviterName: string; bonus: number; friends: boolean };
+export type RedeemInviteResult = { ok: true; inviterName: string; inviterFriendCode: string | null; bonus: number };
 
-/** New account enters a friend's invite code: both get bonus scans and become friends. Throws with `error` code. */
+/** New account enters the code of whoever invited it: both get bonus scans (no friendship). Throws with `error` code. */
 export const redeemInviteCode = async (code: string): Promise<RedeemInviteResult> => {
   const res = await api.post<RedeemInviteResult>('/api/social/redeem-invite', { code });
   return res.data;

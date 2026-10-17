@@ -20,6 +20,7 @@ export interface UserProfile {
   streak?: number;
   hasCompletedOnboarding: boolean;
   inviteCode?: string | null;
+  friendCode?: string | null;
   createdAt?: string;
   bonusAiCalls?: number;
   /** Team account: no AI limits. */

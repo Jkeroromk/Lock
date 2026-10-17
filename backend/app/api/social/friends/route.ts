@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isBlockedEitherWay } from '@/lib/blocks';
+import { findUserByHandle } from '@/lib/find-user';
 import { getMaxFriends } from '@/lib/plans';
-import { redeemReferral } from '@/lib/referral';
 import { sendPushToUser } from '@/lib/notify';
 
 // GET /api/social/friends — list accepted friends
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/social/friends — send friend request by username or invite code
+// POST /api/social/friends — send a friend request by username or Friend ID (always needs approval)
 export async function POST(request: NextRequest) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
@@ -77,12 +77,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const identifier: string = typeof body?.identifier === 'string' ? body.identifier.trim().replace(/^@/, '') : '';
     if (!identifier) {
-      return NextResponse.json({ error: 'Username or invite code required' }, { status: 400 });
+      return NextResponse.json({ error: 'Username or Friend ID required' }, { status: 400 });
     }
 
-    const target = await prisma.user.findFirst({
-      where: { OR: [{ username: { equals: identifier, mode: 'insensitive' } }, { inviteCode: identifier.toUpperCase() }] },
-    });
+    const target = await findUserByHandle(identifier, { id: true });
 
     // A block in either direction looks the same as "no such user".
     if (!target || (target.id !== userId && (await isBlockedEitherWay(userId, target.id)))) {
@@ -138,23 +136,6 @@ export async function POST(request: NextRequest) {
     const friendship = await prisma.friendship.create({
       data: { requesterId: userId, addresseeId: target.id, status: 'PENDING' },
     });
-
-    // Added by invite code from a brand-new account: both get bonus scans and
-    // become friends straight away (the code is the invitation). Awaited, since a
-    // serverless function can be frozen as soon as the response is sent.
-    const viaInviteCode = !!target.inviteCode && identifier.toUpperCase() === target.inviteCode;
-    if (viaInviteCode) {
-      const reward = await redeemReferral(userId, target.id, { makeFriends: true }).catch((e) => {
-        console.error('[invite reward]', e);
-        return null;
-      });
-      if (reward?.ok) {
-        return NextResponse.json(
-          { ...friendship, status: reward.friends ? 'ACCEPTED' : 'PENDING', reward: { bonus: reward.bonus, inviterName: reward.inviterName, friends: reward.friends } },
-          { status: 201 },
-        );
-      }
-    }
 
     // 通知被请求方
     const senderName = (await prisma.user.findUnique({

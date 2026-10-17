@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isBlockedEitherWay } from '@/lib/blocks';
+import { findUserByHandle } from '@/lib/find-user';
 
-// GET /api/social/users/search?q=username — preview a user before sending request
+// GET /api/social/users/search?q=username or Friend ID — preview a user before sending request
 export async function GET(request: NextRequest) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
@@ -15,11 +16,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const target = await prisma.user.findFirst({
-      // Usernames match case-insensitively; invite codes are stored upper-case.
-      where: { OR: [{ username: { equals: q.replace(/^@/, ''), mode: 'insensitive' } }, { inviteCode: q.toUpperCase() }] },
-      select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, bio: true },
-    });
+    const target = await findUserByHandle(q, { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, bio: true });
 
     if (!target) return NextResponse.json({ user: null });
     if (target.id === userId) return NextResponse.json({ user: null, self: true });

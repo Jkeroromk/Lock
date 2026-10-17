@@ -32,6 +32,7 @@ interface User {
   plan?: PlanTier;
   streak?: number;
   inviteCode?: string;
+  friendCode?: string;
   /** Account creation time (ISO) — drives the free first-week trial. */
   createdAt?: string;
   /** Extra AI scans earned from invites. */
@@ -74,6 +75,9 @@ interface StoreState {
   themeMode: ThemeMode;
   dailyCalorieGoal: number;
   dailyStepGoal: number;
+  /** Invite code from a lock://invite/… link, waiting for the onboarding invite step. */
+  pendingInviteCode: string | null;
+  setPendingInviteCode: (code: string | null) => void;
   setUser: (user: User | null) => void;
   setPlan: (plan: PlanTier) => void;
   setLanguage: (language: LanguageCode) => void;
@@ -110,6 +114,8 @@ export const useStore = create<StoreState>()(
       dailyCalorieGoal: 2000,
       calorieWarnings: true,
       dailyStepGoal: 10000,
+      pendingInviteCode: null,
+      setPendingInviteCode: (code) => set({ pendingInviteCode: code }),
       setUser: (user) => set({ user }),
       setPlan: (plan) => set((state) => ({
         user: state.user ? { ...state.user, plan } : state.user,
@@ -175,6 +181,7 @@ export const useStore = create<StoreState>()(
         todayCalories: state.todayCalories,
         todayMeals: state.todayMeals,
         todayDate: state.todayDate,
+        pendingInviteCode: state.pendingInviteCode,
       }),
     }
   )

@@ -1,12 +1,12 @@
 /**
- * 深链接入口：lock://invite/ABCDEF
- * Expo Router 自动将该 URL 映射到此文件。
- * 跳转到 Dashboard 并预填邀请码，自动打开"添加好友"弹窗。
+ * lock://invite/ABC123 — someone's invite code. It waits in the store until the
+ * onboarding invite step, which comes pre-filled. It never adds a friend.
  */
 import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
+import { useStore } from '@/store/useStore';
 
 export default function InviteDeepLink() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -14,15 +14,9 @@ export default function InviteDeepLink() {
   const router = useRouter();
 
   useEffect(() => {
-    if (code) {
-      if (isSignedIn) {
-        // 已登录 → 直接跳到 Dashboard，带邀请码参数
-        router.replace({ pathname: '/(tabs)/dashboard', params: { inviteCode: code } });
-      } else {
-        // 未登录 → 先去登录，登录后回到 Dashboard
-        router.replace({ pathname: '/(auth)/login', params: { inviteCode: code } });
-      }
-    }
+    const clean = (code ?? '').replace(/[^a-z0-9]/gi, '').toUpperCase();
+    if (/^[A-Z0-9]{6}$/.test(clean)) useStore.getState().setPendingInviteCode(clean);
+    router.replace(isSignedIn ? '/' : '/(auth)/login');
   }, [code, isSignedIn]);
 
   return (

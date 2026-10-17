@@ -18,7 +18,8 @@ model User {
   avatarEmoji  String? @map("avatar_emoji")
   avatarImage  String? @map("avatar_image") @db.Text
   showGender   Boolean @default(false) @map("show_gender")
-  inviteCode String? @unique @map("invite_code")
+  inviteCode String? @unique @map("invite_code") // 6 letters: invite someone new (sign-up reward)
+  friendCode String? @unique @map("friend_code") // 8 digits: add as a friend (needs approval)
   streak    Int      @default(0)
   height    Int?
   age       Int?

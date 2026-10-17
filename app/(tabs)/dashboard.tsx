@@ -24,7 +24,7 @@ type Tab = 'friends' | 'challenges' | 'moments';
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const colors = useTheme();
-  const { inviteCode: deepLinkCode } = useLocalSearchParams<{ inviteCode?: string }>();
+  const { addFriend: deepLinkCode } = useLocalSearchParams<{ addFriend?: string }>();
 
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   const [initialLoading, setInitialLoading] = useState(true);
@@ -32,11 +32,11 @@ export default function DashboardScreen() {
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [showCreateMoment, setShowCreateMoment] = useState(false);
-  const [pendingInviteCode, setPendingInviteCode] = useState<string | undefined>();
+  const [pendingFriendId, setPendingFriendId] = useState<string | undefined>();
 
   useEffect(() => {
     if (deepLinkCode) {
-      setPendingInviteCode(deepLinkCode);
+      setPendingFriendId(deepLinkCode);
       setShowAddFriend(true);
     }
   }, [deepLinkCode]);
@@ -182,9 +182,9 @@ export default function DashboardScreen() {
 
       <AddFriendModal
         visible={showAddFriend}
-        onClose={() => { setShowAddFriend(false); setPendingInviteCode(undefined); }}
+        onClose={() => { setShowAddFriend(false); setPendingFriendId(undefined); }}
         onSuccess={loadAll}
-        initialValue={pendingInviteCode}
+        initialValue={pendingFriendId}
       />
 
       <CreateChallengeModal

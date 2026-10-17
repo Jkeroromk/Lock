@@ -17,3 +17,11 @@ export async function getUniqueInviteCode(): Promise<string> {
   }
   return code;
 }
+
+/** An 8-digit Friend ID no other user has (never starts with 0). */
+export async function getUniqueFriendCode(): Promise<string> {
+  const make = () => String(10_000_000 + Math.floor(Math.random() * 90_000_000));
+  let code = make();
+  while (await prisma.user.findUnique({ where: { friendCode: code } })) code = make();
+  return code;
+}
