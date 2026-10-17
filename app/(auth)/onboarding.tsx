@@ -22,6 +22,7 @@ const STEPS = [
   'goal',
   'exerciseFrequency',
   'expectedTimeframe',
+  'invite', // optional: a friend's invite code
 ] as const;
 
 export default function OnboardingScreen() {
@@ -98,6 +99,8 @@ export default function OnboardingScreen() {
         return onboardingData.exerciseFrequency !== null;
       case 'expectedTimeframe':
         return onboardingData.expectedTimeframe !== null;
+      case 'invite':
+        return true;
       default:
         return false;
     }
