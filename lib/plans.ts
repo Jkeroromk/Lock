@@ -1,5 +1,8 @@
 export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
+/** Daily AI scans during a free account's first week. Keep in sync with backend/lib/plans.ts FREE_TRIAL_DAILY_AI_CALLS. */
+export const FREE_TRIAL_DAILY_AI_CALLS = 10;
+
 export interface PlanFeatures {
   /** 每日 AI 识别次数（-1 = 无限） */
   dailyAiCalls: number;
