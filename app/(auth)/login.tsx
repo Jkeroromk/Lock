@@ -164,14 +164,43 @@ export default function LoginScreen() {
     } finally { setIsLoading(false); }
   };
 
-  const activateOAuthSession = async (result: { createdSessionId: string | null; setActive?: any; signIn?: any; signUp?: any }) => {
-    const sessionId = result.createdSessionId ?? result.signUp?.createdSessionId ?? result.signIn?.createdSessionId;
+  /**
+   * A new Apple/Google account can come back "missing_requirements" when the Clerk
+   * instance requires a field the provider doesn't supply. Fill what we can
+   * (legal consent is given by the terms line on this screen; a username is
+   * derived from the email) and finish the sign-up. Returns the session id or null.
+   */
+  const completeOAuthSignUp = async (su: any): Promise<string | null> => {
+    const missing: string[] = su?.missingFields ?? [];
+    const patch: Record<string, any> = {};
+    if (missing.includes('legal_accepted')) patch.legalAccepted = true;
+    if (missing.includes('username')) {
+      const base = String(su?.emailAddress ?? 'lock').split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || 'lock';
+      patch.username = `${base.length < 3 ? `${base}user` : base}${Math.floor(100 + Math.random() * 900)}`;
+    }
+    if (missing.includes('first_name')) patch.firstName = String(su?.emailAddress ?? 'Lock').split('@')[0];
+    if (missing.includes('last_name')) patch.lastName = '-';
+    if (Object.keys(patch).length === 0) return null;
+    const res = await su.update(patch);
+    return res?.status === 'complete' ? res.createdSessionId ?? null : null;
+  };
+
+  const activateOAuthSession = async (result: { createdSessionId: string | null; setActive?: any; signIn?: any; signUp?: any; authSessionResult?: any }) => {
+    // Browser closed / Google screen dismissed: not an error.
+    const sessionType = result.authSessionResult?.type;
+    if (sessionType && sessionType !== 'success') return;
+
+    let sessionId = result.createdSessionId ?? result.signUp?.createdSessionId ?? result.signIn?.createdSessionId;
+    if (!sessionId && result.signUp?.status === 'missing_requirements') {
+      try { sessionId = await completeOAuthSignUp(result.signUp); } catch (err) { console.warn('[oauth] complete sign-up failed', err); }
+    }
     if (sessionId && result.setActive) {
       await result.setActive({ session: sessionId }); setTokenGetter(getToken); await onAuthSuccess(); return;
     }
-    if (result.signUp?.status === 'missing_requirements' || !sessionId) {
-      Alert.alert(t('auth.error'), t('auth.loginFailed'));
-    }
+    // Still stuck: say why, so the cause can be fixed in Clerk.
+    const missing: string[] = result.signUp?.missingFields ?? [];
+    const detail = missing.length ? ` (${missing.join(', ')})` : result.signUp?.status || result.signIn?.status ? ` (${result.signUp?.status ?? result.signIn?.status})` : '';
+    setAuthError(`${t('auth.oauthIncomplete' as any)}${detail}`);
   };
 
   const isOAuthCancel = (err: any) => {
@@ -181,26 +210,28 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
+    setAuthError(null);
     setIsLoading(true);
     try { const result = await googleOAuth({ redirectUrl: Linking.createURL('/oauth-callback') }); await activateOAuthSession(result); }
-    catch (err: any) { if (!isOAuthCancel(err)) Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Google login failed'); }
+    catch (err: any) { if (!isOAuthCancel(err)) setAuthError(friendlyAuthError(err)); }
     finally { setIsLoading(false); }
   };
 
   const handleAppleLogin = async () => {
     if (Platform.OS !== 'ios') return;
+    setAuthError(null);
     setIsLoading(true);
     try {
       const result = await startAppleAuthenticationFlow();
       if (!result.createdSessionId) {
         // No session and no error: the user closed the Apple sheet.
-        if (result.signUp?.status === 'missing_requirements') Alert.alert(t('auth.error'), t('auth.loginFailed'));
+        if (result.signUp?.status === 'missing_requirements') await activateOAuthSession(result);
         return;
       }
       await activateOAuthSession(result);
     } catch (err: any) {
       if (err?.code !== 'ERR_REQUEST_CANCELED' && !isOAuthCancel(err)) {
-        Alert.alert(t('auth.error'), err?.errors?.[0]?.longMessage ?? err?.message ?? 'Apple login failed');
+        setAuthError(friendlyAuthError(err));
       }
     } finally { setIsLoading(false); }
   };
