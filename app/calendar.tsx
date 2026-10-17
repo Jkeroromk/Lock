@@ -5,7 +5,8 @@ import { useFocusEffect } from 'expo-router';
 import Skeleton from '@/components/ui/Skeleton';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { Appear, ScreenHeader } from '@/components/ui/bxc';
+import { Appear, IconButton, ScreenHeader } from '@/components/ui/bxc';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { fetchMonthlyData, fetchWeeklyData, MonthlyData } from '@/services/api';
 
@@ -26,6 +27,7 @@ export default function CalendarScreen() {
   const { language, dailyCalorieGoal, user } = useStore();
   const uid = user?.id ?? 'anon';
   const { t } = useTranslation();
+  const router = useRouter();
   const colors = useTheme();
 
   // 本地日期字符串（避免 toISOString UTC 偏差）
@@ -145,14 +147,14 @@ export default function CalendarScreen() {
 
   return (
     <TabFocusFade>
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right', 'bottom']}>
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={{ paddingHorizontal: 18 }}>
-          <ScreenHeader title={t('tabs.calendar')} />
+          <ScreenHeader title={t('tabs.calendar')} right={<IconButton icon="close" onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)/today'))} accessibilityLabel={t('common.close' as any)} />} />
           {loading ? (
             <View style={{ gap: 14 }}>
               <Skeleton height={340} borderRadius={22} />

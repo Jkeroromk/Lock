@@ -56,3 +56,54 @@ BEGIN
     UPDATE "users" SET "friend_code" = c WHERE "id" = r."id";
   END LOOP;
 END $$;
+
+-- Lockling (game): partner profile, caught creatures, encounters waiting to be caught.
+CREATE TABLE IF NOT EXISTS "game_profiles" (
+  "user_id" TEXT PRIMARY KEY,
+  "stage_seen" INTEGER NOT NULL DEFAULT 0,
+  "look" TEXT,
+  "avatar_name" TEXT,
+  "egg_baseline" INTEGER NOT NULL DEFAULT 0,
+  "eggs_hatched" INTEGER NOT NULL DEFAULT 0,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS "creatures" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "user_id" TEXT NOT NULL,
+  "species" TEXT NOT NULL,
+  "shiny" BOOLEAN NOT NULL DEFAULT false,
+  "origin" TEXT NOT NULL,
+  "caught_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "creatures_user_id_idx" ON "creatures"("user_id");
+CREATE TABLE IF NOT EXISTS "encounters" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "user_id" TEXT NOT NULL,
+  "species" TEXT NOT NULL,
+  "shiny" BOOLEAN NOT NULL DEFAULT false,
+  "origin" TEXT NOT NULL,
+  "ref_key" TEXT NOT NULL,
+  "day_key" TEXT NOT NULL,
+  "status" TEXT NOT NULL DEFAULT 'PENDING',
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  "caught_at" TIMESTAMPTZ(6)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "encounters_ref_key_key" ON "encounters"("ref_key");
+CREATE INDEX IF NOT EXISTS "encounters_user_id_day_key_idx" ON "encounters"("user_id", "day_key");
+CREATE INDEX IF NOT EXISTS "encounters_user_id_status_idx" ON "encounters"("user_id", "status");
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'game_profiles_user_id_fkey') THEN
+    ALTER TABLE "game_profiles" ADD CONSTRAINT "game_profiles_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'creatures_user_id_fkey') THEN
+    ALTER TABLE "creatures" ADD CONSTRAINT "creatures_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'encounters_user_id_fkey') THEN
+    ALTER TABLE "encounters" ADD CONSTRAINT "encounters_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;

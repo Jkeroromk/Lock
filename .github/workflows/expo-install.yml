@@ -1,0 +1,33 @@
+name: Expo install
+
+# Adds native-compatible dependency versions from CI, where the npm registry is
+# reachable: list packages in .github/expo-install.txt on a branch and push.
+on:
+  push:
+    branches-ignore: [main]
+    paths: ['.github/expo-install.txt']
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx expo install $(cat .github/expo-install.txt)
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if [ -f app.json ]; then git add app.json; fi
+          git commit -m "Install $(cat .github/expo-install.txt) (expo install)" || echo "nothing to commit"
+          git push

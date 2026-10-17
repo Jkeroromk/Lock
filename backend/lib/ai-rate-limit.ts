@@ -126,7 +126,7 @@ export function requestTimeZone(request: Request): string | null {
 }
 
 /** YYYY-MM-DD for `d` in `timeZone` (UTC when missing or invalid). */
-function localDay(d: Date, timeZone?: string | null): string {
+export function localDay(d: Date, timeZone?: string | null): string {
   try {
     return new Intl.DateTimeFormat('en-CA', { timeZone: timeZone || 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
   } catch {

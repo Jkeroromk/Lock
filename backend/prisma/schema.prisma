@@ -56,6 +56,9 @@ model User {
   postReports           PostReport[]
   blocksMade            UserBlock[]  @relation("BlockBlocker")
   blockedBy             UserBlock[]  @relation("BlockBlocked")
+  gameProfile           GameProfile?
+  creatures             Creature[]
+  encounters            Encounter[]
 
   @@map("users")
 }
@@ -276,4 +279,56 @@ model HealthSync {
   @@index([userId])
   @@index([date])
   @@map("health_sync")
+}
+
+// ── Lockling (game) ──────────────────────────────────────────────────────────
+// Real habits drive the game: logging a meal can bring an encounter, steps hatch
+// eggs, days logged grow the partner. Species and numbers live in lib/game/species.ts.
+
+model GameProfile {
+  userId      String   @id @map("user_id")
+  stageSeen   Int      @default(0) @map("stage_seen")   // avatar milestones the app has already celebrated
+  look        String?  @db.Text                        // avatar look (JSON); null until the player makes one
+  avatarName  String?  @map("avatar_name")
+  eggBaseline Int      @default(0) @map("egg_baseline") // lifetime steps when the current egg was laid
+  eggsHatched Int      @default(0) @map("eggs_hatched")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("game_profiles")
+}
+
+model Creature {
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @map("user_id")
+  species  String
+  shiny    Boolean  @default(false)
+  origin   String   // MEAL | WATER | EGG
+  caughtAt DateTime @default(now()) @map("caught_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("creatures")
+}
+
+model Encounter {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id")
+  species   String
+  shiny     Boolean   @default(false)
+  origin    String    // MEAL | WATER
+  refKey    String    @unique @map("ref_key") // meal:<id> or water:<user>:<day>, so each source pays once
+  dayKey    String    @map("day_key")         // user's local YYYY-MM-DD, for the daily cap
+  status    String    @default("PENDING")     // PENDING | CAUGHT
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  caughtAt  DateTime? @map("caught_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dayKey])
+  @@index([userId, status])
+  @@map("encounters")
 }

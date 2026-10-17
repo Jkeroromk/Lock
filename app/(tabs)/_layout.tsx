@@ -118,7 +118,7 @@ function LogTabButton(props: any) {
 
 const TAB_ICONS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof typeof Ionicons.glyphMap }> = {
   today: { on: 'today', off: 'today-outline' },
-  calendar: { on: 'calendar', off: 'calendar-outline' },
+  partner: { on: 'egg', off: 'egg-outline' },
   dashboard: { on: 'people', off: 'people-outline' },
   settings: { on: 'person', off: 'person-outline' },
 };
@@ -247,11 +247,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="calendar"
+        name="partner"
         options={{
-          title: t('tabs.calendar'),
+          title: t('tabs.partner' as any),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
+            <Ionicons name="egg" size={size} color={color} />
           ),
         }}
       />

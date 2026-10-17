@@ -1,7 +1,9 @@
 import { View, ScrollView, RefreshControl, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useCallback } from 'react';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { showToast } from '@/components/ui/Toast';
+import { reportWaterGoal } from '@/services/game';
 import Skeleton from '@/components/ui/Skeleton';
 import { Appear } from '@/components/ui/bxc';
 import { useStore, localDateKey } from '@/store/useStore';
@@ -24,6 +26,7 @@ export default function TodayScreen() {
   const hasFreshCache = todayDate === localDateKey();
   const streak = user?.streak ?? 0;
   const { t, language } = useTranslation();
+  const router = useRouter();
   const colors = useTheme();
   const [loading, setLoading] = useState(!hasFreshCache);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,8 +51,20 @@ export default function TodayScreen() {
   };
 
   const handleAddWater = async (ml: number) => {
+    const before = waterMl;
     setWaterMl((current) => current + ml); // optimistic
     applyWater(await addWater(ml));
+    // Crossing the day's goal brings a water-type Lockling (once a day, server-checked).
+    if (waterGoalMl > 0 && before < waterGoalMl && before + ml >= waterGoalMl) {
+      const encounter = await reportWaterGoal();
+      if (encounter) {
+        showToast({
+          message: (t('game.toastWater' as any) as string).replace('{name}', t(`game.sp.${encounter.species}.name` as any) as string),
+          icon: 'water',
+          action: { label: t('game.toastGo' as any), onPress: () => router.navigate('/(tabs)/partner') },
+        });
+      }
+    }
   };
 
   const handleUndoWater = async () => {
