@@ -15,7 +15,6 @@ const weightOf = (w: string) => (w === '900' ? FontWeight.Black : w === '700' ? 
  */
 export function makeSkiaGfx(): Gfx<SkImage> & { setCanvas(c: SkCanvas): void } {
   let canvas: SkCanvas | null = null;
-  const fontMgr = Skia.FontMgr.System();
   const paint = Skia.Paint();
   paint.setAntiAlias(false);
   const imgPaint = Skia.Paint();
@@ -28,7 +27,8 @@ export function makeSkiaGfx(): Gfx<SkImage> & { setCanvas(c: SkCanvas): void } {
     let p = paras.get(key);
     if (p) return p;
     if (paras.size > 600) paras.clear();
-    const b = Skia.ParagraphBuilder.Make({}, fontMgr);
+    // No font provider: the platform's system fonts (with CJK/Korean fallback) are used.
+    const b = Skia.ParagraphBuilder.Make({});
     const style = { color: Skia.Color(color), fontSize: size, fontFamilies: FAMILIES, fontStyle: { weight: weightOf(weight) } };
     if (stroke) {
       const sp = Skia.Paint();
