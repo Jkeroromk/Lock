@@ -27,6 +27,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json app.json app.config.* 2>/dev/null || true
+          git add package.json package-lock.json
+          if [ -f app.json ]; then git add app.json; fi
           git commit -m "Install $(cat .github/expo-install.txt) (expo install)" || echo "nothing to commit"
           git push
