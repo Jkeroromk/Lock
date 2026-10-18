@@ -2,11 +2,14 @@ import { SubpageShell } from '../components/SubpageShell';
 
 const faqs = [
   { q: 'How does the AI food recognition work?', a: "Take a photo of your meal and Lock's AI analyses the image to estimate calories and macros. The more centred and well-lit the photo, the more accurate the result. You can edit any entry, and for packaged food the barcode or nutrition label gives exact numbers." },
-  { q: 'Why did I run out of AI scans today?', a: 'Your first week has unlimited AI scans. After that, the free plan includes 8 photo or nutrition-label scans a day, resetting at local midnight. Barcode and manual logging are never limited, each friend who joins with your invite code adds 5 bonus scans, and Pro removes the limit.' },
+  { q: 'Why did I run out of AI scans today?', a: 'In your first week the free plan includes 10 photo or nutrition-label scans a day; after that it is 3 a day. The count resets at local midnight. Barcode and manual logging are never limited, and when a friend joins with your invite code you both get 5 bonus scans. Lock Pro removes the limit.' },
+  { q: 'How much is Lock Pro?', a: '$39.99 a year with a 7-day free trial, or $7.99 a month (US prices; the App Store shows the price in your currency). We send a reminder 2 days before the trial ends. If you cancel before then, you are not charged.' },
+  { q: 'How do I set up a training plan?', a: 'Open the Train tab and tap Weekly plan. Name each day, add exercises from the library, and set sets, reps and weight. Turn on auto increase to add weight after each completed workout. Days without exercises are rest days.' },
+  { q: 'How do I switch between kg and lb?', a: 'Go to Settings → Preferences and change the weight unit. Your past workouts and weigh-ins are converted for display; nothing is lost.' },
   { q: 'How do I add friends?', a: 'Go to the Social tab and tap "Add Friend". You can search by username or share your invite code from your Profile card in Settings → Contacts.' },
   { q: 'How do I change the app icon?', a: 'Go to Settings → App Icon and pick Open Lock, Ring, Sticker or Keyhole. iOS shows a short confirmation after you switch.' },
   { q: 'How do I cancel my subscription?', a: 'Subscriptions are managed by Apple. Go to Settings app → Apple ID → Subscriptions → Lock, and tap Cancel Subscription.' },
-  { q: 'How do I delete my account?', a: 'Go to Settings → Account Security → scroll to Danger Zone → Delete Account. This permanently deletes all your data.' },
+  { q: 'How do I delete my account?', a: 'Go to Settings → Account & Security → scroll to Danger Zone → Delete Account. This permanently deletes your account, meals, photos, workouts and weigh-ins. Deleting your account does not cancel an App Store subscription, so cancel that first in your Apple ID settings.' },
   { q: "Why isn't Apple Health syncing?", a: 'Go to Settings → Health Connections and make sure the toggle is enabled. iOS manages Health access in the Health app: tap your profile → Apps → Lock, then turn on Steps and Active Energy.' },
   { q: 'I lost my progress after reinstalling. Can I recover it?', a: 'Your data is tied to your account, not your device. Sign back in with the same account (Apple, Google, or email) and your history will be restored automatically.' },
 ];

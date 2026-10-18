@@ -74,6 +74,15 @@ const I = {
   chev: (s = 18) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
   ),
+  play: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z" /></svg>
+  ),
+  timer: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5" /><path d="M12 9.5v4l2.5 2M9.5 2.5h5" /></svg>
+  ),
+  arrowUp: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
+  ),
   spark: (s = 14) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z" /></svg>
   ),
@@ -136,6 +145,7 @@ function Nav({ t, toggleLang, dark, toggleDark }: { t: T; toggleLang: () => void
         <nav className="nav-links" aria-label="Sections">
           <a href="#how">{t.nav.how}</a>
           <a href="#features">{t.nav.features}</a>
+          <a href="#train">{t.nav.train}</a>
           <a href="#social">{t.nav.social}</a>
           <a href="#pricing">{t.nav.pricing}</a>
           <a href="#faq">{t.nav.faq}</a>
@@ -345,10 +355,10 @@ function Features({ t }: { t: T }) {
                 <span key={d} className={`${hit.includes(d) ? 'h' : logged.includes(d) ? 'l' : ''} ${d === today ? 'td' : ''}`} />
               ))}
             </div>
-            <div className="insight">
-              <span className="mono ai">{I.spark(12)} {f.cal.ai}</span>
-              <p>{f.cal.insight}</p>
-            </div>
+            <p className="cal-sum mono">
+              <span><b className="tnum">{logged.length}</b> {f.cal.summary[0]}</span>
+              <span><b className="tnum">{hit.length}</b> {f.cal.summary[1]}</span>
+            </p>
           </div>
         </Reveal>
 
@@ -368,6 +378,115 @@ function Features({ t }: { t: T }) {
               <span>{I.steps(15)} {f.water.steps} <b className="tnum">7,420</b></span>
               <span>{I.flame(15)} {f.water.energy} <b className="tnum">486</b> kcal</span>
             </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ── Train ────────────────────────────── */
+function Train({ t }: { t: T }) {
+  const tr = t.train;
+  const todayIdx = 4; // Friday in a Mon-first week
+  const wd = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const sets = [
+    { last: '95 × 5', kg: '97.5', reps: '5', done: true },
+    { last: '95 × 5', kg: '97.5', reps: '5', done: true },
+    { last: '95 × 5', kg: '100', reps: '5', done: true, pr: true },
+    { last: '95 × 4', kg: '100', reps: '4', done: false },
+  ];
+  /* 30 days of weigh-ins, gently down: a fixed path so the mock never jitters */
+  const pts = [78.4, 78.6, 78.3, 78.1, 78.2, 77.9, 77.8, 77.9, 77.6, 77.5, 77.6, 77.3, 77.2, 77.3, 77.0, 76.9, 77.0, 76.8, 76.6, 76.6];
+  const lo = 76.3, hi = 78.9;
+  const path = pts.map((v, i) => `${i === 0 ? 'M' : 'L'}${(i / (pts.length - 1)) * 300},${((hi - v) / (hi - lo)) * 100}`).join(' ');
+  const [ref, seen] = useInView<HTMLDivElement>(0.3);
+  return (
+    <section className="sec wrap" id="train">
+      <Reveal><p className="eyebrow">{tr.eyebrow}</p></Reveal>
+      <Reveal delay={1} as="h2"><span className="h2">{tr.title}</span></Reveal>
+      <Reveal delay={2}><p className="lead train-lead">{tr.sub}</p></Reveal>
+
+      <div className="bento">
+        {/* weekly plan */}
+        <Reveal className="cell c5 card">
+          <div className="cell-txt"><h3>{tr.plan.t}</h3><p>{tr.plan.d}</p></div>
+          <div className="week" aria-hidden="true">
+            {tr.plan.days.map((d, i) => {
+              const rest = d === tr.plan.days[2];
+              return (
+                <span key={i} className={`wk ${i === todayIdx ? 'on' : ''} ${rest ? 'rest' : ''}`}>
+                  <i className="mono">{wd[i]}</i>
+                  <b>{d}</b>
+                </span>
+              );
+            })}
+          </div>
+          <div className="today-card">
+            <span className="mono small">{tr.plan.today}</span>
+            <p className="tc-title">{tr.plan.todayTitle}</p>
+            <p className="mono small tc-meta">{tr.plan.todayMeta}</p>
+            <span className="tc-btn">{I.play(13)} {tr.plan.start}</span>
+          </div>
+        </Reveal>
+
+        {/* guided sets */}
+        <Reveal delay={1} className="cell c7 card hero-card">
+          <div className="cell-txt"><h3>{tr.guided.t}</h3><p>{tr.guided.d}</p></div>
+          <div className="sets" ref={ref}>
+            <div className="sets-head"><span className="ex">{tr.guided.exercise}</span><span className="rest-pill mono">{I.timer(13)} {tr.guided.rest} <b className="tnum">1:24</b></span></div>
+            <div className="sets-row sets-cols mono" aria-hidden="true">{tr.guided.cols.map((c) => <span key={c}>{c}</span>)}<span /></div>
+            {sets.map((r, i) => (
+              <div key={i} className={`sets-row ${r.done && seen ? 'is-done' : ''}`} style={{ transitionDelay: `${i * 160}ms` }}>
+                <span className="mono">{i + 1}</span>
+                <span className="mono dim">{r.last}</span>
+                <span className="tnum v">{r.kg}</span>
+                <span className="tnum v">{r.reps}</span>
+                <span className="ck">{I.check(14)}</span>
+              </div>
+            ))}
+            <span className={`sticker sticker-pr ${seen ? 'on' : ''}`}>{I.spark(12)} {tr.guided.pr}</span>
+          </div>
+        </Reveal>
+
+        {/* finish */}
+        <Reveal className="cell c4 card">
+          <div className="cell-txt"><h3>{tr.done.t}</h3><p>{tr.done.d}</p></div>
+          <div className="done-grid">
+            {tr.done.stats.map(([k, v]) => (
+              <div key={k} className="dg"><span className="mono small">{k}</span><b className="tnum">{v}</b></div>
+            ))}
+          </div>
+          <p className="bump mono">{I.arrowUp(14)} {tr.done.next}</p>
+        </Reveal>
+
+        {/* diet x training */}
+        <Reveal delay={1} className="cell c4 card inverse">
+          <div className="cell-txt"><h3>{tr.diet.t}</h3><p>{tr.diet.d}</p></div>
+          <div className="dxt">
+            <div className="dxt-row">
+              <span className="mono">{tr.diet.protein}</span>
+              <span className="dxt-badge mono">{tr.diet.badge}</span>
+            </div>
+            <span className="bar inv"><i style={{ width: seen ? '72%' : 0 }} /></span>
+            <p className="mono small dxt-num"><b className="tnum">115</b> / 160 g</p>
+            <div className="insight">
+              <span className="mono ai">{I.spark(12)} {tr.diet.ai}</span>
+              <p>{tr.diet.insight}</p>
+            </div>
+          </div>
+        </Reveal>
+
+        {/* weight curve */}
+        <Reveal delay={2} className="cell c4 card">
+          <div className="cell-txt"><h3>{tr.weight.t}</h3><p>{tr.weight.d}</p></div>
+          <div className="wcurve">
+            <div className="seg mono" role="presentation">{tr.weight.ranges.map((r, i) => <span key={r} className={i === 0 ? 'on' : ''}>{r}</span>)}</div>
+            <svg viewBox="-6 -8 312 116" aria-hidden="true" preserveAspectRatio="none">
+              <path d={path} fill="none" stroke="var(--fg)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <circle cx="300" cy={((hi - pts[pts.length - 1]) / (hi - lo)) * 100} r="6" fill="var(--accent)" stroke="var(--fg)" strokeWidth="2" />
+            </svg>
+            <p className="mono small wc-change"><b className="tnum">76.6</b> kg · {tr.weight.change}</p>
           </div>
         </Reveal>
       </div>
@@ -420,30 +539,6 @@ function Social({ t }: { t: T }) {
           </div>
         </Reveal>
       </div>
-    </section>
-  );
-}
-
-/* ── Icons ────────────────────────────── */
-function Icons({ t }: { t: T }) {
-  const files = ['open-lock', 'ring-l', 'sticker-l', 'keyhole-dial'];
-  return (
-    <section className="sec wrap icons-sec" id="icons">
-      <div className="icons-head">
-        <div>
-          <Reveal><p className="eyebrow">{t.icons.eyebrow}</p></Reveal>
-          <Reveal delay={1} as="h2"><span className="h2">{t.icons.title}</span></Reveal>
-        </div>
-        <Reveal delay={2}><p className="lead">{t.icons.sub}</p></Reveal>
-      </div>
-      <ul className="icon-row">
-        {files.map((f, i) => (
-          <Reveal as="li" key={f} delay={i} className="icon-item">
-            <img src={`/icons/${f}.png`} alt={`${t.icons.names[i]} app icon`} width={180} height={180} loading="lazy" />
-            <span className="mono">{t.icons.names[i]}{i === 0 && <em>{t.icons.def}</em>}</span>
-          </Reveal>
-        ))}
-      </ul>
     </section>
   );
 }
@@ -538,7 +633,7 @@ function Footer({ t }: { t: T }) {
         </div>
         <nav className="foot-col" aria-label={f.product}>
           <span className="mono">{f.product}</span>
-          <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
+          <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#train">{t.nav.train}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
         </nav>
         <nav className="foot-col" aria-label={f.company}>
           <span className="mono">{f.company}</span>
@@ -593,8 +688,8 @@ export default function LockPage() {
         <Ticker t={t} />
         <How t={t} />
         <Features t={t} />
+        <Train t={t} />
         <Social t={t} />
-        <Icons t={t} />
         <Pricing t={t} />
         <Faq t={t} />
         <FinalCta t={t} />
