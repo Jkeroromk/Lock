@@ -61,3 +61,58 @@ END $$;
 DROP TABLE IF EXISTS "encounters";
 DROP TABLE IF EXISTS "creatures";
 DROP TABLE IF EXISTS "game_profiles";
+
+-- Training tab (Oct 2026): weekly plan, finished workouts and their sets.
+CREATE TABLE IF NOT EXISTS "workout_plans" (
+  "user_id" TEXT PRIMARY KEY,
+  "days" JSONB NOT NULL DEFAULT '{}',
+  "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS "workout_sessions" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "user_id" TEXT NOT NULL,
+  "day_key" TEXT NOT NULL,
+  "plan_day" INTEGER,
+  "title" TEXT,
+  "started_at" TIMESTAMPTZ(6) NOT NULL,
+  "finished_at" TIMESTAMPTZ(6) NOT NULL,
+  "duration_sec" INTEGER NOT NULL DEFAULT 0,
+  "volume" DECIMAL(10,2) NOT NULL DEFAULT 0,
+  "set_count" INTEGER NOT NULL DEFAULT 0,
+  "pr_count" INTEGER NOT NULL DEFAULT 0,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "workout_sessions_user_id_day_key_idx" ON "workout_sessions"("user_id", "day_key");
+CREATE TABLE IF NOT EXISTS "workout_sets" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "session_id" UUID NOT NULL,
+  "user_id" TEXT NOT NULL,
+  "exercise_id" TEXT NOT NULL,
+  "position" INTEGER NOT NULL,
+  "weight" DECIMAL(6,2) NOT NULL DEFAULT 0,
+  "reps" INTEGER NOT NULL,
+  "is_pr" BOOLEAN NOT NULL DEFAULT false,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "workout_sets_user_id_exercise_id_idx" ON "workout_sets"("user_id", "exercise_id");
+CREATE INDEX IF NOT EXISTS "workout_sets_session_id_idx" ON "workout_sets"("session_id");
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workout_plans_user_id_fkey') THEN
+    ALTER TABLE "workout_plans" ADD CONSTRAINT "workout_plans_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workout_sessions_user_id_fkey') THEN
+    ALTER TABLE "workout_sessions" ADD CONSTRAINT "workout_sessions_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workout_sets_session_id_fkey') THEN
+    ALTER TABLE "workout_sets" ADD CONSTRAINT "workout_sets_session_id_fkey"
+      FOREIGN KEY ("session_id") REFERENCES "workout_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
+-- Like every other table: no direct access through Supabase's public API
+-- (the backend connects as the owner, which RLS doesn't restrict).
+ALTER TABLE "workout_plans" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "workout_sessions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "workout_sets" ENABLE ROW LEVEL SECURITY;

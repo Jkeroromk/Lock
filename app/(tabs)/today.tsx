@@ -16,6 +16,7 @@ import MealsList from '@/components/today/MealsList';
 import WaterCard from '@/components/today/WaterCard';
 import { getHealthData, syncHealthData, isHealthAvailable, isHealthConnected, requestHealthPermissions } from '@/services/health';
 import ConnectHealthCard from '@/components/today/ConnectHealthCard';
+import TrainingEntryCard from '@/components/today/TrainingEntryCard';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 
 export default function TodayScreen() {
@@ -156,6 +157,10 @@ export default function TodayScreen() {
                   carbs={macros.carbs}
                   fat={macros.fat}
                 />
+                </Appear>
+
+                <Appear index={1}>
+                  <TrainingEntryCard />
                 </Appear>
 
                 {healthConnected === false ? (
