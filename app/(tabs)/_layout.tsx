@@ -1,13 +1,13 @@
 import { Tabs, usePathname, useSegments, useRouter } from 'expo-router';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HardShadow, PressScale, MOTION } from '@/components/ui/bxc';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { HardShadow, PressScale } from '@/components/ui/bxc';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Alert, Platform } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Constants from 'expo-constants';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
@@ -18,7 +18,7 @@ function LogTabButton(props: any) {
   const pathname = usePathname();
   const segments = useSegments();
   const router = useRouter();
-  const { onPress, accessibilityState } = props;
+  const { onPress, accessibilityState, label, labelColor, labelShadow } = props;
   const [isOpeningCamera, setIsOpeningCamera] = useState(false);
   const { t } = useTranslation();
   const colors = useTheme();
@@ -95,7 +95,7 @@ function LogTabButton(props: any) {
       accessibilityState={{ selected: isSelected }}
       style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
     >
-      <View style={{ marginTop: -34, transform: [{ rotate: '-4deg' }] }}>
+      <View style={{ marginTop: label ? -44 : -34, transform: [{ rotate: '-4deg' }] }}>
         <HardShadow color={colors.ink} radius={20} offset={4}>
           <View
             style={{
@@ -113,6 +113,9 @@ function LogTabButton(props: any) {
           </View>
         </HardShadow>
       </View>
+      {label ? (
+        <Text numberOfLines={1} style={[{ fontSize: 11, fontWeight: isSelected ? '800' : '600', color: labelColor, marginTop: 2 }, labelShadow]}>{label}</Text>
+      ) : null}
     </PressScale>
   );
 }
@@ -124,15 +127,15 @@ const TAB_ICONS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof
   settings: { on: 'person', off: 'person-outline' },
 };
 
-const TAB_LABELS: Record<string, string> = { today: 'tabs.today', partner: 'tabs.partner', dashboard: 'tabs.social', settings: 'tabs.user' };
+const TAB_LABELS: Record<string, string> = { today: 'tabs.today', partner: 'tabs.partner', log: 'tabs.log', dashboard: 'tabs.social', settings: 'tabs.user' };
+const GAME_SHADOW = { textShadowColor: 'rgba(10, 12, 24, 0.9)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 };
 
 /**
- * Floating pill tab bar (B×C). Sits in the layout flow so screens need no extra
- * padding. The yellow dot slides to the active tab; icons squash on press.
- *
- * On the Buddy tab the game fills the whole screen, so the bar floats over it
- * like a game menu: no pill, light icons with labels, and it steps aside while
- * a scene plays.
+ * Game-menu tab bar: icons with labels floating on the page (no bar behind
+ * them); the active tab sits on a yellow sticker like the camera button. It
+ * stays in the layout flow so screens need no extra padding — except on the
+ * Buddy tab, where it floats over the full-screen game in light colours and
+ * steps aside while a scene plays.
  */
 function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colors = useTheme();
@@ -140,23 +143,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
   // Red dot on Today while over the calorie goal, visible from every tab.
   const overGoal = isWarning(useCalorieStatus().level);
-  const [barWidth, setBarWidth] = useState(0);
-  const PAD = 6;
-  const slot = barWidth > 0 ? (barWidth - PAD * 2) / state.routes.length : 0;
   const activeName = state.routes[state.index]?.name;
-  const dotX = useSharedValue(0);
-  const dotVisible = useSharedValue(0);
-  const placed = useRef(false);
-
-  useEffect(() => {
-    if (!slot) return;
-    const target = PAD + state.index * slot + slot / 2 - 2.5;
-    if (!placed.current) { dotX.value = target; placed.current = true; }
-    else dotX.value = withSpring(target, MOTION.slide);
-    dotVisible.value = withTiming(activeName === 'log' ? 0 : 1, { duration: 160 });
-  }, [state.index, slot, activeName]);
-
-  const dotStyle = useAnimatedStyle(() => ({ opacity: dotVisible.value, transform: [{ translateX: dotX.value }] }));
 
   const overGame = activeName === 'partner';
   const sceneOn = useGameNavHidden() && overGame;
@@ -164,34 +151,22 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   useEffect(() => { fade.value = withTiming(sceneOn ? 0 : 1, { duration: 180 }); }, [sceneOn]);
   const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }));
 
+  const idle = overGame ? '#ffffff' : colors.textSecondary;
+  const labelOn = overGame ? '#ffd43b' : colors.textPrimary;
+  const shadow = overGame ? GAME_SHADOW : null;
+
   return (
     <Animated.View
       pointerEvents={sceneOn ? 'none' : 'box-none'}
       style={[
-        { paddingHorizontal: 16, paddingTop: 30, paddingBottom: Math.max(insets.bottom, 12) },
+        { paddingHorizontal: 12, paddingTop: 30, paddingBottom: Math.max(insets.bottom, 12) },
         overGame
           ? { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: 'transparent' }
           : { backgroundColor: colors.backgroundPrimary },
         fadeStyle,
       ]}
     >
-      <View
-        onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
-        style={{
-          height: 66,
-          borderRadius: 33,
-          backgroundColor: overGame ? 'transparent' : colors.tabBar,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: PAD,
-        }}
-      >
-        {!overGame ? (
-          <Animated.View
-            pointerEvents="none"
-            style={[{ position: 'absolute', left: 0, bottom: 13, width: 5, height: 5, borderRadius: 2.5, backgroundColor: colors.accent }, dotStyle]}
-          />
-        ) : null}
+      <View style={{ height: 66, flexDirection: 'row', alignItems: 'center' }}>
         {state.routes.map((route, index) => {
           const focused = state.index === index;
           const { options } = descriptors[route.key];
@@ -199,34 +174,14 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
             if (!focused && !event.defaultPrevented) navigation.navigate(route.name as never);
           };
+          const label = t(TAB_LABELS[route.name] as any);
 
           if (route.name === 'log') {
-            return <LogTabButton key={route.key} onPress={onPress} accessibilityState={{ selected: focused }} />;
+            return <LogTabButton key={route.key} onPress={onPress} accessibilityState={{ selected: focused }} label={label} labelColor={focused ? labelOn : idle} labelShadow={shadow} />;
           }
 
           const icons = TAB_ICONS[route.name];
           if (!icons) return null;
-          if (overGame) {
-            return (
-              <PressScale
-                key={route.key}
-                onPress={onPress}
-                scaleTo={0.86}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: focused }}
-                accessibilityLabel={typeof options.title === 'string' ? options.title : route.name}
-                style={{ flex: 1, height: 66, alignItems: 'center', justifyContent: 'center', gap: 2 }}
-              >
-                <View>
-                  <Ionicons name={focused ? icons.on : icons.off} size={25} color={focused ? '#ffd43b' : '#ffffff'} style={GAME_SHADOW} />
-                  {route.name === 'today' && overGoal ? (
-                    <View pointerEvents="none" style={{ position: 'absolute', top: -3, right: -5, width: 10, height: 10, borderRadius: 5, backgroundColor: colors.danger, borderWidth: 2, borderColor: '#141626' }} />
-                  ) : null}
-                </View>
-                <Text style={[{ fontSize: 11, fontWeight: '800', color: focused ? '#ffd43b' : '#ffffff' }, GAME_SHADOW]}>{t(TAB_LABELS[route.name] as any)}</Text>
-              </PressScale>
-            );
-          }
           return (
             <PressScale
               key={route.key}
@@ -238,24 +193,33 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 typeof options.title === 'string' ? options.title : route.name,
                 route.name === 'today' && overGoal ? t('calorieWarn.tabBadge' as any) : '',
               ].filter(Boolean).join(', ')}
-              style={{ flex: 1, height: 66, alignItems: 'center', justifyContent: 'center', paddingBottom: 8 }}
+              style={{ flex: 1, height: 66, alignItems: 'center', justifyContent: 'center', gap: 3 }}
             >
-              <View>
+              <View style={{ width: 44, height: 32, alignItems: 'center', justifyContent: 'center' }}>
+                {focused ? (
+                  <View style={{ position: 'absolute', left: 0, top: 0, transform: [{ rotate: '-3deg' }] }}>
+                    <HardShadow color={colors.ink} radius={12} offset={2}>
+                      <View style={{ width: 42, height: 30, borderRadius: 12, backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink }} />
+                    </HardShadow>
+                  </View>
+                ) : null}
                 <Ionicons
                   name={focused ? icons.on : icons.off}
-                  size={23}
-                  color={focused ? colors.tabIconActive : colors.tabIconInactive}
+                  size={focused ? 20 : 24}
+                  color={focused ? colors.onAccent : idle}
+                  style={focused ? undefined : shadow ?? undefined}
                 />
                 {route.name === 'today' && overGoal ? (
                   <View
                     pointerEvents="none"
                     style={{
-                      position: 'absolute', top: -3, right: -5, width: 10, height: 10, borderRadius: 5,
-                      backgroundColor: colors.danger, borderWidth: 2, borderColor: colors.tabBar,
+                      position: 'absolute', top: -2, right: 0, width: 11, height: 11, borderRadius: 6,
+                      backgroundColor: colors.danger, borderWidth: 2, borderColor: overGame ? '#141626' : colors.backgroundPrimary,
                     }}
                   />
                 ) : null}
               </View>
+              <Text numberOfLines={1} style={[{ fontSize: 11, fontWeight: focused ? '800' : '600', color: focused ? labelOn : idle }, shadow]}>{label}</Text>
             </PressScale>
           );
         })}
@@ -263,8 +227,6 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     </Animated.View>
   );
 }
-
-const GAME_SHADOW = { textShadowColor: 'rgba(10, 12, 24, 0.9)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 };
 
 export default function TabLayout() {
   const { t } = useTranslation();
