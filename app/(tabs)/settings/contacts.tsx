@@ -1,5 +1,5 @@
-import {
 import UserAvatar from '@/components/ui/UserAvatar';
+import {
   View, ScrollView, TouchableOpacity, Image, Share, Modal, StyleSheet, Animated, Platform, ActivityIndicator,
 } from 'react-native';
 import { Text } from '@/components/ui/Text';
