@@ -15,18 +15,22 @@ const emptyPicture = (): SkPicture => { const r = Skia.PictureRecorder(); r.begi
  * The Lockling game drawn with React Native Skia, filling width × height. The
  * engine (lib/game/engine/core.js) records one picture per frame (~30 fps)
  * while the screen is focused. Taps go to the engine: they advance dialogue or
- * press the in-game buttons (reported through onAction).
+ * tap things in the yard (reported through onAction).
  */
 const GameCanvas = forwardRef<GameViewHandle, {
   width: number;
   height: number;
   /** Space at the top to keep clear (status bar), in points. */
   insetTop?: number;
+  /** Height of the tab bar floating over the bottom, in points. */
+  insetBottom?: number;
+  /** Home-indicator inset, in points. */
+  safeBottom?: number;
   onReady?: () => void;
   onBusy?: (busy: boolean) => void;
   onDone?: (kind: string) => void;
   onAction?: (action: GameAction) => void;
-}>(function GameCanvas({ width, height, insetTop = 0, onReady, onBusy, onDone, onAction }, ref) {
+}>(function GameCanvas({ width, height, insetTop = 0, insetBottom = 0, safeBottom = 0, onReady, onBusy, onDone, onAction }, ref) {
   const scale = width / W;
   const picture = useSharedValue<SkPicture>(emptyPicture());
   const engine = useRef<Engine | null>(null);
@@ -49,7 +53,7 @@ const GameCanvas = forwardRef<GameViewHandle, {
         onBusy: (b) => hooks.current.onBusy?.(b),
         onDone: (k) => hooks.current.onDone?.(k),
         onAction: (a) => hooks.current.onAction?.(a),
-      }, { height: height / scale, top: insetTop / scale });
+      }, { height: height / scale, top: insetTop / scale, bottom: insetBottom / scale, safeBottom: safeBottom / scale });
       const pending = queue.current; queue.current = [];
       pending.forEach((c) => engine.current!.cmd(c));
       setReady(true);
@@ -79,7 +83,7 @@ const GameCanvas = forwardRef<GameViewHandle, {
   }, [ready, focused, width, height, scale]);
 
   return (
-    <View style={{ width, height, backgroundColor: '#151729' }}>
+    <View style={{ width, height, backgroundColor: '#0d0f1c' }}>
       <Canvas style={{ width, height }} pointerEvents="none">
         <Picture picture={picture} />
       </Canvas>

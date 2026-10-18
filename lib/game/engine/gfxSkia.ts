@@ -5,7 +5,7 @@ import {
 import type { Buf, Gfx, Rect } from './core';
 
 const FAMILIES = ['PingFang SC', 'Hiragino Sans', 'Apple SD Gothic Neo', 'Helvetica Neue'];
-const weightOf = (w: string) => (w === '900' ? FontWeight.Black : w === '700' ? FontWeight.Bold : FontWeight.SemiBold);
+const weightOf = (w: string) => (w === '900' ? FontWeight.Black : w === '800' ? FontWeight.ExtraBold : w === '700' ? FontWeight.Bold : FontWeight.SemiBold);
 
 /**
  * The engine's gfx interface on React Native Skia. Drawing goes to whichever
@@ -85,6 +85,7 @@ export function makeSkiaGfx(): Gfx<SkImage> & { setCanvas(c: SkCanvas): void } {
     },
     text(str, x, y, o) {
       if (!canvas) return;
+      if (o.edge) para(str, o.edge, o.size, o.weight, { width: Math.max(2, o.size * 0.24) }).paint(canvas, x, y);
       if (o.shadow) para(str, o.shadow, o.size, o.weight).paint(canvas, x, y + 0.6);
       para(str, o.color, o.size, o.weight).paint(canvas, x, y);
     },
