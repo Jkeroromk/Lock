@@ -1,0 +1,68 @@
+// Server copy of the app's exercise catalog (constants/exercises.ts): only
+// what the AI plan generator needs. Keep ids in sync when adding exercises.
+
+export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight';
+
+export interface CatalogExercise { id: string; group: string; equipment: Equipment; en: string; zh: string }
+
+export const CATALOG: CatalogExercise[] = [
+  { id: 'barbell_squat', group: 'legs', equipment: 'barbell', en: 'Barbell Squat', zh: '杠铃深蹲' },
+  { id: 'front_squat', group: 'legs', equipment: 'barbell', en: 'Front Squat', zh: '杠铃前蹲' },
+  { id: 'deadlift', group: 'legs', equipment: 'barbell', en: 'Deadlift', zh: '硬拉' },
+  { id: 'romanian_deadlift', group: 'legs', equipment: 'barbell', en: 'Romanian Deadlift', zh: '罗马尼亚硬拉' },
+  { id: 'leg_press', group: 'legs', equipment: 'machine', en: 'Leg Press', zh: '腿举' },
+  { id: 'hack_squat', group: 'legs', equipment: 'machine', en: 'Hack Squat', zh: '哈克深蹲' },
+  { id: 'bulgarian_split_squat', group: 'legs', equipment: 'dumbbell', en: 'Bulgarian Split Squat', zh: '哑铃保加利亚分腿蹲' },
+  { id: 'walking_lunge', group: 'legs', equipment: 'dumbbell', en: 'Walking Lunge', zh: '哑铃箭步走' },
+  { id: 'goblet_squat', group: 'legs', equipment: 'dumbbell', en: 'Goblet Squat', zh: '高脚杯深蹲' },
+  { id: 'leg_curl', group: 'legs', equipment: 'machine', en: 'Lying Leg Curl', zh: '俯卧腿弯举' },
+  { id: 'leg_extension', group: 'legs', equipment: 'machine', en: 'Leg Extension', zh: '腿屈伸' },
+  { id: 'hip_thrust', group: 'legs', equipment: 'barbell', en: 'Hip Thrust', zh: '杠铃臀推' },
+  { id: 'calf_raise', group: 'legs', equipment: 'machine', en: 'Standing Calf Raise', zh: '站姿提踵' },
+  { id: 'bench_press', group: 'chest', equipment: 'barbell', en: 'Bench Press', zh: '杠铃卧推' },
+  { id: 'incline_bench_press', group: 'chest', equipment: 'barbell', en: 'Incline Bench Press', zh: '上斜杠铃卧推' },
+  { id: 'db_bench_press', group: 'chest', equipment: 'dumbbell', en: 'Dumbbell Bench Press', zh: '哑铃卧推' },
+  { id: 'incline_db_press', group: 'chest', equipment: 'dumbbell', en: 'Incline Dumbbell Press', zh: '上斜哑铃卧推' },
+  { id: 'db_fly', group: 'chest', equipment: 'dumbbell', en: 'Dumbbell Fly', zh: '哑铃飞鸟' },
+  { id: 'cable_crossover', group: 'chest', equipment: 'cable', en: 'Cable Crossover', zh: '龙门架夹胸' },
+  { id: 'machine_chest_press', group: 'chest', equipment: 'machine', en: 'Machine Chest Press', zh: '器械推胸' },
+  { id: 'push_up', group: 'chest', equipment: 'bodyweight', en: 'Push-up', zh: '俯卧撑' },
+  { id: 'dips', group: 'chest', equipment: 'bodyweight', en: 'Dips', zh: '双杠臂屈伸' },
+  { id: 'pull_up', group: 'back', equipment: 'bodyweight', en: 'Pull-up', zh: '引体向上' },
+  { id: 'chin_up', group: 'back', equipment: 'bodyweight', en: 'Chin-up', zh: '反手引体向上' },
+  { id: 'lat_pulldown', group: 'back', equipment: 'cable', en: 'Lat Pulldown', zh: '高位下拉' },
+  { id: 'barbell_row', group: 'back', equipment: 'barbell', en: 'Barbell Row', zh: '杠铃划船' },
+  { id: 'db_row', group: 'back', equipment: 'dumbbell', en: 'One-arm Dumbbell Row', zh: '单臂哑铃划船' },
+  { id: 'seated_cable_row', group: 'back', equipment: 'cable', en: 'Seated Cable Row', zh: '坐姿绳索划船' },
+  { id: 't_bar_row', group: 'back', equipment: 'barbell', en: 'T-Bar Row', zh: 'T 杠划船' },
+  { id: 'straight_arm_pulldown', group: 'back', equipment: 'cable', en: 'Straight-arm Pulldown', zh: '直臂下压' },
+  { id: 'back_extension', group: 'back', equipment: 'bodyweight', en: 'Back Extension', zh: '山羊挺身' },
+  { id: 'face_pull', group: 'back', equipment: 'cable', en: 'Face Pull', zh: '绳索面拉' },
+  { id: 'overhead_press', group: 'shoulders', equipment: 'barbell', en: 'Overhead Press', zh: '杠铃推举' },
+  { id: 'db_shoulder_press', group: 'shoulders', equipment: 'dumbbell', en: 'Dumbbell Shoulder Press', zh: '哑铃推肩' },
+  { id: 'arnold_press', group: 'shoulders', equipment: 'dumbbell', en: 'Arnold Press', zh: '阿诺德推举' },
+  { id: 'lateral_raise', group: 'shoulders', equipment: 'dumbbell', en: 'Lateral Raise', zh: '哑铃侧平举' },
+  { id: 'cable_lateral_raise', group: 'shoulders', equipment: 'cable', en: 'Cable Lateral Raise', zh: '绳索侧平举' },
+  { id: 'front_raise', group: 'shoulders', equipment: 'dumbbell', en: 'Front Raise', zh: '哑铃前平举' },
+  { id: 'rear_delt_fly', group: 'shoulders', equipment: 'dumbbell', en: 'Rear Delt Fly', zh: '俯身反向飞鸟' },
+  { id: 'machine_shoulder_press', group: 'shoulders', equipment: 'machine', en: 'Machine Shoulder Press', zh: '器械推肩' },
+  { id: 'shrug', group: 'shoulders', equipment: 'dumbbell', en: 'Dumbbell Shrug', zh: '哑铃耸肩' },
+  { id: 'barbell_curl', group: 'arms', equipment: 'barbell', en: 'Barbell Curl', zh: '杠铃弯举' },
+  { id: 'db_curl', group: 'arms', equipment: 'dumbbell', en: 'Dumbbell Curl', zh: '哑铃弯举' },
+  { id: 'hammer_curl', group: 'arms', equipment: 'dumbbell', en: 'Hammer Curl', zh: '锤式弯举' },
+  { id: 'preacher_curl', group: 'arms', equipment: 'machine', en: 'Preacher Curl', zh: '牧师凳弯举' },
+  { id: 'cable_curl', group: 'arms', equipment: 'cable', en: 'Cable Curl', zh: '绳索弯举' },
+  { id: 'triceps_pushdown', group: 'arms', equipment: 'cable', en: 'Triceps Pushdown', zh: '绳索下压' },
+  { id: 'skull_crusher', group: 'arms', equipment: 'barbell', en: 'Skull Crusher', zh: '仰卧臂屈伸' },
+  { id: 'overhead_triceps_extension', group: 'arms', equipment: 'dumbbell', en: 'Overhead Triceps Extension', zh: '哑铃颈后臂屈伸' },
+  { id: 'close_grip_bench', group: 'arms', equipment: 'barbell', en: 'Close-grip Bench Press', zh: '窄距卧推' },
+  { id: 'crunch', group: 'core', equipment: 'bodyweight', en: 'Crunch', zh: '卷腹' },
+  { id: 'hanging_leg_raise', group: 'core', equipment: 'bodyweight', en: 'Hanging Leg Raise', zh: '悬垂举腿' },
+  { id: 'cable_crunch', group: 'core', equipment: 'cable', en: 'Cable Crunch', zh: '绳索卷腹' },
+  { id: 'ab_wheel', group: 'core', equipment: 'bodyweight', en: 'Ab Wheel Rollout', zh: '健腹轮' },
+  { id: 'russian_twist', group: 'core', equipment: 'bodyweight', en: 'Russian Twist', zh: '俄罗斯转体' },
+  { id: 'decline_sit_up', group: 'core', equipment: 'bodyweight', en: 'Decline Sit-up', zh: '下斜仰卧起坐' },
+];
+
+export const CATALOG_IDS = new Set(CATALOG.map((e) => e.id));
+export const BODYWEIGHT_IDS = new Set(CATALOG.filter((e) => e.equipment === 'bodyweight').map((e) => e.id));

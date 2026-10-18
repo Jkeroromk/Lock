@@ -4,6 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 import { requestTimeZone } from '@/lib/ai-rate-limit';
 import { DAY_KEY, normalizePlan, normalizeSets, beats, roundKg, type Best, type PlanDays } from '@/lib/workouts';
 import { bestSets } from '@/lib/workout-history';
+import { BODYWEIGHT_IDS } from '@/lib/exercise-catalog';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -104,6 +105,16 @@ export async function POST(request: NextRequest) {
       const day = days[String(planDay)];
       if (day) {
         for (const ex of day.exercises) {
+          // No weight in the plan yet (AI-made plans start empty): remember the
+          // heaviest weight used today, so the next workout starts from it.
+          if (ex.weight <= 0 && !BODYWEIGHT_IDS.has(ex.id)) {
+            const top = Math.max(0, ...sets.filter((s) => s.exerciseId === ex.id).map((s) => s.weight));
+            if (top > 0) {
+              bumps.push({ exerciseId: ex.id, from: 0, to: top });
+              ex.weight = top;
+            }
+            continue;
+          }
           if (ex.progress !== 'weight' || ex.weight <= 0) continue;
           const hit = sets.filter((s) => s.exerciseId === ex.id && s.weight >= ex.weight && s.reps >= ex.reps).length;
           if (hit >= ex.sets) {
