@@ -14,8 +14,10 @@ import { Button, Card, Label, ScreenHeader, Sticker } from '@/components/ui/bxc'
 import { restorePurchases, planFromCustomerInfo } from '@/lib/revenuecat';
 import { useProPlans, ProPlanPicker } from '@/components/pricing/ProPlanPicker';
 import { syncSubscriptionPlan } from '@/services/api';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 export default function PricingScreen() {
+  const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
@@ -64,7 +66,7 @@ export default function PricingScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }} showsVerticalScrollIndicator={false}>
         <ScreenHeader
           title={t('pricing.title' as any)}
           style={{ marginTop: 0 }}

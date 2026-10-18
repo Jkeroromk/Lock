@@ -23,12 +23,14 @@ import BarcodeScanner from '@/components/log/BarcodeScanner';
 import ResultCard, { FoodResult } from '@/components/log/ResultCard';
 import ImagePickerButtons from '@/components/log/ImagePickerButtons';
 import TabFocusFade from '@/components/ui/TabFocusFade';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 type LogMode = 'photo' | 'label' | 'barcode';
 
 const MODES: LogMode[] = ['photo', 'label', 'barcode'];
 
 export default function LogScreen() {
+  const tabInset = useTabBarInset();
   const { t, language } = useTranslation();
   const c = useTheme();
   const router = useRouter();
@@ -191,7 +193,7 @@ export default function LogScreen() {
   return (
     <TabFocusFade>
     <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
         <ScreenHeader title={t('tabs.log')} />
         <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: -8, marginBottom: 14 }}>{modeCaption}</Text>

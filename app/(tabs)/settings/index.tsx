@@ -16,6 +16,7 @@ import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
 import EditProfileModal from '@/components/settings/EditProfileModal';
 import { useRefreshRewards } from '@/hooks/useRefreshRewards';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -24,6 +25,7 @@ const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
  * its own page, so this screen stays short.
  */
 export default function SettingsScreen() {
+  const tabInset = useTabBarInset();
   const { user, setUser, language, dailyCalorieGoal } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
@@ -42,7 +44,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: tabInset }}>
         <View style={{ paddingHorizontal: 18 }}>
           <ScreenHeader title={t('settings.title' as any)} />
           <Appear index={0}>

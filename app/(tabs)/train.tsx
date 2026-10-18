@@ -18,8 +18,10 @@ import AiInsightsCard from '@/components/calendar/AiInsightsCard';
 import { exerciseName } from '@/constants/exercises';
 import { dayTitle } from '@/components/train/dayTitle';
 import { deleteWorkout, type SessionSummary } from '@/services/workouts';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 export default function TrainScreen() {
+  const tabInset = useTabBarInset();
   const c = useTheme();
   const { t, language } = useTranslation();
   const router = useRouter();
@@ -102,7 +104,7 @@ export default function TrainScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 16 }}
+          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.textPrimary} />}
         >
           <ScreenHeader

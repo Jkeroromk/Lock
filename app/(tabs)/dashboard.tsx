@@ -18,10 +18,12 @@ import {
   LeaderboardEntry, FriendRequest, SentRequest, ChallengeData, Moment,
 } from '@/services/api';
 import TabFocusFade from '@/components/ui/TabFocusFade';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 type Tab = 'friends' | 'challenges' | 'moments';
 
 export default function DashboardScreen() {
+  const tabInset = useTabBarInset();
   const { t } = useTranslation();
   const colors = useTheme();
   const { addFriend: deepLinkCode } = useLocalSearchParams<{ addFriend?: string }>();
@@ -113,7 +115,7 @@ export default function DashboardScreen() {
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: tabInset }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

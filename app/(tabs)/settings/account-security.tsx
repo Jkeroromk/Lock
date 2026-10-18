@@ -13,10 +13,12 @@ import * as WebBrowser from 'expo-web-browser';
 import { useStore } from '@/store/useStore';
 import { deleteAccount } from '@/services/api';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 type OAuthStrategy = 'oauth_google' | 'oauth_apple' | 'oauth_facebook';
 
 export default function AccountSecurityScreen() {
+  const tabInset = useTabBarInset();
   const { t } = useTranslation();
   const router = useRouter();
   const colors = useTheme();
@@ -225,7 +227,7 @@ export default function AccountSecurityScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 60 }}
+        contentContainerStyle={{ paddingBottom: tabInset }}
       >
         <View style={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING * 0.4 }}>
 

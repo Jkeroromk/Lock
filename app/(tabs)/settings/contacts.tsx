@@ -12,6 +12,7 @@ import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchLeaderboard, LeaderboardEntry } from '@/services/api';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 // ── Shared Avatar ──────────────────────────────────────────────────────────────
 function Avatar({ emoji, image, name, size = 48 }: {
@@ -228,6 +229,7 @@ function FriendCardModal({ entry, visible, onClose, colors, t }: {
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 export default function ContactsScreen() {
+  const tabInset = useTabBarInset();
   const router = useRouter();
   const { user, todayCalories } = useStore();
   const { t } = useTranslation();
@@ -278,7 +280,7 @@ export default function ContactsScreen() {
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: DIMENSIONS.CARD_PADDING, paddingBottom: tabInset }}
         showsVerticalScrollIndicator={false}
       >
         {/* My Card */}

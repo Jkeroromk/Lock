@@ -18,8 +18,10 @@ import { getHealthData, syncHealthData, isHealthAvailable, isHealthConnected, re
 import ConnectHealthCard from '@/components/today/ConnectHealthCard';
 import TrainingEntryCard from '@/components/today/TrainingEntryCard';
 import TabFocusFade from '@/components/ui/TabFocusFade';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 export default function TodayScreen() {
+  const tabInset = useTabBarInset();
   const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
   // Today's numbers from the last session are shown instantly; fresh data replaces them.
   const hasFreshCache = todayDate === localDateKey();
@@ -133,7 +135,7 @@ export default function TodayScreen() {
     <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 12 }}
+          contentContainerStyle={{ paddingBottom: tabInset }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />
           }

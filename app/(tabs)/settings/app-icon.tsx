@@ -12,10 +12,12 @@ import {
   APP_ICONS, DEFAULT_APP_ICON, getCurrentAppIcon, setAppIcon, supportsAppIconSwitching,
   type AppIconId, type AppIconOption,
 } from '@/lib/appIcon';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 const PREVIEW = 92;
 
 export default function AppIconScreen() {
+  const tabInset = useTabBarInset();
   const router = useRouter();
   const c = useTheme();
   const { t } = useTranslation();
@@ -56,7 +58,7 @@ export default function AppIconScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }} showsVerticalScrollIndicator={false}>
         <Text style={{ fontSize: 38, fontWeight: '800', letterSpacing: -1.4, lineHeight: 40, color: c.textPrimary }}>
           {t('settings.appIcon')}
         </Text>

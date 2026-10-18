@@ -7,9 +7,11 @@ import { Text } from '@/components/ui/Text';
 import { useTheme } from '@/hooks/useTheme';
 import { FONTS } from '@/constants/fonts';
 import { Appear, PressScale, ScreenHeader } from '@/components/ui/bxc';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 /** Shell for a Settings sub-page: back button, big title, scrolling body. */
 export default function SettingsPage({ title, caption, children }: { title: string; caption?: string; children: ReactNode }) {
+  const tabInset = useTabBarInset();
   const c = useTheme();
   const router = useRouter();
   return (
@@ -25,7 +27,7 @@ export default function SettingsPage({ title, caption, children }: { title: stri
           <Ionicons name="chevron-back" size={24} color={c.textPrimary} />
         </PressScale>
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }} showsVerticalScrollIndicator={false}>
         <ScreenHeader title={title} caption={caption} style={{ marginTop: 0 }} />
         <Appear>{children}</Appear>
       </ScrollView>

@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchAllMealsForExport, fetchWeightRecords } from '@/services/api';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 function buildMealsCsv(meals: Awaited<ReturnType<typeof fetchAllMealsForExport>>): string {
   const header = 'Date,Food Name,Calories (kcal),Protein (g),Carbs (g),Fat (g)';
@@ -42,6 +43,7 @@ async function shareFile(filename: string, content: string, title: string) {
 }
 
 export default function ExportDataScreen() {
+  const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
@@ -127,7 +129,7 @@ export default function ExportDataScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: tabInset }}
         showsVerticalScrollIndicator={false}
       >
         <Text style={{
