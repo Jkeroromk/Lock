@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
@@ -13,20 +13,25 @@ import { useStore } from '@/store/useStore';
 import { engineStrings, GAME_SPECIES } from '@/lib/game/strings';
 import { DEFAULT_GIRL, DEFAULT_LOOK, MILESTONES, type AvatarLook } from '@/lib/game/avatar';
 import type { GameAction } from '@/lib/game/engine/core';
+import { setGameNavHidden } from '@/lib/game/navSignal';
 import { captureEncounter, fetchGameState, hatchEgg, markMilestonesSeen, saveAvatar, type GameState } from '@/services/game';
 
 /**
- * Buddy tab: a full-screen pixel game. The player's avatar lives in a room;
- * real meals bring encounters, steps hatch eggs, days logged unlock outfits.
- * The engine draws everything (including its buttons); this screen fetches
- * state, calls the API and tells the engine what to play.
+ * Buddy tab: a full-screen pixel game. The player's avatar lives in a yard
+ * (mirror, incubator, dex board, wild gate); real meals bring encounters,
+ * steps hatch eggs, days logged unlock outfits. The engine draws everything,
+ * edge to edge under the floating tab bar; this screen fetches state, calls
+ * the API and tells the engine what to play.
  */
 export default function PartnerScreen() {
   const { t, language } = useTranslation();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  // Matches the floating tab bar in app/(tabs)/_layout.tsx (30 + 66 + bottom padding).
+  const navHeight = 96 + Math.max(insets.bottom, 12);
   const user = useStore((s) => s.user);
   const game = useRef<GameViewHandle>(null);
-  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [state, setState] = useState<GameState | null>(null);
   const stateRef = useRef<GameState | null>(null);
   const [failed, setFailed] = useState(false);
@@ -54,7 +59,8 @@ export default function PartnerScreen() {
     game.current?.send({
       type: 'state',
       state: {
-        name: nameOf(s), level: s.avatar.level, egg: s.egg, today: s.today, pending: s.pending.length, dex: s.dex, total: GAME_SPECIES.length,
+        name: nameOf(s), level: s.avatar.level, egg: s.egg, today: s.today, pending: s.pending.length, wild: s.pending.map((p) => p.species), dex: s.dex, total: GAME_SPECIES.length,
+        days: s.avatar.loggedDays, nextDays: s.avatar.next?.days ?? null, prevDays: s.avatar.milestones > 0 ? MILESTONES[s.avatar.milestones - 1]?.days ?? 0 : 0,
         // While the editor is open its live preview owns the look.
         ...(editorOpen.current ? {} : { look: lookOf(s) }),
       },
@@ -77,7 +83,7 @@ export default function PartnerScreen() {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(useCallback(() => { load(); return () => setGameNavHidden(false); }, [load]));
   useEffect(() => { game.current?.send({ type: 'strings', strings: engineStrings((k) => tRef.current(k)) }); }, [language]);
 
   const onReady = () => {
@@ -119,6 +125,7 @@ export default function PartnerScreen() {
     else if (a === 'hatch') hatch();
     else if (a === 'dex') game.current?.send({ type: 'play', kind: 'dex' });
     else if (a === 'dress') { editorOpen.current = true; setEditor({ create: false }); }
+    else if (a === 'log') router.navigate('/(tabs)/log');
   };
   const onDone = (kind: string) => { if (kind === 'encounter' || kind === 'hatch') load(); };
 
@@ -143,24 +150,21 @@ export default function PartnerScreen() {
   };
 
   return (
-    <View
-      style={{ flex: 1, backgroundColor: '#151729' }}
-      onLayout={(e) => { const { width, height } = e.nativeEvent.layout; if (!size || Math.abs(size.height - height) > 2 || Math.abs(size.width - width) > 2) setSize({ width, height }); }}
-    >
+    <View style={{ flex: 1, backgroundColor: '#0d0f1c', overflow: 'hidden' }}>
       <StatusBar style="light" />
-      {size ? (
-        <GameCanvas
-          key={`${Math.round(size.width)}x${Math.round(size.height)}`}
-          ref={game}
-          width={size.width}
-          height={size.height}
-          insetTop={insets.top}
-          onReady={onReady}
-          onBusy={(b) => { busy.current = b; }}
-          onDone={onDone}
-          onAction={onAction}
-        />
-      ) : null}
+      <GameCanvas
+        key={`${Math.round(width)}x${Math.round(height)}`}
+        ref={game}
+        width={width}
+        height={height}
+        insetTop={insets.top}
+        insetBottom={navHeight}
+        safeBottom={insets.bottom}
+        onReady={onReady}
+        onBusy={(b) => { busy.current = b; setGameNavHidden(b); }}
+        onDone={onDone}
+        onAction={onAction}
+      />
 
       {failed ? (
         <View style={{ position: 'absolute', left: 16, right: 16, top: insets.top + 60, alignItems: 'center' }}>
