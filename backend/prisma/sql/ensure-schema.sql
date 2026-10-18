@@ -111,3 +111,8 @@ BEGIN
       FOREIGN KEY ("session_id") REFERENCES "workout_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
   END IF;
 END $$;
+-- Like every other table: no direct access through Supabase's public API
+-- (the backend connects as the owner, which RLS doesn't restrict).
+ALTER TABLE "workout_plans" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "workout_sessions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "workout_sets" ENABLE ROW LEVEL SECURITY;
