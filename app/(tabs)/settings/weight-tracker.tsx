@@ -12,6 +12,7 @@ import { useStore } from '@/store/useStore';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchWeightRecords, logWeight, deleteWeight } from '@/services/api';
 import { kgTo, toKg, fmtWeight, useWeightUnit } from '@/lib/units';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 interface WeightRecord {
   id: string;
@@ -21,6 +22,7 @@ interface WeightRecord {
 }
 
 export default function WeightTrackerScreen() {
+  const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
@@ -132,7 +134,7 @@ export default function WeightTrackerScreen() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}
+          contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: tabInset }}
           showsVerticalScrollIndicator={false}
         >
           {latest && (

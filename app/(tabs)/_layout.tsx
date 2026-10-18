@@ -12,6 +12,7 @@ import Constants from 'expo-constants';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
+import { TAB_BAR_HEIGHT } from '@/hooks/useTabBarInset';
 
 function LogTabButton(props: any) {
   const pathname = usePathname();
@@ -152,12 +153,17 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const dotStyle = useAnimatedStyle(() => ({ opacity: dotVisible.value, transform: [{ translateX: dotX.value }] }));
 
   return (
-    <View style={{ backgroundColor: colors.backgroundPrimary, paddingHorizontal: 16, paddingTop: 30, paddingBottom: Math.max(insets.bottom, 12) }}>
+    // Floats over the screen: only the pill is drawn, content scrolls behind it
+    // (screens pad their scroll content with useTabBarInset).
+    <View
+      pointerEvents="box-none"
+      style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 12) }}
+    >
       <View
         onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         style={{
-          height: 66,
-          borderRadius: 33,
+          height: TAB_BAR_HEIGHT,
+          borderRadius: TAB_BAR_HEIGHT / 2,
           backgroundColor: colors.tabBar,
           flexDirection: 'row',
           alignItems: 'center',

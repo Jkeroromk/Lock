@@ -9,8 +9,10 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { BlockedUser, fetchBlockedUsers, unblockUser } from '@/services/api';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 export default function BlockedUsersScreen() {
+  const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
@@ -75,7 +77,7 @@ export default function BlockedUsersScreen() {
         <ActivityIndicator style={{ marginTop: DIMENSIONS.SPACING * 3 }} color={colors.textSecondary} />
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}
+          contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: tabInset }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textSecondary} />}
         >
           {users.length === 0 ? (

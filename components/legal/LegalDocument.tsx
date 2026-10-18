@@ -1,4 +1,5 @@
 import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -11,6 +12,7 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 
 /** Privacy policy or terms of service page. Shared by Settings and the pre-login /legal route. */
 export default function LegalDocument({ kind }: { kind: 'privacy' | 'terms' }) {
+  const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
@@ -34,7 +36,7 @@ export default function LegalDocument({ kind }: { kind: 'privacy' | 'terms' }) {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: tabInset }}
         showsVerticalScrollIndicator={false}
       >
         <Text style={{
