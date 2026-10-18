@@ -39,6 +39,7 @@ export default function PlanEditorScreen() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [picker, setPicker] = useState(false);
+  const [moving, setMoving] = useState(false);
   const leaving = useRef(false);
 
   // Unsaved changes: ask before leaving (back button and swipe).
@@ -119,7 +120,7 @@ export default function PlanEditorScreen() {
           return (
             <PressScale
               key={wd}
-              onPress={() => setDay(wd)}
+              onPress={() => { setDay(wd); setMoving(false); }}
               accessibilityRole="tab"
               accessibilityState={{ selected: on }}
               accessibilityLabel={t(`train.wdl.d${wd}`)}
@@ -128,8 +129,8 @@ export default function PlanEditorScreen() {
                 borderColor: on ? c.ink : c.borderSecondary, backgroundColor: on ? c.accent : training ? c.cardBackground : 'transparent',
               }}
             >
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: on ? c.onAccent : c.textSecondary }}>{t(`train.wd.d${wd}`)}</Text>
-              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={{ fontWeight: '800', fontSize: 13, color: on ? c.onAccent : training ? c.textPrimary : c.textTertiary }}>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: on ? c.onAccent : c.textSecondary }}>{t(`train.wd.d${wd}`)}</Text>
+              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85} style={{ fontWeight: '800', fontSize: 16, color: on ? c.onAccent : training ? c.textPrimary : c.textTertiary }}>
                 {training && d ? dayTitle(d, wd, t, true) : t('train.restShort')}
               </Text>
             </PressScale>
@@ -145,6 +146,53 @@ export default function PlanEditorScreen() {
           placeholder={t('train.dayNamePlaceholder')}
           maxLength={24}
         />
+
+        {/* Move this day's workout to another weekday (swaps the two days). */}
+        {current.exercises.length > 0 ? (
+          moving ? (
+            <View style={{ gap: 8 }}>
+              <Label>{t('train.moveTo')}</Label>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                {WEEK_ORDER.filter((wd) => wd !== day).map((wd) => {
+                  const busy = (draft[String(wd)]?.exercises.length ?? 0) > 0;
+                  return (
+                    <PressScale
+                      key={wd}
+                      onPress={() => {
+                        update((d) => {
+                          const a = d[key];
+                          const b = d[String(wd)];
+                          if (b) d[key] = b; else delete d[key];
+                          if (a) d[String(wd)] = a; else delete d[String(wd)];
+                        });
+                        setDay(wd);
+                        setMoving(false);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t(`train.wdl.d${wd}`)}
+                      style={{
+                        flex: 1, height: 44, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center',
+                        borderColor: c.borderPrimary, backgroundColor: busy ? c.cardBackgroundSecondary : c.cardBackground,
+                      }}
+                    >
+                      <Text style={{ fontSize: 15, fontWeight: '800', color: c.textPrimary }}>{t(`train.wd.d${wd}`)}</Text>
+                    </PressScale>
+                  );
+                })}
+              </View>
+              <Text style={{ fontSize: 12, color: c.textSecondary }}>{t('train.moveHint')}</Text>
+            </View>
+          ) : (
+            <PressScale
+              onPress={() => setMoving(true)}
+              accessibilityRole="button"
+              style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 12, borderRadius: 11, borderWidth: 1.5, borderColor: c.borderSecondary }}
+            >
+              <Ionicons name="swap-horizontal" size={15} color={c.textPrimary} />
+              <Text style={{ fontSize: 14, fontWeight: '700', color: c.textPrimary }}>{t('train.moveDay')}</Text>
+            </PressScale>
+          )
+        ) : null}
 
         {current.exercises.length === 0 ? (
           <Text style={{ fontSize: 15, lineHeight: 21, color: c.textSecondary, paddingVertical: 8 }}>{t('train.restDayHint')}</Text>

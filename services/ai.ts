@@ -32,15 +32,16 @@ export interface AiWorkoutPlan {
 
 /** AI-suggested weekly plan (a preview; saving goes through savePlan). */
 export const generateWorkoutPlan = async (opts: {
-  days: number;
+  /** Training weekdays, JS numbering (0 = Sunday). */
+  weekdays: number[];
   location: 'gym' | 'home' | 'bodyweight';
   level: 'beginner' | 'experienced';
 }): Promise<AiWorkoutPlan> => {
   const { language, weightUnit } = useStore.getState();
   const res = await api.post<AiWorkoutPlan>(
     '/api/ai/workout-plan',
-    { ...opts, unit: weightUnit ?? 'kg', lang: language },
-    { timeout: 60_000 },
+    { ...opts, days: opts.weekdays.length, unit: weightUnit ?? 'kg', lang: language },
+    { timeout: 45_000 },
   );
   return res.data;
 };
