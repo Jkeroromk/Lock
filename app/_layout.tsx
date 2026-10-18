@@ -111,6 +111,8 @@ export default function RootLayout() {
           <Stack.Screen name="workout/session" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="workout/plan" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="workout/done" options={{ animation: 'fade', gestureEnabled: false }} />
+          <Stack.Screen name="pet/setup" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="pet/collection" options={{ animation: 'slide_from_right' }} />
         </Stack>
         <ToastHost />
         <UpdateNotifier />

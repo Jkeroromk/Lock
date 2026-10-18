@@ -52,12 +52,13 @@ model User {
   weightRecords         WeightRecord[]
   workoutPlan           WorkoutPlan?
   workoutSessions       WorkoutSession[]
-  posts                 Post[]
-  postLikes             PostLike[]
-  postComments          PostComment[]
-  postReports           PostReport[]
   blocksMade            UserBlock[]  @relation("BlockBlocker")
   blockedBy             UserBlock[]  @relation("BlockBlocked")
+  petProfile            PetProfile?
+  petDays               PetDay[]
+  petCollection         PetCollection[]
+  petPatsGiven          PetPat[]     @relation("PetPatFrom")
+  petPatsReceived       PetPat[]     @relation("PetPatTo")
 
   @@map("users")
 }
@@ -149,70 +150,9 @@ model ActivityFeed {
   @@map("activity_feed")
 }
 
-model Post {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id")
-  content   String   @db.Text
-  mediaUrl  String?  @map("media_url") @db.Text
-  hiddenAt  DateTime? @map("hidden_at") @db.Timestamptz(6) // set when auto-hidden by reports; author still sees it
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  likes    PostLike[]
-  comments PostComment[]
-  reports  PostReport[]
 
-  @@index([userId])
-  @@index([createdAt])
-  @@map("posts")
-}
 
-model PostLike {
-  id        String   @id @default(uuid()) @db.Uuid
-  postId    String   @map("post_id") @db.Uuid
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId])
-  @@index([postId])
-  @@index([userId])
-  @@map("post_likes")
-}
-
-model PostComment {
-  id        String   @id @default(uuid()) @db.Uuid
-  postId    String   @map("post_id") @db.Uuid
-  userId    String   @map("user_id")
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([postId])
-  @@index([userId])
-  @@map("post_comments")
-}
-
-model PostReport {
-  id        String   @id @default(uuid()) @db.Uuid
-  postId    String   @map("post_id") @db.Uuid
-  reporterId String  @map("reporter_id")
-  reason    String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, reporterId])
-  @@index([postId])
-  @@index([reporterId])
-  @@map("post_reports")
-}
 
 // A blocks B: they disappear from each other's social surfaces, any
 // friendship/request between them is removed, and B can't re-request A.
@@ -335,4 +275,69 @@ model HealthSync {
   @@index([userId])
   @@index([date])
   @@map("health_sync")
+}
+
+// ── 伙伴 (pet): a bichon coach plus one buddy that grows from training,
+// steps and meals. Rest days never take progress away.
+model PetProfile {
+  userId         String   @id @map("user_id")
+  coachName      String   @map("coach_name")
+  buddyKind      String   @map("buddy_kind")              // corgi | cat | penguin
+  buddyName      String   @map("buddy_name")
+  xpOffset       Int      @default(0) @map("xp_offset")    // lifetime XP when the current buddy arrived
+  buddyStartedAt DateTime @default(now()) @map("buddy_started_at") @db.Timestamptz(6)
+  startDay       String   @map("start_day")               // local YYYY-MM-DD; earlier days don't count
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pet_profiles")
+}
+
+model PetDay {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id")
+  dayKey    String   @map("day_key")                     // local YYYY-MM-DD
+  xp        Int      @default(0)
+  trained   Boolean  @default(false)
+  steps     Int      @default(0)
+  meals     Int      @default(0)
+  protein   Int      @default(0)
+  proteinTarget Int  @default(0) @map("protein_target")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dayKey])
+  @@map("pet_days")
+}
+
+model PetCollection {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id")
+  kind        String
+  name        String
+  days        Int      @default(0)
+  graduatedAt DateTime @default(now()) @map("graduated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("pet_collection")
+}
+
+model PetPat {
+  id        String   @id @default(uuid()) @db.Uuid
+  fromUser  String   @map("from_user")
+  toUser    String   @map("to_user")
+  dayKey    String   @map("day_key")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  from User @relation("PetPatFrom", fields: [fromUser], references: [id], onDelete: Cascade)
+  to   User @relation("PetPatTo", fields: [toUser], references: [id], onDelete: Cascade)
+
+  @@unique([fromUser, toUser, dayKey])
+  @@index([toUser, dayKey])
+  @@map("pet_pats")
 }

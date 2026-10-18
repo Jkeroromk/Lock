@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { requestTimeZone } from '@/lib/ai-rate-limit';
+import { localDayKey, petSummaries, safeTimeZone } from '@/lib/pet';
 
 type LeaderboardEntry = {
   id: string;
@@ -14,6 +16,11 @@ type LeaderboardEntry = {
   isMe: boolean;
   friendshipId: string | undefined;
   rank: number;
+  pet: { kind: string; name: string; stage: number } | null;
+  /** I already patted this friend's buddy today. */
+  patted: boolean;
+  /** Only on my own row: how many pats my buddy got today. */
+  patsReceived?: number;
 };
 
 // GET /api/social/leaderboard — friends leaderboard by today's calories
@@ -55,6 +62,14 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    const dayKey = localDayKey(new Date(), safeTimeZone(requestTimeZone(request)));
+    const [pets, myPats, received] = await Promise.all([
+      petSummaries(allIds),
+      prisma.petPat.findMany({ where: { fromUser: userId, dayKey }, select: { toUser: true } }),
+      prisma.petPat.count({ where: { toUser: userId, dayKey } }),
+    ]);
+    const pattedSet = new Set(myPats.map((p) => p.toUser));
+
     const calorieMap = new Map(
       calorieSums.map((c) => [c.userId, Math.round(Number(c._sum.calories || 0))])
     );
@@ -70,6 +85,9 @@ export async function GET(request: NextRequest) {
       isMe: u.id === userId,
       friendshipId: friendshipMap.get(u.id),
       rank: 0,
+      pet: pets.get(u.id) ?? null,
+      patted: pattedSet.has(u.id),
+      ...(u.id === userId ? { patsReceived: received } : {}),
     }));
 
     entries.sort((a, b) => b.calories - a.calories);
