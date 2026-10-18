@@ -3,6 +3,19 @@ import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { checkDietAnalysisAllowance, requestTimeZone } from '@/lib/ai-rate-limit';
 import { TEXT_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
+import { normalizePlan } from '@/lib/workouts';
+
+const TRAINING_DAY_PROTEIN = 20;
+const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+/** YYYY-MM-DD in the user's time zone (UTC when unknown). */
+function dayKeyIn(d: Date, timeZone: string | null): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: timeZone || 'UTC', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  } catch {
+    return d.toISOString().slice(0, 10);
+  }
+}
 
 // The prompt is written in Chinese; this tells the model which language to answer in.
 const RESPONSE_LANGUAGE: Record<string, string> = {
@@ -61,7 +74,8 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const [meals, healthSyncs] = await Promise.all([
+    const timeZone = requestTimeZone(request);
+    const [meals, healthSyncs, workouts, workoutPlan] = await Promise.all([
       prisma.meal.findMany({
         where: { userId, createdAt: { gte: sevenDaysAgo } },
         orderBy: { createdAt: 'desc' },
@@ -72,6 +86,13 @@ export async function GET(request: NextRequest) {
         orderBy: { date: 'desc' },
         take: 7,
       }),
+      prisma.workoutSession.findMany({
+        where: { userId, finishedAt: { gte: sevenDaysAgo } },
+        orderBy: { finishedAt: 'asc' },
+        take: 20,
+        include: { sets: { select: { exerciseId: true } } },
+      }),
+      prisma.workoutPlan.findUnique({ where: { userId }, select: { days: true } }),
     ]);
 
     if (!process.env.FIREWORKS_API_KEY?.trim()) {
@@ -110,18 +131,60 @@ export async function GET(request: NextRequest) {
       ? `平均每日步数: ${avgSteps.toLocaleString()}步，平均主动消耗: ${avgActiveEnergy}kcal`
       : '暂无运动数据';
 
-    const prompt = `你是一位专业营养师兼健身顾问。根据以下用户信息给出饮食和运动建议。
+    // ── Training (Lock's training tab) ───────────────────────────────────────
+    // Exercise ids are readable English slugs ("barbell_squat"), fine for the model.
+    const trainingDays = new Set(workouts.map((w) => w.dayKey));
+    const workoutLines = workouts.map((w) => {
+      const exercises = [...new Set(w.sets.map((s) => s.exerciseId))].slice(0, 8).join(', ');
+      const weekday = WEEKDAYS[new Date(`${w.dayKey}T12:00:00Z`).getUTCDay()];
+      return `${w.dayKey}(${weekday}) ${w.title ?? '训练'}：${w.setCount}组，训练量${Math.round(Number(w.volume))}kg，${Math.round(w.durationSec / 60)}分钟，动作 ${exercises}${w.prCount ? `，破纪录${w.prCount}个` : ''}`;
+    });
+    const planDays = normalizePlan(workoutPlan?.days) ?? {};
+    const planLine = Object.entries(planDays)
+      .filter(([, d]) => d.exercises.length > 0)
+      .sort(([a], [b]) => ((Number(a) + 6) % 7) - ((Number(b) + 6) % 7))
+      .map(([k, d]) => `${WEEKDAYS[Number(k)]}${d.name ? ` ${d.name}` : ''}（${d.exercises.map((e) => e.id).slice(0, 6).join(', ')}）`)
+      .join('；');
+
+    // Protein per local day vs. the target (higher on training days).
+    const baseProtein = Math.round(Number(request.nextUrl.searchParams.get('protein')) || 0);
+    const proteinByDay = new Map<string, number>();
+    for (const m of meals) {
+      const k = dayKeyIn(m.createdAt, timeZone);
+      proteinByDay.set(k, (proteinByDay.get(k) ?? 0) + Number(m.protein || 0));
+    }
+    let proteinLine = '';
+    if (baseProtein > 0) {
+      let trainHit = 0, restHit = 0, restDays = 0;
+      for (const [day, g] of proteinByDay) {
+        const training = trainingDays.has(day);
+        const target = baseProtein + (training ? TRAINING_DAY_PROTEIN : 0);
+        if (training) { if (g >= target) trainHit++; }
+        else { restDays++; if (g >= target) restHit++; }
+      }
+      proteinLine = `蛋白质目标：休息日 ${baseProtein}g，训练日 ${baseProtein + TRAINING_DAY_PROTEIN}g。`
+        + `有饮食记录的日子里，训练日蛋白质达标 ${trainHit}/${trainingDays.size} 天，休息日达标 ${restHit}/${restDays} 天。`;
+    }
+
+    const trainingContext = [
+      workoutLines.length ? `近7天力量训练 ${workoutLines.length} 次：\n${workoutLines.join('\n')}` : '近7天没有力量训练记录',
+      planLine && `每周训练计划：${planLine}`,
+      proteinLine,
+    ].filter(Boolean).join('\n');
+
+    const prompt = `你是一位专业营养师兼力量训练教练。根据以下用户信息，把饮食和训练放在一起看，给出建议。
 
 用户资料：${userContext || '未知'}
 近7天饮食记录：${mealSummary}
 近7天营养摄入：平均每日${avgCalories}kcal，蛋白质共${totalProtein}g，碳水共${totalCarbs}g，脂肪共${totalFat}g
 近7天运动数据（来自 Apple Health）：${healthContext}
+${trainingContext}
 
-请结合饮食和运动数据给出简洁、实用的建议。返回 JSON 格式（只返回 JSON，不要其他文字）：
+请把饮食和训练结合起来看（例如训练日蛋白质够不够、练得多的时候热量是否跟上、练后吃了什么），给出简洁、实用的建议，尽量引用具体的天数或数字。返回 JSON 格式（只返回 JSON，不要其他文字）：
 {
   "summary": "一句话总结近期饮食状况（不超过25字）",
   "suggestions": ["饮食建议1（不超过25字）", "饮食建议2（不超过25字）", "饮食建议3（不超过25字）"],
-  "exercise": "运动建议（不超过30字）",
+  "exercise": "结合饮食的训练建议，例如\"这周练腿两次，但训练日蛋白质只达标 1 天\"（不超过40字）",
   "score": 评分(1-10的整数)
 }`;
 

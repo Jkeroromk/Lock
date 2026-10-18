@@ -9,7 +9,7 @@ function formatUser(u: { id: string; name: string | null; username: string | nul
   return {
     id: u.id,
     name: u.name || u.username || '用户',
-    avatar: u.avatarEmoji || (u.name || u.username || 'U').charAt(0).toUpperCase(),
+    avatar: (u.name || u.username || 'U').charAt(0).toUpperCase(), status: u.avatarEmoji || null,
     avatarImage: u.avatarImage ?? null,
   };
 }

@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest) {
       ...(email !== undefined && { email }),
       ...(username !== undefined && { username }),
       ...(bio !== undefined && { bio }),
-      ...(avatarEmoji !== undefined && { avatarEmoji }),
+      ...(avatarEmoji !== undefined && { avatarEmoji: typeof avatarEmoji === 'string' ? avatarEmoji.slice(0, 16) || null : null }),
       ...(avatarImage !== undefined && { avatarImage }),
       ...(showGender !== undefined && { showGender }),
       ...(height !== undefined && { height }),

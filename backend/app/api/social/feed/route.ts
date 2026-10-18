@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
           user: {
             id: item.user.id,
             name: item.user.name || item.user.username || '用户',
-            avatar: item.user.avatarEmoji || (item.user.name || item.user.username || 'U').charAt(0).toUpperCase(),
+            avatar: (item.user.name || item.user.username || 'U').charAt(0).toUpperCase(), status: item.user.avatarEmoji || null,
             avatarImage: item.user.avatarImage ?? null,
           },
         };

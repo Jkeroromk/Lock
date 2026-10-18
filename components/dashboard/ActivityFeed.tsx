@@ -1,4 +1,5 @@
 import { View, Image } from 'react-native';
+import UserAvatar from '@/components/ui/UserAvatar';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
@@ -114,21 +115,7 @@ export default function ActivityFeed({ items }: ActivityFeedProps) {
             paddingVertical: DIMENSIONS.SPACING * 0.9,
             borderTopWidth: 1, borderTopColor: colors.borderPrimary,
           }}>
-            <View style={{
-              width: 36, height: 36, borderRadius: 18,
-              backgroundColor: colors.cardBackgroundSecondary,
-              alignItems: 'center', justifyContent: 'center',
-              marginRight: DIMENSIONS.SPACING * 0.8,
-              overflow: 'hidden',
-            }}>
-              {item.user.avatarImage ? (
-                <Image source={{ uri: item.user.avatarImage }} style={{ width: 36, height: 36 }} />
-              ) : (
-                <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '900', color: colors.textPrimary }}>
-                  {item.user.avatar}
-                </Text>
-              )}
-            </View>
+            <UserAvatar image={item.user.avatarImage} initial={item.user.avatar} status={item.user.status} size={36} style={{ marginRight: DIMENSIONS.SPACING * 0.8 }} />
 
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: TYPOGRAPHY.bodyS, fontWeight: '600', color: colors.textPrimary, lineHeight: TYPOGRAPHY.bodyS * 1.5 }}>

@@ -1,4 +1,5 @@
 import { View, Image, TouchableOpacity, Alert } from 'react-native';
+import UserAvatar from '@/components/ui/UserAvatar';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
@@ -75,20 +76,7 @@ export default function PendingSentRequestsCard({ requests, onUpdate }: Props) {
           borderTopWidth: i > 0 ? 1 : 0,
           borderTopColor: colors.borderPrimary,
         }}>
-          <View style={{
-            width: 40, height: 40, borderRadius: 12,
-            backgroundColor: colors.cardBackgroundSecondary,
-            alignItems: 'center', justifyContent: 'center',
-            marginRight: DIMENSIONS.SPACING * 0.8, overflow: 'hidden',
-          }}>
-            {req.to.avatarImage ? (
-              <Image source={{ uri: req.to.avatarImage }} style={{ width: 40, height: 40 }} />
-            ) : (
-              <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
-                {req.to.avatar}
-              </Text>
-            )}
-          </View>
+          <UserAvatar image={req.to.avatarImage} initial={req.to.avatar} status={req.to.status} size={40} radius={12} style={{ marginRight: DIMENSIONS.SPACING * 0.8 }} />
 
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>

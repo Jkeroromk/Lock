@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
           id: r.requester.id,
           name: r.requester.name || r.requester.username || '用户',
           username: r.requester.username,
-          avatar: r.requester.avatarEmoji || (r.requester.name || r.requester.username || 'U').charAt(0).toUpperCase(),
+          avatar: (r.requester.name || r.requester.username || 'U').charAt(0).toUpperCase(), status: r.requester.avatarEmoji || null,
           avatarImage: r.requester.avatarImage || null,
         },
         createdAt: r.createdAt,

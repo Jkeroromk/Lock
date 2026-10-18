@@ -1,4 +1,5 @@
 import { View, Modal, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import { fmtWeight, toKg, useWeightUnit } from '@/lib/units';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -77,15 +78,18 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
   const [goal, setGoal] = useState<Goal | ''>('');
   const [exerciseFreq, setExerciseFreq] = useState<ExerciseFrequency | ''>('');
   const [saving, setSaving] = useState(false);
+  const unit = useWeightUnit();
+  // The box shows the user's unit; maths and the server use kg.
+  const weightKg = weight ? String(Math.round(toKg(parseFloat(weight.replace(',', '.')), unit) * 100) / 100) : '';
 
-  const recommended = calcRecommended(weight, height, age, user?.gender, exerciseFreq, goal);
+  const recommended = calcRecommended(weightKg, height, age, user?.gender, exerciseFreq, goal);
 
   useEffect(() => {
     if (visible) {
       setCalories(String(dailyCalorieGoal));
       setSteps(String(dailyStepGoal));
       setHeight(user?.height ? String(user.height) : '');
-      setWeight(user?.weight ? String(user.weight) : '');
+      setWeight(user?.weight ? fmtWeight(Number(user.weight), unit) : '');
       setAge(user?.age ? String(user.age) : '');
       setGoal(user?.goal || '');
       setExerciseFreq(user?.exerciseFrequency || '');
@@ -97,7 +101,7 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
     try {
       const body: Partial<User> = {
         height: height ? parseInt(height) : undefined,
-        weight: weight ? parseFloat(weight) : undefined,
+        weight: weightKg ? parseFloat(weightKg) : undefined,
         age: age ? parseInt(age) : undefined,
         goal: goal || undefined,
         exerciseFrequency: exerciseFreq || undefined,
@@ -204,7 +208,7 @@ export default function GoalsModal({ visible, user, dailyCalorieGoal, dailyStepG
                   <TextInput style={inputStyle} placeholder="170" placeholderTextColor={colors.textSecondary} keyboardType="numeric" value={height} onChangeText={setHeight} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>{t('settings.weight')} (kg)</Text>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, fontWeight: '600', marginBottom: 4 }}>{t('settings.weight')} ({unit})</Text>
                   <TextInput style={inputStyle} placeholder="65" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={weight} onChangeText={setWeight} />
                 </View>
                 <View style={{ flex: 1 }}>

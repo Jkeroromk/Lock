@@ -77,6 +77,7 @@ export default function DashboardScreen() {
     id: e.id,
     name: e.name,
     avatar: e.avatar,
+    status: e.status ?? null,
     avatarImage: e.avatarImage ?? undefined,
     calories: e.calories,
     rank: e.rank,

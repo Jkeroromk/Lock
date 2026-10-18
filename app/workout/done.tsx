@@ -9,9 +9,10 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useStore } from '@/store/useStore';
-import { useWorkoutStore, fmtKg } from '@/store/useWorkoutStore';
+import { useWorkoutStore } from '@/store/useWorkoutStore';
+import { fmtWeight, fmtWeightUnit, kgTo, useWeightUnit } from '@/lib/units';
+import { useProteinTarget } from '@/hooks/useProteinTarget';
 import { exerciseName } from '@/constants/exercises';
-import { macroTargets } from '@/components/today/CaloriesCard';
 import ExerciseThumb from '@/components/train/ExerciseThumb';
 
 /** Strength training ≈ 5 MET: kcal ≈ 5 × kg × hours. */
@@ -22,7 +23,9 @@ export default function WorkoutDoneScreen() {
   const { t, language } = useTranslation();
   const router = useRouter();
   const last = useWorkoutStore((s) => s.lastResult);
-  const { user, todayMeals, dailyCalorieGoal, refreshToday } = useStore();
+  const unit = useWeightUnit();
+  const proteinTarget = useProteinTarget();
+  const { user, todayMeals, refreshToday } = useStore();
 
   useEffect(() => {
     if (!last) router.replace('/(tabs)/train');
@@ -34,7 +37,7 @@ export default function WorkoutDoneScreen() {
   const { result, title, plannedSets } = last;
   const minutes = Math.max(1, Math.round(result.session.durationSec / 60));
   const kcal = estimateKcal(Number(user?.weight) || 70, result.session.durationSec);
-  const proteinGoal = macroTargets(dailyCalorieGoal).protein;
+  const proteinGoal = proteinTarget.target;
   const protein = Math.round(todayMeals.reduce((n, m) => n + (Number(m.protein) || 0), 0));
   const proteinLeft = Math.max(0, proteinGoal - protein);
   const bumpOnly = result.bumps.filter((b) => !result.prs.some((p) => p.exerciseId === b.exerciseId));
@@ -55,7 +58,7 @@ export default function WorkoutDoneScreen() {
         </Appear>
 
         <Appear index={1} style={{ flexDirection: 'row', gap: 10 }}>
-          <Tile label={t('train.volume')} value={Math.round(result.session.volume).toLocaleString()} unit="kg" />
+          <Tile label={t('train.volume')} value={Math.round(kgTo(result.session.volume, unit)).toLocaleString()} unit={unit} />
           <Tile label={t('train.setsCompleted')} value={String(result.session.setCount)} unit={`/ ${Math.max(plannedSets, result.session.setCount)}`} />
           <Tile label={t('train.kcal')} value={String(kcal)} unit="kcal" />
         </Appear>
@@ -74,13 +77,13 @@ export default function WorkoutDoneScreen() {
                       <View style={{ flex: 1 }}>
                         <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{exerciseName(p.exerciseId, language)}</Text>
                         <Text style={{ fontFamily: FONTS.mono, fontSize: 14, fontWeight: '600', color: c.textPrimary }}>
-                          {p.weight > 0 ? `${fmtKg(p.weight)} kg × ${p.reps}` : `× ${p.reps}`}
+                          {p.weight > 0 ? `${fmtWeightUnit(p.weight, unit)} × ${p.reps}` : `× ${p.reps}`}
                         </Text>
                       </View>
-                      {diff > 0 ? <Sticker rotate={-6}>{`+${fmtKg(diff)}`}</Sticker> : <Ionicons name="trophy" size={20} color={c.textPrimary} />}
+                      {diff > 0 ? <Sticker rotate={-6}>{`+${fmtWeight(diff, unit)}`}</Sticker> : <Ionicons name="trophy" size={20} color={c.textPrimary} />}
                     </View>
                     {bump ? (
-                      <Text style={{ fontSize: 13, color: c.textSecondary, marginLeft: 56 }}>{t('train.bumpLine', { kg: fmtKg(bump.to) })}</Text>
+                      <Text style={{ fontSize: 13, color: c.textSecondary, marginLeft: 56 }}>{t('train.bumpLine', { w: fmtWeightUnit(bump.to, unit) })}</Text>
                     ) : null}
                   </View>
                 );
@@ -90,7 +93,7 @@ export default function WorkoutDoneScreen() {
                   <ExerciseThumb id={b.exerciseId} />
                   <View style={{ flex: 1 }}>
                     <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{exerciseName(b.exerciseId, language)}</Text>
-                    <Text style={{ fontSize: 13, color: c.textSecondary }}>{t('train.bumpLine', { kg: fmtKg(b.to) })}</Text>
+                    <Text style={{ fontSize: 13, color: c.textSecondary }}>{t('train.bumpLine', { w: fmtWeightUnit(b.to, unit) })}</Text>
                   </View>
                   <Ionicons name="trending-up" size={20} color={c.textPrimary} />
                 </View>

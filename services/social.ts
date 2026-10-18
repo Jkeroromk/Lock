@@ -5,6 +5,7 @@ export interface LeaderboardEntry {
   name: string;
   username: string | null;
   avatar: string;
+  status?: string | null;
   avatarImage?: string | null;
   calories: number;
   streak: number;
@@ -15,13 +16,13 @@ export interface LeaderboardEntry {
 
 export interface FriendRequest {
   id: string;
-  from: { id: string; name: string; username: string | null; avatar: string; avatarImage?: string | null };
+  from: { id: string; name: string; username: string | null; avatar: string; status?: string | null; avatarImage?: string | null };
   createdAt: string;
 }
 
 export interface SentRequest {
   id: string;
-  to: { id: string; name: string; username: string | null; avatar: string; avatarImage?: string | null };
+  to: { id: string; name: string; username: string | null; avatar: string; status?: string | null; avatarImage?: string | null };
   createdAt: string;
 }
 
@@ -58,7 +59,7 @@ export interface FeedItem {
   metadata: Record<string, string | number | boolean | null>;
   createdAt: string;
   isMe: boolean;
-  user: { id: string; name: string; avatar: string; avatarImage?: string | null };
+  user: { id: string; name: string; avatar: string; status?: string | null; avatarImage?: string | null };
 }
 
 export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
@@ -72,7 +73,7 @@ export const fetchFriends = async (): Promise<LeaderboardEntry[]> => {
 };
 
 export const searchUser = async (q: string): Promise<{
-  user: { id: string; name: string; username: string | null; avatarEmoji: string; avatarImage?: string | null; bio?: string | null } | null;
+  user: { id: string; name: string; username: string | null; avatarEmoji: string | null; avatarImage?: string | null; bio?: string | null } | null;
   relationStatus?: 'none' | 'friends' | 'pending_sent' | 'pending_received';
   self?: boolean;
 }> => {
@@ -154,7 +155,7 @@ export interface MomentComment {
   id: string;
   content: string;
   createdAt: string;
-  user: { id: string; name: string; avatar: string; avatarImage?: string | null };
+  user: { id: string; name: string; avatar: string; status?: string | null; avatarImage?: string | null };
 }
 
 export interface Moment {
@@ -163,7 +164,7 @@ export interface Moment {
   mediaUrl?: string | null;
   createdAt: string;
   isMe: boolean;
-  user: { id: string; name: string; avatar: string; avatarImage?: string | null };
+  user: { id: string; name: string; avatar: string; status?: string | null; avatarImage?: string | null };
   likesCount: number;
   isLiked: boolean;
   commentsCount: number;
@@ -208,6 +209,7 @@ export interface BlockedUser {
   name: string;
   username: string | null;
   avatar: string;
+  status?: string | null;
   avatarImage?: string | null;
   blockedAt: string;
 }

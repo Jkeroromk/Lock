@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { localDateKey } from '@/store/useStore';
+import { localDateKey, useStore, type WeightUnit } from '@/store/useStore';
+import { toKg, fmtWeight } from '@/lib/units';
 import {
   fetchWorkouts, finishWorkout, fetchExerciseHistory,
   type PlanDays, type PlanDay, type SessionSummary, type ExerciseHistory, type FinishResult, type SetResult,
@@ -29,6 +30,8 @@ export interface ActiveWorkout {
   title: string | null;
   current: number;
   exercises: ActiveExercise[];
+  /** Unit the weight boxes are typed in (fixed for the workout). */
+  unit?: WeightUnit;
   /** Epoch ms when the rest timer ends; null when not resting. */
   restEndsAt: number | null;
   restTotal: number;
@@ -54,10 +57,13 @@ export const num = (s: string) => {
 /** Formats kg without trailing zeros: 80, 77.5, 22.25. */
 export const fmtKg = (kg: number) => String(Math.round(kg * 100) / 100);
 
-function setsFromPlan(day: PlanDay): ActiveExercise[] {
+/** A typed weight box → kg, at the 0.01 kg precision the server keeps. */
+export const boxKg = (value: string, unit: WeightUnit | undefined) => Math.round(toKg(num(value), unit ?? 'kg') * 100) / 100;
+
+function setsFromPlan(day: PlanDay, unit: WeightUnit): ActiveExercise[] {
   return day.exercises.map((e) => ({
     id: e.id,
-    sets: Array.from({ length: e.sets }, () => ({ weight: e.weight > 0 ? fmtKg(e.weight) : '', reps: String(e.reps), done: false })),
+    sets: Array.from({ length: e.sets }, () => ({ weight: e.weight > 0 ? fmtWeight(e.weight, unit) : '', reps: String(e.reps), done: false })),
   }));
 }
 
@@ -101,7 +107,7 @@ function currentBest(state: WorkoutState, exerciseId: string, skip?: { ei: numbe
     if (ex.id !== exerciseId) return;
     ex.sets.forEach((s, si) => {
       if (!s.done || (skip && skip.ei === ei && skip.si === si)) return;
-      const cand = { weight: num(s.weight), reps: Math.round(num(s.reps)) };
+      const cand = { weight: boxKg(s.weight, state.active?.unit), reps: Math.round(num(s.reps)) };
       if (!best || cand.weight > best.weight || (cand.weight === best.weight && cand.reps > best.reps)) best = cand;
     });
   });
@@ -154,6 +160,7 @@ export const useWorkoutStore = create<WorkoutState>()(
 
         start: ({ planDay, title, day }) => {
           const uid = get().uid ?? '';
+          const unit = useStore.getState().weightUnit ?? 'kg';
           set({
             active: {
               id: uuid(),
@@ -163,7 +170,8 @@ export const useWorkoutStore = create<WorkoutState>()(
               planDay,
               title,
               current: 0,
-              exercises: day ? setsFromPlan(day) : [],
+              unit,
+              exercises: day ? setsFromPlan(day, unit) : [],
               restEndsAt: null,
               restTotal: get().restSec,
             },
@@ -183,7 +191,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           const done = !s.done;
           let pr: SetResult | null = null;
           if (done) {
-            const cand = { weight: num(s.weight), reps: Math.round(num(s.reps)) };
+            const cand = { weight: boxKg(s.weight, a.unit), reps: Math.round(num(s.reps)) };
             const best = currentBest(state, a.exercises[ei].id, { ei, si });
             // A record needs history to beat; the first time isn't one.
             if (cand.reps > 0 && best && (cand.weight > best.weight || (cand.weight === best.weight && cand.reps > best.reps))) pr = cand;
@@ -237,7 +245,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           const a = get().active;
           if (!a) throw new Error('No workout');
           const sets = a.exercises.flatMap((e) =>
-            e.sets.filter((s) => s.done && num(s.reps) >= 1).map((s) => ({ exerciseId: e.id, weight: num(s.weight), reps: Math.round(num(s.reps)) })));
+            e.sets.filter((s) => s.done && num(s.reps) >= 1).map((s) => ({ exerciseId: e.id, weight: boxKg(s.weight, a.unit), reps: Math.round(num(s.reps)) })));
           const result = await finishWorkout({
             id: a.id,
             startedAt: a.startedAt,

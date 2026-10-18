@@ -10,6 +10,7 @@ export type Goal = 'lose_weight' | 'lose_fat' | 'gain_muscle';
 export type ExerciseFrequency = 'never' | 'rarely' | '1-2' | '3-4' | '5-6' | 'daily';
 export type ExpectedTimeframe = '1_month' | '2-3_months' | '4-6_months' | '6-12_months' | '1_year_plus';
 export type PlanTier = 'FREE' | 'PRO' | 'MAX';
+export type WeightUnit = 'kg' | 'lb';
 
 interface User {
   id: string;
@@ -75,6 +76,9 @@ interface StoreState {
   themeMode: ThemeMode;
   dailyCalorieGoal: number;
   dailyStepGoal: number;
+  /** Display unit for body and lifting weights; data is always stored in kg. */
+  weightUnit: WeightUnit;
+  setWeightUnit: (unit: WeightUnit) => void;
   /** Invite code from a lock://invite/… link, waiting for the onboarding invite step. */
   pendingInviteCode: string | null;
   setPendingInviteCode: (code: string | null) => void;
@@ -114,6 +118,8 @@ export const useStore = create<StoreState>()(
       dailyCalorieGoal: 2000,
       calorieWarnings: true,
       dailyStepGoal: 10000,
+      weightUnit: 'kg',
+      setWeightUnit: (unit) => set({ weightUnit: unit }),
       pendingInviteCode: null,
       setPendingInviteCode: (code) => set({ pendingInviteCode: code }),
       setUser: (user) => set({ user }),
@@ -178,6 +184,7 @@ export const useStore = create<StoreState>()(
         dailyCalorieGoal: state.dailyCalorieGoal,
         calorieWarnings: state.calorieWarnings,
         dailyStepGoal: state.dailyStepGoal,
+        weightUnit: state.weightUnit,
         todayCalories: state.todayCalories,
         todayMeals: state.todayMeals,
         todayDate: state.todayDate,

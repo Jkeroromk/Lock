@@ -19,7 +19,7 @@ import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoad
 
 /** Language, appearance, app icon, notifications and Apple Health. */
 export default function PreferencesScreen() {
-  const { language, setLanguage, themeMode, setThemeMode, calorieWarnings, setCalorieWarnings } = useStore();
+  const { language, setLanguage, themeMode, setThemeMode, calorieWarnings, setCalorieWarnings, weightUnit, setWeightUnit } = useStore();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -120,6 +120,14 @@ export default function PreferencesScreen() {
     <SettingsPage title={t('settings.groupPreferences' as any)}>
       <SettingsSection label={t('settings.theme' as any)} />
       <Segmented value={themeMode} onChange={setThemeMode} options={themeOptions} style={{ marginBottom: 8 }} />
+
+      <SettingsSection label={t('settings.weightUnit' as any)} />
+      <Segmented
+        value={weightUnit ?? 'kg'}
+        onChange={setWeightUnit}
+        options={[{ key: 'kg' as const, label: t('settings.unitKg' as any) }, { key: 'lb' as const, label: t('settings.unitLb' as any) }]}
+        style={{ marginBottom: 8 }}
+      />
 
       <SettingsSection label={t('settings.groupGeneral' as any)} />
       <SettingItem

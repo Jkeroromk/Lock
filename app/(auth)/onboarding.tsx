@@ -1,7 +1,7 @@
 import { View, Alert } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
@@ -38,6 +38,13 @@ export default function OnboardingScreen() {
 
   // 使用数据管理 hook
   const onboardingData = useOnboardingData();
+
+  // The unit picked for body weight becomes the app-wide weight unit.
+  const unitTouched = useRef(false);
+  useEffect(() => {
+    if (!unitTouched.current) { unitTouched.current = true; return; }
+    useStore.getState().setWeightUnit(onboardingData.weightUnit);
+  }, [onboardingData.weightUnit]);
 
   // 当用户选择主题时，立即更新 store，使主题立即生效
   const handleThemeChange = (themeMode: 'light' | 'dark' | 'auto') => {

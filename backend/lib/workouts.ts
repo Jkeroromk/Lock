@@ -30,8 +30,8 @@ const clamp = (n: unknown, min: number, max: number, fallback: number) => {
   return Math.min(max, Math.max(min, v));
 };
 
-/** Rounds to the nearest 0.25 kg, the finest plate step anyone uses. */
-export const roundKg = (kg: number) => Math.round(kg * 4) / 4;
+/** Rounds to 0.01 kg (the column's precision), so pound values survive the round trip. */
+export const roundKg = (kg: number) => Math.round(kg * 100) / 100;
 
 /** Cleans a plan sent by the app; returns null when it isn't a plan at all. */
 export function normalizePlan(input: unknown): PlanDays | null {
@@ -49,7 +49,7 @@ export function normalizePlan(input: unknown): PlanDays | null {
         reps: Math.round(clamp(e.reps, 1, 100, 10)),
         weight: roundKg(clamp(e.weight, 0, 1000, 0)),
         progress: e.progress === 'weight' ? 'weight' : 'none',
-        step: roundKg(clamp(e.step, 0.25, 20, 2.5)),
+        step: roundKg(clamp(e.step, 0.1, 20, 2.5)),
       });
     }
     const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 24) : '';

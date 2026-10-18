@@ -24,7 +24,7 @@ export async function GET() {
         id: b.blocked.id,
         name: b.blocked.name || b.blocked.username || '用户',
         username: b.blocked.username,
-        avatar: b.blocked.avatarEmoji || (b.blocked.name || b.blocked.username || 'U').charAt(0).toUpperCase(),
+        avatar: (b.blocked.name || b.blocked.username || 'U').charAt(0).toUpperCase(), status: b.blocked.avatarEmoji || null,
         avatarImage: b.blocked.avatarImage ?? null,
         blockedAt: b.createdAt,
       }))

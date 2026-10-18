@@ -19,7 +19,6 @@ import CalendarView, { type DayMark } from '@/components/calendar/CalendarView';
 import WeeklyCaloriesChart from '@/components/calendar/WeeklyCaloriesChart';
 import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreakdown';
 import MonthlyStats from '@/components/calendar/MonthlyStats';
-import AiInsightsCard from '@/components/calendar/AiInsightsCard';
 import DayMealsModal from '@/components/calendar/DayMealsModal';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 
@@ -174,7 +173,6 @@ export default function CalendarScreen() {
               />
 
               </Appear>
-              <Appear index={1}><AiInsightsCard /></Appear>
               <Appear index={2}><WeeklyCaloriesChart chartData={chartData} /></Appear>
               <Appear index={3}><WeeklyNutritionBreakdown stats={nutritionStats} /></Appear>
               <Appear index={4}><MonthlyStats markedDates={markedDates} avgDailyCalories={avgDailyCalories} /></Appear>

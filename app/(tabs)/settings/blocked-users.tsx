@@ -1,4 +1,5 @@
 import { View, Image, ScrollView, TouchableOpacity, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import UserAvatar from '@/components/ui/UserAvatar';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -103,16 +104,7 @@ export default function BlockedUsersScreen() {
                   paddingVertical: DIMENSIONS.SPACING * 0.8,
                   borderTopWidth: i > 0 ? 1 : 0, borderTopColor: colors.borderPrimary,
                 }}>
-                  <View style={{
-                    width: 40, height: 40, borderRadius: 20,
-                    backgroundColor: colors.cardBackgroundSecondary,
-                    alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-                    marginRight: DIMENSIONS.SPACING * 0.8,
-                  }}>
-                    {u.avatarImage
-                      ? <Image source={{ uri: u.avatarImage }} style={{ width: 40, height: 40 }} />
-                      : <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>{u.avatar}</Text>}
-                  </View>
+                  <UserAvatar image={u.avatarImage} initial={u.avatar} status={u.status} size={40} style={{ marginRight: DIMENSIONS.SPACING * 0.8 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '800', color: colors.textPrimary }}>{u.name}</Text>
                     {u.username ? (
