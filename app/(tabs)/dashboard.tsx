@@ -1,7 +1,7 @@
 import { View, ScrollView, Platform, RefreshControl, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/i18n';
 import { Appear, IconButton, ScreenHeader, Segmented } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
@@ -11,16 +11,16 @@ import AddFriendModal from '@/components/dashboard/AddFriendModal';
 import FriendRequestsCard from '@/components/dashboard/FriendRequestsCard';
 import PendingSentRequestsCard from '@/components/dashboard/PendingSentRequestsCard';
 import CreateChallengeModal from '@/components/dashboard/CreateChallengeModal';
-import MomentsFeed from '@/components/dashboard/MomentsFeed';
-import CreateMomentModal from '@/components/dashboard/CreateMomentModal';
+import PetHome from '@/components/pet/PetHome';
+import { usePetStore } from '@/store/usePetStore';
 import {
-  fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges, fetchMoments,
-  LeaderboardEntry, FriendRequest, SentRequest, ChallengeData, Moment,
+  fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges,
+  LeaderboardEntry, FriendRequest, SentRequest, ChallengeData,
 } from '@/services/api';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 
-type Tab = 'friends' | 'challenges' | 'moments';
+type Tab = 'friends' | 'challenges' | 'pet';
 
 export default function DashboardScreen() {
   const tabInset = useTabBarInset();
@@ -33,7 +33,6 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
-  const [showCreateMoment, setShowCreateMoment] = useState(false);
   const [pendingFriendId, setPendingFriendId] = useState<string | undefined>();
 
   useEffect(() => {
@@ -47,21 +46,21 @@ export default function DashboardScreen() {
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
-  const [moments, setMoments] = useState<Moment[]>([]);
+  const syncPet = usePetStore((s) => s.sync);
+  const hasPet = usePetStore((s) => !!s.state?.profile);
 
   const loadAll = useCallback(async () => {
-    const [lb, reqs, sent, ch, mom] = await Promise.allSettled([
+    const [lb, reqs, sent, ch] = await Promise.allSettled([
       fetchLeaderboard(),
       fetchFriendRequests(),
       fetchSentRequests(),
       fetchChallenges(),
-      fetchMoments(),
+      syncPet(),
     ]);
     if (lb.status === 'fulfilled') setLeaderboard(lb.value);
     if (reqs.status === 'fulfilled') setRequests(reqs.value);
     if (sent.status === 'fulfilled') setSentRequests(sent.value);
     if (ch.status === 'fulfilled') setChallenges(ch.value);
-    if (mom.status === 'fulfilled') setMoments(mom.value);
   }, []);
 
   useEffect(() => {
@@ -100,13 +99,15 @@ export default function DashboardScreen() {
   const TAB_CONFIG: { key: Tab; label: string }[] = [
     { key: 'friends', label: t('dashboard.leaderboard') },
     { key: 'challenges', label: t('dashboard.challenges') },
-    { key: 'moments', label: t('moments.title' as any) },
+    { key: 'pet', label: t('pet.tab') },
   ];
 
   const FAB_CONFIG: Record<Tab, { label: string; icon: string; onPress: () => void }> = {
     friends: { label: t('dashboard.addFriend'), icon: 'person-add-outline', onPress: () => setShowAddFriend(true) },
     challenges: { label: t('dashboard.createChallenge'), icon: 'add', onPress: () => setShowCreateChallenge(true) },
-    moments: { label: t('moments.create' as any), icon: 'add', onPress: () => setShowCreateMoment(true) },
+    pet: hasPet
+      ? { label: t('pet.collection'), icon: 'grid-outline', onPress: () => router.push('/pet/collection') }
+      : { label: t('pet.setupTitle'), icon: 'paw-outline', onPress: () => router.push('/pet/setup') },
   };
 
   return (
@@ -140,7 +141,7 @@ export default function DashboardScreen() {
           />
           <Segmented
             value={activeTab}
-            onChange={setActiveTab}
+            onChange={(k) => { setActiveTab(k); if (k === 'pet') syncPet(); }}
             options={TAB_CONFIG.map(({ key, label }) => ({ key, label, badge: key === 'friends' && requests.length > 0 }))}
             style={{ marginBottom: 16 }}
           />
@@ -170,14 +171,10 @@ export default function DashboardScreen() {
             <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
           )}
 
-          {/* ── Moments Tab ── */}
-          {!initialLoading && activeTab === 'moments' && (
-            <Appear key="moments">
-            <MomentsFeed
-              items={moments}
-              onRefresh={loadAll}
-              onCreatePress={() => setShowCreateMoment(true)}
-            />
+          {/* ── 伙伴 Tab ── */}
+          {!initialLoading && activeTab === 'pet' && (
+            <Appear key="pet">
+              <PetHome friends={leaderboard} onFriendsChanged={setLeaderboard} />
             </Appear>
           )}
         </View>
@@ -194,12 +191,6 @@ export default function DashboardScreen() {
         visible={showCreateChallenge}
         onClose={() => setShowCreateChallenge(false)}
         onSuccess={() => { loadAll(); }}
-      />
-
-      <CreateMomentModal
-        visible={showCreateMoment}
-        onClose={() => setShowCreateMoment(false)}
-        onSuccess={(moment) => setMoments((prev) => [moment, ...prev])}
       />
     </SafeAreaView>
     </TabFocusFade>

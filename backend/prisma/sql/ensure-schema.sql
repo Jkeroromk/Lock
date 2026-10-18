@@ -116,3 +116,80 @@ END $$;
 ALTER TABLE "workout_plans" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "workout_sessions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "workout_sets" ENABLE ROW LEVEL SECURITY;
+
+-- Moments (朋友圈) were removed from Lock (Oct 2026); drop their tables.
+DROP TABLE IF EXISTS "post_reports";
+DROP TABLE IF EXISTS "post_comments";
+DROP TABLE IF EXISTS "post_likes";
+DROP TABLE IF EXISTS "posts";
+
+-- 伙伴 (pet)
+CREATE TABLE IF NOT EXISTS "pet_profiles" (
+  "user_id" TEXT PRIMARY KEY,
+  "coach_name" TEXT NOT NULL,
+  "buddy_kind" TEXT NOT NULL,
+  "buddy_name" TEXT NOT NULL,
+  "xp_offset" INTEGER NOT NULL DEFAULT 0,
+  "buddy_started_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  "start_day" TEXT NOT NULL,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS "pet_days" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "user_id" TEXT NOT NULL,
+  "day_key" TEXT NOT NULL,
+  "xp" INTEGER NOT NULL DEFAULT 0,
+  "trained" BOOLEAN NOT NULL DEFAULT false,
+  "steps" INTEGER NOT NULL DEFAULT 0,
+  "meals" INTEGER NOT NULL DEFAULT 0,
+  "protein" INTEGER NOT NULL DEFAULT 0,
+  "protein_target" INTEGER NOT NULL DEFAULT 0,
+  "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "pet_days_user_id_day_key_key" ON "pet_days"("user_id", "day_key");
+CREATE TABLE IF NOT EXISTS "pet_collection" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "user_id" TEXT NOT NULL,
+  "kind" TEXT NOT NULL,
+  "name" TEXT NOT NULL,
+  "days" INTEGER NOT NULL DEFAULT 0,
+  "graduated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "pet_collection_user_id_idx" ON "pet_collection"("user_id");
+CREATE TABLE IF NOT EXISTS "pet_pats" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "from_user" TEXT NOT NULL,
+  "to_user" TEXT NOT NULL,
+  "day_key" TEXT NOT NULL,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "pet_pats_from_user_to_user_day_key_key" ON "pet_pats"("from_user", "to_user", "day_key");
+CREATE INDEX IF NOT EXISTS "pet_pats_to_user_day_key_idx" ON "pet_pats"("to_user", "day_key");
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'pet_profiles_user_id_fkey') THEN
+    ALTER TABLE "pet_profiles" ADD CONSTRAINT "pet_profiles_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'pet_days_user_id_fkey') THEN
+    ALTER TABLE "pet_days" ADD CONSTRAINT "pet_days_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'pet_collection_user_id_fkey') THEN
+    ALTER TABLE "pet_collection" ADD CONSTRAINT "pet_collection_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'pet_pats_from_user_fkey') THEN
+    ALTER TABLE "pet_pats" ADD CONSTRAINT "pet_pats_from_user_fkey"
+      FOREIGN KEY ("from_user") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'pet_pats_to_user_fkey') THEN
+    ALTER TABLE "pet_pats" ADD CONSTRAINT "pet_pats_to_user_fkey"
+      FOREIGN KEY ("to_user") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
+ALTER TABLE "pet_profiles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "pet_days" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "pet_collection" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "pet_pats" ENABLE ROW LEVEL SECURITY;
