@@ -44,7 +44,14 @@ export async function POST(request: NextRequest) {
   const { userId } = auth;
 
   const body = await request.json().catch(() => ({}));
-  const daysPerWeek = Math.min(6, Math.max(2, Math.round(Number(body.days)) || 3));
+  // Training weekdays the user picked (JS: 0 = Sunday), Monday-first order.
+  const picked: number[] = [...new Set<number>((Array.isArray(body.weekdays) ? body.weekdays : [])
+    .map((d: unknown) => Math.round(Number(d)))
+    .filter((d: number) => d >= 0 && d <= 6))]
+    .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+  const daysPerWeek = picked.length >= 1 ? Math.min(6, picked.length) : Math.min(6, Math.max(2, Math.round(Number(body.days)) || 3));
+  const weekdays = picked.length >= 1 ? picked.slice(0, 6) : undefined;
+  const WD_LABEL = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   const location = LOCATIONS[body.location] ? (body.location as string) : 'gym';
   const level = body.level === 'experienced' ? 'experienced' : 'beginner';
   const unit = body.unit === 'lb' ? 'lb' : 'kg';
@@ -53,7 +60,7 @@ export async function POST(request: NextRequest) {
   const lang = RESPONSE_LANGUAGE[body.lang] ? (body.lang as string) : 'en-US';
   // When the AI can't deliver, a classic template is still a good start
   // (and the AI call is given back).
-  const fallback = () => NextResponse.json({ ...templatePlan({ days: daysPerWeek, location, level, unit, lang }), source: 'template' });
+  const fallback = () => NextResponse.json({ ...templatePlan({ days: daysPerWeek, weekdays, location, level, unit, lang }), source: 'template' });
 
   if (!process.env.FIREWORKS_API_KEY?.trim()) return fallback();
 
@@ -80,7 +87,7 @@ export async function POST(request: NextRequest) {
     const prompt = `你是一位经验丰富的力量训练教练。请给这位用户排一份每周训练计划。
 
 用户资料：${profile}
-每周训练天数：${daysPerWeek} 天
+每周训练天数：${daysPerWeek} 天${weekdays ? `（${weekdays.map((d) => WD_LABEL[d]).join('、')}，其余休息）` : ''}
 训练地点：${LOCATIONS[location].label}
 训练经验：${level === 'beginner' ? '新手（刚开始或很久没练）' : '有基础（练过一段时间）'}
 
@@ -88,7 +95,7 @@ export async function POST(request: NextRequest) {
 ${catalogText}
 
 要求：
-- 正好 ${daysPerWeek} 个训练日，均匀分布在一周里，中间留休息日；用 weekday 表示星期几（1=周一 … 7=周日）。
+- 正好 ${daysPerWeek} 个训练日${weekdays ? `，就排在 ${weekdays.map((d) => WD_LABEL[d]).join('、')}；连着练的两天不要练同一个部位` : '，均匀分布在一周里，中间留休息日'}；用 weekday 表示星期几（1=周一 … 7=周日）。
 - 新手：全身或上下肢分化，每天 4–5 个动作，以复合动作开头，3 组 × 8–12 次。
 - 有基础：推 / 拉 / 腿或上下肢分化，每天 5–6 个动作，主项 4 组 × 5–8 次，辅助 3 组 × 10–15 次。
 - 一周里每个大肌群至少练到一次；同一天不要重复同一个动作。
@@ -117,9 +124,10 @@ ${catalogText}
           { role: 'user', content: `${prompt}\n\nWrite all text values in ${responseLanguage}.` },
         ],
         temperature: 0.5,
-        // Reasoning models think before answering; leave room for both.
-        maxTokens: 8000,
-        timeoutMs: 50_000,
+        // Keep it quick: little reasoning, and a template if it takes too long.
+        reasoningEffort: 'low',
+        maxTokens: 6000,
+        timeoutMs: 25_000,
       });
       ai = extractJson<AiPlan>(content);
     } catch (error) {
@@ -154,6 +162,22 @@ ${catalogText}
       if (!exercises.length) continue;
       const name = typeof d.name === 'string' ? d.name.trim().slice(0, 24) : '';
       plan[key] = name ? { name, exercises } : { exercises };
+    }
+
+    // The user's chosen weekdays win: put the AI's days on them, in order.
+    if (weekdays && Object.keys(plan).length > 0) {
+      const aiDays = Object.keys(plan)
+        .map(Number)
+        .sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
+        .map((k) => plan[String(k)]);
+      for (const k of Object.keys(plan)) delete plan[k];
+      if (aiDays.length < weekdays.length) {
+        // Fewer days than asked: fill the rest from the template.
+        const filler = templatePlan({ days: daysPerWeek, weekdays, location, level, unit, lang }).plan;
+        weekdays.forEach((wd, i) => { plan[String(wd)] = aiDays[i] ?? filler[String(wd)]; });
+      } else {
+        weekdays.forEach((wd, i) => { plan[String(wd)] = aiDays[i]; });
+      }
     }
 
     if (Object.keys(plan).length === 0) {

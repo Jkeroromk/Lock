@@ -38,16 +38,19 @@ export async function fireworksChat(opts: {
   temperature?: number;
   maxTokens?: number;
   timeoutMs?: number;
+  /** Less thinking = faster answers on reasoning models. Dropped if the model rejects it. */
+  reasoningEffort?: 'low' | 'medium' | 'high';
 }): Promise<string> {
   const key = process.env.FIREWORKS_API_KEY?.trim();
   if (!key) throw new AiNotConfiguredError();
 
-  const body = {
+  const body: Record<string, unknown> = {
     model: opts.model,
     messages: opts.messages,
     temperature: opts.temperature ?? 0.1,
     // Generous: some models emit reasoning before the answer.
     max_tokens: opts.maxTokens ?? 2000,
+    ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
   };
   const config = {
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
@@ -64,6 +67,11 @@ export async function fireworksChat(opts: {
       break;
     } catch (error: any) {
       const status = error?.response?.status;
+      // A model that doesn't take reasoning_effort: retry once without it.
+      if (status === 400 && 'reasoning_effort' in body) {
+        delete body.reasoning_effort;
+        continue;
+      }
       if (attempt >= MAX_RETRIES || (status !== 429 && status !== 503)) throw error;
       const retryAfter = Number(error.response?.headers?.['retry-after']);
       const wait = Number.isFinite(retryAfter) && retryAfter > 0

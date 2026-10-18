@@ -439,8 +439,9 @@ const zhTW = {
     viewPlans: '查看訂閱方案',
   },
   train: {
+    aiTrain: '練', aiDaysHint: '點選要訓練的日子，其餘是休息日（至少留一天休息）', moveDay: '換到其他天', moveTo: '換到哪天', moveHint: '如果那天已經有訓練，兩天會互換',
     aiTemplateNote: 'AI 這次沒回應，先給你一份經典模板；想要客製的可以點「換一個」再試。',
-    aiPlanTitle: 'AI 推薦訓練', aiPlanBody: '不知道從哪開始？回答三個問題，AI 幫你把一週的訓練排好。', aiPlanCta: 'AI 幫我排計畫', aiPlanRedo: '不知道練什麼？讓 AI 依你的情況重新排一份', aiDaysQ: '每週練幾天', aiWhereQ: '在哪練', aiWhereGym: '健身房', aiWhereHome: '家裡啞鈴', aiWhereBody: '徒手', aiLevelQ: '訓練經驗', aiLevelNew: '新手', aiLevelExp: '有基礎', aiGenerate: '產生計畫', aiGenerating: 'AI 正在排計畫…', aiUse: '用這個計畫', aiRetry: '換一個', aiChange: '改條件', aiReplaceTitle: '取代現在的計畫？', aiReplaceBody: '現在的每週計畫會被這份新計畫取代。', aiReplace: '取代', aiSaved: '計畫已儲存，可以在「每週計畫」裡再調整', aiFailed: '沒排出來，請稍後再試', aiLimit: '今天的 AI 次數用完了', aiWeightHint: '重量先空著：第一次練的時候填上，之後會自動記住，並依計畫慢慢加重。', aiDaysN: '每週 {n} 天',
+    aiPlanTitle: 'AI 推薦訓練', aiPlanBody: '不知道從哪開始？回答三個問題，AI 幫你把一週的訓練排好。', aiPlanCta: 'AI 幫我排計畫', aiPlanRedo: '不知道練什麼？讓 AI 依你的情況重新排一份', aiDaysQ: '哪幾天練', aiWhereQ: '在哪練', aiWhereGym: '健身房', aiWhereHome: '家裡啞鈴', aiWhereBody: '徒手', aiLevelQ: '訓練經驗', aiLevelNew: '新手', aiLevelExp: '有基礎', aiGenerate: '產生計畫', aiGenerating: 'AI 正在排計畫…', aiUse: '用這個計畫', aiRetry: '換一個', aiChange: '改條件', aiReplaceTitle: '取代現在的計畫？', aiReplaceBody: '現在的每週計畫會被這份新計畫取代。', aiReplace: '取代', aiSaved: '計畫已儲存，可以在「每週計畫」裡再調整', aiFailed: '沒排出來，請稍後再試', aiLimit: '今天的 AI 次數用完了', aiWeightHint: '重量先空著：第一次練的時候填上，之後會自動記住，並依計畫慢慢加重。', aiDaysN: '每週 {n} 天',
     rangeDays: '{n} 天', rangeChange: '{n} 天 {v}', weightNeedMore: '再多記幾天就能看到曲線', proteinBadge: '訓練日 +{n}g',
     title: '訓練', editPlan: '每週計畫', restShort: '休', today: '今天',
     restDay: '今天休息', restDayBody: '好好恢復。想練的話也可以來一場自由訓練。', noPlanTitle: '還沒有訓練計畫', noPlanBody: '先定好一週練什麼，每天打開就知道今天練哪裡。',

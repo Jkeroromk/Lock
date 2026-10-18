@@ -602,8 +602,9 @@ const zhCN = {
     viewPlans: '查看订阅方案',
   },
   train: {
+    aiTrain: '练', aiDaysHint: '点选要训练的日子，其余是休息日（至少留一天休息）', moveDay: '换到其他天', moveTo: '换到哪天', moveHint: '如果那天已经有训练，两天会互换',
     aiTemplateNote: 'AI 这次没回应，先给你一份经典模板；想要定制的可以点「换一个」再试。',
-    aiPlanTitle: 'AI 推荐训练', aiPlanBody: '不知道从哪开始？回答三个问题，AI 帮你把一周的训练排好。', aiPlanCta: 'AI 帮我排计划', aiPlanRedo: '不知道练什么？让 AI 按你的情况重新排一份', aiDaysQ: '每周练几天', aiWhereQ: '在哪练', aiWhereGym: '健身房', aiWhereHome: '家里哑铃', aiWhereBody: '徒手', aiLevelQ: '训练经验', aiLevelNew: '新手', aiLevelExp: '有基础', aiGenerate: '生成计划', aiGenerating: 'AI 正在排计划…', aiUse: '用这个计划', aiRetry: '换一个', aiChange: '改条件', aiReplaceTitle: '替换现在的计划？', aiReplaceBody: '现在的每周计划会被这份新计划替换。', aiReplace: '替换', aiSaved: '计划已保存，可以在「每周计划」里再调整', aiFailed: '没排出来，请稍后再试', aiLimit: '今天的 AI 次数用完了', aiWeightHint: '重量先空着：第一次练的时候填上，之后会自动记住，并按计划慢慢加重。', aiDaysN: '每周 {n} 天',
+    aiPlanTitle: 'AI 推荐训练', aiPlanBody: '不知道从哪开始？回答三个问题，AI 帮你把一周的训练排好。', aiPlanCta: 'AI 帮我排计划', aiPlanRedo: '不知道练什么？让 AI 按你的情况重新排一份', aiDaysQ: '哪几天练', aiWhereQ: '在哪练', aiWhereGym: '健身房', aiWhereHome: '家里哑铃', aiWhereBody: '徒手', aiLevelQ: '训练经验', aiLevelNew: '新手', aiLevelExp: '有基础', aiGenerate: '生成计划', aiGenerating: 'AI 正在排计划…', aiUse: '用这个计划', aiRetry: '换一个', aiChange: '改条件', aiReplaceTitle: '替换现在的计划？', aiReplaceBody: '现在的每周计划会被这份新计划替换。', aiReplace: '替换', aiSaved: '计划已保存，可以在「每周计划」里再调整', aiFailed: '没排出来，请稍后再试', aiLimit: '今天的 AI 次数用完了', aiWeightHint: '重量先空着：第一次练的时候填上，之后会自动记住，并按计划慢慢加重。', aiDaysN: '每周 {n} 天',
     rangeDays: '{n} 天', rangeChange: '{n} 天 {v}', weightNeedMore: '再多记几天就能看到曲线', proteinBadge: '训练日 +{n}g',
     title: '训练', editPlan: '每周计划', restShort: '休', today: '今天',
     restDay: '今天休息', restDayBody: '好好恢复。想练的话也可以来一场自由训练。', noPlanTitle: '还没有训练计划', noPlanBody: '先定好一周练什么，每天打开就知道今天练哪里。',

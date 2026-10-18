@@ -92,7 +92,7 @@ function step(id: string, unit: string): number {
   return eq === 'dumbbell' ? 2 : eq === 'machine' ? 5 : 2.5;
 }
 
-export function templatePlan(opts: { days: number; location: string; level: string; unit: string; lang: string }) {
+export function templatePlan(opts: { days: number; weekdays?: number[]; location: string; level: string; unit: string; lang: string }) {
   const location = (opts.location in ROLES ? opts.location : 'gym') as Location;
   const roles = ROLES[location];
   const names = NAMES[opts.lang] ?? NAMES['en-US'];
@@ -100,7 +100,8 @@ export function templatePlan(opts: { days: number; location: string; level: stri
   const plan: PlanDays = {};
 
   const list = kinds(opts.days, opts.level);
-  WEEKDAYS[opts.days].forEach((wd, i) => {
+  const weekdays = opts.weekdays?.length === opts.days ? opts.weekdays : WEEKDAYS[opts.days];
+  weekdays.forEach((wd, i) => {
     const kind = list[i];
     const seen = new Set<string>();
     const exercises: PlanExercise[] = [];

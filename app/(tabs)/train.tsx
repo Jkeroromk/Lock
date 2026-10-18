@@ -16,7 +16,7 @@ import { fmtWeightUnit, kgTo, useWeightUnit } from '@/lib/units';
 import WeightCard from '@/components/train/WeightCard';
 import AiInsightsCard from '@/components/calendar/AiInsightsCard';
 import AiPlanSheet from '@/components/train/AiPlanSheet';
-import { exerciseName } from '@/constants/exercises';
+import { exerciseName, isBodyweight } from '@/constants/exercises';
 import { dayTitle } from '@/components/train/dayTitle';
 import { deleteWorkout, type SessionSummary } from '@/services/workouts';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
@@ -148,11 +148,11 @@ export default function TrainScreen() {
                     transform: isToday ? [{ rotate: '-4deg' }] : undefined,
                   }}
                 >
-                  <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: isToday || done ? fg : c.textSecondary }}>{t(`train.wd.d${wd}`)}</Text>
+                  <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: isToday || done ? fg : c.textSecondary }}>{t(`train.wd.d${wd}`)}</Text>
                   {done && !isToday ? (
                     <Ionicons name="checkmark" size={16} color={c.accent} />
                   ) : (
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={{ fontWeight: '800', fontSize: 13, color: pd?.exercises.length ? fg : c.textTertiary }}>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85} style={{ fontWeight: '800', fontSize: 16, color: pd?.exercises.length ? fg : c.textTertiary }}>
                       {label}
                     </Text>
                   )}
@@ -205,7 +205,7 @@ export default function TrainScreen() {
                             <Text numberOfLines={1} style={{ flex: 1, fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{exerciseName(e.id, language)}</Text>
                             <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: c.textSecondary }}>{e.sets}×{e.reps}</Text>
                             <Text style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '600', color: c.textPrimary, minWidth: 64, textAlign: 'right' }}>
-                              {e.weight > 0 ? fmtWeightUnit(e.weight, unit) : t('train.bodyweight')}
+                              {e.weight > 0 ? fmtWeightUnit(e.weight, unit) : isBodyweight(e.id) ? t('train.bodyweight') : '—'}
                             </Text>
                           </View>
                         ))}

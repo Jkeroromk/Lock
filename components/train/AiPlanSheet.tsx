@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
-import { Button, Card, Chip, IconButton, Label, Sticker } from '@/components/ui/bxc';
+import { Button, Card, Chip, IconButton, Label, PressScale, Sticker } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
@@ -21,12 +21,14 @@ type Level = 'beginner' | 'experienced';
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
-/** Days a week, guessed from the onboarding answer. */
-function defaultDays(freq?: string): number {
-  if (freq === '1-2') return 2;
-  if (freq === '5-6' || freq === 'daily') return 5;
-  if (freq === '3-4') return 4;
-  return 3;
+/** Training weekdays to start from: the current plan's, else spread by the onboarding answer. */
+function defaultWeekdays(freq: string | undefined, plan: Record<string, { exercises: unknown[] }>): number[] {
+  const current = WEEK_ORDER.filter((d) => (plan[String(d)]?.exercises.length ?? 0) > 0);
+  if (current.length) return current.slice(0, 6);
+  if (freq === '1-2') return [1, 4];
+  if (freq === '5-6' || freq === 'daily') return [1, 2, 3, 5, 6];
+  if (freq === '3-4') return [1, 2, 4, 5];
+  return [1, 3, 5];
 }
 
 /**
@@ -41,7 +43,9 @@ export default function AiPlanSheet({ visible, onClose }: { visible: boolean; on
   const currentPlan = useWorkoutStore((s) => s.plan);
   const setPlan = useWorkoutStore((s) => s.setPlan);
 
-  const [days, setDays] = useState(() => defaultDays(user?.exerciseFrequency));
+  const [weekdays, setWeekdays] = useState<number[]>(() => defaultWeekdays(user?.exerciseFrequency, currentPlan));
+  const days = weekdays.length;
+  const [elapsed, setElapsed] = useState(0);
   const [location, setLocation] = useState<Location>('gym');
   const [level, setLevel] = useState<Level>('beginner');
   const [loading, setLoading] = useState(false);
@@ -55,11 +59,26 @@ export default function AiPlanSheet({ visible, onClose }: { visible: boolean; on
     setError(null);
   }, [visible]);
 
+  // Seconds counter while the AI works, so the wait feels finite.
+  useEffect(() => {
+    if (!loading) return;
+    setElapsed(0);
+    const id = setInterval(() => setElapsed((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [loading]);
+
+  const toggleDay = (d: number) =>
+    setWeekdays((cur) => {
+      if (cur.includes(d)) return cur.length > 1 ? cur.filter((x) => x !== d) : cur;
+      if (cur.length >= 6) return cur; // keep at least one rest day
+      return WEEK_ORDER.filter((x) => x === d || cur.includes(x));
+    });
+
   const generate = async () => {
     setLoading(true);
     setError(null);
     try {
-      setResult(await generateWorkoutPlan({ days, location, level }));
+      setResult(await generateWorkoutPlan({ weekdays, location, level }));
     } catch (err: any) {
       setError(err?.response?.data?.error === 'AI_LIMIT_REACHED' ? 'limit' : 'failed');
     } finally {
@@ -107,12 +126,32 @@ export default function AiPlanSheet({ visible, onClose }: { visible: boolean; on
             <>
               <Text style={{ fontSize: 15, lineHeight: 21, color: c.textSecondary }}>{t('train.aiPlanBody')}</Text>
 
-              {question(t('train.aiDaysQ'))}
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {[2, 3, 4, 5, 6].map((n) => (
-                  <Chip key={n} label={String(n)} selected={days === n} onPress={() => setDays(n)} style={{ flex: 1 }} />
-                ))}
+              <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                {question(t('train.aiDaysQ'))}
+                <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary }}>{t('train.aiDaysN', { n: String(days) })}</Text>
               </View>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                {WEEK_ORDER.map((d) => {
+                  const on = weekdays.includes(d);
+                  return (
+                    <PressScale
+                      key={d}
+                      onPress={() => toggleDay(d)}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: on }}
+                      accessibilityLabel={t(`train.wdl.d${d}`)}
+                      style={{
+                        flex: 1, height: 56, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center', gap: 2,
+                        borderColor: on ? c.ink : c.borderSecondary, backgroundColor: on ? c.accent : 'transparent',
+                      }}
+                    >
+                      <Text style={{ fontSize: 16, fontWeight: '800', color: on ? c.onAccent : c.textSecondary }}>{t(`train.wd.d${d}`)}</Text>
+                      <Text style={{ fontSize: 11, color: on ? c.onAccent : c.textTertiary }}>{on ? t('train.aiTrain') : t('train.restShort')}</Text>
+                    </PressScale>
+                  );
+                })}
+              </View>
+              <Text style={{ fontSize: 12, color: c.textSecondary, marginTop: 6 }}>{t('train.aiDaysHint')}</Text>
 
               {question(t('train.aiWhereQ'))}
               <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -193,7 +232,7 @@ export default function AiPlanSheet({ visible, onClose }: { visible: boolean; on
           {loading ? (
             <View style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               <ActivityIndicator color={c.textPrimary} />
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: c.textSecondary }}>{t('train.aiGenerating')}</Text>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: c.textSecondary }}>{t('train.aiGenerating')} {elapsed}s</Text>
             </View>
           ) : result ? (
             <>
