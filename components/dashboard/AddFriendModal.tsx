@@ -1,4 +1,5 @@
 import {
+import UserAvatar from '@/components/ui/UserAvatar';
   View, Image, TouchableOpacity, Modal, ActivityIndicator, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -25,7 +26,7 @@ interface FoundUser {
   id: string;
   name: string;
   username: string | null;
-  avatarEmoji: string;
+  avatarEmoji: string | null;
   avatarImage?: string | null;
   bio?: string | null;
 }
@@ -186,13 +187,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
                   borderRadius: 18, borderWidth: 2, borderColor: colors.borderPrimary,
                   marginBottom: DIMENSIONS.SPACING * 1.2, gap: DIMENSIONS.SPACING * 0.8,
                 }}>
-                  <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: colors.cardBackgroundSecondary, borderWidth: 2, borderColor: colors.borderPrimary, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    {foundUser.avatarImage ? (
-                      <Image source={{ uri: foundUser.avatarImage }} style={{ width: 48, height: 48 }} />
-                    ) : (
-                      <Text style={{ fontSize: 24 }}>{foundUser.avatarEmoji}</Text>
-                    )}
-                  </View>
+                  <UserAvatar image={foundUser.avatarImage} name={foundUser.name} status={foundUser.avatarEmoji} size={48} radius={14} ring={colors.borderPrimary} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>{foundUser.name}</Text>
                     {foundUser.username ? <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textSecondary }}>@{foundUser.username}</Text> : null}

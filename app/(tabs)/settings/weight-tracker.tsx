@@ -11,6 +11,7 @@ import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchWeightRecords, logWeight, deleteWeight } from '@/services/api';
+import { kgTo, toKg, fmtWeight, useWeightUnit } from '@/lib/units';
 
 interface WeightRecord {
   id: string;
@@ -24,6 +25,8 @@ export default function WeightTrackerScreen() {
   const colors = useTheme();
   const { t } = useTranslation();
   const { language } = useStore();
+  const unit = useWeightUnit();
+  const show = (kg: number) => kgTo(kg, unit).toFixed(1);
 
   const [records, setRecords] = useState<WeightRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,14 +49,14 @@ export default function WeightTrackerScreen() {
   );
 
   const handleSave = async () => {
-    const w = parseFloat(inputWeight);
+    const w = toKg(parseFloat(inputWeight.replace(',', '.')), unit);
     if (!inputWeight || isNaN(w) || w < 20 || w > 500) {
       Alert.alert(t('weightTracker.invalidWeight'), t('weightTracker.invalidWeightHint'));
       return;
     }
     setSaving(true);
     try {
-      await logWeight(w, inputNote.trim() || undefined);
+      await logWeight(Math.round(w * 100) / 100, inputNote.trim() || undefined);
       await load();
       setShowModal(false);
       setInputWeight('');
@@ -107,7 +110,7 @@ export default function WeightTrackerScreen() {
         </View>
         <TouchableOpacity
           onPress={() => {
-            setInputWeight(latest ? String(Number(latest.weight)) : '');
+            setInputWeight(latest ? fmtWeight(Number(latest.weight), unit) : '');
             setShowModal(true);
           }}
           style={{
@@ -135,15 +138,15 @@ export default function WeightTrackerScreen() {
           {latest && (
             <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.8, marginBottom: DIMENSIONS.SPACING }}>
               {[
-                { label: t('weightTracker.currentWeight'), value: `${Number(latest.weight).toFixed(1)}`, diff: null },
+                { label: t('weightTracker.currentWeight'), value: show(Number(latest.weight)), diff: null },
                 {
                   label: t('weightTracker.vsLast'),
-                  value: trend !== null ? `${trend > 0 ? '+' : ''}${trend.toFixed(1)}` : '—',
+                  value: trend !== null ? `${trend > 0 ? '+' : ''}${show(trend)}` : '—',
                   diff: trend,
                 },
                 {
                   label: t('weightTracker.totalChange'),
-                  value: totalChange !== null && records.length > 1 ? `${totalChange > 0 ? '+' : ''}${totalChange.toFixed(1)}` : '—',
+                  value: totalChange !== null && records.length > 1 ? `${totalChange > 0 ? '+' : ''}${show(totalChange)}` : '—',
                   diff: totalChange,
                 },
               ].map(({ label, value, diff }) => (
@@ -164,7 +167,7 @@ export default function WeightTrackerScreen() {
                   }}>
                     {value}
                   </Text>
-                  {value !== '—' && <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary, fontWeight: '600' }}>kg</Text>}
+                  {value !== '—' && <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary, fontWeight: '600' }}>{unit}</Text>}
                 </View>
               ))}
             </View>
@@ -219,14 +222,14 @@ export default function WeightTrackerScreen() {
                     </View>
                     <View style={{ alignItems: 'flex-end', marginRight: DIMENSIONS.SPACING }}>
                       <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
-                        {Number(record.weight).toFixed(1)} kg
+                        {show(Number(record.weight))} {unit}
                       </Text>
                       {diff !== null && (
                         <Text style={{
                           fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700',
                           color: diff < 0 ? '#10B981' : diff > 0 ? '#EF4444' : colors.textSecondary,
                         }}>
-                          {diff > 0 ? '+' : ''}{diff.toFixed(1)}
+                          {diff > 0 ? '+' : ''}{show(diff)}
                         </Text>
                       )}
                     </View>

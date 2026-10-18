@@ -1,4 +1,5 @@
 import {
+import UserAvatar from '@/components/ui/UserAvatar';
   View, ScrollView, TouchableOpacity, Image, Share, Modal, StyleSheet, Animated, Platform, ActivityIndicator,
 } from 'react-native';
 import { Text } from '@/components/ui/Text';
@@ -14,23 +15,9 @@ import { fetchLeaderboard, LeaderboardEntry } from '@/services/api';
 
 // ── Shared Avatar ──────────────────────────────────────────────────────────────
 function Avatar({ emoji, image, name, size = 48 }: {
-  emoji?: string; image?: string | null; name: string; size?: number;
+  emoji?: string | null; image?: string | null; name: string; size?: number;
 }) {
-  const colors = useTheme();
-  return (
-    <View style={{
-      width: size, height: size, borderRadius: size / 2,
-      backgroundColor: colors.cardBackgroundSecondary,
-      alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-    }}>
-      {image
-        ? <Image source={{ uri: image }} style={{ width: size, height: size }} />
-        : <Text style={{ fontSize: size * 0.42, fontWeight: '900', color: colors.textPrimary }}>
-            {emoji || name.charAt(0).toUpperCase()}
-          </Text>
-      }
-    </View>
-  );
+  return <UserAvatar image={image} name={name} status={emoji} size={size} />;
 }
 
 // ── Stat Pill ─────────────────────────────────────────────────────────────────
@@ -140,7 +127,7 @@ function FriendRow({ entry, onPress, colors, t }: {
       }}
     >
       <Avatar
-        emoji={undefined}
+        emoji={entry.status}
         image={entry.avatarImage}
         name={entry.avatar}
         size={44}
@@ -221,7 +208,7 @@ function FriendCardModal({ entry, visible, onClose, colors, t }: {
         </Text>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: DIMENSIONS.SPACING, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
-          <Avatar emoji={undefined} image={entry.avatarImage} name={entry.avatar} size={64} />
+          <Avatar emoji={entry.status} image={entry.avatarImage} name={entry.avatar} size={64} />
           <View>
             <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
               {entry.name}

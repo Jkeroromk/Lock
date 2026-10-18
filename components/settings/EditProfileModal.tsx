@@ -11,10 +11,12 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { updateProfile } from '@/services/api';
 import { toCompressedBase64 } from '@/lib/image';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 
-const AVATAR_OPTIONS = [
-  '🏃','🧘','💪','🔥','😎','🚀',
+// Status emoji: shown on the corner of the avatar, not instead of it.
+const STATUS_OPTIONS = [
+  '🏃','🏋️','🧘','💪','🔥','🥗','🎯','😎','🚀','😴','🏖️','🍔',
 ];
 
 interface User {
@@ -40,7 +42,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
 
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const [avatarEmoji, setAvatarEmoji] = useState('🏃');
+  const [avatarEmoji, setAvatarEmoji] = useState('');
   const [avatarImage, setAvatarImage] = useState<string | undefined>(undefined);
   const [showGender, setShowGender] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,7 +83,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
       const rawName = user.username || user.name || '';
       setUsername(rawName.toLowerCase().replace(/[^a-z0-9_]/g, ''));
       setBio(user.bio || '');
-      setAvatarEmoji(user.avatarEmoji || '🏃');
+      setAvatarEmoji(user.avatarEmoji || '');
       setAvatarImage(user.avatarImage);
       setShowGender(user.showGender ?? false);
     }
@@ -106,7 +108,6 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
       const base64 = await toCompressedBase64(src, { maxWidth: 256, quality: 0.7 });
       const dataUri = `data:image/jpeg;base64,${base64}`;
       setAvatarImage(dataUri);
-      setAvatarEmoji('');
     }
   };
 
@@ -122,11 +123,11 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
         name: uname,
         username: uname,
         bio: bio.trim() || undefined,
-        avatarEmoji: avatarImage ? undefined : avatarEmoji,
+        avatarEmoji: avatarEmoji || null,
         avatarImage: avatarImage || null,
         showGender,
       } as any);
-      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarImage ? undefined : avatarEmoji, avatarImage: avatarImage || undefined, showGender });
+      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarEmoji || undefined, avatarImage: avatarImage || undefined, showGender });
     } catch (err: any) {
       const msg = err?.response?.data?.error || err?.message || t('common.retry');
       Alert.alert(t('weightTracker.saveFailed'), msg);
@@ -176,56 +177,72 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
               keyboardDismissMode="interactive"
               contentContainerStyle={{ paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingBottom: kb ? 16 : Math.max(40, insets.bottom + 16) }}
             >
-              {/* Avatar picker */}
+              {/* Photo + status */}
               <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING * 1.5 }}>
-                <View style={{
-                  width: 80, height: 80, borderRadius: 24,
-                  backgroundColor: colors.cardBackground,
-                  borderWidth: 2, borderColor: colors.borderPrimary,
-                  alignItems: 'center', justifyContent: 'center',
-                  marginBottom: DIMENSIONS.SPACING * 0.8,
-                  overflow: 'hidden',
-                }}>
+                <UserAvatar
+                  image={avatarImage}
+                  name={username || user?.name}
+                  status={avatarEmoji}
+                  size={80}
+                  radius={24}
+                  background={colors.accent}
+                  color={colors.onAccent}
+                  ring={colors.borderPrimary}
+                  style={{ marginBottom: DIMENSIONS.SPACING * 0.9 }}
+                />
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: DIMENSIONS.SPACING * 1.1 }}>
+                  <TouchableOpacity onPress={handlePickImage} style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36,
+                    paddingHorizontal: DIMENSIONS.SPACING * 0.9, borderRadius: 18, borderWidth: 1.5, borderColor: colors.borderPrimary,
+                    backgroundColor: colors.cardBackground,
+                  }}>
+                    <Ionicons name="image-outline" size={14} color={colors.textPrimary} />
+                    <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary }}>{t('settings.changeAvatar')}</Text>
+                  </TouchableOpacity>
                   {avatarImage ? (
-                    <Image source={{ uri: avatarImage }} style={{ width: 80, height: 80 }} />
-                  ) : (
-                    <Text style={{ fontSize: 40 }}>{avatarEmoji || '🏃'}</Text>
-                  )}
+                    <TouchableOpacity onPress={() => setAvatarImage(undefined)} style={{
+                      flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36,
+                      paddingHorizontal: DIMENSIONS.SPACING * 0.9, borderRadius: 18, borderWidth: 1.5, borderColor: colors.borderSecondary,
+                    }}>
+                      <Ionicons name="trash-outline" size={14} color={colors.textSecondary} />
+                      <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary }}>{t('settings.removePhoto' as any)}</Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
-                {/* Upload button */}
-                <TouchableOpacity onPress={handlePickImage} style={{
-                  flexDirection: 'row', alignItems: 'center', gap: 6,
-                  paddingHorizontal: DIMENSIONS.SPACING * 0.9, paddingVertical: DIMENSIONS.SPACING * 0.4,
-                  borderRadius: 20, borderWidth: 1.5, borderColor: colors.borderPrimary,
-                  backgroundColor: colors.cardBackground, marginBottom: DIMENSIONS.SPACING * 0.8,
-                }}>
-                  <Ionicons name="image-outline" size={14} color={colors.textPrimary} />
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textPrimary }}>{t('settings.changeAvatar')}</Text>
-                </TouchableOpacity>
                 <Text style={{
                   fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700',
                   color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1,
                   marginBottom: DIMENSIONS.SPACING * 0.5,
                 }}>
-                  Emoji
+                  {t('settings.status' as any)}
                 </Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, paddingHorizontal: DIMENSIONS.SPACING * 1.5 }}>
-                  {AVATAR_OPTIONS.map((emoji) => (
-                    <TouchableOpacity
-                      key={emoji}
-                      onPress={() => { setAvatarEmoji(emoji); setAvatarImage(undefined); }}
-                      style={{
-                        width: 40, height: 40, borderRadius: 10,
-                        backgroundColor: !avatarImage && avatarEmoji === emoji ? colors.textPrimary : colors.cardBackground,
-                        borderWidth: 2,
-                        borderColor: !avatarImage && avatarEmoji === emoji ? colors.textPrimary : colors.borderPrimary,
-                        alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ fontSize: 20 }}>{emoji}</Text>
-                    </TouchableOpacity>
-                  ))}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+                  {['', ...STATUS_OPTIONS].map((emoji) => {
+                    const on = avatarEmoji === emoji;
+                    return (
+                      <TouchableOpacity
+                        key={emoji || 'none'}
+                        onPress={() => setAvatarEmoji(emoji)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected: on }}
+                        accessibilityLabel={emoji || t('settings.noStatus' as any)}
+                        style={{
+                          width: 42, height: 42, borderRadius: 12,
+                          backgroundColor: on ? colors.accent : colors.cardBackground,
+                          borderWidth: 2, borderColor: on ? colors.ink : colors.borderSecondary,
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        {emoji
+                          ? <Text style={{ fontSize: 20 }}>{emoji}</Text>
+                          : <Ionicons name="remove-circle-outline" size={18} color={on ? colors.onAccent : colors.textSecondary} />}
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, marginTop: 8, textAlign: 'center' }}>
+                  {t('settings.statusHint' as any)}
+                </Text>
               </View>
 
               {/* Username */}

@@ -7,6 +7,7 @@ type LeaderboardEntry = {
   name: string;
   username: string | null;
   avatar: string;
+  status: string | null;
   avatarImage: string | null;
   calories: number;
   streak: number;
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
       id: u.id,
       name: u.name || u.username || '用户',
       username: u.username,
-      avatar: u.avatarEmoji || (u.name || u.username || 'U').charAt(0).toUpperCase(),
+      avatar: (u.name || u.username || 'U').charAt(0).toUpperCase(), status: u.avatarEmoji || null,
       avatarImage: u.avatarImage || null,
       calories: calorieMap.get(u.id) ?? 0,
       streak: u.streak,

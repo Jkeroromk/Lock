@@ -119,9 +119,13 @@ export function matchesSearch(e: Exercise, query: string): boolean {
   return Object.values(e.name).some((n) => n.toLowerCase().includes(q));
 }
 
-/** Default kg added by "+ weight each time" progression. */
-export function defaultStep(id: string): number {
+/**
+ * Default kg added by "+ weight each time" progression: round plate steps in
+ * the user's unit (2.5 kg / 5 lb for barbells, 5 kg / 10 lb on machines).
+ */
+export function defaultStep(id: string, unit: 'kg' | 'lb' = 'kg'): number {
   const eq = BY_ID.get(id)?.equipment;
+  if (unit === 'lb') return Math.round(((eq === 'machine' ? 10 : 5) / 2.20462) * 100) / 100;
   if (eq === 'dumbbell') return 2;
   if (eq === 'machine') return 5;
   return 2.5;

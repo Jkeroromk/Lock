@@ -1,13 +1,13 @@
-import { View, TouchableOpacity, Image } from 'react-native';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { View, Alert } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Card, IconButton, Label } from '@/components/ui/bxc';
+import { Card, IconButton, Label, PressScale } from '@/components/ui/bxc';
+import UserAvatar from '@/components/ui/UserAvatar';
 import { useTheme } from '@/hooks/useTheme';
-
 
 interface User {
   name?: string;
@@ -28,31 +28,46 @@ interface UserProfileCardProps {
   onEdit: () => void;
 }
 
+/**
+ * The profile "name card": photo with the status emoji on its corner, name and
+ * bio, and the two codes side by side at the bottom.
+ */
 export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) {
   const { t } = useTranslation();
-  const colors = useTheme();
+  const c = useTheme();
 
   const displayName = user?.username ? `@${user.username}` : user?.name || t('settings.userName');
+  const bonus = user?.bonusAiCalls ?? 0;
 
   return (
     <Card variant="hero" padding={16} style={{ marginBottom: 16 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View style={{
-          width: 72, height: 72, borderRadius: 22, overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
-          backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.ink, transform: [{ rotate: '-3deg' }],
-        }}>
-          {user?.avatarImage ? (
-            <Image source={{ uri: user.avatarImage }} style={{ width: 72, height: 72 }} accessibilityIgnoresInvertColors />
-          ) : user?.avatarEmoji ? (
-            <Text style={{ fontSize: 34 }}>{user.avatarEmoji}</Text>
-          ) : (
-            <Text style={{ fontSize: 30, fontWeight: '800', color: colors.onAccent }}>{(user?.name || '?').trim().charAt(0).toUpperCase()}</Text>
-          )}
-        </View>
+        <PressScale onPress={onEdit} accessibilityRole="button" accessibilityLabel={t('settings.editProfile' as any)} style={{ transform: [{ rotate: '-3deg' }] }}>
+          <UserAvatar
+            image={user?.avatarImage}
+            name={user?.username || user?.name}
+            status={user?.avatarEmoji}
+            size={72}
+            radius={22}
+            background={c.accent}
+            color={c.onAccent}
+            ring={c.ink}
+          />
+          {!user?.avatarEmoji ? (
+            // No status yet: a dashed "+" where the badge would be.
+            <View style={{
+              position: 'absolute', right: -7, bottom: -6, width: 28, height: 28, borderRadius: 14,
+              backgroundColor: c.cardBackground, borderWidth: 1.5, borderStyle: 'dashed', borderColor: c.textSecondary,
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Ionicons name="happy-outline" size={15} color={c.textSecondary} />
+            </View>
+          ) : null}
+        </PressScale>
         <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.6, color: colors.textPrimary }}>{displayName}</Text>
+          <Text numberOfLines={1} style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.6, color: c.textPrimary }}>{displayName}</Text>
           {user?.bio ? (
-            <Text numberOfLines={2} style={{ fontSize: 14, lineHeight: 19, color: colors.textSecondary, marginTop: 2 }}>{user.bio}</Text>
+            <Text numberOfLines={2} style={{ fontSize: 14, lineHeight: 19, color: c.textSecondary, marginTop: 2 }}>{user.bio}</Text>
           ) : null}
           {user?.showGender && user?.gender ? (
             <Label style={{ fontSize: 10, marginTop: 4 }}>{t(`settings.genderOptions.${user.gender}` as any) || user.gender}</Label>
@@ -61,49 +76,48 @@ export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) 
         <IconButton icon="pencil-outline" onPress={onEdit} accessibilityLabel={t('settings.editProfile' as any)} />
       </View>
 
-      {user?.friendCode ? (
-        <CodeRow
-          label={t('settings.friendCode' as any)}
-          value={user.friendCode}
-          copiedLabel={t('settings.friendCodeCopied' as any)}
-          description={t('settings.friendCodeDesc' as any)}
-          variant="plain"
-        />
-      ) : null}
-
-      {user?.inviteCode ? (
-        <CodeRow
-          label={t('settings.inviteCode' as any)}
-          value={user.inviteCode}
-          copiedLabel={t('settings.inviteCodeCopied' as any)}
-          description={t('settings.inviteCodeDesc' as any)}
-          variant="accent"
-        >
-          {(user.bonusAiCalls ?? 0) > 0 ? (
-            <View accessibilityLiveRegion="polite" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 }}>
-              <Ionicons name="gift" size={15} color={colors.textPrimary} />
-              <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textPrimary }}>
-                {(t('settings.bonusScansLeft' as any) as string).replace('{n}', String(user.bonusAiCalls))}
-              </Text>
-            </View>
+      {user?.friendCode || user?.inviteCode ? (
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 16, paddingTop: 14, borderTopWidth: 1.5, borderTopColor: c.divider }}>
+          {user?.friendCode ? (
+            <CodeTile
+              label={t('settings.friendCode' as any)}
+              value={user.friendCode}
+              display={user.friendCode.length === 8 ? `${user.friendCode.slice(0, 4)} ${user.friendCode.slice(4)}` : user.friendCode}
+              caption={t('settings.friendCodeShort' as any)}
+              copiedLabel={t('settings.friendCodeCopied' as any)}
+              description={t('settings.friendCodeDesc' as any)}
+            />
           ) : null}
-        </CodeRow>
+          {user?.inviteCode ? (
+            <CodeTile
+              accent
+              label={t('settings.inviteCode' as any)}
+              value={user.inviteCode}
+              display={user.inviteCode}
+              caption={bonus > 0
+                ? (t('settings.bonusScansShort' as any) as string).replace('{n}', String(bonus))
+                : t('settings.inviteCodeShort' as any)}
+              copiedLabel={t('settings.inviteCodeCopied' as any)}
+              description={t('settings.inviteCodeDesc' as any)}
+            />
+          ) : null}
+        </View>
       ) : null}
     </Card>
   );
 }
 
-/** A copyable code: Friend ID (plain, for adding friends) or invite code (yellow, for sign-ups). */
-function CodeRow({ label, value, copiedLabel, description, variant, children }: {
+/** Tap to copy; the (i) explains what the code is for. */
+function CodeTile({ label, value, display, caption, copiedLabel, description, accent }: {
   label: string;
   value: string;
+  display: string;
+  caption: string;
   copiedLabel: string;
   description: string;
-  variant: 'plain' | 'accent';
-  children?: ReactNode;
+  accent?: boolean;
 }) {
-  const colors = useTheme();
-  // Copy → the icon turns into a checkmark for a moment instead of an alert.
+  const c = useTheme();
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
@@ -115,30 +129,46 @@ function CodeRow({ label, value, copiedLabel, description, variant, children }: 
     timer.current = setTimeout(() => setCopied(false), 1800);
   };
 
-  const accent = variant === 'accent';
-  const fg = accent ? colors.onAccent : colors.textPrimary;
+  const fg = accent ? c.onAccent : c.textPrimary;
+  const sub = accent ? c.onAccent : c.textSecondary;
   return (
-    <View style={{ marginTop: 16, borderTopWidth: 1.5, borderTopColor: colors.divider, paddingTop: 14 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Label>{label}</Label>
-        <TouchableOpacity
-          onPress={copy}
-          activeOpacity={0.8}
+    <PressScale
+      onPress={copy}
+      onLongPress={() => Alert.alert(label, description)}
+      accessibilityRole="button"
+      accessibilityLabel={copied ? copiedLabel : `${label} ${value}`}
+      accessibilityHint={description}
+      accessibilityLiveRegion="polite"
+      style={{
+        flex: 1, padding: 12, borderRadius: 16, borderWidth: 2,
+        borderColor: accent ? c.ink : c.borderPrimary,
+        backgroundColor: accent ? c.accent : c.cardBackground,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Label color={sub}>{label}</Label>
+        <PressScale
+          onPress={() => Alert.alert(label, description)}
+          hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel={copied ? copiedLabel : `${label} ${value}`}
-          accessibilityLiveRegion="polite"
-          style={{
-            flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, paddingHorizontal: 14,
-            borderRadius: 13, borderWidth: 2, borderColor: colors.ink,
-            backgroundColor: accent ? colors.accent : colors.cardBackground,
-          }}
+          accessibilityLabel={description}
         >
-          <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 17, letterSpacing: accent ? 3 : 1.5, color: fg }}>{value}</Text>
-          <Ionicons name={copied ? 'checkmark-circle' : 'copy-outline'} size={copied ? 18 : 16} color={fg} />
-        </TouchableOpacity>
+          <Ionicons name="information-circle-outline" size={16} color={sub} />
+        </PressScale>
       </View>
-      <Text style={{ fontSize: 13, lineHeight: 18, color: colors.textSecondary, marginTop: 8 }}>{description}</Text>
-      {children}
-    </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          style={{ flexShrink: 1, fontFamily: FONTS.mono, fontWeight: '700', fontSize: 19, letterSpacing: accent ? 2.5 : 1, color: fg }}
+        >
+          {display}
+        </Text>
+        <Ionicons name={copied ? 'checkmark-circle' : 'copy-outline'} size={copied ? 17 : 15} color={fg} />
+      </View>
+      <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={{ fontSize: 12, color: sub, marginTop: 4 }}>
+        {copied ? copiedLabel : caption}
+      </Text>
+    </PressScale>
   );
 }

@@ -8,7 +8,8 @@ import { Bar, Button, Card, IconButton, Label, PressScale, Sticker } from '@/com
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { useWorkoutStore, num, fmtKg, type ActiveSet } from '@/store/useWorkoutStore';
+import { useWorkoutStore, num, boxKg, type ActiveSet } from '@/store/useWorkoutStore';
+import { fmtWeight, fmtWeightUnit } from '@/lib/units';
 import { exerciseName, getExercise } from '@/constants/exercises';
 import ExerciseThumb from '@/components/train/ExerciseThumb';
 import ExercisePicker from '@/components/train/ExercisePicker';
@@ -68,6 +69,7 @@ export default function WorkoutSessionScreen() {
 
   if (!active) return <View style={{ flex: 1, backgroundColor: c.backgroundPrimary }} />;
 
+  const unit = active.unit ?? 'kg';
   const exercises = active.exercises;
   const ei = Math.min(active.current, Math.max(0, exercises.length - 1));
   const ex = exercises[ei];
@@ -84,7 +86,7 @@ export default function WorkoutSessionScreen() {
   if (ex && prior) {
     for (const s of ex.sets) {
       if (!s.done) continue;
-      const cand = { weight: num(s.weight), reps: Math.round(num(s.reps)) };
+      const cand = { weight: boxKg(s.weight, unit), reps: Math.round(num(s.reps)) };
       const ref = todayPr ?? prior;
       if (cand.weight > ref.weight || (cand.weight === ref.weight && cand.reps > ref.reps)) todayPr = cand;
     }
@@ -97,7 +99,7 @@ export default function WorkoutSessionScreen() {
       const prev = last[si] ?? last[last.length - 1];
       const patch: Partial<ActiveSet> = {};
       if (!s.reps.trim() && prev) patch.reps = String(prev.reps);
-      if (!s.weight.trim() && prev && prev.weight > 0) patch.weight = fmtKg(prev.weight);
+      if (!s.weight.trim() && prev && prev.weight > 0) patch.weight = fmtWeight(prev.weight, unit);
       if (Object.keys(patch).length) updateSet(ei, si, patch);
       if (num(patch.reps ?? s.reps) < 1) return;
     }
@@ -106,7 +108,7 @@ export default function WorkoutSessionScreen() {
     if (pr) {
       showToast({
         icon: 'trophy',
-        message: pr.weight > 0 ? t('train.prToast', { w: fmtKg(pr.weight), r: String(pr.reps) }) : t('train.prToastReps', { r: String(pr.reps) }),
+        message: pr.weight > 0 ? t('train.prToast', { w: fmtWeightUnit(pr.weight, unit), r: String(pr.reps) }) : t('train.prToastReps', { r: String(pr.reps) }),
         detail: exerciseName(ex.id, language),
       });
     }
@@ -253,7 +255,7 @@ export default function WorkoutSessionScreen() {
                 <Sticker style={{ position: 'absolute', top: -14, right: 12 }} rotate={5}>
                   <Ionicons name="trophy" size={12} color={c.onAccent} />
                   <Text style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 12, color: c.onAccent }}>
-                    {todayPr.weight > 0 ? t('train.prToast', { w: fmtKg(todayPr.weight), r: String(todayPr.reps) }) : t('train.prToastReps', { r: String(todayPr.reps) })}
+                    {todayPr.weight > 0 ? t('train.prToast', { w: fmtWeightUnit(todayPr.weight, unit), r: String(todayPr.reps) }) : t('train.prToastReps', { r: String(todayPr.reps) })}
                   </Text>
                 </Sticker>
               ) : null}
@@ -263,7 +265,7 @@ export default function WorkoutSessionScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingBottom: 6, gap: 8 }}>
                   <Text style={[colHead(c), { width: 28 }]}>{t('train.colSet')}</Text>
                   <Text style={[colHead(c), { flex: 1.2 }]}>{t('train.colLast')}</Text>
-                  <Text style={[colHead(c), { flex: 1, textAlign: 'center' }]}>{bodyweight ? '+KG' : t('train.colKg')}</Text>
+                  <Text style={[colHead(c), { flex: 1, textAlign: 'center' }]}>{bodyweight ? `+${unit.toUpperCase()}` : unit.toUpperCase()}</Text>
                   <Text style={[colHead(c), { flex: 1, textAlign: 'center' }]}>{t('train.colReps')}</Text>
                   <View style={{ width: 40 }} />
                 </View>
@@ -286,11 +288,11 @@ export default function WorkoutSessionScreen() {
                         <Text style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 15, color: s.done ? c.onAccent : c.textPrimary }}>{si + 1}</Text>
                       </PressScale>
                       <Text numberOfLines={1} style={{ flex: 1.2, fontFamily: FONTS.mono, fontSize: 13, color: s.done ? c.onAccent : c.textSecondary }}>
-                        {prev ? (prev.weight > 0 ? `${fmtKg(prev.weight)}×${prev.reps}` : `${prev.reps}`) : '—'}
+                        {prev ? (prev.weight > 0 ? `${fmtWeight(prev.weight, unit)}×${prev.reps}` : `${prev.reps}`) : '—'}
                       </Text>
                       <NumberBox
                         value={s.weight}
-                        placeholder={ph && ph.weight > 0 ? fmtKg(ph.weight) : bodyweight ? '0' : 'kg'}
+                        placeholder={ph && ph.weight > 0 ? fmtWeight(ph.weight, unit) : bodyweight ? '0' : unit}
                         decimal
                         done={s.done}
                         onChange={(v) => updateSet(ei, si, { weight: v })}
@@ -366,7 +368,7 @@ export default function WorkoutSessionScreen() {
                   <Label>{t('train.next')}</Label>
                   <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary, marginTop: 2 }}>{exerciseName(next.id, language)}</Text>
                   <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary }}>
-                    {next.sets.length}×{next.sets[0]?.reps || '—'}{next.sets[0]?.weight ? ` · ${next.sets[0].weight} kg` : ''}
+                    {next.sets.length}×{next.sets[0]?.reps || '—'}{next.sets[0]?.weight ? ` · ${next.sets[0].weight} ${unit}` : ''}
                   </Text>
                 </View>
                 <Ionicons name="arrow-forward" size={20} color={c.textPrimary} />

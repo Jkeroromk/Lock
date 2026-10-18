@@ -1,4 +1,6 @@
 import { View } from 'react-native';
+import { macroTargets } from '@/lib/macros';
+import { useProteinTarget } from '@/hooks/useProteinTarget';
 import { Text } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
@@ -15,24 +17,21 @@ interface CaloriesCardProps {
   fat: number;
 }
 
-/**
- * Macro targets derived from the calorie goal with a standard 30/45/25 split
- * (protein / carbs / fat). Users don't set macro goals yet.
- */
-export function macroTargets(calorieGoal: number) {
-  return {
-    protein: Math.round((calorieGoal * 0.3) / 4),
-    carbs: Math.round((calorieGoal * 0.45) / 4),
-    fat: Math.round((calorieGoal * 0.25) / 9),
-  };
-}
+export { macroTargets } from '@/lib/macros';
 
-function MacroRow({ label, value, target }: { label: string; value: number; target: number }) {
+function MacroRow({ label, value, target, badge }: { label: string; value: number; target: number; badge?: string }) {
   const c = useTheme();
   return (
     <View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Label>{label}</Label>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
+          <Label>{label}</Label>
+          {badge ? (
+            <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 6, backgroundColor: c.accent, transform: [{ rotate: '-3deg' }] }}>
+              <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 9, color: c.onAccent }}>{badge}</Text>
+            </View>
+          ) : null}
+        </View>
         <Text style={{ fontFamily: FONTS.mono, fontWeight: '500', fontSize: 11, color: c.textPrimary }}>
           {Math.round(value)}/{target}g
         </Text>
@@ -52,6 +51,7 @@ export default function CaloriesCard({ todayCalories, protein, carbs, fat }: Cal
   const over = eaten > goal;
   const left = Math.abs(goal - eaten);
   const targets = macroTargets(goal);
+  const protein_ = useProteinTarget();
   const isLight = c.backgroundPrimary !== c.ink;
   const level = calorieWarnings ? calorieLevel(eaten, goal, user?.goal) : 'ok';
   const warn = level === 'over' || level === 'way';
@@ -76,7 +76,12 @@ export default function CaloriesCard({ todayCalories, protein, carbs, fat }: Cal
         </Ring>
 
         <View style={{ flex: 1, gap: 11 }}>
-          <MacroRow label={t('log.protein')} value={protein} target={targets.protein} />
+          <MacroRow
+            label={t('log.protein')}
+            value={protein}
+            target={protein_.target}
+            badge={protein_.bonus ? t('train.proteinBadge', { n: String(protein_.bonus) }) : undefined}
+          />
           <MacroRow label={t('log.carbs')} value={carbs} target={targets.carbs} />
           <MacroRow label={t('log.fat')} value={fat} target={targets.fat} />
           <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>

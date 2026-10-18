@@ -11,10 +11,12 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useStore, localDateKey } from '@/store/useStore';
-import { useWorkoutStore, weekDays, daySets, dayMinutes, plannedDayCount, fmtKg } from '@/store/useWorkoutStore';
+import { useWorkoutStore, weekDays, daySets, dayMinutes, plannedDayCount } from '@/store/useWorkoutStore';
+import { fmtWeightUnit, kgTo, useWeightUnit } from '@/lib/units';
+import WeightCard from '@/components/train/WeightCard';
+import AiInsightsCard from '@/components/calendar/AiInsightsCard';
 import { exerciseName } from '@/constants/exercises';
 import { dayTitle } from '@/components/train/dayTitle';
-import { fetchWeightRecords } from '@/services/weight';
 import { deleteWorkout, type SessionSummary } from '@/services/workouts';
 
 export default function TrainScreen() {
@@ -26,7 +28,8 @@ export default function TrainScreen() {
   const [loading, setLoading] = useState(!loaded);
   const [refreshing, setRefreshing] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [weight, setWeight] = useState<{ now: number; delta: number | null } | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const unit = useWeightUnit();
 
   const refresh = useCallback(async () => {
     try {
@@ -35,14 +38,6 @@ export default function TrainScreen() {
     } catch {
       setFailed(true);
     }
-    fetchWeightRecords()
-      .then((records) => {
-        if (!records.length) return setWeight(null);
-        const now = Number(records[0].weight);
-        const prev = records[1] ? Number(records[1].weight) : null;
-        setWeight({ now, delta: prev === null ? null : Math.round((now - prev) * 10) / 10 });
-      })
-      .catch(() => {});
   }, [load]);
 
   useEffect(() => {
@@ -56,6 +51,7 @@ export default function TrainScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    setRefreshKey((k) => k + 1);
     await refresh();
     setRefreshing(false);
   };
@@ -205,7 +201,7 @@ export default function TrainScreen() {
                             <Text numberOfLines={1} style={{ flex: 1, fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{exerciseName(e.id, language)}</Text>
                             <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: c.textSecondary }}>{e.sets}×{e.reps}</Text>
                             <Text style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '600', color: c.textPrimary, minWidth: 64, textAlign: 'right' }}>
-                              {e.weight > 0 ? `${fmtKg(e.weight)} kg` : t('train.bodyweight')}
+                              {e.weight > 0 ? fmtWeightUnit(e.weight, unit) : t('train.bodyweight')}
                             </Text>
                           </View>
                         ))}
@@ -242,15 +238,18 @@ export default function TrainScreen() {
               <Appear index={2} style={{ flexDirection: 'row', gap: 10, marginBottom: 18 }}>
                 <StatTile label={t('train.weekWorkouts')} value={String(weekSessions.length)} suffix={planned ? `/ ${planned}` : undefined} />
                 <StatTile label={t('train.newRecords')} value={String(weekPrs)} suffix={t('train.recordsUnit')} highlight />
-                <StatTile
-                  label={t('train.weight')}
-                  value={weight ? fmtKg(weight.now) : '—'}
-                  suffix={weight?.delta ? `${weight.delta < 0 ? '↓' : '↑'}${Math.abs(weight.delta)}` : weight ? 'kg' : undefined}
-                />
+              </Appear>
+
+              <Appear index={3}>
+                <WeightCard refreshKey={refreshKey} />
+              </Appear>
+
+              <Appear index={4}>
+                <AiInsightsCard />
               </Appear>
 
               {/* Recent */}
-              <Appear index={3}>
+              <Appear index={5}>
                 <Label style={{ marginBottom: 8 }}>{t('train.recent')}</Label>
                 {sessions.length === 0 ? (
                   <Text style={{ fontSize: 14, color: c.textSecondary }}>{t('train.noSessions')}</Text>
@@ -274,7 +273,7 @@ export default function TrainScreen() {
                           <View style={{ flex: 1 }}>
                             <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{s.title ?? t('train.freeTitle')}</Text>
                             <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 2 }}>
-                              {t('train.setsN', { n: String(s.setCount) })} · {Math.round(s.volume).toLocaleString()} kg · {t('train.minutesN', { n: String(Math.max(1, Math.round(s.durationSec / 60))) })}
+                              {t('train.setsN', { n: String(s.setCount) })} · {Math.round(kgTo(s.volume, unit)).toLocaleString()} {unit} · {t('train.minutesN', { n: String(Math.max(1, Math.round(s.durationSec / 60))) })}
                             </Text>
                           </View>
                           {s.prCount > 0 ? (

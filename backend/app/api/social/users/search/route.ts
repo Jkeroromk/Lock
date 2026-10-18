@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         id: target.id,
         name: target.name || target.username || '用户',
         username: target.username,
-        avatarEmoji: target.avatarEmoji || '🏃',
+        avatarEmoji: target.avatarEmoji || null,
         avatarImage: target.avatarImage || null,
         bio: target.bio,
       },

@@ -8,7 +8,9 @@ import { Button, Card, IconButton, Label, PressScale, TextField } from '@/compon
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { useWorkoutStore, num, fmtKg } from '@/store/useWorkoutStore';
+import { useWorkoutStore, num } from '@/store/useWorkoutStore';
+import { fmtWeight, toKg, useWeightUnit } from '@/lib/units';
+import type { WeightUnit } from '@/store/useStore';
 import { exerciseName, defaultStep, isBodyweight, getExercise } from '@/constants/exercises';
 import { savePlan, type PlanDays, type PlanExercise } from '@/services/workouts';
 import ExerciseThumb from '@/components/train/ExerciseThumb';
@@ -28,6 +30,7 @@ export default function PlanEditorScreen() {
   const params = useLocalSearchParams<{ day?: string }>();
   const storedPlan = useWorkoutStore((s) => s.plan);
   const setPlan = useWorkoutStore((s) => s.setPlan);
+  const unit = useWeightUnit();
   const [draft, setDraft] = useState<PlanDays>(() => clone(storedPlan));
   const [day, setDay] = useState<number>(() => {
     const d = Number(params.day);
@@ -168,7 +171,7 @@ export default function PlanEditorScreen() {
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
                 <Stepper label={t('train.sets')} value={e.sets} min={1} max={20} onChange={(v) => patchExercise(i, { sets: v })} />
                 <Stepper label={t('train.reps')} value={e.reps} min={1} max={100} onChange={(v) => patchExercise(i, { reps: v })} />
-                <KgField label={bw ? `+kg` : 'kg'} value={e.weight} step={e.step} onChange={(v) => patchExercise(i, { weight: v })} />
+                <KgField unit={unit} label={bw ? `+${unit}` : unit} value={e.weight} step={e.step} onChange={(v) => patchExercise(i, { weight: v })} />
               </View>
               {!bw ? (
                 <PressScale
@@ -184,7 +187,7 @@ export default function PlanEditorScreen() {
                 >
                   <Ionicons name={e.progress === 'weight' ? 'trending-up' : 'remove'} size={14} color={e.progress === 'weight' ? c.onAccent : c.textSecondary} />
                   <Text style={{ fontFamily: FONTS.mono, fontWeight: '600', fontSize: 12, color: e.progress === 'weight' ? c.onAccent : c.textSecondary }}>
-                    {e.progress === 'weight' ? t('train.progressWeight', { n: fmtKg(e.step) }) : t('train.progressOff')}
+                    {e.progress === 'weight' ? t('train.progressWeight', { n: `${fmtWeight(e.step, unit)}${unit}` }) : t('train.progressOff')}
                   </Text>
                 </PressScale>
               ) : null}
@@ -204,7 +207,7 @@ export default function PlanEditorScreen() {
             const target = d[key] ?? { exercises: [] };
             for (const id of ids) {
               const bw = isBodyweight(id);
-              target.exercises.push({ id, sets: 3, reps: bw ? 12 : 10, weight: 0, progress: bw ? 'none' : 'weight', step: defaultStep(id) });
+              target.exercises.push({ id, sets: 3, reps: bw ? 12 : 10, weight: 0, progress: bw ? 'none' : 'weight', step: defaultStep(id, unit) });
             }
             d[key] = target;
           })
@@ -248,14 +251,16 @@ function Stepper({ label, value, min, max, onChange }: { label: string; value: n
   );
 }
 
-function KgField({ label, value, step, onChange }: { label: string; value: number; step: number; onChange: (v: number) => void }) {
+/** Weight box: shows the user's unit, reports kg. */
+function KgField({ unit, label, value, step, onChange }: { unit: WeightUnit; label: string; value: number; step: number; onChange: (v: number) => void }) {
   const c = useTheme();
-  const [text, setText] = useState(value > 0 ? fmtKg(value) : '');
+  const show = (kg: number) => (kg > 0 ? fmtWeight(kg, unit) : '');
+  const [text, setText] = useState(show(value));
   // Follow outside changes (the − / + buttons).
   useEffect(() => {
-    if (num(text) !== value) setText(value > 0 ? fmtKg(value) : '');
+    if (Math.abs(toKg(num(text), unit) - value) > 0.006) setText(show(value));
   }, [value]);
-  const bump = (d: number) => onChange(Math.max(0, Math.round((value + d) * 4) / 4));
+  const bump = (d: number) => onChange(Math.max(0, Math.round((value + d) * 100) / 100));
   return (
     <View style={{ flex: 1.3, borderRadius: 12, borderWidth: 1.5, borderColor: c.borderSecondary, paddingVertical: 6, alignItems: 'center' }}>
       <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary, textTransform: 'uppercase' }}>{label}</Text>
@@ -268,7 +273,7 @@ function KgField({ label, value, step, onChange }: { label: string; value: numbe
           onChangeText={(v) => {
             const clean = v.replace(/[^0-9.,]/g, '').slice(0, 6);
             setText(clean);
-            onChange(Math.min(1000, num(clean)));
+            onChange(Math.min(1000, Math.round(toKg(num(clean), unit) * 100) / 100));
           }}
           placeholder="0"
           placeholderTextColor={c.textTertiary}

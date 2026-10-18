@@ -1,4 +1,5 @@
 import { View, Image, TouchableOpacity, Alert } from 'react-native';
+import UserAvatar from '@/components/ui/UserAvatar';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
@@ -12,6 +13,7 @@ export interface LeaderboardEntry {
   id: string;
   name: string;
   avatar: string;
+  status?: string | null;
   avatarImage?: string;
   calories: number;
   rank: number;
@@ -27,22 +29,17 @@ interface LeaderboardCardProps {
 
 function Avatar({ entry, size, highlight }: { entry: LeaderboardEntry; size: number; highlight?: boolean }) {
   const c = useTheme();
-  const initial = (entry.name || '?').trim().charAt(0).toUpperCase();
   return (
-    <View style={{
-      width: size, height: size, borderRadius: size / 2, overflow: 'hidden',
-      backgroundColor: highlight ? c.paper : c.textPrimary,
-      borderWidth: highlight ? 2 : 0, borderColor: c.ink,
-      alignItems: 'center', justifyContent: 'center',
-    }}>
-      {entry.avatarImage ? (
-        <Image source={{ uri: entry.avatarImage }} style={{ width: size, height: size }} accessibilityIgnoresInvertColors />
-      ) : entry.avatar ? (
-        <Text style={{ fontSize: size * 0.45 }}>{entry.avatar}</Text>
-      ) : (
-        <Text style={{ fontSize: size * 0.42, fontWeight: '800', color: highlight ? c.ink : c.backgroundPrimary }}>{initial}</Text>
-      )}
-    </View>
+    <UserAvatar
+      image={entry.avatarImage}
+      initial={entry.avatar}
+      name={entry.name}
+      status={entry.status}
+      size={size}
+      background={highlight ? c.paper : c.textPrimary}
+      color={highlight ? c.ink : c.backgroundPrimary}
+      ring={highlight ? c.ink : undefined}
+    />
   );
 }
 

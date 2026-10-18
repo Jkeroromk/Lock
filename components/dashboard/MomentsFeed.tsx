@@ -1,4 +1,5 @@
 import { View, Image, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
+import UserAvatar from '@/components/ui/UserAvatar';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,20 +27,7 @@ function timeAgo(dateStr: string, t: (k: any) => any): string {
 }
 
 function Avatar({ user, size = 40 }: { user: Moment['user']; size?: number }) {
-  const colors = useTheme();
-  return (
-    <View style={{
-      width: size, height: size, borderRadius: size / 2,
-      backgroundColor: colors.cardBackgroundSecondary,
-      alignItems: 'center', justifyContent: 'center',
-      overflow: 'hidden',
-    }}>
-      {user.avatarImage
-        ? <Image source={{ uri: user.avatarImage }} style={{ width: size, height: size }} />
-        : <Text style={{ fontSize: size * 0.42, fontWeight: '900', color: colors.textPrimary }}>{user.avatar}</Text>
-      }
-    </View>
-  );
+  return <UserAvatar image={user.avatarImage} initial={user.avatar} name={user.name} status={user.status} size={size} />;
 }
 
 interface MomentCardProps {
