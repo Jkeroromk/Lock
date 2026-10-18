@@ -1,17 +1,18 @@
 export const APPSTORE_URL = 'https://apps.apple.com/app/id6762630080';
 
 /* Free / Pro lists mirror the in-app pricing copy (i18n freeFeatures / proFeatures)
-   and backend/lib/plans.ts in the app repo. Keep them in sync when limits change. */
+   and backend/lib/plans.ts in the app repo. Keep them in sync when limits change.
+   Pro prices are the US App Store prices (lock.pro.yearly / lock.pro.monthly). */
 
 export const COPY = {
   en: {
-    nav: { how: 'How it works', features: 'Features', social: 'Social', pricing: 'Pricing', faq: 'FAQ' },
+    nav: { how: 'How it works', features: 'Features', train: 'Train', social: 'Social', pricing: 'Pricing', faq: 'FAQ' },
     download: 'Download',
     langLabel: '中文',
     themeLight: 'Switch to light mode',
     themeDark: 'Switch to dark mode',
     hero: {
-      eyebrow: 'AI calorie & macro tracker · iPhone',
+      eyebrow: 'AI calorie tracker + workout log · iPhone',
       lines: ['Snap it.', 'Log it.', 'Lock in.'],
       sub: "Snap a photo of your meal and Lock's AI breaks it into calories, protein, carbs and fat in seconds. Every meal fills the ring. Hit your goal and it locks.",
       cta: 'Download on the App Store',
@@ -28,7 +29,7 @@ export const COPY = {
         { n: 'Greek yogurt', k: 250 },
       ],
     },
-    ticker: ['Snap it', 'Scan it', 'Log it', 'Lock it', '3 free AI scans a day', 'Barcodes never limited', 'Invite a friend: both +5'],
+    ticker: ['Snap it', 'Scan it', 'Log it', 'Lock it', 'Train with a plan', '3 free AI scans a day', 'Barcodes never limited', 'Invite a friend: both +5'],
     how: {
       eyebrow: 'How it works',
       title: 'Snap it. Logged.',
@@ -47,7 +48,7 @@ export const COPY = {
       title: 'Everything your day needs. Nothing it doesn’t.',
       dial: { t: 'Your day. One dial.', d: 'Calories left, macros, water and steps on one screen. No digging.', left: 'kcal left', water: 'Water', steps: 'Steps', macros: ['Protein', 'Carbs', 'Fat'] },
       scan: { t: 'Packaged? Scan it.', d: 'Scan the barcode or the nutrition label for exact numbers. Barcode and manual logging are never limited.', modes: ['Photo', 'Label', 'Barcode'], unlimited: 'Always unlimited' },
-      cal: { t: 'Days that stack up.', d: 'A month of logging at a glance, plus an AI review that tells you what’s working and what isn’t.', month: 'October', insight: 'Protein dips on weekends. Try a high-protein breakfast Sat & Sun.', ai: 'AI review', legend: ['Logged', 'Goal hit'] },
+      cal: { t: 'Days that stack up.', d: 'A month of logging at a glance. Open it from the calendar button on Today.', month: 'October', summary: ['days logged', 'goals hit'], legend: ['Logged', 'Goal hit'] },
       water: { t: 'Water, your way.', d: 'Set a daily water goal and add a glass in one tap. Steps and active energy sync from Apple Health.', ask: 'Iced latte looks like a drink. Add 350 ml to today’s water?', yes: 'Add 350 ml', no: 'Food only', steps: 'Steps', energy: 'Active energy' },
     },
     social: {
@@ -61,6 +62,48 @@ export const COPY = {
       days: 'days',
       streak: '30-day streak',
     },
+    train: {
+      eyebrow: 'Train',
+      title: 'Train with a plan.',
+      sub: 'Set what you train each day of the week. Lock takes you through every set, keeps your records, and adds weight when you’re ready.',
+      plan: {
+        t: 'Your week, planned.',
+        d: 'Name each day and pick from 56 built-in exercises. Set sets, reps and weight, and turn on +2.5 kg to add weight every time.',
+        days: ['Legs', 'Push', 'Rest', 'Pull', 'Legs', 'Upper', 'Rest'],
+        today: 'Today',
+        todayTitle: 'Legs + Core',
+        todayMeta: '5 exercises · ~50 min',
+        start: 'Start workout',
+      },
+      guided: {
+        t: 'Every set, guided.',
+        d: 'Last time’s numbers sit next to each set. Tick it off and the rest timer starts. Close the app mid-workout and nothing is lost.',
+        exercise: 'Barbell Squat',
+        cols: ['Set', 'Last', 'KG', 'Reps'],
+        rest: 'Rest',
+        pr: 'New record 100 × 5',
+      },
+      done: {
+        t: 'Done, with receipts.',
+        d: 'Volume, sets, about how much you burned and your new records. Then the plan moves up on its own.',
+        stats: [['Time', '52 min'], ['Volume', '6,420 kg'], ['Sets', '18'], ['Burned about', '310 kcal']],
+        next: 'Next time the plan uses 102.5 kg',
+      },
+      diet: {
+        t: 'Diet × training.',
+        d: 'Training days add 20 g to your protein goal. The AI review reads your meals and your workouts together.',
+        protein: 'Protein',
+        badge: 'Training +20g',
+        ai: 'AI review',
+        insight: 'You hit protein on 2 of 4 training days. A shake after Thursday’s session closes the gap.',
+      },
+      weight: {
+        t: 'Weight, as a curve.',
+        d: 'Log your weight on the Train tab and watch 30 or 90 days. kg or lb, your choice.',
+        ranges: ['30d', '90d'],
+        change: '30 days −1.8 kg',
+      },
+    },
     icons: {
       eyebrow: 'App icons',
       title: 'Make it yours.',
@@ -71,8 +114,8 @@ export const COPY = {
     pricing: {
       eyebrow: 'Pricing',
       title: 'Free to start. Pro when you’re ready.',
-      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['First week: 10 AI scans / day', 'Then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Invite a friend: you both get +5 scans', 'Challenges · up to 5 friends'] },
-      pro: { name: 'Pro', price: 'Monthly or yearly', note: 'Price shown in the App Store.', list: ['Unlimited AI scans', 'Unlimited AI diet reviews', 'Create & join challenges', 'Unlimited friends', 'Data export', 'Weight chart'] },
+      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['First week: 10 AI scans / day', 'Then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Workout plans, logging & weight curve', 'Invite a friend: you both get +5 scans', 'Challenges · up to 5 friends'] },
+      pro: { name: 'Pro', price: '$39.99/yr', note: '7 days free, then $39.99 a year. Or $7.99 a month. US prices; the App Store shows yours.', list: ['Everything in Free', 'Unlimited AI scans', 'Unlimited AI diet reviews', 'Create & join challenges', 'Unlimited friends', 'Data export'] },
       cta: 'Get Lock',
     },
     faq: {
@@ -80,16 +123,18 @@ export const COPY = {
       title: 'Things people ask.',
       items: [
         { q: 'How accurate is the photo scan?', a: 'Lock’s AI estimates calories, protein, carbs and fat from your photo. Like any estimate it can be off, so every entry is editable. For packaged food, scan the barcode or nutrition label for exact numbers.' },
-        { q: 'Is Lock free?', a: 'Yes. Your first week includes 10 AI scans a day. After that, the free plan includes 3 AI scans a day, one AI diet review a week, and unlimited barcode and manual logging. Invite a friend and you both get 5 bonus scans. Pro removes the limits.' },
-        { q: 'Will my friends see what I eat?', a: 'Only what you choose to share. Meal photos show up in Moments only when you post them.' },
+        { q: 'Is Lock free?', a: 'Yes. Your first week includes 10 AI scans a day. After that, the free plan includes 3 AI scans a day, one AI diet review a week, and unlimited barcode and manual logging. Workout plans and logging are free too. Invite a friend and you both get 5 bonus scans.' },
+        { q: 'How much is Lock Pro?', a: '$39.99 a year with a 7-day free trial, or $7.99 a month (US prices). Pro removes the scan and review limits. We remind you 2 days before the trial ends, and you can cancel anytime in your Apple ID settings.' },
+        { q: 'Does Lock track workouts?', a: 'Yes. Plan your week on the Train tab, follow each workout set by set with a rest timer, and Lock keeps your records and raises the weight when you’ve earned it. Training days also raise your protein goal by 20 g.' },
+        { q: 'Will my friends see what I eat?', a: 'Friends see your name, status, streak and today’s calorie total on the leaderboard. Your meals and photos only show up when you post them to Moments.' },
         { q: 'Does it work with Apple Health?', a: 'Yes. Connect Apple Health and your steps and active energy sync automatically.' },
         { q: 'Which languages does Lock support?', a: 'English, 简体中文, 繁體中文, 日本語 and 한국어.' },
-        { q: 'Can I delete my data?', a: 'Yes. You can delete your account and all of its data from Settings at any time.' },
+        { q: 'Can I delete my data?', a: 'Yes. Settings → Account & Security → Delete Account permanently deletes your account, meals, photos and workouts. Deleting doesn’t cancel an App Store subscription; cancel that in your Apple ID settings.' },
       ],
     },
     cta: { title: 'Ready to lock in?', sub: 'Free on iPhone. 10 AI scans a day in your first week.', btn: 'Download on the App Store' },
     footer: {
-      tag: 'AI nutrition tracking that locks when you hit your goal.',
+      tag: 'AI nutrition and training that locks when you hit your goal.',
       product: 'Product',
       company: 'Lock',
       links: { support: 'Support', privacy: 'Privacy', terms: 'Terms' },
@@ -98,13 +143,13 @@ export const COPY = {
     },
   },
   zh: {
-    nav: { how: '怎么用', features: '功能', social: '社交', pricing: '价格', faq: '常见问题' },
+    nav: { how: '怎么用', features: '功能', train: '训练', social: '社交', pricing: '价格', faq: '常见问题' },
     download: '下载',
     langLabel: 'EN',
     themeLight: '切换到浅色',
     themeDark: '切换到深色',
     hero: {
-      eyebrow: 'AI 卡路里与营养追踪 · iPhone',
+      eyebrow: 'AI 饮食追踪 + 训练记录 · iPhone',
       lines: ['拍一下。', '记下来。', 'Lock in.'],
       sub: '给你的餐拍张照，Lock 的 AI 几秒内拆出卡路里、蛋白质、碳水和脂肪。每一餐都会填满圆环，达到目标，它就锁上。',
       cta: '从 App Store 下载',
@@ -121,7 +166,7 @@ export const COPY = {
         { n: '希腊酸奶', k: 250 },
       ],
     },
-    ticker: ['拍一下', '扫一下', '记下来', '锁上它', '每天 3 次免费 AI 识别', '条码记录不限次数', '邀请好友，双方各 +5 次'],
+    ticker: ['拍一下', '扫一下', '记下来', '锁上它', '按计划训练', '每天 3 次免费 AI 识别', '条码记录不限次数', '邀请好友，双方各 +5 次'],
     how: {
       eyebrow: '怎么用',
       title: '拍一下，就记好了。',
@@ -140,7 +185,7 @@ export const COPY = {
       title: '一天需要的都在，多余的都不要。',
       dial: { t: '你的一天，一个表盘。', d: '剩余卡路里、宏量营养、饮水和步数，一屏看完，不用翻找。', left: '千卡剩余', water: '饮水', steps: '步数', macros: ['蛋白质', '碳水', '脂肪'] },
       scan: { t: '包装食品？扫一下。', d: '扫条形码或营养成分表，直接拿到准确数字。条码和手动记录永远不限次数。', modes: ['拍照', '成分表', '条码'], unlimited: '永远不限次数' },
-      cal: { t: '一天天累积起来。', d: '一整月的记录一目了然，再加上 AI 饮食分析，告诉你哪里做得好、哪里要调整。', month: '十月', insight: '周末蛋白质偏低。周六日早餐试试高蛋白。', ai: 'AI 分析', legend: ['已记录', '达成目标'] },
+      cal: { t: '一天天累积起来。', d: '一整月的记录一目了然，从「今天」页右上角的日历按钮打开。', month: '十月', summary: ['天有记录', '天达标'], legend: ['已记录', '达成目标'] },
       water: { t: '喝水，按你的方式。', d: '设定每日饮水目标，一键加一杯；步数和活动能量从 Apple 健康自动同步。', ask: '冰拿铁看起来是饮品，要把 350 ml 算进今天的饮水吗？', yes: '加 350 ml', no: '只算食物', steps: '步数', energy: '活动能量' },
     },
     social: {
@@ -154,6 +199,48 @@ export const COPY = {
       days: '天',
       streak: '连续打卡 30 天',
     },
+    train: {
+      eyebrow: '训练',
+      title: '按计划训练。',
+      sub: '定好一周每天练什么。Lock 带你一组一组练完，记下你的纪录，该加重的时候自动加上。',
+      plan: {
+        t: '一周的训练，提前排好。',
+        d: '给每天起个名字，从 56 个内置动作里挑。设好组数、次数和重量，打开「每次 +2.5 kg」就会自动加重。',
+        days: ['腿', '推', '休', '拉', '腿', '上肢', '休'],
+        today: '今天',
+        todayTitle: '腿 + 核心',
+        todayMeta: '5 个动作 · 约 50 分钟',
+        start: '开始训练',
+      },
+      guided: {
+        t: '每一组，都有人带。',
+        d: '每组旁边都有上次的成绩。打个勾，组间休息就开始计时。练到一半关掉 App，进度也不会丢。',
+        exercise: '杠铃深蹲',
+        cols: ['组', '上次', 'KG', '次数'],
+        rest: '休息',
+        pr: '新纪录 100 × 5',
+      },
+      done: {
+        t: '练完，一目了然。',
+        d: '训练量、组数、大约消耗多少、破了哪些纪录。下次的计划会自己往上加。',
+        stats: [['时长', '52 分钟'], ['训练量', '6,420 kg'], ['组数', '18'], ['约消耗', '310 千卡']],
+        next: '下次计划用 102.5 kg',
+      },
+      diet: {
+        t: '饮食 × 训练。',
+        d: '训练日的蛋白质目标自动 +20g。AI 分析会把你的饮食和训练放在一起看。',
+        protein: '蛋白质',
+        badge: '训练日 +20g',
+        ai: 'AI 分析',
+        insight: '4 个训练日里有 2 天蛋白质达标。周四练完喝一杯蛋白粉，就补上了。',
+      },
+      weight: {
+        t: '体重，看曲线。',
+        d: '在训练页记体重，看 30 天或 90 天的变化。kg 还是 lb，你来定。',
+        ranges: ['30 天', '90 天'],
+        change: '30 天 −1.8 kg',
+      },
+    },
     icons: {
       eyebrow: 'App 图标',
       title: '换成你喜欢的样子。',
@@ -164,8 +251,8 @@ export const COPY = {
     pricing: {
       eyebrow: '价格',
       title: '免费开始，准备好再升级 Pro。',
-      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周每天 10 次 AI 识别', '之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '邀请好友：双方各 +5 次', '参与挑战 · 最多 5 位好友'] },
-      pro: { name: 'Pro', price: '按月或按年', note: '价格以 App Store 显示为准。', list: ['无限 AI 食物识别', '无限 AI 饮食分析', '创建 & 参与挑战', '无限好友', '数据导出', '体重趋势图'] },
+      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周每天 10 次 AI 识别', '之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练计划、训练记录和体重曲线', '邀请好友：双方各 +5 次', '参与挑战 · 最多 5 位好友'] },
+      pro: { name: 'Pro', price: '$39.99/年', note: '前 7 天免费，之后每年 $39.99；也可以按月 $7.99。以上为美区价格，实际以 App Store 显示为准。', list: ['包含免费版全部功能', '无限 AI 食物识别', '无限 AI 饮食分析', '创建 & 参与挑战', '无限好友', '数据导出'] },
       cta: '下载 Lock',
     },
     faq: {
@@ -173,16 +260,18 @@ export const COPY = {
       title: '大家常问的。',
       items: [
         { q: '拍照识别准吗？', a: 'Lock 的 AI 会根据照片估算卡路里、蛋白质、碳水和脂肪。估算难免有偏差，所以每条记录都可以修改。包装食品可以扫条形码或营养成分表，拿到准确数字。' },
-        { q: 'Lock 收费吗？', a: '可以免费用。首周每天 10 次 AI 识别；之后免费版每天 3 次 AI 识别、每周 1 次 AI 饮食分析，条码和手动记录不限次数。邀请好友，双方各得 5 次。Pro 没有这些限制。' },
-        { q: '朋友会看到我吃什么吗？', a: '只看得到你主动分享的内容。餐食照片只有你发到 Moments 时才会出现。' },
+        { q: 'Lock 收费吗？', a: '可以免费用。首周每天 10 次 AI 识别；之后免费版每天 3 次 AI 识别、每周 1 次 AI 饮食分析，条码和手动记录不限次数。训练计划和训练记录也是免费的。邀请好友，双方各得 5 次。' },
+        { q: 'Lock Pro 多少钱？', a: '按年 $39.99，前 7 天免费；或按月 $7.99（美区价格）。Pro 没有识别和分析次数限制。试用结束前 2 天会提醒你，随时可以在 Apple ID 设置里取消。' },
+        { q: 'Lock 能记录训练吗？', a: '能。在训练页排好一周计划，跟着一组一组练，组间有休息计时；Lock 会记下你的纪录，练到了就自动加重。训练日的蛋白质目标还会多加 20g。' },
+        { q: '朋友会看到我吃什么吗？', a: '好友在排行榜上能看到你的名字、状态、连胜天数和今天的总卡路里。具体吃了什么、餐食照片，只有你发到 Moments 时才会出现。' },
         { q: '能连 Apple 健康吗？', a: '可以。连接 Apple 健康后，步数和活动能量会自动同步。' },
         { q: '支持哪些语言？', a: 'English、简体中文、繁體中文、日本語 和 한국어。' },
-        { q: '能删除我的数据吗？', a: '可以。随时在设置里删除账号及其全部数据。' },
+        { q: '能删除我的数据吗？', a: '可以。在 设置 → 账号与安全 → 删除账号，会永久删除你的账号、餐食、照片和训练记录。删除账号不会自动取消 App Store 订阅，订阅需要在 Apple ID 设置里取消。' },
       ],
     },
     cta: { title: '准备好 lock in 了吗？', sub: 'iPhone 免费下载，首周每天 10 次 AI 识别。', btn: '从 App Store 下载' },
     footer: {
-      tag: '达成目标就上锁的 AI 营养追踪。',
+      tag: '达成目标就上锁的 AI 饮食与训练记录。',
       product: '产品',
       company: 'Lock',
       links: { support: '支持', privacy: '隐私', terms: '条款' },

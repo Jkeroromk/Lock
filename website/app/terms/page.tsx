@@ -11,7 +11,7 @@ const sections: LegalSection[] = [
     title: 'Service Description',
     content: (
       <>
-        <p>Lock provides AI food recognition and calorie tracking, health data monitoring (steps, active energy), social features (friends, leaderboards, Moments, challenges) and personalised diet analysis.</p>
+        <p>Lock provides AI food recognition and calorie tracking, workout planning and logging, weight tracking, health data monitoring (steps, active energy), social features (friends, leaderboards, Moments, challenges) and personalised diet and training analysis.</p>
         <p>Content provided by Lock is for informational purposes only and does not constitute medical advice.</p>
       </>
     ),
@@ -31,10 +31,10 @@ const sections: LegalSection[] = [
     title: 'Subscriptions & Payments',
     content: (
       <>
-        <p><B>Free:</B> 3 AI scans per day and up to 5 friends.</p>
-        <p><B>Pro:</B> unlimited AI scans, AI diet analysis, unlimited friends, creating challenges, data export and weight charts.</p>
-        <p><B>Max:</B> everything in Pro, plus a weekly automatic AI report, an AI custom nutrition plan and priority support.</p>
+        <p><B>Free:</B> 10 AI scans per day during your first week, then 3 per day; one AI diet review per week; unlimited barcode and manual logging; workout plans and logging; up to 5 friends.</p>
+        <p><B>Lock Pro:</B> unlimited AI scans and AI diet reviews, unlimited friends, creating challenges and data export. Lock Pro is an auto-renewing subscription, offered yearly ($39.99 in the US, with a 7-day free trial) or monthly ($7.99 in the US). Prices in other countries are shown in the App Store before you buy.</p>
         <List items={[
+          'If you start a free trial, you are charged when the trial ends unless you cancel at least 24 hours before it ends',
           'Payment is charged to your Apple ID account at confirmation of purchase',
           'Subscriptions renew automatically unless cancelled at least 24 hours before the end of the current period; your account is charged for renewal within 24 hours before the period ends',
           'You can manage or cancel your subscription in your App Store account settings',
@@ -79,6 +79,7 @@ const sections: LegalSection[] = [
         <List items={[
           'AI-recognised food data may contain errors',
           'Consult a doctor before starting a new diet or exercise plan',
+          'Workout plans, suggested weight increases and calorie burn estimates are general guidance; train within your own limits',
           'We are not liable for health issues arising from reliance on app data',
         ]} />
       </>
@@ -115,7 +116,7 @@ export default function TermsOfService() {
   return (
     <LegalPage
       title="Terms of Service"
-      lastUpdated="October 10, 2026"
+      lastUpdated="October 18, 2026"
       intro={<p>By downloading, installing or using Lock, you agree to be bound by these Terms of Service. If you do not agree, do not use the app.</p>}
       sections={sections}
     />

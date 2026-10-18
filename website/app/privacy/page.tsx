@@ -12,11 +12,12 @@ const sections: LegalSection[] = [
     content: (
       <>
         <p><B>Account information:</B> your email address, name, username, bio and profile picture, and the body details you enter during setup (height, weight, age, gender, goal, exercise frequency).</p>
-        <p><B>Meal data:</B> the meals you log — food names, calories and macros. Photos you take for calorie analysis are sent to our AI provider to be analysed and are <B>not stored</B> by Lock.</p>
+        <p><B>Meal data:</B> the meals you log — food names, calories and macros. Photos you take for calorie analysis are sent to our AI provider to be analysed. When you save a meal, a small thumbnail of its photo is kept in private storage so it can show in your log; only you can see it unless you post it to Moments. Deleting the meal deletes its thumbnail.</p>
         <p><B>Content you post:</B> Moments (text and photos), comments, likes and challenges. These are stored until you delete them or your account.</p>
         <p><B>Health data:</B> with your permission, step count and active energy from Apple Health (see &ldquo;Apple Health&rdquo; below).</p>
-        <p><B>Weight records</B> you choose to log, and a <B>push notification token</B> if you enable reminders.</p>
-        <p><B>Purchases:</B> your subscription status (Free, Pro or Max). Payments are processed by Apple; we never see your payment details.</p>
+        <p><B>Training data:</B> your weekly workout plan and the workouts you log — exercises, sets, reps, weights and duration.</p>
+        <p><B>Weight records</B> you choose to log, your unit preference (kg or lb), and a <B>push notification token</B> if you enable reminders.</p>
+        <p><B>Purchases:</B> your subscription status (Free or Pro). Payments are processed by Apple; we never see your payment details.</p>
       </>
     ),
   },
@@ -24,7 +25,7 @@ const sections: LegalSection[] = [
     title: 'How We Use Your Information',
     content: (
       <List items={[
-        "Provide Lock's core features: AI food recognition, calorie and macro tracking, and diet analysis",
+        "Provide Lock's core features: AI food recognition, calorie and macro tracking, workout planning and logging, and diet and training analysis",
         'Calculate your daily calorie goals and show your progress',
         'Run social features — friends, leaderboards, Moments and challenges',
         'Send meal reminders and friend notifications you opt in to',
@@ -54,8 +55,8 @@ const sections: LegalSection[] = [
         <p>We do not sell your personal data. We share data only with providers that operate the service on our behalf:</p>
         <List items={[
           <><B>Clerk</B> — sign-in and account security (including Sign in with Apple / Google)</>,
-          <><B>Fireworks AI</B> — analysing meal photos and nutrition labels, and generating diet analysis</>,
-          <><B>Supabase</B> — database hosting</>,
+          <><B>Fireworks AI</B> — analysing meal photos and nutrition labels, and generating the AI review from your recent meals, workouts and goals</>,
+          <><B>Supabase</B> — database and private photo storage</>,
           <><B>Vercel</B> — server hosting</>,
           <><B>RevenueCat</B> — subscription management</>,
           <><B>Expo</B> — delivering push notifications</>,
@@ -67,13 +68,13 @@ const sections: LegalSection[] = [
   {
     title: 'What Your Friends Can See',
     content: (
-      <p>Social features are friends-only. Your friends can see your display name, username, avatar, today&apos;s calorie total, streak, and the Moments, comments and challenges you post. People who are not your friends cannot see your Moments. You can remove friends, and block users — blocked users can no longer see you, find you in search or send you friend requests.</p>
+      <p>Social features are friends-only. Your friends can see your display name, username, avatar, status, today&apos;s calorie total, streak, and the Moments, comments and challenges you post. Your workouts and weight are not shared with friends. People who are not your friends cannot see your Moments. You can remove friends, and block users — blocked users can no longer see you, find you in search or send you friend requests.</p>
     ),
   },
   {
     title: 'Data Retention & Deletion',
     content: (
-      <p>Your data is kept while your account is active. You can delete your account at any time in <span className="text-foreground">Settings → Account Security → Delete Account</span>, which permanently deletes your account and all associated data (meals, posts, comments, friends, weight and health records) within 30 days. Pro and Max members can also export their meal history from Settings. You can request deletion at any time by emailing <Mail />.</p>
+      <p>Your data is kept while your account is active. You can delete your account at any time in <span className="text-foreground">Settings → Account &amp; Security → Delete Account</span>. This immediately and permanently deletes your account and all associated data (meals, meal photos, posts, comments, friends, workouts, weight and health records), and, if you signed in with Apple, revokes Lock&apos;s Sign in with Apple access. Deleting your account does not cancel an App Store subscription; cancel it in your Apple ID settings. Pro members can also export their meal history from Settings. You can request deletion at any time by emailing <Mail />.</p>
     ),
   },
   {
@@ -104,7 +105,7 @@ export default function PrivacyPolicy() {
   return (
     <LegalPage
       title="Privacy Policy"
-      lastUpdated="October 10, 2026"
+      lastUpdated="October 18, 2026"
       intro={<p>Lock (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) values your privacy. This policy explains what we collect, how we use it, and the choices you have when you use the Lock mobile app.</p>}
       sections={sections}
     />
