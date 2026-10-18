@@ -14,7 +14,6 @@
     "@quidone/react-native-wheel-picker": "^1.6.1",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@rozhkov/react-useful-hooks": "^1.0.10",
-    "@shopify/react-native-skia": "2.2.12",
     "axios": "^1.6.5",
     "expo": "~54.0.33",
     "expo-alternate-app-icons": "^8.0.0",
