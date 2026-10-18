@@ -4,4 +4,3 @@ export * from './profile';
 export * from './social';
 export * from './weight';
 export * from './ai';
-export * from './game';

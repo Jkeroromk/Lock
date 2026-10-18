@@ -157,7 +157,7 @@ export default function LogScreen() {
     const before = todaysCalories();
     try {
       const thumb = image ? await makeMealThumbnail(image) : null;
-      const { encounter } = await logMeal({
+      await logMeal({
         food_name: result.food, calories: result.calories, protein: result.protein, carbs: result.carbs, fat: result.fat,
         image_url: thumb?.uri || '',
         thumbnail: thumb?.base64, // stored server-side so the photo shows on every device
@@ -173,15 +173,12 @@ export default function LogScreen() {
       const after = before + Math.round(saved.calories);
       const overGoal = calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
       const water = liquidMl > 0 ? (t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl)) : '';
-      const met = encounter ? (t('game.toastEncounter' as any) as string).replace('{name}', t(`game.sp.${encounter.species}.name` as any) as string) : '';
       showToast({
         message: `${t('log.savedToast' as any)} · ${saved.food}`,
-        detail: met || (overGoal
+        detail: overGoal
           ? [t('calorieWarn.toastOver' as any, { kcal: (after - goal).toLocaleString() }), water].filter(Boolean).join(' · ')
-          : water || `${Math.round(saved.calories)} kcal`),
-        icon: met ? 'sparkles' : overGoal ? 'warning' : undefined,
-        // A meal that attracted a Lockling offers a shortcut to go catch it.
-        action: encounter ? { label: t('game.toastGo' as any), onPress: () => router.navigate('/(tabs)/partner') } : undefined,
+          : water || `${Math.round(saved.calories)} kcal`,
+        icon: overGoal ? 'warning' : undefined,
       });
     } catch (error: any) { Alert.alert(t('log.saveFailed'), error.message || t('log.saveFailed')); }
     finally { setSaving(false); }

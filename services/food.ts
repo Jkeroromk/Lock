@@ -1,4 +1,3 @@
-import type { Encounter } from './game';
 import axios from 'axios';
 import { api } from './client';
 import { toCompressedBase64 } from '@/lib/image';
@@ -130,12 +129,10 @@ export const lookupBarcode = async (barcode: string): Promise<FoodAnalysis | nul
   }
 };
 
-/** Saves a meal. The server may answer with a Lockling encounter it attracted. */
-export const logMeal = async (meal: MealData): Promise<{ encounter: Encounter | null }> => {
+export const logMeal = async (meal: MealData): Promise<void> => {
   try {
     const tzOffset = new Date().getTimezoneOffset();
-    const res = await api.post('/api/log-meal', { ...meal, tzOffset });
-    return { encounter: res.data?.encounter ?? null };
+    await api.post('/api/log-meal', { ...meal, tzOffset });
   } catch (error: any) {
     throw new Error(error.response?.data?.error || '保存餐食失败');
   }
