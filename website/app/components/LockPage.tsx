@@ -437,7 +437,7 @@ function Train({ t }: { t: T }) {
             <div className="sets-head"><span className="ex">{tr.guided.exercise}</span><span className="rest-pill mono">{I.timer(13)} {tr.guided.rest} <b className="tnum">1:24</b></span></div>
             <div className="sets-row sets-cols mono" aria-hidden="true">{tr.guided.cols.map((c) => <span key={c}>{c}</span>)}<span /></div>
             {sets.map((r, i) => (
-              <div key={i} className={`sets-row ${r.done && seen ? 'done' : ''}`} style={{ transitionDelay: `${i * 160}ms` }}>
+              <div key={i} className={`sets-row ${r.done && seen ? 'is-done' : ''}`} style={{ transitionDelay: `${i * 160}ms` }}>
                 <span className="mono">{i + 1}</span>
                 <span className="mono dim">{r.last}</span>
                 <span className="tnum v">{r.kg}</span>
