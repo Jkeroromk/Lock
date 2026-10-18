@@ -543,30 +543,6 @@ function Social({ t }: { t: T }) {
   );
 }
 
-/* ── Icons ────────────────────────────── */
-function Icons({ t }: { t: T }) {
-  const files = ['open-lock', 'ring-l', 'sticker-l', 'keyhole-dial'];
-  return (
-    <section className="sec wrap icons-sec" id="icons">
-      <div className="icons-head">
-        <div>
-          <Reveal><p className="eyebrow">{t.icons.eyebrow}</p></Reveal>
-          <Reveal delay={1} as="h2"><span className="h2">{t.icons.title}</span></Reveal>
-        </div>
-        <Reveal delay={2}><p className="lead">{t.icons.sub}</p></Reveal>
-      </div>
-      <ul className="icon-row">
-        {files.map((f, i) => (
-          <Reveal as="li" key={f} delay={i} className="icon-item">
-            <img src={`/icons/${f}.png`} alt={`${t.icons.names[i]} app icon`} width={180} height={180} loading="lazy" />
-            <span className="mono">{t.icons.names[i]}{i === 0 && <em>{t.icons.def}</em>}</span>
-          </Reveal>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 /* ── Pricing ──────────────────────────── */
 function Pricing({ t }: { t: T }) {
   const p = t.pricing;
@@ -714,7 +690,6 @@ export default function LockPage() {
         <Features t={t} />
         <Train t={t} />
         <Social t={t} />
-        <Icons t={t} />
         <Pricing t={t} />
         <Faq t={t} />
         <FinalCta t={t} />

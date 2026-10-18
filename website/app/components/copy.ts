@@ -104,13 +104,6 @@ export const COPY = {
         change: '30 days −1.8 kg',
       },
     },
-    icons: {
-      eyebrow: 'App icons',
-      title: 'Make it yours.',
-      sub: 'Four home-screen icons. Pick one in Settings › App Icon.',
-      names: ['Open Lock', 'Ring', 'Sticker', 'Keyhole'],
-      def: 'Default',
-    },
     pricing: {
       eyebrow: 'Pricing',
       title: 'Free to start. Pro when you’re ready.',
@@ -240,13 +233,6 @@ export const COPY = {
         ranges: ['30 天', '90 天'],
         change: '30 天 −1.8 kg',
       },
-    },
-    icons: {
-      eyebrow: 'App 图标',
-      title: '换成你喜欢的样子。',
-      sub: '四款主屏图标，在 设置 › App 图标 里随时切换。',
-      names: ['开锁', '圆环', '贴纸', '钥匙孔'],
-      def: '默认',
     },
     pricing: {
       eyebrow: '价格',

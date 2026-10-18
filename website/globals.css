@@ -361,19 +361,6 @@
 .chain i.on { background: var(--accent); border-color: var(--line); }
 @media (max-width: 900px) { .social-grid { grid-template-columns: 1fr; gap: 48px; } .streak-card { margin-left: 0; } }
 
-/* icons */
-.icons-head { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: end; margin-bottom: 44px; }
-.icons-head .h2 { margin-bottom: 0; }
-.icon-row { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-.icon-item { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.icon-item img { width: 100%; max-width: 180px; height: auto; border-radius: 24%; border: 2px solid var(--line); box-shadow: var(--sh); transition: transform .25s cubic-bezier(.3,1.6,.5,1); }
-.icon-item:nth-child(odd) img { transform: rotate(-3deg); }
-.icon-item:nth-child(even) img { transform: rotate(2.5deg); }
-.icon-item:hover img { transform: rotate(0) translateY(-6px); }
-.icon-item .mono { font-size: 13px; display: inline-flex; gap: 8px; align-items: center; }
-.icon-item em { font-style: normal; font-size: 10px; background: var(--accent); color: var(--ink); border: 2px solid var(--ink); border-radius: 6px; padding: 1px 6px; }
-@media (max-width: 800px) { .icons-head { grid-template-columns: 1fr; } .icon-row { grid-template-columns: repeat(2, 1fr); } }
-
 /* pricing */
 .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; max-width: 960px; }
 .plan { padding: 30px; display: flex; flex-direction: column; gap: 26px; height: 100%; }
