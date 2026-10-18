@@ -138,6 +138,12 @@ export default function AiPlanSheet({ visible, onClose }: { visible: boolean; on
                   {t('train.aiChange')}
                 </Text>
               </View>
+              {result.source === 'template' ? (
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <Ionicons name="information-circle-outline" size={16} color={c.textSecondary} style={{ marginTop: 2 }} />
+                  <Text style={{ flex: 1, fontSize: 13, lineHeight: 19, color: c.textSecondary }}>{t('train.aiTemplateNote')}</Text>
+                </View>
+              ) : null}
               {result.summary ? (
                 <Card variant="inverse" padding={14}>
                   <Text style={{ fontSize: 16, lineHeight: 22, fontWeight: '700', color: c.textInverse }}>{result.summary}</Text>

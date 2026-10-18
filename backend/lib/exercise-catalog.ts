@@ -62,6 +62,12 @@ export const CATALOG: CatalogExercise[] = [
   { id: 'ab_wheel', group: 'core', equipment: 'bodyweight', en: 'Ab Wheel Rollout', zh: '健腹轮' },
   { id: 'russian_twist', group: 'core', equipment: 'bodyweight', en: 'Russian Twist', zh: '俄罗斯转体' },
   { id: 'decline_sit_up', group: 'core', equipment: 'bodyweight', en: 'Decline Sit-up', zh: '下斜仰卧起坐' },
+  { id: 'bodyweight_squat', group: 'legs', equipment: 'bodyweight', en: 'Bodyweight Squat', zh: '徒手深蹲' },
+  { id: 'bodyweight_lunge', group: 'legs', equipment: 'bodyweight', en: 'Bodyweight Lunge', zh: '徒手弓步蹲' },
+  { id: 'glute_bridge', group: 'legs', equipment: 'bodyweight', en: 'Glute Bridge', zh: '臀桥' },
+  { id: 'pike_push_up', group: 'shoulders', equipment: 'bodyweight', en: 'Pike Push-up', zh: '屈体俯卧撑' },
+  { id: 'inverted_row', group: 'back', equipment: 'bodyweight', en: 'Inverted Row', zh: '反向划船' },
+  { id: 'db_romanian_deadlift', group: 'legs', equipment: 'dumbbell', en: 'Dumbbell Romanian Deadlift', zh: '哑铃罗马尼亚硬拉' },
 ];
 
 export const CATALOG_IDS = new Set(CATALOG.map((e) => e.id));

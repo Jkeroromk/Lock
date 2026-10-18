@@ -95,6 +95,14 @@ export const EXERCISES: Exercise[] = [
   x('ab_wheel', 'core', 'bodyweight', ['abs'], 'Ab Wheel Rollout', '健腹轮', '健腹輪', 'アブローラー', '복근 롤아웃'),
   x('russian_twist', 'core', 'bodyweight', ['obliques', 'abs'], 'Russian Twist', '俄罗斯转体', '俄羅斯轉體', 'ロシアンツイスト', '러시안 트위스트'),
   x('decline_sit_up', 'core', 'bodyweight', ['abs'], 'Decline Sit-up', '下斜仰卧起坐', '下斜仰臥起坐', 'デクラインシットアップ', '디클라인 싯업'),
+
+  // Added Oct 2026 (bodyweight / home training)
+  x('bodyweight_squat', 'legs', 'bodyweight', ['quads', 'glutes'], 'Bodyweight Squat', '徒手深蹲', '徒手深蹲', '自重スクワット', '맨몸 스쿼트'),
+  x('bodyweight_lunge', 'legs', 'bodyweight', ['quads', 'glutes'], 'Bodyweight Lunge', '徒手弓步蹲', '徒手弓步蹲', '自重ランジ', '맨몸 런지'),
+  x('glute_bridge', 'legs', 'bodyweight', ['glutes', 'hamstrings'], 'Glute Bridge', '臀桥', '臀橋', 'グルートブリッジ', '글루트 브릿지'),
+  x('pike_push_up', 'shoulders', 'bodyweight', ['frontDelts', 'triceps'], 'Pike Push-up', '屈体俯卧撑', '屈體伏地挺身', 'パイクプッシュアップ', '파이크 푸시업'),
+  x('inverted_row', 'back', 'bodyweight', ['upperBack', 'lats', 'biceps'], 'Inverted Row', '反向划船', '反向划船', 'インバーテッドロウ', '인버티드 로우'),
+  x('db_romanian_deadlift', 'legs', 'dumbbell', ['hamstrings', 'glutes'], 'Dumbbell Romanian Deadlift', '哑铃罗马尼亚硬拉', '啞鈴羅馬尼亞硬舉', 'ダンベルルーマニアンデッドリフト', '덤벨 루마니안 데드리프트'),
 ];
 
 const BY_ID = new Map(EXERCISES.map((e) => [e.id, e]));

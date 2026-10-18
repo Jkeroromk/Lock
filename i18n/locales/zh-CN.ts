@@ -602,6 +602,7 @@ const zhCN = {
     viewPlans: '查看订阅方案',
   },
   train: {
+    aiTemplateNote: 'AI 这次没回应，先给你一份经典模板；想要定制的可以点「换一个」再试。',
     aiPlanTitle: 'AI 推荐训练', aiPlanBody: '不知道从哪开始？回答三个问题，AI 帮你把一周的训练排好。', aiPlanCta: 'AI 帮我排计划', aiPlanRedo: '不知道练什么？让 AI 按你的情况重新排一份', aiDaysQ: '每周练几天', aiWhereQ: '在哪练', aiWhereGym: '健身房', aiWhereHome: '家里哑铃', aiWhereBody: '徒手', aiLevelQ: '训练经验', aiLevelNew: '新手', aiLevelExp: '有基础', aiGenerate: '生成计划', aiGenerating: 'AI 正在排计划…', aiUse: '用这个计划', aiRetry: '换一个', aiChange: '改条件', aiReplaceTitle: '替换现在的计划？', aiReplaceBody: '现在的每周计划会被这份新计划替换。', aiReplace: '替换', aiSaved: '计划已保存，可以在「每周计划」里再调整', aiFailed: '没排出来，请稍后再试', aiLimit: '今天的 AI 次数用完了', aiWeightHint: '重量先空着：第一次练的时候填上，之后会自动记住，并按计划慢慢加重。', aiDaysN: '每周 {n} 天',
     rangeDays: '{n} 天', rangeChange: '{n} 天 {v}', weightNeedMore: '再多记几天就能看到曲线', proteinBadge: '训练日 +{n}g',
     title: '训练', editPlan: '每周计划', restShort: '休', today: '今天',

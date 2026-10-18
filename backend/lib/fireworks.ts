@@ -77,7 +77,13 @@ export async function fireworksChat(opts: {
   const text = Array.isArray(raw)
     ? raw.map((p: any) => (typeof p === 'string' ? p : p?.text ?? '')).join('')
     : String(raw ?? '');
-  return text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  const answer = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  if (!answer) {
+    // Usually a reasoning model that spent the whole token budget thinking.
+    const finish = response.data?.choices?.[0]?.finish_reason;
+    throw new Error(`Empty AI response (finish_reason=${finish ?? 'unknown'}, usage=${JSON.stringify(response.data?.usage ?? {})})`);
+  }
+  return answer;
 }
 
 /** Extracts and parses the first JSON object in a model response. Throws if none. */

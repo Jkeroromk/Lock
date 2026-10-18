@@ -26,6 +26,8 @@ export interface AiWorkoutPlan {
   summary: string;
   tips: string[];
   plan: import('./workouts').PlanDays;
+  /** 'template': the AI didn't answer, so the server sent a classic plan. */
+  source?: 'ai' | 'template';
 }
 
 /** AI-suggested weekly plan (a preview; saving goes through savePlan). */
