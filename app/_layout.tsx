@@ -107,6 +107,10 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ animation: 'none' }} />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="calendar" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="workout/session" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="workout/plan" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="workout/done" options={{ animation: 'fade', gestureEnabled: false }} />
         </Stack>
         <ToastHost />
         <UpdateNotifier />

@@ -50,6 +50,8 @@ model User {
   createdChallenges     Challenge[]
   activityFeed          ActivityFeed[]
   weightRecords         WeightRecord[]
+  workoutPlan           WorkoutPlan?
+  workoutSessions       WorkoutSession[]
   posts                 Post[]
   postLikes             PostLike[]
   postComments          PostComment[]
@@ -240,6 +242,63 @@ model WeightRecord {
   @@index([userId])
   @@index([recordedAt])
   @@map("weight_records")
+}
+
+// ── Training ────────────────────────────────────────────────────────────────
+// Exercise ids ("barbell_squat") come from the app's built-in catalog
+// (constants/exercises.ts); the server only stores them.
+
+/// The weekly plan: one row per user. `days` maps JS weekday ("0" = Sunday …
+/// "6") to { name?, exercises: [{ id, sets, reps, weight, progress, step }] };
+/// a missing weekday is a rest day.
+model WorkoutPlan {
+  userId    String   @id @map("user_id")
+  days      Json     @default("{}")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("workout_plans")
+}
+
+/// One finished workout. Only completed sets are stored.
+model WorkoutSession {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id")
+  dayKey      String   @map("day_key")                 // local YYYY-MM-DD
+  planDay     Int?     @map("plan_day")                // weekday whose plan it followed
+  title       String?
+  startedAt   DateTime @map("started_at") @db.Timestamptz(6)
+  finishedAt  DateTime @map("finished_at") @db.Timestamptz(6)
+  durationSec Int      @default(0) @map("duration_sec")
+  volume      Decimal  @default(0) @db.Decimal(10, 2)  // kg × reps
+  setCount    Int      @default(0) @map("set_count")
+  prCount     Int      @default(0) @map("pr_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sets WorkoutSet[]
+
+  @@index([userId, dayKey])
+  @@map("workout_sessions")
+}
+
+model WorkoutSet {
+  id         String   @id @default(uuid()) @db.Uuid
+  sessionId  String   @map("session_id") @db.Uuid
+  userId     String   @map("user_id")
+  exerciseId String   @map("exercise_id")
+  position   Int                                       // order within the session
+  weight     Decimal  @default(0) @db.Decimal(6, 2)    // kg; 0 = bodyweight
+  reps       Int
+  isPr       Boolean  @default(false) @map("is_pr")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  session WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, exerciseId])
+  @@index([sessionId])
+  @@map("workout_sets")
 }
 
 model Food {
