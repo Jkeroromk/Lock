@@ -445,6 +445,7 @@ const jaJP = {
     viewPlans: 'プランを見る',
   },
   train: {
+    aiPlanTitle: 'AI おすすめメニュー', aiPlanBody: '何から始めればいいか迷ったら、3つの質問に答えるだけで AI が1週間のメニューを組みます。', aiPlanCta: 'AI にプランを作ってもらう', aiPlanRedo: '何をやるか迷ったら、AI に今の状態に合わせて組み直してもらう', aiDaysQ: '週に何日', aiWhereQ: '場所', aiWhereGym: 'ジム', aiWhereHome: '自宅（ダンベル）', aiWhereBody: '器具なし', aiLevelQ: '経験', aiLevelNew: '初心者', aiLevelExp: '経験あり', aiGenerate: 'プランを作成', aiGenerating: 'AI がプランを作成中…', aiUse: 'このプランを使う', aiRetry: '別の案', aiChange: '条件を変える', aiReplaceTitle: '今のプランを置き換えますか？', aiReplaceBody: '今の週間プランはこの新しいプランに置き換わります。', aiReplace: '置き換える', aiSaved: 'プランを保存しました。「週間プラン」でいつでも調整できます', aiFailed: 'プランを作れませんでした。少し後でもう一度お試しください。', aiLimit: '今日の AI 回数を使い切りました', aiWeightHint: '重量は空欄から：初回に入力すると記憶され、プランに沿って少しずつ増えていきます。', aiDaysN: '週 {n} 日',
     rangeDays: '{n}日', rangeChange: '{n}日間 {v}', weightNeedMore: 'あと数日記録するとグラフが表示されます', proteinBadge: 'トレ日 +{n}g',
     title: 'トレーニング', editPlan: '週間プラン', restShort: '休', today: '今日',
     restDay: '休養日', restDayBody: 'しっかり回復しましょう。動きたければフリートレーニングもどうぞ。', noPlanTitle: 'トレーニングプランがまだありません', noPlanBody: '曜日ごとのメニューを決めておけば、毎日やることがすぐ分かります。',

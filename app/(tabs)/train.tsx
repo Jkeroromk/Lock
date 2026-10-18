@@ -15,6 +15,7 @@ import { useWorkoutStore, weekDays, daySets, dayMinutes, plannedDayCount } from 
 import { fmtWeightUnit, kgTo, useWeightUnit } from '@/lib/units';
 import WeightCard from '@/components/train/WeightCard';
 import AiInsightsCard from '@/components/calendar/AiInsightsCard';
+import AiPlanSheet from '@/components/train/AiPlanSheet';
 import { exerciseName } from '@/constants/exercises';
 import { dayTitle } from '@/components/train/dayTitle';
 import { deleteWorkout, type SessionSummary } from '@/services/workouts';
@@ -31,6 +32,7 @@ export default function TrainScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [failed, setFailed] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [aiPlan, setAiPlan] = useState(false);
   const unit = useWeightUnit();
 
   const refresh = useCallback(async () => {
@@ -229,8 +231,11 @@ export default function TrainScreen() {
                     <View style={{ gap: 10 }}>
                       <Text style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{t('train.noPlanTitle')}</Text>
                       <Text style={{ fontSize: 15, lineHeight: 21, color: c.textSecondary }}>{t('train.noPlanBody')}</Text>
-                      <Button icon="calendar-outline" label={t('train.makePlan')} onPress={() => openPlan(todayIdx)} style={{ marginTop: 4 }} />
-                      <Button variant="outline" icon="flash-outline" label={t('train.freeWorkout')} onPress={startFree} />
+                      <Button icon="sparkles" label={t('train.aiPlanCta')} onPress={() => setAiPlan(true)} style={{ marginTop: 4 }} />
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <Button variant="outline" icon="create-outline" label={t('train.makePlan')} onPress={() => openPlan(todayIdx)} style={{ flex: 1, paddingHorizontal: 8 }} />
+                        <Button variant="outline" icon="flash-outline" label={t('train.freeWorkout')} onPress={startFree} style={{ flex: 1, paddingHorizontal: 8 }} />
+                      </View>
                     </View>
                   )}
                 </Card>
@@ -247,6 +252,22 @@ export default function TrainScreen() {
               </Appear>
 
               <Appear index={4}>
+                {hasPlan ? (
+                  <PressScale
+                    onPress={() => setAiPlan(true)}
+                    accessibilityRole="button"
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: c.surfaceInverse, marginBottom: 14 }}
+                  >
+                    <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] }}>
+                      <Ionicons name="sparkles" size={19} color={c.onAccent} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '800', color: c.textInverse }}>{t('train.aiPlanTitle')}</Text>
+                      <Text numberOfLines={2} style={{ fontSize: 13, lineHeight: 18, color: c.textInverse, opacity: 0.75, marginTop: 2 }}>{t('train.aiPlanRedo')}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={c.textInverse} />
+                  </PressScale>
+                ) : null}
                 <AiInsightsCard />
               </Appear>
 
@@ -293,6 +314,7 @@ export default function TrainScreen() {
             </>
           )}
         </ScrollView>
+        <AiPlanSheet visible={aiPlan} onClose={() => setAiPlan(false)} />
       </SafeAreaView>
     </TabFocusFade>
   );
