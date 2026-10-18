@@ -5,6 +5,7 @@ import { checkAndIncrementAiQuota, requestTimeZone } from '@/lib/ai-rate-limit';
 import { TEXT_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 import { CATALOG, type Equipment } from '@/lib/exercise-catalog';
 import type { PlanDays } from '@/lib/workouts';
+import { templatePlan } from '@/lib/plan-templates';
 
 // AI calls can take up to ~30s; don't let the function be cut off first.
 export const maxDuration = 60;
@@ -49,9 +50,12 @@ export async function POST(request: NextRequest) {
   const unit = body.unit === 'lb' ? 'lb' : 'kg';
   const responseLanguage = RESPONSE_LANGUAGE[body.lang] ?? 'English';
 
-  if (!process.env.FIREWORKS_API_KEY?.trim()) {
-    return NextResponse.json({ error: 'AI service not configured' }, { status: 503 });
-  }
+  const lang = RESPONSE_LANGUAGE[body.lang] ? (body.lang as string) : 'en-US';
+  // When the AI can't deliver, a classic template is still a good start
+  // (and the AI call is given back).
+  const fallback = () => NextResponse.json({ ...templatePlan({ days: daysPerWeek, location, level, unit, lang }), source: 'template' });
+
+  if (!process.env.FIREWORKS_API_KEY?.trim()) return fallback();
 
   const quota = await checkAndIncrementAiQuota(userId, requestTimeZone(request));
   if (!quota.ok) return quota.response;
@@ -113,12 +117,15 @@ ${catalogText}
           { role: 'user', content: `${prompt}\n\nWrite all text values in ${responseLanguage}.` },
         ],
         temperature: 0.5,
+        // Reasoning models think before answering; leave room for both.
+        maxTokens: 8000,
+        timeoutMs: 50_000,
       });
       ai = extractJson<AiPlan>(content);
     } catch (error) {
       await quota.refund();
-      console.error('[POST /api/ai/workout-plan] AI call failed', { model: TEXT_MODEL, reason: describeAiError(error) });
-      return NextResponse.json({ error: 'Plan failed' }, { status: 502 });
+      console.error('[POST /api/ai/workout-plan] AI call failed, using template', { model: TEXT_MODEL, reason: describeAiError(error) });
+      return fallback();
     }
 
     // Keep only what the app can run: known exercises, sane numbers, one day per weekday.
@@ -151,18 +158,19 @@ ${catalogText}
 
     if (Object.keys(plan).length === 0) {
       await quota.refund();
-      console.error('[POST /api/ai/workout-plan] AI returned no usable days');
-      return NextResponse.json({ error: 'Plan failed' }, { status: 502 });
+      console.error('[POST /api/ai/workout-plan] AI returned no usable days, using template');
+      return fallback();
     }
 
     return NextResponse.json({
       summary: typeof ai.summary === 'string' ? ai.summary.slice(0, 120) : '',
       tips: (Array.isArray(ai.tips) ? ai.tips : []).filter((x): x is string => typeof x === 'string').slice(0, 3).map((x) => x.slice(0, 80)),
       plan,
+      source: 'ai',
     });
   } catch (error) {
     await quota.refund();
     console.error('[POST /api/ai/workout-plan]', error);
-    return NextResponse.json({ error: 'Plan failed' }, { status: 500 });
+    return fallback();
   }
 }

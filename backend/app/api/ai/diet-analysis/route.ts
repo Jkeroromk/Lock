@@ -202,6 +202,9 @@ ${trainingContext}
           { role: 'user', content: `${prompt}\n\nWrite all text values in ${responseLanguage}.` },
         ],
         temperature: 0.3,
+        // Reasoning models think before answering; leave room for both.
+        maxTokens: 6000,
+        timeoutMs: 50_000,
       });
       analysis = extractJson(content);
     } catch (error) {

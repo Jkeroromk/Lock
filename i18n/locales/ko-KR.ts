@@ -454,6 +454,7 @@ const koKR = {
     viewPlans: '플랜 보기',
   },
   train: {
+    aiTemplateNote: '이번엔 AI가 응답하지 않아 기본 템플릿을 보여 드려요. 「다른 안」을 눌러 다시 시도할 수 있어요.',
     aiPlanTitle: 'AI 추천 운동', aiPlanBody: '어디서부터 시작할지 모르겠다면 질문 세 개에 답하세요. AI가 일주일 운동을 짜 드려요.', aiPlanCta: 'AI로 계획 짜기', aiPlanRedo: '뭘 할지 모르겠다면 AI가 상황에 맞게 다시 짜 드려요', aiDaysQ: '주 몇 회', aiWhereQ: '장소', aiWhereGym: '헬스장', aiWhereHome: '집 덤벨', aiWhereBody: '맨몸', aiLevelQ: '운동 경험', aiLevelNew: '초보', aiLevelExp: '경험 있음', aiGenerate: '계획 만들기', aiGenerating: 'AI가 계획을 짜는 중…', aiUse: '이 계획 사용', aiRetry: '다른 안', aiChange: '조건 바꾸기', aiReplaceTitle: '지금 계획을 바꿀까요?', aiReplaceBody: '현재 주간 계획이 이 새 계획으로 바뀌어요.', aiReplace: '바꾸기', aiSaved: '계획을 저장했어요. 「주간 계획」에서 언제든 조정할 수 있어요', aiFailed: '계획을 만들지 못했어요. 잠시 후 다시 시도해 주세요.', aiLimit: '오늘 AI 사용 횟수를 다 썼어요', aiWeightHint: '무게는 비워 두고 시작해요: 첫 운동 때 입력하면 기억해 두고 계획에 따라 조금씩 올려요.', aiDaysN: '주 {n}일',
     rangeDays: '{n}일', rangeChange: '{n}일간 {v}', weightNeedMore: '며칠 더 기록하면 그래프가 보여요', proteinBadge: '운동일 +{n}g',
     title: '운동', editPlan: '주간 계획', restShort: '휴', today: '오늘',
