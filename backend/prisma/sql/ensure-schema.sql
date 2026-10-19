@@ -26,7 +26,9 @@ BEGIN
   END IF;
 END $$;
 
-ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "hidden_at" TIMESTAMPTZ(6);
+-- (The posts.hidden_at column that lived here went with the feed; the posts
+-- table is dropped further down. Never reference a dropped table above its
+-- DROP: this file runs top to bottom on every deploy.)
 
 -- Calendar / weekly / today queries filter meals by user and date range.
 CREATE INDEX IF NOT EXISTS "meals_user_id_created_at_idx" ON "meals"("user_id", "created_at");
