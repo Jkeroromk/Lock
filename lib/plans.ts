@@ -28,7 +28,7 @@ export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
   FREE: {
     dailyAiCalls: 3, // keep in sync with backend/lib/plans.ts FREE_DAILY_AI_CALLS
     aiDietAnalysis: false,
-    maxFriends: 5,
+    maxFriends: -1, // unlimited on every plan, see backend/lib/plans.ts
     createChallenge: true,
     exportData: true,
     weightChart: true,

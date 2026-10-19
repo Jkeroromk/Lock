@@ -107,8 +107,8 @@ export const COPY = {
     pricing: {
       eyebrow: 'Pricing',
       title: 'Free to start. Pro when you’re ready.',
-      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['First week: 10 AI scans / day, then 3 / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Workouts, weight curve, challenges, data export', 'Up to 5 friends · invite one, you both get +5 scans'] },
-      pro: { name: 'Pro', price: '$39.99/yr', note: '7 days free, then $39.99 a year. Or $7.99 a month. US prices; the App Store shows yours.', list: ['Everything in Free', 'Unlimited AI scans (Free: 3 / day)', 'Unlimited AI diet × training reviews (Free: 1 / week)', 'Redo your AI workout plan anytime', 'Unlimited friends (Free: 5)'] },
+      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['First week: 10 AI scans / day, then 3 / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Workouts, weight curve, challenges, data export', 'Unlimited friends · invite one, you both get +5 scans'] },
+      pro: { name: 'Pro', price: '$39.99/yr', note: '7 days free, then $39.99 a year. Or $7.99 a month. US prices; the App Store shows yours.', list: ['Everything in Free', 'Unlimited AI scans (Free: 3 / day)', 'Unlimited AI diet × training reviews (Free: 1 / week)', 'Redo your AI workout plan anytime'] },
       cta: 'Get Lock',
     },
     faq: {
@@ -237,8 +237,8 @@ export const COPY = {
     pricing: {
       eyebrow: '价格',
       title: '免费开始，准备好再升级 Pro。',
-      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周每天 10 次 AI 识别，之后每天 3 次', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练、体重曲线、挑战赛、数据导出', '最多 5 位好友 · 邀请好友双方各 +5 次'] },
-      pro: { name: 'Pro', price: '$39.99/年', note: '前 7 天免费，之后每年 $39.99；也可以按月 $7.99。以上为美区价格，实际以 App Store 显示为准。', list: ['包含免费版全部功能', '无限 AI 识别（免费版每天 3 次）', '无限「饮食 × 训练」AI 分析（免费版每周 1 次）', 'AI 训练计划随时重新生成', '无限好友（免费版 5 位）'] },
+      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周每天 10 次 AI 识别，之后每天 3 次', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练、体重曲线、挑战赛、数据导出', '好友不限 · 邀请好友双方各 +5 次'] },
+      pro: { name: 'Pro', price: '$39.99/年', note: '前 7 天免费，之后每年 $39.99；也可以按月 $7.99。以上为美区价格，实际以 App Store 显示为准。', list: ['包含免费版全部功能', '无限 AI 识别（免费版每天 3 次）', '无限「饮食 × 训练」AI 分析（免费版每周 1 次）', 'AI 训练计划随时重新生成'] },
       cta: '下载 Lock',
     },
     faq: {
