@@ -370,8 +370,8 @@ const jaJP = {
     bestValue: 'おすすめ',
     upgradeToMax: 'Maxにアップグレード',
     yearly: '年額プラン', monthlyPlan: '月額プラン', perMonth: '月あたり{price}', save: '{pct}%お得', freeTrialBadge: '{days}日間無料', startTrial: '{days}日間の無料トライアルを開始', subscribe: '登録する', trialThen: '{days}日間無料、その後{price}/年。いつでも解約できます。', billedThen: '{price}/{period}。いつでも解約できます。', trialReminderNote: 'トライアル終了の2日前にお知らせします', trialReminderTitle: '無料トライアル終了まであと2日', trialReminderBody: 'その後 Lock Pro は {price}/年 で更新されます。設定 → Apple アカウント → サブスクリプション からいつでも解約できます。',
-    freeFeatures: ['最初の1週間は1日10回のAIスキャン', 'その後は1日3回のAIスキャン', '週1回のAI食事分析', 'バーコード・手入力は無制限', 'トレーニングプラン・記録・体重グラフ', 'チャレンジとデータエクスポート', '友達は最大5人', '友達招待でふたりとも+5回'],
-    proFeatures: ['無制限のAIスキャン', 'AI食事×トレーニング分析が無制限', 'AIトレーニングプランをいつでも作り直し', '無制限の友達'],
+    freeFeatures: ['最初の1週間は1日10回、その後は1日3回のAIスキャン', '週1回のAI食事分析', 'バーコード・手入力は無制限', 'トレーニング・体重グラフ・チャレンジ・データエクスポート', '友達は最大5人 · 招待するとふたりとも+5回'],
+    proFeatures: ['無料プランの全機能', 'AIスキャン無制限（無料：1日3回）', 'AI食事×トレーニング分析が無制限（無料：週1回）', 'AIトレーニングプランをいつでも作り直し', '友達無制限（無料：5人）'],
     maxFeatures: ['Proの全機能', '毎週自動AIレポート', 'AIカスタム栄養プラン', '優先サポート'],
   },
   languagePack: {

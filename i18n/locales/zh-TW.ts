@@ -364,8 +364,8 @@ const zhTW = {
     bestValue: '超值推薦',
     upgradeToMax: '升級到 Max',
     yearly: '年繳', monthlyPlan: '月繳', perMonth: '{price}/月', save: '省 {pct}%', freeTrialBadge: '免費試用 {days} 天', startTrial: '開始 {days} 天免費試用', subscribe: '訂閱', trialThen: '前 {days} 天免費，之後 {price}/年。可隨時取消。', billedThen: '{price}/{period}。可隨時取消。', trialReminderNote: '試用結束前 2 天會提醒你', trialReminderTitle: '免費試用還剩 2 天', trialReminderBody: '之後 Lock Pro 以 {price}/年 續訂。可在 設定 → Apple 帳號 → 訂閱 中隨時取消。',
-    freeFeatures: ['首週每天 10 次 AI 識別', '之後每天 3 次 AI 識別', '每週 1 次 AI 飲食分析', '條碼與手動記錄不限次數', '訓練計畫、訓練紀錄和體重曲線', '挑戰賽和數據導出', '最多 5 位好友', '邀請好友：雙方各 +5 次'],
-    proFeatures: ['無限 AI 食物識別', '無限「飲食 × 訓練」AI 分析', 'AI 訓練計畫隨時重新生成', '無限好友'],
+    freeFeatures: ['首週每天 10 次 AI 識別，之後每天 3 次', '每週 1 次 AI 飲食分析', '條碼與手動記錄不限次數', '訓練、體重曲線、挑戰賽、資料匯出', '最多 5 位好友 · 邀請好友雙方各 +5 次'],
+    proFeatures: ['包含免費版全部功能', '無限 AI 識別（免費版每天 3 次）', '無限「飲食 × 訓練」AI 分析（免費版每週 1 次）', 'AI 訓練計畫隨時重新生成', '無限好友（免費版 5 位）'],
     maxFeatures: ['包含 Pro 全部功能', '每週自動 AI 飲食報告', 'AI 自訂營養目標', '優先客戶支援'],
   },
   languagePack: {
