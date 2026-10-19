@@ -16,7 +16,8 @@ export const MAX_INVITE_REWARDS = 10;
 export const FREE_WEEKLY_DIET_ANALYSES = 1;
 /** Length of the free plan's diet-review window. */
 export const DIET_ANALYSIS_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
-export const FREE_MAX_FRIENDS = 5;
+/** Friends are unlimited on every plan (2026-10-19): social is how Lock spreads. */
+export const FREE_MAX_FRIENDS = -1;
 
 export function isPaidPlan(plan: PlanTier): boolean {
   return plan === 'PRO' || plan === 'MAX';
@@ -27,7 +28,7 @@ export function getDailyAiCallLimit(plan: PlanTier): number {
 }
 
 export function getMaxFriends(plan: PlanTier): number {
-  return isPaidPlan(plan) ? -1 : FREE_MAX_FRIENDS; // -1 = unlimited
+  return isPaidPlan(plan) ? -1 : FREE_MAX_FRIENDS; // -1 = unlimited (also on Free)
 }
 
 /** True during a new account's first FREE_TRIAL_DAYS days. */

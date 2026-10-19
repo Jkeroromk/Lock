@@ -27,7 +27,7 @@ import type { Feature } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
 
 // One icon per paywall.featureN string. Only list what Pro actually adds over Free.
-const PRO_HIGHLIGHT_ICONS = ['camera', 'analytics', 'barbell', 'people'];
+const PRO_HIGHLIGHT_ICONS = ['camera', 'analytics', 'barbell'];
 
 interface PaywallModalProps {
   visible: boolean;

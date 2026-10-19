@@ -433,7 +433,6 @@ const zhCN = {
     feature1: '无限 AI 拍照识别',
     feature2: '无限「饮食 × 训练」AI 分析',
     feature3: 'AI 训练计划随时重新生成',
-    feature4: '无限好友',
     upgradePro: '升级到 Pro',
     restorePurchases: '恢复已购买的订阅',
     subscriptionNote: '订阅通过 Apple ID 自动续费，可随时取消。',
@@ -521,8 +520,8 @@ const zhCN = {
     bestValue: '超值推荐',
     upgradeToMax: '升级到 Max',
     yearly: '年付', monthlyPlan: '月付', perMonth: '{price}/月', save: '省 {pct}%', freeTrialBadge: '免费试用 {days} 天', startTrial: '开始 {days} 天免费试用', subscribe: '订阅', trialThen: '前 {days} 天免费，之后 {price}/年。可随时取消。', billedThen: '{price}/{period}。可随时取消。', trialReminderNote: '试用结束前 2 天会提醒你', trialReminderTitle: '免费试用还剩 2 天', trialReminderBody: '之后 Lock Pro 按 {price}/年 续费。可在 设置 → Apple 账户 → 订阅 中随时取消。',
-    freeFeatures: ['首周每天 10 次 AI 识别', '之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练计划、训练记录和体重曲线', '挑战赛和数据导出', '最多 5 位好友', '邀请好友：双方各 +5 次'],
-    proFeatures: ['无限 AI 食物识别', '无限「饮食 × 训练」AI 分析', 'AI 训练计划随时重新生成', '无限好友'],
+    freeFeatures: ['首周每天 10 次 AI 识别，之后每天 3 次', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练、体重曲线、挑战赛、数据导出', '好友不限 · 邀请好友双方各 +5 次'],
+    proFeatures: ['包含免费版全部功能', '无限 AI 识别（免费版每天 3 次）', '无限「饮食 × 训练」AI 分析（免费版每周 1 次）', 'AI 训练计划随时重新生成'],
     maxFeatures: ['包含 Pro 全部功能', '每周自动 AI 饮食报告', 'AI 自定义营养目标', '优先客户支持'],
   },
   languagePack: {

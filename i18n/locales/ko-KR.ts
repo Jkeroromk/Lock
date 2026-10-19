@@ -318,7 +318,6 @@ const koKR = {
     feature1: '무제한 AI 사진 스캔',
     feature2: '무제한 식단 × 운동 AI 분석',
     feature3: 'AI 운동 계획 언제든 다시 만들기',
-    feature4: '무제한 친구',
     upgradePro: 'Pro로 업그레이드',
     restorePurchases: '구매 복원',
     subscriptionNote: '구독은 Apple ID로 자동 갱신됩니다. 언제든지 취소 가능.',
@@ -379,8 +378,8 @@ const koKR = {
     bestValue: '최고 가성비',
     upgradeToMax: 'Max로 업그레이드',
     yearly: '연간', monthlyPlan: '월간', perMonth: '월 {price}', save: '{pct}% 절약', freeTrialBadge: '{days}일 무료', startTrial: '{days}일 무료 체험 시작', subscribe: '구독하기', trialThen: '{days}일 무료, 이후 연 {price}. 언제든 해지할 수 있어요.', billedThen: '{period}마다 {price}. 언제든 해지할 수 있어요.', trialReminderNote: '체험 종료 2일 전에 알려드려요', trialReminderTitle: '무료 체험이 2일 남았어요', trialReminderBody: '이후 Lock Pro는 연 {price}로 갱신돼요. 설정 → Apple 계정 → 구독에서 언제든 해지할 수 있어요.',
-    freeFeatures: ['첫 주 하루 10회 AI 스캔', '이후 하루 3회 AI 스캔', '주 1회 AI 식단 분석', '바코드·직접 입력 무제한', '운동 계획·기록·체중 곡선', '챌린지와 데이터 내보내기', '친구 최대 5명', '친구 초대 시 둘 다 +5회'],
-    proFeatures: ['무제한 AI 스캔', '무제한 식단 × 운동 AI 분석', 'AI 운동 계획 언제든 다시 만들기', '무제한 친구'],
+    freeFeatures: ['첫 주 하루 10회, 이후 하루 3회 AI 스캔', '주 1회 AI 식단 분석', '바코드·직접 입력 무제한', '운동·체중 곡선·챌린지·데이터 내보내기', '친구 무제한 · 초대 시 둘 다 +5회'],
+    proFeatures: ['무료 플랜의 모든 기능', '무제한 AI 스캔 (무료: 하루 3회)', '무제한 식단 × 운동 AI 분석 (무료: 주 1회)', 'AI 운동 계획 언제든 다시 만들기'],
     maxFeatures: ['Pro 모든 기능 포함', '주간 자동 AI 리포트', 'AI 맞춤 영양 플랜', '우선 고객 지원'],
   },
   languagePack: {
