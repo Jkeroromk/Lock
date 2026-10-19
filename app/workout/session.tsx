@@ -10,7 +10,6 @@ import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useWorkoutStore, num, boxKg, type ActiveSet } from '@/store/useWorkoutStore';
 import { fmtWeight, fmtWeightUnit } from '@/lib/units';
-import UnitToggle from '@/components/train/UnitToggle';
 import { exerciseName, getExercise } from '@/constants/exercises';
 import ExerciseThumb from '@/components/train/ExerciseThumb';
 import ExercisePicker from '@/components/train/ExercisePicker';
@@ -173,7 +172,6 @@ export default function WorkoutSessionScreen() {
           <Text numberOfLines={1} style={{ fontSize: 20, fontWeight: '800', letterSpacing: -0.5, color: c.textPrimary }}>{active.title ?? t('train.freeTitle')}</Text>
           <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: c.textSecondary }}>{mmss(elapsed)}</Text>
         </View>
-        <UnitToggle value={unit} />
         <PressScale
           onPress={onEnd}
           disabled={saving}
