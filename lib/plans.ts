@@ -29,9 +29,9 @@ export const PLAN_FEATURES: Record<PlanTier, PlanFeatures> = {
     dailyAiCalls: 3, // keep in sync with backend/lib/plans.ts FREE_DAILY_AI_CALLS
     aiDietAnalysis: false,
     maxFriends: 5,
-    createChallenge: false,
-    exportData: false,
-    weightChart: false,
+    createChallenge: true,
+    exportData: true,
+    weightChart: true,
     weeklyAiReport: false,
     customNutritionPlan: false,
     prioritySupport: false,
