@@ -85,6 +85,8 @@ interface WorkoutState {
 
   start: (opts: { planDay: number | null; title: string | null; day?: PlanDay }) => void;
   setCurrent: (index: number) => void;
+  /** Switches the open workout between kg and lb, converting the typed weights. */
+  setActiveUnit: (unit: WeightUnit) => void;
   updateSet: (ei: number, si: number, patch: Partial<ActiveSet>) => void;
   /** Ticks a set off (or back on). Returns the record it beat, if any. */
   toggleSet: (ei: number, si: number) => { pr: SetResult | null };
@@ -177,6 +179,24 @@ export const useWorkoutStore = create<WorkoutState>()(
             },
           });
         },
+
+        setActiveUnit: (unit) =>
+          patchActive((a) => {
+            const from = a.unit ?? 'kg';
+            if (from === unit) return a;
+            return {
+              ...a,
+              unit,
+              exercises: a.exercises.map((e) => ({
+                ...e,
+                sets: e.sets.map((x) => {
+                  if (!x.weight.trim()) return x;
+                  const kg = boxKg(x.weight, from);
+                  return { ...x, weight: kg > 0 ? fmtWeight(kg, unit) : x.weight };
+                }),
+              })),
+            };
+          }),
 
         setCurrent: (index) => patchActive((a) => ({ ...a, current: Math.max(0, Math.min(index, a.exercises.length - 1)) })),
 

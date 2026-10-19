@@ -19,6 +19,7 @@ import AiPlanSheet from '@/components/train/AiPlanSheet';
 import { exerciseName, isBodyweight } from '@/constants/exercises';
 import { dayTitle } from '@/components/train/dayTitle';
 import { deleteWorkout, type SessionSummary } from '@/services/workouts';
+import UnitToggle from '@/components/train/UnitToggle';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 
 export default function TrainScreen() {
@@ -113,15 +114,18 @@ export default function TrainScreen() {
             title={t('train.title')}
             caption={dateCaption}
             right={
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+              <UnitToggle />
               <PressScale
                 onPress={() => openPlan()}
                 accessibilityRole="button"
                 accessibilityLabel={t('train.editPlan')}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 14, borderRadius: 13, borderWidth: 2, borderColor: c.borderPrimary, marginBottom: 2 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 14, borderRadius: 13, borderWidth: 2, borderColor: c.borderPrimary }}
               >
                 <Ionicons name="create-outline" size={17} color={c.textPrimary} />
                 <Text style={{ fontWeight: '700', fontSize: 14, color: c.textPrimary }}>{t('train.editPlan')}</Text>
               </PressScale>
+              </View>
             }
           />
 
