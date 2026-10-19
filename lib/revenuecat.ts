@@ -55,6 +55,8 @@ export async function fetchProOffering(): Promise<PurchasesOffering | null> {
 export interface ProPackages {
   annual: PurchasesPackage | null;
   monthly: PurchasesPackage | null;
+  /** Which offering the packages came from (diagnostics). */
+  offeringId: string | null;
 }
 
 export async function fetchProPackages(): Promise<ProPackages> {
@@ -63,6 +65,7 @@ export async function fetchProPackages(): Promise<ProPackages> {
   return {
     annual: offering?.annual ?? pkgs.find((p) => p.packageType === 'ANNUAL') ?? null,
     monthly: offering?.monthly ?? pkgs.find((p) => p.packageType === 'MONTHLY') ?? null,
+    offeringId: offering?.identifier ?? null,
   };
 }
 

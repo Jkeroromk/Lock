@@ -24,20 +24,27 @@ export function useProPlans() {
   const [selected, setSelected] = useState<Choice>('annual');
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
+  /** Why offerings failed, shown under the retry card so the cause is visible on device. */
+  const [errorDetail, setErrorDetail] = useState('');
 
   const reload = useCallback(async () => {
     setLoading(true);
     setUnavailable(false);
+    setErrorDetail('');
     try {
       const pkgs = await fetchProPackages();
       setAnnual(pkgs.annual);
       setMonthly(pkgs.monthly);
       setSelected(pkgs.annual ? 'annual' : 'monthly');
       setTrialDays(await freeTrialDays(pkgs.annual));
-      if (!pkgs.annual && !pkgs.monthly) setUnavailable(true);
-    } catch (err) {
+      if (!pkgs.annual && !pkgs.monthly) {
+        setUnavailable(true);
+        setErrorDetail(`no packages (offering: ${pkgs.offeringId ?? 'none'})`);
+      }
+    } catch (err: any) {
       console.warn('[pricing] offerings failed', err);
       setUnavailable(true);
+      setErrorDetail([err?.code, err?.message, err?.underlyingErrorMessage].filter(Boolean).join(' · ') || String(err));
     } finally {
       setLoading(false);
     }
@@ -47,7 +54,7 @@ export function useProPlans() {
 
   const pkg = selected === 'annual' ? annual : monthly;
   return {
-    annual, monthly, pkg, selected, setSelected, reload, loading, unavailable,
+    annual, monthly, pkg, selected, setSelected, reload, loading, unavailable, errorDetail,
     // Only the yearly plan carries the free trial.
     trialDays: selected === 'annual' ? trialDays : 0,
     annualTrialDays: trialDays,
