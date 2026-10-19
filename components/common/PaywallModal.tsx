@@ -26,7 +26,8 @@ import { syncSubscriptionPlan } from '@/services/api';
 import type { Feature } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
 
-const PRO_HIGHLIGHT_ICONS = ['sparkles', 'bar-chart', 'people', 'download', 'trending-down'];
+// One icon per paywall.featureN string. Only list what Pro actually adds over Free.
+const PRO_HIGHLIGHT_ICONS = ['camera', 'analytics', 'barbell', 'people'];
 
 interface PaywallModalProps {
   visible: boolean;
