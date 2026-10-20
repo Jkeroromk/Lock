@@ -80,6 +80,9 @@ export default function PricingScreen() {
               <Text style={{ flex: 1, fontSize: 14, lineHeight: 20, color: colors.textSecondary }}>{t('pricing.offeringsError' as any)}</Text>
             </View>
             <Button label={t('common.retry')} variant="outline" onPress={plans.reload} style={{ marginTop: 12 }} />
+            {plans.errorDetail ? (
+              <Text selectable style={{ fontFamily: FONTS.mono, fontSize: 11, lineHeight: 15, color: colors.textSecondary, marginTop: 10 }}>{plans.errorDetail}</Text>
+            ) : null}
           </Card>
         ) : null}
 
