@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { isAdmin } from '@/lib/admin';
-import { getDailyAiCallLimit, isPaidPlan, isInTrialWeek, FREE_TRIAL_DAILY_AI_CALLS, FREE_WEEKLY_DIET_ANALYSES, DIET_ANALYSIS_WINDOW_MS } from '@/lib/plans';
+import { getDailyAiCallLimit, isPaidPlan, effectivePlan, FREE_WEEKLY_DIET_ANALYSES, DIET_ANALYSIS_WINDOW_MS } from '@/lib/plans';
 
 export interface RateLimitOk {
   ok: true;
@@ -19,8 +19,8 @@ export interface RateLimitDenied {
 
 /**
  * Checks and takes one AI scan from the user's daily allowance (photo + label).
- * - FREE: getDailyAiCallLimit() per local day (FREE_TRIAL_DAILY_AI_CALLS in the first week), then bonus scans
- * - PRO / MAX and admins (ADMIN_USER_IDS): unlimited
+ * - FREE: getDailyAiCallLimit() per local day, then bonus scans
+ * - PRO / MAX, accounts in their first week (Pro trial) and admins (ADMIN_USER_IDS): unlimited
  *
  * Takes the unit before the AI call so parallel requests can't slip past the limit.
  */
@@ -46,9 +46,8 @@ export async function checkAndIncrementAiQuota(
   }
 
   const now = new Date();
-  // Paid plans are unlimited; a free account's first week gets a higher daily cap.
-  const planLimit = getDailyAiCallLimit(user.plan as any);
-  const limit = planLimit === -1 ? -1 : isInTrialWeek(user.createdAt, now) ? FREE_TRIAL_DAILY_AI_CALLS : planLimit;
+  // Paid plans and the first-week Pro trial are unlimited.
+  const limit = getDailyAiCallLimit(effectivePlan(user.plan as any, user.createdAt, now));
 
   // New day in the user's own time zone → counter starts over at their midnight.
   const needsReset = !sameLocalDay(now, new Date(user.aiCallsResetAt), timeZone);
@@ -160,12 +159,12 @@ export async function checkDietAnalysisAllowance(
   if (isAdmin(userId)) return { ok: true, refund: async () => {} };
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { plan: true, lastDietAnalysisAt: true, dietAnalysisLangs: true },
+    select: { plan: true, lastDietAnalysisAt: true, dietAnalysisLangs: true, createdAt: true },
   });
   if (!user) {
     return { ok: false, response: NextResponse.json({ error: 'User not found' }, { status: 404 }) };
   }
-  if (isPaidPlan(user.plan as any)) return { ok: true, refund: async () => {} };
+  if (isPaidPlan(effectivePlan(user.plan as any, user.createdAt))) return { ok: true, refund: async () => {} };
 
   const now = new Date();
   const previous = user.lastDietAnalysisAt;

@@ -1,7 +1,20 @@
 export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
-/** Daily AI scans during a free account's first week. Keep in sync with backend/lib/plans.ts FREE_TRIAL_DAILY_AI_CALLS. */
-export const FREE_TRIAL_DAILY_AI_CALLS = 10;
+/** Every new account gets Pro for its first week (server-enforced). Keep in sync with backend/lib/plans.ts PRO_TRIAL_DAYS. */
+export const PRO_TRIAL_DAYS = 7;
+
+/** Whole days of the first-week Pro trial left for an account created at `createdAt`; 0 when over. */
+export function proTrialDaysLeft(createdAt: string | Date | null | undefined, now = Date.now()): number {
+  if (!createdAt) return 0;
+  const end = new Date(createdAt).getTime() + PRO_TRIAL_DAYS * 864e5;
+  return Math.max(0, Math.ceil((end - now) / 864e5));
+}
+
+/** The plan the server enforces right now: Pro during the first week, otherwise the stored plan. */
+export function effectivePlan(plan: PlanTier, createdAt: string | Date | null | undefined): PlanTier {
+  if (plan !== 'FREE') return plan;
+  return proTrialDaysLeft(createdAt) > 0 ? 'PRO' : plan;
+}
 
 export interface PlanFeatures {
   /** 每日 AI 识别次数（-1 = 无限） */
