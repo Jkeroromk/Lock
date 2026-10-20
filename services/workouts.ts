@@ -13,8 +13,13 @@ export interface PlanExercise {
   step: number;
 }
 
+export type DayKind = 'fullA' | 'fullB' | 'upper' | 'lower' | 'push' | 'pull' | 'legs';
+
 export interface PlanDay {
+  /** What the user typed, or the AI's name in the language of the request. */
   name?: string;
+  /** Set by AI/template plans; shown in the current app language. Cleared when the user renames the day. */
+  kind?: DayKind;
   exercises: PlanExercise[];
 }
 

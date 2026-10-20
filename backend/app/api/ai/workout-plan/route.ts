@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth';
 import { checkAndIncrementAiQuota, requestTimeZone } from '@/lib/ai-rate-limit';
 import { TEXT_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 import { CATALOG, type Equipment } from '@/lib/exercise-catalog';
-import type { PlanDays } from '@/lib/workouts';
+import { isDayKind, type PlanDays } from '@/lib/workouts';
 import { templatePlan } from '@/lib/plan-templates';
 
 // AI calls can take up to ~30s; don't let the function be cut off first.
@@ -25,7 +25,7 @@ const LB = 2.20462;
 interface AiPlan {
   summary?: string;
   tips?: string[];
-  days?: { weekday?: number; name?: string; exercises?: { id?: string; sets?: number; reps?: number }[] }[];
+  days?: { weekday?: number; name?: string; kind?: string; exercises?: { id?: string; sets?: number; reps?: number }[] }[];
 }
 
 /** Default kg added per successful session, as a round plate step in the user's unit. */
@@ -101,12 +101,13 @@ ${catalogText}
 - 一周里每个大肌群至少练到一次；同一天不要重复同一个动作。
 - 结合用户目标：减脂 / 减重可以组数略多、组间休息短；增肌注重主项和容量。
 - 每天的 name 写成很短的名字，例如「推（胸肩三头）」「腿 + 核心」「全身 A」。
+- 每天还要给 kind，只能是这几个英文值之一：fullA（全身 A）、fullB（全身 B）、upper（上肢）、lower（下肢）、push（推）、pull（拉）、legs（腿）。
 
 只返回 JSON，不要其他文字：
 {
   "summary": "一句话说明这份计划的思路（不超过40字）",
   "days": [
-    { "weekday": 1, "name": "全身 A", "exercises": [ { "id": "barbell_squat", "sets": 3, "reps": 8 } ] }
+    { "weekday": 1, "name": "全身 A", "kind": "fullA", "exercises": [ { "id": "barbell_squat", "sets": 3, "reps": 8 } ] }
   ],
   "tips": ["给新手的一条建议（不超过30字）", "另一条建议（不超过30字）"]
 }`;
@@ -119,7 +120,7 @@ ${catalogText}
           {
             role: 'system',
             content: `You are a strength coach. Reply ONLY with JSON. Write every text value (summary, day names, tips) in ${responseLanguage}. `
-              + 'Exercise ids must be copied exactly from the list. Keep the JSON keys in English.',
+              + 'Exercise ids must be copied exactly from the list. Keep the JSON keys in English, and "kind" must be one of the listed English values.',
           },
           { role: 'user', content: `${prompt}\n\nWrite all text values in ${responseLanguage}.` },
         ],
@@ -161,7 +162,7 @@ ${catalogText}
       }).slice(0, 8);
       if (!exercises.length) continue;
       const name = typeof d.name === 'string' ? d.name.trim().slice(0, 24) : '';
-      plan[key] = name ? { name, exercises } : { exercises };
+      plan[key] = { ...(name ? { name } : {}), ...(isDayKind(d.kind) ? { kind: d.kind } : {}), exercises };
     }
 
     // The user's chosen weekdays win: put the AI's days on them, in order.

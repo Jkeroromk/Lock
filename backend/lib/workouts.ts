@@ -16,8 +16,16 @@ export interface PlanExercise {
   step: number; // kg added after a session where every set was done
 }
 
+/** Language-neutral day types; the app shows them in the user's language. Mirrors lib/plans in the app. */
+export const DAY_KINDS = ['fullA', 'fullB', 'upper', 'lower', 'push', 'pull', 'legs'] as const;
+export type DayKind = (typeof DAY_KINDS)[number];
+export const isDayKind = (v: unknown): v is DayKind => typeof v === 'string' && (DAY_KINDS as readonly string[]).includes(v);
+
 export interface PlanDay {
+  /** What the user typed, or the AI's name in the language of the request. */
   name?: string;
+  /** Set by AI/template plans; rendered localized. Cleared when the user renames the day. */
+  kind?: DayKind;
   exercises: PlanExercise[];
 }
 
@@ -54,7 +62,7 @@ export function normalizePlan(input: unknown): PlanDays | null {
     }
     const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 24) : '';
     if (exercises.length === 0 && !name) continue;
-    out[key] = name ? { name, exercises } : { exercises };
+    out[key] = { ...(name ? { name } : {}), ...(isDayKind(raw.kind) ? { kind: raw.kind } : {}), exercises };
   }
   return out;
 }
