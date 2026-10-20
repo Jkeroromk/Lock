@@ -34,7 +34,7 @@ const ROLES: Record<Location, Record<Role, string>> = {
   },
 };
 
-type DayKind = 'fullA' | 'fullB' | 'upper' | 'lower' | 'push' | 'pull' | 'legs';
+import type { DayKind } from '@/lib/workouts';
 
 /** Main lifts first; the rest are accessories. */
 const DAYS: Record<DayKind, { main: Role[]; acc: Role[] }> = {
@@ -121,7 +121,7 @@ export function templatePlan(opts: { days: number; weekdays?: number[]; location
     };
     DAYS[kind].main.forEach((r) => add(r, true));
     DAYS[kind].acc.forEach((r) => add(r, false));
-    plan[String(wd)] = { name: names[kind], exercises };
+    plan[String(wd)] = { name: names[kind], kind, exercises };
   });
 
   return {

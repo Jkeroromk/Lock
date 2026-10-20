@@ -15,7 +15,7 @@ import { exerciseName, defaultStep, isBodyweight, getExercise } from '@/constant
 import { savePlan, type PlanDays, type PlanExercise } from '@/services/workouts';
 import ExerciseThumb from '@/components/train/ExerciseThumb';
 import ExercisePicker from '@/components/train/ExercisePicker';
-import { dayTitle } from '@/components/train/dayTitle';
+import { dayTitle, dayKind } from '@/components/train/dayTitle';
 import { showToast } from '@/components/ui/Toast';
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Monday first
@@ -141,8 +141,8 @@ export default function PlanEditorScreen() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24, gap: 12 }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         <Label>{t(`train.wdl.d${day}`)}</Label>
         <TextField
-          value={current.name ?? ''}
-          onChangeText={(v) => update((d) => { d[key] = { ...(d[key] ?? { exercises: [] }), name: v.slice(0, 24) }; })}
+          value={dayKind(current) ? t(`train.kind.${dayKind(current)}`) : (current.name ?? '')}
+          onChangeText={(v) => update((d) => { const { kind: _k, ...rest } = d[key] ?? { exercises: [] }; d[key] = { ...rest, name: v.slice(0, 24) }; })}
           placeholder={t('train.dayNamePlaceholder')}
           maxLength={24}
         />

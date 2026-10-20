@@ -412,6 +412,7 @@ const jaJP = {
     viewPlans: 'プランを見る',
   },
   train: {
+    kind: { fullA: '全身 A', fullB: '全身 B', upper: '上半身', lower: '下半身', push: 'プッシュ', pull: 'プル', legs: '脚 + 体幹' },
     aiTrain: 'トレ', aiDaysHint: 'トレーニングする曜日をタップ。残りは休養日（最低1日は休み）', moveDay: '別の曜日に移す', moveTo: '移動先', moveHint: 'その曜日にすでにメニューがある場合は入れ替わります',
     aiTemplateNote: '今回は AI が応答しなかったため、定番のテンプレートを表示しています。「別の案」でもう一度試せます。',
     aiPlanTitle: 'AI おすすめメニュー', aiPlanBody: '何から始めればいいか迷ったら、3つの質問に答えるだけで AI が1週間のメニューを組みます。', aiPlanCta: 'AI にプランを作ってもらう', aiPlanRedo: '何をやるか迷ったら、AI に今の状態に合わせて組み直してもらう', aiDaysQ: 'トレーニングする曜日', aiWhereQ: '場所', aiWhereGym: 'ジム', aiWhereHome: '自宅（ダンベル）', aiWhereBody: '器具なし', aiLevelQ: '経験', aiLevelNew: '初心者', aiLevelExp: '経験あり', aiGenerate: 'プランを作成', aiGenerating: 'AI がプランを作成中…', aiUse: 'このプランを使う', aiRetry: '別の案', aiChange: '条件を変える', aiReplaceTitle: '今のプランを置き換えますか？', aiReplaceBody: '今の週間プランはこの新しいプランに置き換わります。', aiReplace: '置き換える', aiSaved: 'プランを保存しました。「週間プラン」でいつでも調整できます', aiFailed: 'プランを作れませんでした。少し後でもう一度お試しください。', aiLimit: '今日の AI 回数を使い切りました', aiWeightHint: '重量は空欄から：初回に入力すると記憶され、プランに沿って少しずつ増えていきます。', aiDaysN: '週 {n} 日',
