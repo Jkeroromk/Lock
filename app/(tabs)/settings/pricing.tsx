@@ -10,6 +10,7 @@ import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
+import { proTrialDaysLeft } from '@/lib/plans';
 import { Button, Card, Label, ScreenHeader, Sticker } from '@/components/ui/bxc';
 import { restorePurchases, planFromCustomerInfo } from '@/lib/revenuecat';
 import { useProPlans, ProPlanPicker } from '@/components/pricing/ProPlanPicker';
@@ -29,6 +30,8 @@ export default function PricingScreen() {
   const currentPlan = user?.plan ?? 'FREE';
   // Max is retired; anyone still on it is shown as a Pro member.
   const isPaid = currentPlan === 'PRO' || currentPlan === 'MAX';
+  // Every new account is Pro for its first week (server-enforced).
+  const trialLeft = isPaid ? 0 : proTrialDaysLeft(user?.createdAt);
 
   const onPurchased = () => Alert.alert(
     t('pricing.purchaseSuccess' as any),
@@ -91,7 +94,7 @@ export default function PricingScreen() {
           variant="hero"
           title="Pro"
           icon="star"
-          badge={isPaid ? t('pricing.currentPlan' as any) : undefined}
+          badge={isPaid ? t('pricing.currentPlan' as any) : trialLeft > 0 ? (t('pricing.trialLeft' as any) as string).replace('{days}', String(trialLeft)) : undefined}
           features={Array.isArray(proFeatures) ? proFeatures : []}
         >
           {!isPaid ? <ProPlanPicker plans={plans} onPurchased={onPurchased} /> : null}
@@ -101,7 +104,7 @@ export default function PricingScreen() {
         <PlanCard
           variant="default"
           title={t('pricing.free' as any)}
-          badge={!isPaid ? t('pricing.currentPlan' as any) : t('pricing.basic' as any)}
+          badge={isPaid ? t('pricing.basic' as any) : trialLeft > 0 ? t('pricing.afterTrial' as any) : t('pricing.currentPlan' as any)}
           price="$0"
           features={Array.isArray(freeFeatures) ? freeFeatures : []}
         />

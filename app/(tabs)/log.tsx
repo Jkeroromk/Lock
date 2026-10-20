@@ -18,7 +18,7 @@ import { detectLiquidMl, addWater } from '@/services/waterTracker';
 import { calorieLevel, isWarning, todaysCalories } from '@/lib/calorieStatus';
 import { makeMealThumbnail } from '@/lib/image';
 import { showToast } from '@/components/ui/Toast';
-import { getQuota, FREE_TRIAL_DAILY_AI_CALLS } from '@/lib/plans';
+import { getQuota, proTrialDaysLeft } from '@/lib/plans';
 import BarcodeScanner from '@/components/log/BarcodeScanner';
 import ResultCard, { FoodResult } from '@/components/log/ResultCard';
 import ImagePickerButtons from '@/components/log/ImagePickerButtons';
@@ -38,13 +38,11 @@ export default function LogScreen() {
   useRefreshRewards();
   const plan = user?.plan ?? 'FREE';
   const aiQuota = user?.isAdmin ? -1 : getQuota(plan, 'dailyAiCalls');
-  // Free accounts get a higher daily allowance in their first 7 days (enforced on the server).
-  const trialDaysLeft = aiQuota === -1 || !user?.createdAt ? 0
-    : Math.ceil((new Date(user.createdAt).getTime() + 7 * 864e5 - Date.now()) / 864e5);
+  // Every new account is Pro for its first 7 days (enforced on the server): unlimited scans.
+  const trialDaysLeft = plan === 'FREE' ? proTrialDaysLeft(user?.createdAt) : 0;
   const bonusScans = user?.bonusAiCalls ?? 0;
   const quotaBadge = trialDaysLeft > 0
-    ? (t('log.trialBadge' as any) as string).replace('{days}', String(trialDaysLeft)).replace('{quota}', String(FREE_TRIAL_DAILY_AI_CALLS))
-      + (bonusScans > 0 ? (t('log.bonusBadge' as any) as string).replace('{n}', String(bonusScans)) : '')
+    ? (t('log.trialBadge' as any) as string).replace('{days}', String(trialDaysLeft))
     : (t('log.freeQuotaBadge' as any) as string).replace('{quota}', String(aiQuota))
       + (bonusScans > 0 ? (t('log.bonusBadge' as any) as string).replace('{n}', String(bonusScans)) : '');
 

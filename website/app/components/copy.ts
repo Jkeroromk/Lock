@@ -17,7 +17,7 @@ export const COPY = {
       sub: "Snap a photo of your meal and Lock's AI breaks it into calories, protein, carbs and fat in seconds. Every meal fills the ring. Hit your goal and it locks.",
       cta: 'Download on the App Store',
       cta2: 'See how it works',
-      meta: ['Free', '10 AI scans/day in week 1', '5 languages'],
+      meta: ['Free', 'First week is Pro, free', '5 languages'],
       goal: 'Goal',
       kcal: 'kcal',
       today: 'Today',
@@ -107,8 +107,8 @@ export const COPY = {
     pricing: {
       eyebrow: 'Pricing',
       title: 'Free to start. Pro when you’re ready.',
-      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['First week: 10 AI scans / day, then 3 / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Workouts, weight curve, challenges, data export', 'Unlimited friends · invite one, you both get +5 scans'] },
-      pro: { name: 'Pro', price: '$39.99/yr', note: '7 days free, then $39.99 a year. Or $7.99 a month. US prices; the App Store shows yours.', list: ['Everything in Free', 'Unlimited AI scans (Free: 3 / day)', 'Unlimited AI diet × training reviews (Free: 1 / week)', 'Redo your AI workout plan anytime'] },
+      free: { name: 'Free', price: '$0', note: 'No card needed.', list: ['Your first week is Pro, free · then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Workouts, weight curve, challenges, data export', 'Unlimited friends · invite one, you both get +5 scans'] },
+      pro: { name: 'Pro', price: '$39.99/yr', note: '$39.99 a year, or $7.99 a month. US prices; the App Store shows yours. Cancel anytime.', list: ['Everything in Free', 'Unlimited AI scans (Free: 3 / day)', 'Unlimited AI diet × training reviews (Free: 1 / week)', 'Redo your AI workout plan anytime'] },
       cta: 'Get Lock',
     },
     faq: {
@@ -116,8 +116,8 @@ export const COPY = {
       title: 'Things people ask.',
       items: [
         { q: 'How accurate is the photo scan?', a: 'Lock’s AI estimates calories, protein, carbs and fat from your photo. Like any estimate it can be off, so every entry is editable. For packaged food, scan the barcode or nutrition label for exact numbers.' },
-        { q: 'Is Lock free?', a: 'Yes. Your first week includes 10 AI scans a day. After that, the free plan includes 3 AI scans a day, one AI diet review a week, and unlimited barcode and manual logging. Workout plans and logging are free too. Invite a friend and you both get 5 bonus scans.' },
-        { q: 'How much is Lock Pro?', a: '$39.99 a year with a 7-day free trial, or $7.99 a month (US prices). Pro removes the scan and review limits. We remind you 2 days before the trial ends, and you can cancel anytime in your Apple ID settings.' },
+        { q: 'Is Lock free?', a: 'Yes. Your first week is Pro, free, with no card needed. After that, the free plan includes 3 AI scans a day, one AI diet review a week, and unlimited barcode and manual logging. Workout plans and logging are free too. Invite a friend and you both get 5 bonus scans.' },
+        { q: 'How much is Lock Pro?', a: '$39.99 a year or $7.99 a month (US prices). Every new account gets Pro free for its first week, so you can try everything before paying. You can cancel anytime in your Apple ID settings.' },
         { q: 'Does Lock track workouts?', a: 'Yes. Plan your week on the Train tab, follow each workout set by set with a rest timer, and Lock keeps your records and raises the weight when you’ve earned it. Training days also raise your protein goal by 20 g.' },
         { q: 'Will my friends see what I eat?', a: 'Friends see your name, status, streak and today’s calorie total on the leaderboard. Your meals and photos only show up when you post them to Moments.' },
         { q: 'Does it work with Apple Health?', a: 'Yes. Connect Apple Health and your steps and active energy sync automatically.' },
@@ -125,7 +125,7 @@ export const COPY = {
         { q: 'Can I delete my data?', a: 'Yes. Settings → Account & Security → Delete Account permanently deletes your account, meals, photos and workouts. Deleting doesn’t cancel an App Store subscription; cancel that in your Apple ID settings.' },
       ],
     },
-    cta: { title: 'Ready to lock in?', sub: 'Free on iPhone. 10 AI scans a day in your first week.', btn: 'Download on the App Store' },
+    cta: { title: 'Ready to lock in?', sub: 'Free on iPhone. Your first week is Pro.', btn: 'Download on the App Store' },
     footer: {
       tag: 'AI nutrition and training that locks when you hit your goal.',
       product: 'Product',
@@ -147,7 +147,7 @@ export const COPY = {
       sub: '给你的餐拍张照，Lock 的 AI 几秒内拆出卡路里、蛋白质、碳水和脂肪。每一餐都会填满圆环，达到目标，它就锁上。',
       cta: '从 App Store 下载',
       cta2: '看看怎么用',
-      meta: ['免费', '首周每天 10 次 AI', '支持 5 种语言'],
+      meta: ['免费', '首周 Pro 免费', '支持 5 种语言'],
       goal: '目标',
       kcal: '千卡',
       today: '今天',
@@ -237,8 +237,8 @@ export const COPY = {
     pricing: {
       eyebrow: '价格',
       title: '免费开始，准备好再升级 Pro。',
-      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周每天 10 次 AI 识别，之后每天 3 次', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练、体重曲线、挑战赛、数据导出', '好友不限 · 邀请好友双方各 +5 次'] },
-      pro: { name: 'Pro', price: '$39.99/年', note: '前 7 天免费，之后每年 $39.99；也可以按月 $7.99。以上为美区价格，实际以 App Store 显示为准。', list: ['包含免费版全部功能', '无限 AI 识别（免费版每天 3 次）', '无限「饮食 × 训练」AI 分析（免费版每周 1 次）', 'AI 训练计划随时重新生成'] },
+      free: { name: '免费版', price: '$0', note: '无需绑卡。', list: ['首周 Pro 全功能免费 · 之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练、体重曲线、挑战赛、数据导出', '好友不限 · 邀请好友双方各 +5 次'] },
+      pro: { name: 'Pro', price: '$39.99/年', note: '每年 $39.99，或按月 $7.99。以上为美区价格，实际以 App Store 显示为准。随时可取消。', list: ['包含免费版全部功能', '无限 AI 识别（免费版每天 3 次）', '无限「饮食 × 训练」AI 分析（免费版每周 1 次）', 'AI 训练计划随时重新生成'] },
       cta: '下载 Lock',
     },
     faq: {
@@ -246,8 +246,8 @@ export const COPY = {
       title: '大家常问的。',
       items: [
         { q: '拍照识别准吗？', a: 'Lock 的 AI 会根据照片估算卡路里、蛋白质、碳水和脂肪。估算难免有偏差，所以每条记录都可以修改。包装食品可以扫条形码或营养成分表，拿到准确数字。' },
-        { q: 'Lock 收费吗？', a: '可以免费用。首周每天 10 次 AI 识别；之后免费版每天 3 次 AI 识别、每周 1 次 AI 饮食分析，条码和手动记录不限次数。训练计划和训练记录也是免费的。邀请好友，双方各得 5 次。' },
-        { q: 'Lock Pro 多少钱？', a: '按年 $39.99，前 7 天免费；或按月 $7.99（美区价格）。Pro 没有识别和分析次数限制。试用结束前 2 天会提醒你，随时可以在 Apple ID 设置里取消。' },
+        { q: 'Lock 收费吗？', a: '可以免费用。首周免费享受 Pro 全部功能，不用绑卡；之后免费版每天 3 次 AI 识别、每周 1 次 AI 饮食分析，条码和手动记录不限次数。训练计划和训练记录也是免费的。邀请好友，双方各得 5 次。' },
+        { q: 'Lock Pro 多少钱？', a: '按年 $39.99 或按月 $7.99（美区价格）。每个新账号首周免费享受 Pro，先把功能都用一遍再决定。随时可以在 Apple ID 设置里取消。' },
         { q: 'Lock 能记录训练吗？', a: '能。在训练页排好一周计划，跟着一组一组练，组间有休息计时；Lock 会记下你的纪录，练到了就自动加重。训练日的蛋白质目标还会多加 20g。' },
         { q: '朋友会看到我吃什么吗？', a: '好友在排行榜上能看到你的名字、状态、连胜天数和今天的总卡路里。具体吃了什么、餐食照片，只有你发到 Moments 时才会出现。' },
         { q: '能连 Apple 健康吗？', a: '可以。连接 Apple 健康后，步数和活动能量会自动同步。' },
@@ -255,7 +255,7 @@ export const COPY = {
         { q: '能删除我的数据吗？', a: '可以。在 设置 → 账号与安全 → 删除账号，会永久删除你的账号、餐食、照片和训练记录。删除账号不会自动取消 App Store 订阅，订阅需要在 Apple ID 设置里取消。' },
       ],
     },
-    cta: { title: '准备好 lock in 了吗？', sub: 'iPhone 免费下载，首周每天 10 次 AI 识别。', btn: '从 App Store 下载' },
+    cta: { title: '准备好 lock in 了吗？', sub: 'iPhone 免费下载，首周就是 Pro。', btn: '从 App Store 下载' },
     footer: {
       tag: '达成目标就上锁的 AI 饮食与训练记录。',
       product: '产品',

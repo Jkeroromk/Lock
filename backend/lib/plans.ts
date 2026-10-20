@@ -2,10 +2,11 @@ export type PlanTier = 'FREE' | 'PRO' | 'MAX';
 
 /** Photo + nutrition-label scans per day on the free plan. Barcode and manual logging are never limited. */
 export const FREE_DAILY_AI_CALLS = 3;
-/** A new account's first week ("new-user week"): a higher daily allowance, not unlimited. */
-export const FREE_TRIAL_DAYS = 7;
-/** Scans per day during the new-user week. Capped so a fresh account can't burn through the AI budget. */
-export const FREE_TRIAL_DAILY_AI_CALLS = 10;
+/**
+ * Every new account gets Pro for its first PRO_TRIAL_DAYS days, no card and no
+ * App Store involved (2026-10-20). Keep in sync with lib/plans.ts in the app.
+ */
+export const PRO_TRIAL_DAYS = 7;
 /** Extra scans an inviter earns when a new user joins with their invite code. */
 export const INVITE_BONUS_AI_CALLS = 5;
 /** Extra scans the new user gets for joining with a friend's invite code. */
@@ -31,7 +32,13 @@ export function getMaxFriends(plan: PlanTier): number {
   return isPaidPlan(plan) ? -1 : FREE_MAX_FRIENDS; // -1 = unlimited (also on Free)
 }
 
-/** True during a new account's first FREE_TRIAL_DAYS days. */
-export function isInTrialWeek(createdAt: Date, now = new Date()): boolean {
-  return now.getTime() - createdAt.getTime() < FREE_TRIAL_DAYS * 24 * 60 * 60 * 1000;
+/** True during a new account's first PRO_TRIAL_DAYS days. */
+export function isInProTrial(createdAt: Date, now = new Date()): boolean {
+  return now.getTime() - createdAt.getTime() < PRO_TRIAL_DAYS * 24 * 60 * 60 * 1000;
+}
+
+/** The plan to enforce: the stored plan, or PRO while the account is in its first week. */
+export function effectivePlan(plan: PlanTier, createdAt: Date, now = new Date()): PlanTier {
+  if (isPaidPlan(plan)) return plan;
+  return isInProTrial(createdAt, now) ? 'PRO' : plan;
 }
