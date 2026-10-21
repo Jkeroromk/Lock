@@ -96,6 +96,11 @@ export default function LoginScreen() {
       hasCompletedOnboarding: completedOnboarding,
       inviteCode: profile.inviteCode ?? undefined,
       friendCode: profile.friendCode ?? undefined,
+      // Same fields the cold-start path sets (app/index.tsx); the first-week
+      // Pro trial is computed from createdAt, so it must be here too.
+      createdAt: profile.createdAt ?? undefined,
+      bonusAiCalls: profile.bonusAiCalls ?? 0,
+      isAdmin: profile.isAdmin === true,
     });
 
     if (rememberMe && email) AsyncStorage.setItem('lock_saved_email', email).catch(() => {});
