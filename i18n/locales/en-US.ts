@@ -602,6 +602,31 @@ const enUS = {
       pat: '{coach} got a pat and is wagging!',
     },
   },
+  // Live Activity and Apple Watch (sent to native as-is).
+  live: {
+    complete: 'Complete set',
+    restOverGo: 'Rest\'s up · Complete set',
+    rest: 'Rest',
+    restOver: 'Rest\'s up',
+    skip: 'Skip',
+    reps: 'reps',
+    setOf: 'Set {i}/{n}',
+    progress: '{done}/{total} sets',
+    allDone: 'All sets done',
+    finish: 'Finish workout',
+    finishAsk: 'Finish and save this workout?',
+    cancel: 'Cancel',
+    undo: 'Undo last set',
+    exercises: 'Exercises',
+    next: 'Next',
+    saving: 'Saving on iPhone…',
+    openToSave: 'Open Lock to save',
+    bodyweight: 'Bodyweight',
+    needReps: 'Turn the crown to set reps',
+    idle: 'Start a workout on your iPhone',
+    idleHint: 'Your sets show up here. Tap to log them.',
+    saved: 'Workout saved',
+  },
 };
 
 export default enUS;

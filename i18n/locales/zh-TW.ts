@@ -534,6 +534,31 @@ const zhTW = {
       pat: '{coach} 被摸了，尾巴搖起來了！',
     },
   },
+  // Live Activity and Apple Watch (sent to native as-is).
+  live: {
+    complete: '完成這組',
+    restOverGo: '休息結束 · 完成這組',
+    rest: '組間休息',
+    restOver: '休息結束',
+    skip: '跳過',
+    reps: '次',
+    setOf: '第 {i}/{n} 組',
+    progress: '{done}/{total} 組',
+    allDone: '全部完成',
+    finish: '完成訓練',
+    finishAsk: '結束並儲存這次訓練？',
+    cancel: '取消',
+    undo: '撤銷上一組',
+    exercises: '動作',
+    next: '接下來',
+    saving: '正在 iPhone 上儲存…',
+    openToSave: '打開 Lock 儲存',
+    bodyweight: '自重',
+    needReps: '轉動錶冠設定次數',
+    idle: '在 iPhone 上開始訓練',
+    idleHint: '每一組會出現在這裡，點一下就記好。',
+    saved: '訓練已儲存',
+  },
 };
 
 export default zhTW;

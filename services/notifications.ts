@@ -8,13 +8,20 @@ const isExpoGo = Constants.appOwnership === 'expo';
 
 if (!isExpoGo) {
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
+    handleNotification: async (notification) => {
+      // "Rest's up" (scheduled natively for the Lock Screen / watch): the open
+      // workout screen already buzzes, so don't also show a banner in the app.
+      if (notification.request.identifier === 'lock-rest') {
+        return { shouldShowAlert: false, shouldPlaySound: false, shouldSetBadge: false, shouldShowBanner: false, shouldShowList: false };
+      }
+      return {
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      };
+    },
   });
 }
 

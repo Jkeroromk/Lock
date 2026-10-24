@@ -24,6 +24,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Shared Swift files in sync
+        run: node scripts/sync-watch-model.mjs --check
       - run: npm ci
       - name: tsc (app)
         continue-on-error: true

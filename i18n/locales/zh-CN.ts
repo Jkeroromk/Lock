@@ -697,6 +697,31 @@ const zhCN = {
       pat: '{coach} 被摸了，尾巴摇起来了！',
     },
   },
+  // Live Activity and Apple Watch (sent to native as-is).
+  live: {
+    complete: '完成这组',
+    restOverGo: '休息结束 · 完成这组',
+    rest: '组间休息',
+    restOver: '休息结束',
+    skip: '跳过',
+    reps: '次',
+    setOf: '第 {i}/{n} 组',
+    progress: '{done}/{total} 组',
+    allDone: '全部完成',
+    finish: '完成训练',
+    finishAsk: '结束并保存这次训练？',
+    cancel: '取消',
+    undo: '撤销上一组',
+    exercises: '动作',
+    next: '接下来',
+    saving: '正在 iPhone 上保存…',
+    openToSave: '打开 Lock 保存',
+    bodyweight: '自重',
+    needReps: '转动表冠设定次数',
+    idle: '在 iPhone 上开始训练',
+    idleHint: '每一组会出现在这里，点一下就记好。',
+    saved: '训练已保存',
+  },
 };
 
 export default zhCN;

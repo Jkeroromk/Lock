@@ -81,10 +81,14 @@ jobs:
           else
             printf '%s' "$ASC_PRIVATE_KEY" | base64 --decode > "$key"
           fi
+          # With the key (Admin role) EAS can also create the provisioning
+          # profiles for the watch app and the Live Activity on its own.
           {
             echo "EXPO_ASC_API_KEY_PATH=$key"
             echo "EXPO_ASC_KEY_ID=$ASC_KEY_ID"
             echo "EXPO_ASC_ISSUER_ID=$ASC_ISSUER_ID"
+            echo "EXPO_APPLE_TEAM_ID=KBBN9626H9"
+            echo "EXPO_APPLE_TEAM_TYPE=INDIVIDUAL"
           } >> "$GITHUB_ENV"
 
       - name: Build

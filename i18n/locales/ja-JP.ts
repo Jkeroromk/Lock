@@ -540,6 +540,31 @@ const jaJP = {
       pat: '{coach} がなでられてしっぽふりふり！',
     },
   },
+  // Live Activity and Apple Watch (sent to native as-is).
+  live: {
+    complete: 'このセット完了',
+    restOverGo: '休憩終了 · セット完了',
+    rest: '休憩',
+    restOver: '休憩終了',
+    skip: 'スキップ',
+    reps: '回',
+    setOf: 'セット {i}/{n}',
+    progress: '{done}/{total} セット',
+    allDone: '全セット完了',
+    finish: 'トレーニング終了',
+    finishAsk: '終了して保存しますか？',
+    cancel: 'キャンセル',
+    undo: '前のセットを取り消す',
+    exercises: '種目',
+    next: '次',
+    saving: 'iPhone で保存中…',
+    openToSave: 'Lock を開いて保存',
+    bodyweight: '自重',
+    needReps: 'Digital Crown で回数を設定',
+    idle: 'iPhone でトレーニングを開始',
+    idleHint: 'セットがここに表示されます。タップで記録。',
+    saved: 'トレーニングを保存しました',
+  },
 };
 
 export default jaJP;

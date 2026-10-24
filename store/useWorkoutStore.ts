@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { localDateKey, useStore, type WeightUnit } from '@/store/useStore';
 import { toKg, fmtWeight } from '@/lib/units';
+import type { RemoteAction } from '@/modules/lock-workout';
 import {
   fetchWorkouts, finishWorkout, fetchExerciseHistory,
   type PlanDays, type PlanDay, type SessionSummary, type ExerciseHistory, type FinishResult, type SetResult,
@@ -54,6 +55,9 @@ export const num = (s: string) => {
   return Number.isFinite(v) ? v : 0;
 };
 
+/** A typed number without trailing zeros: 80, 77.5, 22.25. */
+const fmtBox = (v: number) => String(Math.round(v * 100) / 100);
+
 /** Formats kg without trailing zeros: 80, 77.5, 22.25. */
 export const fmtKg = (kg: number) => String(Math.round(kg * 100) / 100);
 
@@ -98,6 +102,9 @@ interface WorkoutState {
   adjustRest: (deltaSec: number) => void;
   skipRest: () => void;
   discard: () => void;
+  /** Applies a change made on the Live Activity or the Apple Watch (already
+   *  resolved by the native reducer in WorkoutModel.swift). */
+  applyRemote: (action: RemoteAction) => void;
   finish: () => Promise<LastResult>;
   removeSession: (id: string) => void;
 }
@@ -260,6 +267,59 @@ export const useWorkoutStore = create<WorkoutState>()(
         skipRest: () => patchActive((a) => ({ ...a, restEndsAt: null })),
 
         discard: () => set({ active: null }),
+
+        applyRemote: (r) => {
+          const a = get().active;
+          if (!a || r.workoutId !== a.id) return;
+          const restPatch = {
+            restEndsAt: r.restEndsAt ?? null,
+            restTotal: r.restTotal ?? a.restTotal,
+            current: r.current !== undefined ? Math.max(0, Math.min(r.current, a.exercises.length - 1)) : a.current,
+          };
+          switch (r.kind) {
+            case 'complete': {
+              const ei = r.ei ?? -1;
+              const si = r.si ?? -1;
+              if (!a.exercises[ei]?.sets[si]) return;
+              const fills = new Map((r.fill ?? []).map((f) => [f.si, f]));
+              set({
+                active: {
+                  ...mapExercise(a, ei, (e) => ({
+                    ...e,
+                    sets: e.sets.map((x, i) => {
+                      if (i === si) return { weight: (r.w ?? 0) > 0 ? fmtBox(r.w!) : '', reps: String(r.r ?? 0), done: true };
+                      const f = fills.get(i);
+                      if (!f) return x;
+                      return {
+                        ...x,
+                        ...(f.w !== undefined ? { weight: f.w > 0 ? fmtBox(f.w) : '' } : null),
+                        ...(f.r !== undefined ? { reps: String(f.r) } : null),
+                      };
+                    }),
+                  })),
+                  ...restPatch,
+                },
+              });
+              return;
+            }
+            case 'uncomplete': {
+              const ei = r.ei ?? -1;
+              const si = r.si ?? -1;
+              if (!a.exercises[ei]?.sets[si]) return;
+              set({ active: { ...mapExercise(a, ei, (e) => ({ ...e, sets: e.sets.map((x, i) => (i === si ? { ...x, done: false } : x)) })), ...restPatch } });
+              return;
+            }
+            case 'rest':
+              // The adjusted length becomes the default for the next rest, as on the phone.
+              set({ restSec: restPatch.restTotal, active: { ...a, ...restPatch } });
+              return;
+            case 'skipRest':
+            case 'select':
+            case 'finish':
+              set({ active: { ...a, ...restPatch } });
+              return;
+          }
+        },
 
         finish: async () => {
           const a = get().active;
