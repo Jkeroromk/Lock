@@ -102,11 +102,11 @@ jobs:
         run: |
           log="$RUNNER_TEMP/eas.log"
           [ -f "$log" ] || exit 0
-          grep -E "error:|Error:|❌|fatal|Provisioning|profile|credentials" "$log" | sed -E 's#/Users/runner/work/[^ ]*/(targets|modules|ios)/#\1/#g' | awk '!seen[$0]++' > "$RUNNER_TEMP/errors.txt" || true
+          grep -E -A12 "Failed to update Apple capabilities|Apple API error|Error:|error:|❌" "$log" | sed -E 's#/Users/runner/work/[^ ]*/(targets|modules|ios)/#\1/#g' | awk '!seen[$0]++' > "$RUNNER_TEMP/errors.txt" || true
           tail -30 "$log" >> "$RUNNER_TEMP/errors.txt"
           split -l 6 "$RUNNER_TEMP/errors.txt" "$RUNNER_TEMP/err-"
           for f in $(ls "$RUNNER_TEMP"/err-* | head -10); do
-            msg=$(cut -c1-400 "$f" | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')
+            msg=$(cut -c1-400 "$f" | awk 'BEGIN{ORS="%0A"} {gsub(/%/,"%25"); gsub(/\r/,""); print}')
             echo "::error title=eas build::$msg"
           done
 
