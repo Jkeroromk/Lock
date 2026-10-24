@@ -36,6 +36,8 @@ export interface ActiveWorkout {
   /** Epoch ms when the rest timer ends; null when not resting. */
   restEndsAt: number | null;
   restTotal: number;
+  /** "Finish workout" was tapped on the watch; saved as soon as the app can. */
+  finishRequested?: boolean;
 }
 
 export interface LastResult {
@@ -313,9 +315,11 @@ export const useWorkoutStore = create<WorkoutState>()(
               // The adjusted length becomes the default for the next rest, as on the phone.
               set({ restSec: restPatch.restTotal, active: { ...a, ...restPatch } });
               return;
+            case 'finish':
+              set({ active: { ...a, ...restPatch, finishRequested: true } });
+              return;
             case 'skipRest':
             case 'select':
-            case 'finish':
               set({ active: { ...a, ...restPatch } });
               return;
           }

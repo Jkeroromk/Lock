@@ -9,9 +9,9 @@ const isExpoGo = Constants.appOwnership === 'expo';
 if (!isExpoGo) {
   Notifications.setNotificationHandler({
     handleNotification: async (notification) => {
-      // "Rest's up" (scheduled natively for the Lock Screen / watch): the open
-      // workout screen already buzzes, so don't also show a banner in the app.
-      if (notification.request.identifier === 'lock-rest') {
+      // "Rest's up" / "Open Lock to save" are scheduled natively for the Lock
+      // Screen; inside the app the workout screen already covers them.
+      if (notification.request.identifier === 'lock-rest' || notification.request.identifier === 'lock-save') {
         return { shouldShowAlert: false, shouldPlaySound: false, shouldSetBadge: false, shouldShowBanner: false, shouldShowList: false };
       }
       return {

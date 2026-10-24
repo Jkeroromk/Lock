@@ -5,6 +5,9 @@ import Foundation
 enum WatchStrings {
   private static let table: [String: [String: String]] = [
     "en": [
+      "finished": "Workout finished",
+      "openPhoneToSave": "Open Lock on your iPhone to save it",
+      "done": "Done",
       "idle": "Start a workout on your iPhone",
       "idleHint": "Your sets show up here. Tap to log them.",
       "saved": "Workout saved",
@@ -26,6 +29,9 @@ enum WatchStrings {
       "needReps": "Turn the crown to set reps",
     ],
     "zh-Hans": [
+      "finished": "训练已结束",
+      "openPhoneToSave": "在 iPhone 上打开 Lock 即可保存",
+      "done": "好",
       "idle": "在 iPhone 上开始训练",
       "idleHint": "每一组会出现在这里，点一下就记好。",
       "saved": "训练已保存",
@@ -47,6 +53,9 @@ enum WatchStrings {
       "needReps": "转动表冠设定次数",
     ],
     "zh-Hant": [
+      "finished": "訓練已結束",
+      "openPhoneToSave": "在 iPhone 上打開 Lock 即可儲存",
+      "done": "好",
       "idle": "在 iPhone 上開始訓練",
       "idleHint": "每一組會出現在這裡，點一下就記好。",
       "saved": "訓練已儲存",
@@ -68,6 +77,9 @@ enum WatchStrings {
       "needReps": "轉動錶冠設定次數",
     ],
     "ja": [
+      "finished": "トレーニング終了",
+      "openPhoneToSave": "iPhone で Lock を開くと保存されます",
+      "done": "OK",
       "idle": "iPhone でトレーニングを開始",
       "idleHint": "セットがここに表示されます。タップで記録。",
       "saved": "トレーニングを保存しました",
@@ -89,6 +101,9 @@ enum WatchStrings {
       "needReps": "Digital Crown で回数を設定",
     ],
     "ko": [
+      "finished": "운동 종료",
+      "openPhoneToSave": "iPhone에서 Lock을 열면 저장돼요",
+      "done": "확인",
       "idle": "iPhone에서 운동을 시작하세요",
       "idleHint": "세트가 여기에 표시돼요. 탭하면 기록돼요.",
       "saved": "운동이 저장되었어요",

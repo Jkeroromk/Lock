@@ -7,6 +7,7 @@
 // workout store and acknowledges it on its next `sync`.
 
 import Foundation
+import UIKit
 import UserNotifications
 import WatchConnectivity
 #if canImport(ActivityKit)
@@ -37,6 +38,7 @@ public final class WorkoutEngine: NSObject {
   private var watchStartedFor = ""
   private var session: WCSession?
   private var activated = false
+  private var finishTask: UIBackgroundTaskIdentifier = .invalid
   #if canImport(HealthKit)
   private lazy var healthStore = HKHealthStore()
   #endif
@@ -101,12 +103,19 @@ public final class WorkoutEngine: NSObject {
       } else {
         if self.snapshot != nil { self.endReason = reason.isEmpty ? "discarded" : reason }
         self.snapshot = nil
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["lock-save"])
+        center.removeDeliveredNotifications(withIdentifiers: ["lock-save"])
         self.lock.lock()
         self.pending.removeAll()
         self.lock.unlock()
       }
       self.save()
       self.publish()
+      if self.snapshot == nil {
+        // Give the watch update a moment to go out before iOS may suspend us.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.endFinishTask() }
+      }
     }
   }
 
@@ -156,8 +165,34 @@ public final class WorkoutEngine: NSObject {
       self.lock.unlock()
       self.save()
       self.publish()
+      if resolved.kind == "finish" { self.finishRequested() }
       self.onAction?()
     }
+  }
+
+  /// "Finish workout" on the watch: saving happens in JS (network + sign-in), so
+  /// ask iOS for background time to let it run, and if it hasn't been saved
+  /// shortly, remind the user to open the app.
+  private func finishRequested() {
+    if finishTask == .invalid {
+      finishTask = UIApplication.shared.beginBackgroundTask(withName: "lock.finishWorkout") { [weak self] in
+        self?.endFinishTask()
+      }
+    }
+    let content = UNMutableNotificationContent()
+    content.title = label("finishedOnWatch", "Workout finished on your watch")
+    content.body = label("openToSave", "Open Lock to save")
+    content.sound = .default
+    let request = UNNotificationRequest(
+      identifier: "lock-save", content: content,
+      trigger: UNTimeIntervalNotificationTrigger(timeInterval: 25, repeats: false))
+    UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+  }
+
+  private func endFinishTask() {
+    guard finishTask != .invalid else { return }
+    UIApplication.shared.endBackgroundTask(finishTask)
+    finishTask = .invalid
   }
 
   // MARK: - Fan out

@@ -14,7 +14,7 @@ struct RootView: View {
   @EnvironmentObject private var store: WatchStore
 
   var body: some View {
-    if let s = store.snapshot {
+    if let s = store.snapshot, !(s.finishing && store.hiddenFinishedId == s.id) {
       TabView {
         WorkoutPage(s: s)
         ExercisesPage(s: s)
@@ -75,13 +75,7 @@ private struct WorkoutPage: View {
     VStack(spacing: 6) {
       Header(s: s)
       if s.finishing {
-        Spacer()
-        ProgressView().tint(accent)
-        Text(store.t("saving"))
-          .font(.system(size: 14, weight: .semibold))
-          .foregroundStyle(paper)
-          .multilineTextAlignment(.center)
-        Spacer()
+        FinishedView()
       } else if resting, let ends = s.restEndsAt {
         RestView(s: s, ends: Date(timeIntervalSince1970: ends / 1000))
       } else if let target = s.nextOpen {
@@ -91,6 +85,39 @@ private struct WorkoutPage: View {
       }
     }
     .padding(.horizontal, 4)
+  }
+}
+
+/// Shown after "Finish workout" until the phone has saved it.
+private struct FinishedView: View {
+  @EnvironmentObject private var store: WatchStore
+
+  var body: some View {
+    VStack(spacing: 8) {
+      Spacer(minLength: 0)
+      Image(systemName: "checkmark.circle.fill")
+        .font(.system(size: 34, weight: .bold))
+        .foregroundStyle(accent)
+      Text(store.t("finished"))
+        .font(.system(size: 17, weight: .heavy))
+        .foregroundStyle(paper)
+      HStack(spacing: 6) {
+        if store.reachable { ProgressView().tint(accent).frame(width: 16, height: 16) }
+        Text(store.reachable ? store.t("saving") : store.t("openPhoneToSave"))
+          .font(.system(size: 13, weight: .semibold))
+          .foregroundStyle(paper.opacity(0.7))
+          .multilineTextAlignment(.center)
+      }
+      Button { store.dismissFinished() } label: {
+        Text(store.t("done"))
+          .font(.system(size: 15, weight: .heavy))
+          .foregroundStyle(ink)
+          .frame(maxWidth: .infinity, minHeight: 40)
+          .background(accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+      }
+      .buttonStyle(.plain)
+      Spacer(minLength: 0)
+    }
   }
 }
 

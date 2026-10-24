@@ -699,6 +699,10 @@ const zhCN = {
   },
   // Live Activity and Apple Watch (sent to native as-is).
   live: {
+    finishedOnWatch: '手表上的训练已结束',
+    finished: '训练已结束',
+    openPhoneToSave: '在 iPhone 上打开 Lock 即可保存',
+    done: '好',
     complete: '完成这组',
     restOverGo: '休息结束 · 完成这组',
     rest: '组间休息',

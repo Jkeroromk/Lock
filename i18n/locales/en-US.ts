@@ -604,6 +604,10 @@ const enUS = {
   },
   // Live Activity and Apple Watch (sent to native as-is).
   live: {
+    finishedOnWatch: 'Workout finished on your watch',
+    finished: 'Workout finished',
+    openPhoneToSave: 'Open Lock on your iPhone to save it',
+    done: 'Done',
     complete: 'Complete set',
     restOverGo: 'Rest\'s up · Complete set',
     rest: 'Rest',

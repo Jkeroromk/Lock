@@ -551,6 +551,10 @@ const koKR = {
   },
   // Live Activity and Apple Watch (sent to native as-is).
   live: {
+    finishedOnWatch: '워치에서 운동을 마쳤어요',
+    finished: '운동 종료',
+    openPhoneToSave: 'iPhone에서 Lock을 열면 저장돼요',
+    done: '확인',
     complete: '세트 완료',
     restOverGo: '휴식 끝 · 세트 완료',
     rest: '휴식',

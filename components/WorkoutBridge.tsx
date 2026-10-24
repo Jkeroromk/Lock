@@ -51,7 +51,7 @@ function buildSnapshot(st: WorkoutState, language: LanguageCode): NativeSnapshot
     restTotal: a.restTotal,
     restSec: st.restSec,
     applied: [],
-    finishing: false,
+    finishing: !!a.finishRequested,
   };
 }
 
@@ -89,39 +89,64 @@ export default function WorkoutBridge() {
       timer = setTimeout(push, 120);
     };
 
-    const finishFromRemote = async () => {
+    // "Finish workout" from the watch. Saving needs the network and a signed-in
+    // session, which may not be there yet (app woken in the background, offline),
+    // so it's retried until it works: on every drain, when the app comes to the
+    // front, and every 20 s while a save is still owed.
+    let saving = false;
+    let sentToSession = false;
+    let retry: ReturnType<typeof setInterval> | null = null;
+
+    const stopRetry = () => {
+      if (retry) clearInterval(retry);
+      retry = null;
+    };
+
+    const tryFinish = async () => {
       const st = useWorkoutStore.getState();
       const a = st.active;
-      if (!a) return;
+      if (!a?.finishRequested) {
+        stopRetry();
+        return;
+      }
+      if (saving) return;
       const anyDone = a.exercises.some((e) => e.sets.some((s) => s.done && num(s.reps) >= 1));
       if (!anyDone) {
+        stopRetry();
         st.discard();
         return;
       }
+      saving = true;
       try {
         await st.finish();
+        stopRetry();
+        sentToSession = false;
         // Let an open workout screen close itself first.
         setTimeout(() => {
           try { router.push('/workout/done'); } catch {}
         }, 80);
       } catch {
-        // Offline or the save failed: open the workout so it can be retried there.
-        try { router.push('/workout/session'); } catch {}
+        if (!retry) retry = setInterval(tryFinish, 20_000);
+        // In the foreground, show the workout so it can also be saved by hand.
+        if (AppState.currentState === 'active' && !sentToSession) {
+          sentToSession = true;
+          try { router.push('/workout/session'); } catch {}
+        }
+      } finally {
+        saving = false;
       }
     };
 
     const drain = () => {
       if (!ready) return;
       const list = LockWorkout.getPending();
-      let finish = false;
       for (const p of list) {
         if (p.seq <= ack) continue;
         useWorkoutStore.getState().applyRemote(p.action);
-        if (p.action.kind === 'finish') finish = true;
         ack = p.seq;
       }
       push();
-      if (finish) finishFromRemote();
+      tryFinish();
     };
 
     // Wait for both persisted stores, or an empty store would end the workout
@@ -150,6 +175,7 @@ export default function WorkoutBridge() {
       unsubs.forEach((u) => u());
       sub.remove();
       appState.remove();
+      stopRetry();
       if (timer) clearTimeout(timer);
     };
   }, []);

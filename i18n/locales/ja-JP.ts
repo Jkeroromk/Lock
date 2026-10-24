@@ -542,6 +542,10 @@ const jaJP = {
   },
   // Live Activity and Apple Watch (sent to native as-is).
   live: {
+    finishedOnWatch: 'Apple Watch のトレーニングが終了しました',
+    finished: 'トレーニング終了',
+    openPhoneToSave: 'iPhone で Lock を開くと保存されます',
+    done: 'OK',
     complete: 'このセット完了',
     restOverGo: '休憩終了 · セット完了',
     rest: '休憩',

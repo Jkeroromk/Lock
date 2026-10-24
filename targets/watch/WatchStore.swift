@@ -16,6 +16,10 @@ final class WatchStore: NSObject, ObservableObject {
   /// How the last workout ended ("finished" / "discarded"), shown on the idle screen.
   @Published private(set) var ended: String?
   @Published private(set) var now = Date()
+  /// The phone app can be reached right now.
+  @Published private(set) var reachable = false
+  /// A finished workout the user dismissed while the phone still has to save it.
+  @Published private(set) var hiddenFinishedId: String?
 
   let health = WorkoutSessionManager()
 
@@ -62,6 +66,11 @@ final class WatchStore: NSObject, ObservableObject {
   func phoneStartedWorkout() {
     start()
     health.start(workoutId: snapshot?.id, startDate: Date())
+  }
+
+  /// Hides the "Workout finished" screen; the phone saves it when it can.
+  func dismissFinished() {
+    hiddenFinishedId = snapshot?.id
   }
 
   func t(_ key: String) -> String {
@@ -180,11 +189,21 @@ extension WatchStore: WCSessionDelegate {
   nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
     guard activationState == .activated else { return }
     let context = session.receivedApplicationContext
+    let r = session.isReachable
     Task { @MainActor in
+      WatchStore.shared.reachable = r
       WatchStore.shared.receive(context)
       // Resend taps made while the session was down.
       for a in WatchStore.shared.pending { WatchStore.shared.transmit(a) }
       WatchStore.shared.refresh()
+    }
+  }
+
+  nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
+    let r = session.isReachable
+    Task { @MainActor in
+      WatchStore.shared.reachable = r
+      if r { WatchStore.shared.refresh() }
     }
   }
 
