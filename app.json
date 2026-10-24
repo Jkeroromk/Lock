@@ -88,20 +88,30 @@
           {
             "name": "RingL",
             "ios": "./assets/icons/icon-ring-l.png",
-            "android": { "foregroundImage": "./assets/icons/android-fg-ring-l.png", "backgroundColor": "#0A0A0A" }
+            "android": {
+              "foregroundImage": "./assets/icons/android-fg-ring-l.png",
+              "backgroundColor": "#0A0A0A"
+            }
           },
           {
             "name": "StickerL",
             "ios": "./assets/icons/icon-sticker-l.png",
-            "android": { "foregroundImage": "./assets/icons/android-fg-sticker-l.png", "backgroundColor": "#FFD43B" }
+            "android": {
+              "foregroundImage": "./assets/icons/android-fg-sticker-l.png",
+              "backgroundColor": "#FFD43B"
+            }
           },
           {
             "name": "KeyholeDial",
             "ios": "./assets/icons/icon-keyhole-dial.png",
-            "android": { "foregroundImage": "./assets/icons/android-fg-keyhole-dial.png", "backgroundColor": "#0A0A0A" }
+            "android": {
+              "foregroundImage": "./assets/icons/android-fg-keyhole-dial.png",
+              "backgroundColor": "#0A0A0A"
+            }
           }
         ]
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "scheme": "lock",
     "extra": {
