@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { checkAndIncrementAiQuota, requestTimeZone } from '@/lib/ai-rate-limit';
+import { checkAndIncrementAiQuota } from '@/lib/ai-rate-limit';
+import { trustedTimeZone } from '@/lib/timezone';
 import { TEXT_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
 import { CATALOG, type Equipment } from '@/lib/exercise-catalog';
 import { isDayKind, type PlanDays } from '@/lib/workouts';
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
 
   if (!process.env.FIREWORKS_API_KEY?.trim()) return fallback();
 
-  const quota = await checkAndIncrementAiQuota(userId, requestTimeZone(request));
+  const quota = await checkAndIncrementAiQuota(userId, await trustedTimeZone(userId, request));
   if (!quota.ok) return quota.response;
 
   try {

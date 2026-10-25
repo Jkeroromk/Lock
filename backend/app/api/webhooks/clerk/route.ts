@@ -3,6 +3,8 @@ import { Webhook } from 'svix';
 import { prisma } from '@/lib/prisma';
 import { getUniqueFriendCode, getUniqueInviteCode } from '@/lib/invite-code';
 import { deleteAllMealPhotos } from '@/lib/meal-photos';
+import { applyTrialHistory } from '@/lib/trial-claims';
+import { cleanText } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,23 +53,34 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    if (event.type === 'user.created') {
+    if (event.type === 'user.created' || event.type === 'user.updated') {
       const { id, email_addresses, primary_email_address_id, first_name, last_name, username } = event.data as ClerkUserData;
       const primaryEmail = email_addresses?.find((e) => e.id === primary_email_address_id)?.email_address;
-      const name = [first_name, last_name].filter(Boolean).join(' ') || null;
 
-      await prisma.user.upsert({
-        where: { id },
-        create: {
-          id,
-          email: primaryEmail ?? null,
-          name,
-          username: username ?? null,
-          inviteCode: await getUniqueInviteCode(),
-          friendCode: await getUniqueFriendCode(),
-        },
-        update: {},
-      });
+      if (event.type === 'user.created') {
+        const name = [first_name, last_name].filter(Boolean).join(' ') || null;
+        await prisma.user.upsert({
+          where: { id },
+          create: {
+            id,
+            email: primaryEmail ?? null,
+            name: cleanText(name, 30),
+            username: username ?? null,
+            inviteCode: await getUniqueInviteCode(),
+            friendCode: await getUniqueFriendCode(),
+          },
+          update: {},
+        });
+      }
+
+      if (primaryEmail) {
+        // The app may have created the row first (GET /api/auth/profile), without an email.
+        await prisma.user
+          .updateMany({ where: { id, email: null }, data: { email: primaryEmail } })
+          .catch((error) => console.error('[Clerk Webhook] email backfill', error?.code ?? error));
+        // One free first week per email, even across deleted accounts.
+        await applyTrialHistory(id, primaryEmail);
+      }
     }
 
     if (event.type === 'user.deleted') {

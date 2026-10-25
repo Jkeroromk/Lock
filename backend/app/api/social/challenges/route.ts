@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { cleanText } from '@/lib/sanitize';
+
+const CHALLENGE_TYPES = ['CALORIES', 'STREAK', 'STEPS'];
+const MAX_CHALLENGE_DAYS = 366;
 
 // GET /api/social/challenges — active challenges the user is in
 export async function GET(request: NextRequest) {
@@ -48,10 +52,23 @@ export async function POST(request: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
 
-  const { title, description, type, goalValue, startDate, endDate } = await request.json();
+  const body = await request.json().catch(() => null);
+  const title = cleanText(body?.title, 60);
+  const description = cleanText(body?.description, 300);
+  const type = CHALLENGE_TYPES.includes(body?.type) ? (body.type as string) : 'CALORIES';
+  const goalValue = Number(body?.goalValue);
+  const startDate = typeof body?.startDate === 'string' ? new Date(body.startDate) : null;
+  const endDate = typeof body?.endDate === 'string' ? new Date(body.endDate) : null;
 
-  if (!title || !goalValue || !startDate || !endDate) {
+  if (!title || !Number.isInteger(goalValue) || !startDate || !endDate) {
     return NextResponse.json({ error: 'Challenge details required' }, { status: 400 });
+  }
+  if (goalValue < 1 || goalValue > 10_000_000) {
+    return NextResponse.json({ error: 'Invalid goal' }, { status: 400 });
+  }
+  const span = endDate.getTime() - startDate.getTime();
+  if (isNaN(span) || span < 0 || span > MAX_CHALLENGE_DAYS * 86_400_000) {
+    return NextResponse.json({ error: 'Invalid dates' }, { status: 400 });
   }
 
   try {
@@ -60,10 +77,10 @@ export async function POST(request: NextRequest) {
         creatorId: userId,
         title,
         description,
-        type: type || 'CALORIES',
+        type,
         goalValue,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
+        startDate,
+        endDate,
         participants: { create: { userId, progress: 0 } },
       },
     });

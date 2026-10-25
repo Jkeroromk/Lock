@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { syncChallengeProgress } from '@/lib/challenge-progress';
 import { uploadMealPhoto, MAX_THUMBNAIL_BASE64 } from '@/lib/meal-photos';
+import { parseNutrition } from '@/lib/nutrition';
+import { cleanText } from '@/lib/sanitize';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +27,15 @@ export async function POST(request: NextRequest) {
       if (typeof image_url !== 'string' || image_url.length > 2000) {
         return NextResponse.json({ error: 'Image URL too long (max 2000 chars)' }, { status: 400 });
       }
+      // sb:// references are written only by the server (uploadMealPhoto).
+      if (image_url.startsWith('sb://')) {
+        return NextResponse.json({ error: 'Invalid image URL' }, { status: 400 });
+      }
+    }
+
+    const nutrition = parseNutrition({ calories, protein, carbs, fat });
+    if (!nutrition) {
+      return NextResponse.json({ error: 'Invalid nutrition values' }, { status: 400 });
     }
 
     if (thumbnail !== undefined && thumbnail !== null) {
@@ -44,11 +55,11 @@ export async function POST(request: NextRequest) {
     let meal = await prisma.meal.create({
       data: {
         userId,
-        foodName: food_name,
-        calories: Number(calories),
-        protein: Number(protein) || 0,
-        carbs: Number(carbs) || 0,
-        fat: Number(fat) || 0,
+        foodName: cleanText(food_name, 200) ?? 'Food',
+        calories: nutrition.calories ?? 0,
+        protein: nutrition.protein ?? 0,
+        carbs: nutrition.carbs ?? 0,
+        fat: nutrition.fat ?? 0,
         imageUrl: image_url || null,
       },
     });
@@ -71,6 +82,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: meal });
   } catch (error: any) {
+    console.error('[POST /api/log-meal]', error);
     return NextResponse.json({ error: 'Failed to save meal' }, { status: 500 });
   }
 }

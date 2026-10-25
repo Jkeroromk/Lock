@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { requestTimeZone } from '@/lib/ai-rate-limit';
-import { localDayKey, petSummaries, safeTimeZone } from '@/lib/pet';
+import { trustedTimeZone } from '@/lib/timezone';
+import { localDayKey, petSummaries } from '@/lib/pet';
 
 type LeaderboardEntry = {
   id: string;
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const dayKey = localDayKey(new Date(), safeTimeZone(requestTimeZone(request)));
+    const dayKey = localDayKey(new Date(), await trustedTimeZone(userId, request));
     const [pets, myPats, received] = await Promise.all([
       petSummaries(allIds),
       prisma.petPat.findMany({ where: { fromUser: userId, dayKey }, select: { toUser: true } }),

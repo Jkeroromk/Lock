@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { requestTimeZone } from '@/lib/ai-rate-limit';
+import { trustedTimeZone } from '@/lib/timezone';
 import {
-  GRADUATE_XP, cleanName, daysBetween, isBuddyKind, lifetimeXp, localDayKey, petState, safeTimeZone,
+  GRADUATE_XP, cleanName, daysBetween, isBuddyKind, lifetimeXp, localDayKey, petState,
 } from '@/lib/pet';
 
 // POST /api/pet/graduate — a grown-up buddy joins the collection and a new one
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
-  const tz = safeTimeZone(requestTimeZone(request));
+  const tz = await trustedTimeZone(userId, request);
 
   const body = await request.json().catch(() => null);
   const nextName = cleanName(body?.nextName);

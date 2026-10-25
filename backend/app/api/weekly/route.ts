@@ -58,8 +58,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(days);
   } catch (error: any) {
+    console.error('[GET /api/weekly]', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch weekly data' },
+      { error: 'Failed to fetch weekly data' },
       { status: 500 }
     );
   }

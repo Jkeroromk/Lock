@@ -29,6 +29,18 @@ export function isStoredPhoto(imageUrl: string | null | undefined): imageUrl is 
   return !!imageUrl && imageUrl.startsWith(PREFIX);
 }
 
+/**
+ * The storage path of a photo that belongs to `userId`, or null. Everything
+ * here uses the service-role key, so a stored reference is only signed or
+ * deleted when it points inside the owner's own folder: a meal row whose
+ * image_url names someone else's photo must never reach it.
+ */
+function ownPath(imageUrl: string | null | undefined, userId: string): string | null {
+  if (!isStoredPhoto(imageUrl)) return null;
+  const path = imageUrl.slice(PREFIX.length);
+  return /^[^/]+\/[^/]+\.jpg$/.test(path) && path.startsWith(`${userId}/`) ? path : null;
+}
+
 /** Uploads a base64 JPEG thumbnail; returns the value to store in meals.image_url, or null. */
 export async function uploadMealPhoto(userId: string, mealId: string, base64: string): Promise<string | null> {
   const cfg = config();
@@ -52,10 +64,14 @@ export async function uploadMealPhoto(userId: string, mealId: string, base64: st
   }
 }
 
-/** Replaces `sb://` references with signed URLs; leaves anything else untouched. */
-export async function signMealPhotos<T extends { image_url: string | null }>(rows: T[]): Promise<T[]> {
+/**
+ * Replaces `sb://` references with signed URLs for `userId`'s own photos;
+ * references to anyone else's folder become null. Other values are left alone.
+ */
+export async function signMealPhotos<T extends { image_url: string | null }>(rows: T[], userId: string): Promise<T[]> {
   const cfg = config();
-  const paths = rows.map((r) => r.image_url).filter(isStoredPhoto).map((u) => u.slice(PREFIX.length));
+  rows = rows.map((r) => (isStoredPhoto(r.image_url) && !ownPath(r.image_url, userId) ? ({ ...r, image_url: null } as T) : r));
+  const paths = rows.map((r) => ownPath(r.image_url, userId)).filter((p): p is string => !!p);
   if (!cfg || paths.length === 0) return rows;
   try {
     const res = await fetch(`${cfg.url}/storage/v1/object/sign/${BUCKET}`, {
@@ -89,9 +105,10 @@ async function removePaths(paths: string[]): Promise<void> {
   }
 }
 
-/** Deletes one meal's photo (call after deleting the meal). */
-export async function deleteMealPhoto(imageUrl: string | null | undefined): Promise<void> {
-  if (isStoredPhoto(imageUrl)) await removePaths([imageUrl.slice(PREFIX.length)]);
+/** Deletes one meal's photo (call after deleting the meal); only inside `userId`'s folder. */
+export async function deleteMealPhoto(imageUrl: string | null | undefined, userId: string): Promise<void> {
+  const path = ownPath(imageUrl, userId);
+  if (path) await removePaths([path]);
 }
 
 /** Deletes every photo a user has (account deletion). */

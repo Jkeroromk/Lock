@@ -48,11 +48,12 @@ export async function GET(request: NextRequest) {
         fat: Number(m.fat || 0),
         image_url: m.imageUrl,
         created_at: m.createdAt,
-      }))),
+      })), userId),
     });
   } catch (error: any) {
+    console.error('[GET /api/today]', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch today data' },
+      { error: 'Failed to fetch today data' },
       { status: 500 }
     );
   }

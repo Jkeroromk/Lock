@@ -40,6 +40,8 @@ model User {
   referredById    String?  @map("referred_by_id")             // who invited this user; set once
   pushToken       String?  @map("push_token")
   goalSettings    Json?    @map("goal_settings") // daily calorie / step goal settings (app lib/goals.ts)
+  timeZone        String?   @map("time_zone")        // IANA zone the daily limits use (lib/timezone.ts); not taken from each request
+  timeZoneSetAt   DateTime? @map("time_zone_set_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -341,4 +343,14 @@ model PetPat {
   @@unique([fromUser, toUser, dayKey])
   @@index([toUser, dayKey])
   @@map("pet_pats")
+}
+
+/// Who has already had the free first week, kept after account deletion so a
+/// re-registration doesn't get another one (lib/trial-claims.ts). Only a keyed
+/// one-way hash of the normalized email is stored, never the email itself.
+model TrialClaim {
+  emailHash   String   @id @map("email_hash")
+  firstSeenAt DateTime @default(now()) @map("first_seen_at") @db.Timestamptz(6)
+
+  @@map("trial_claims")
 }

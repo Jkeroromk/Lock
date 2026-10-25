@@ -43,8 +43,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(dailyMap);
   } catch (error: any) {
+    console.error('[GET /api/monthly]', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch monthly data' },
+      { error: 'Failed to fetch monthly data' },
       { status: 500 }
     );
   }

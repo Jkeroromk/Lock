@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { requestTimeZone } from '@/lib/ai-rate-limit';
-import { cleanName, isBuddyKind, localDayKey, petState, safeTimeZone, syncPetDays } from '@/lib/pet';
+import { trustedTimeZone } from '@/lib/timezone';
+import { cleanName, isBuddyKind, localDayKey, petState, syncPetDays } from '@/lib/pet';
 
 // POST /api/pet/setup — name the coach, pick and name the first buddy.
 // Body: { coachName, buddyKind, buddyName, steps?, proteinBase? }
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
-  const tz = safeTimeZone(requestTimeZone(request));
+  const tz = await trustedTimeZone(userId, request);
 
   const body = await request.json().catch(() => null);
   const coachName = cleanName(body?.coachName);
