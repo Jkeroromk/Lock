@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       }))
     );
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Export failed' }, { status: 500 });
+    console.error('[GET /api/meals/export]', error);
+    return NextResponse.json({ error: 'Export failed' }, { status: 500 });
   }
 }

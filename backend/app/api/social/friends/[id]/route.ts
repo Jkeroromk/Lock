@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { sendPushToUser } from '@/lib/notify';
+import { pushName } from '@/lib/sanitize';
 
 // PATCH /api/social/friends/[id] — accept or reject request
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
@@ -27,6 +28,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       prisma.user.findUnique({ where: { id: friendship.requesterId }, select: { name: true, username: true } }),
     ]);
     const acceptorDisplay = acceptor?.name || acceptor?.username || '对方';
+    const acceptorPush = pushName(acceptor, '对方');
     const requesterDisplay = requester?.name || requester?.username || '对方';
 
     await prisma.activityFeed.createMany({
@@ -36,7 +38,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       ],
     });
 
-    await sendPushToUser(friendship.requesterId, '好友请求已通过 🎉', `${acceptorDisplay} 接受了你的好友请求`, { type: 'FRIEND_ACCEPTED' })
+    await sendPushToUser(friendship.requesterId, '好友请求已通过 🎉', `${acceptorPush} 接受了你的好友请求`, { type: 'FRIEND_ACCEPTED' })
       .catch(() => {});
   }
 

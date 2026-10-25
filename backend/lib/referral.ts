@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { sendPushToUser } from '@/lib/notify';
 import { isInProTrial, INVITE_BONUS_AI_CALLS, INVITEE_BONUS_AI_CALLS, MAX_INVITE_REWARDS } from '@/lib/plans';
+import { pushName } from '@/lib/sanitize';
 
 export type RedeemError = 'INVALID_CODE' | 'SELF' | 'NOT_NEW' | 'ALREADY_REDEEMED';
 export type RedeemResult =
@@ -37,7 +38,7 @@ export async function redeemReferral(newUserId: string, inviterId: string): Prom
     data: { bonusAiCalls: { increment: INVITE_BONUS_AI_CALLS }, inviteRewards: { increment: 1 } },
   });
 
-  const who = newUser.name || newUser.username || '你的好友';
+  const who = pushName(newUser, '你的好友');
   if (paid.count > 0) {
     // Awaited: a serverless function may be frozen once the response is sent.
     await sendPushToUser(inviterId, `+${INVITE_BONUS_AI_CALLS} 次 AI 识别 🎁`, `${who} 通过你的邀请加入了 Lock`, { type: 'INVITE_REWARD' })

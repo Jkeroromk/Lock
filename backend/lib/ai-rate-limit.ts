@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { isAdmin } from '@/lib/admin';
-import { getDailyAiCallLimit, isPaidPlan, effectivePlan, FREE_WEEKLY_DIET_ANALYSES, DIET_ANALYSIS_WINDOW_MS } from '@/lib/plans';
+import {
+  isPaidPlan, effectivePlan, FREE_DAILY_AI_CALLS, PAID_DAILY_AI_CALLS, FREE_WEEKLY_DIET_ANALYSES, DIET_ANALYSIS_WINDOW_MS,
+} from '@/lib/plans';
 
 export interface RateLimitOk {
   ok: true;
@@ -18,11 +20,16 @@ export interface RateLimitDenied {
 }
 
 /**
- * Checks and takes one AI scan from the user's daily allowance (photo + label).
- * - FREE: getDailyAiCallLimit() per local day, then bonus scans
- * - PRO / MAX, accounts in their first week (Pro trial) and admins (ADMIN_USER_IDS): unlimited
+ * Checks and takes one AI scan from the user's daily allowance (photo + label,
+ * and AI plan generation).
+ * - FREE: FREE_DAILY_AI_CALLS per local day, then bonus scans
+ * - PRO / MAX and accounts in their first week (Pro trial): "unlimited", with a
+ *   fair-use ceiling of PAID_DAILY_AI_CALLS per local day
+ * - admins (ADMIN_USER_IDS): unlimited, nothing counted
  *
- * Takes the unit before the AI call so parallel requests can't slip past the limit.
+ * `timeZone` must come from trustedTimeZone() (the zone stored on the user), never
+ * straight from the request header. The unit is taken with a conditional update
+ * before the AI call, so parallel requests can't slip past the limit.
  */
 export async function checkAndIncrementAiQuota(
   userId: string,
@@ -46,62 +53,84 @@ export async function checkAndIncrementAiQuota(
   }
 
   const now = new Date();
-  // Paid plans and the first-week Pro trial are unlimited.
-  const limit = getDailyAiCallLimit(effectivePlan(user.plan as any, user.createdAt, now));
+  const paid = isPaidPlan(effectivePlan(user.plan as any, user.createdAt, now));
+  const limit = paid ? PAID_DAILY_AI_CALLS : FREE_DAILY_AI_CALLS;
 
   // New day in the user's own time zone → counter starts over at their midnight.
   const needsReset = !sameLocalDay(now, new Date(user.aiCallsResetAt), timeZone);
   const currentCalls = needsReset ? 0 : user.aiCallsToday;
-  const bonus = Math.max(0, user.bonusAiCalls ?? 0);
 
-  // Daily allowance used up → spend a bonus scan (earned from invites) if there is one.
-  if (limit !== -1 && currentCalls >= limit) {
-    if (bonus > 0) {
-      const spent = await prisma.user.updateMany({
-        where: { id: userId, bonusAiCalls: { gt: 0 } },
-        data: { bonusAiCalls: { decrement: 1 } },
-      });
-      if (spent.count > 0) {
-        return {
-          ok: true,
-          remaining: bonus - 1,
-          currentCalls,
-          needsReset,
-          refund: async () => {
-            try {
-              await prisma.user.update({ where: { id: userId }, data: { bonusAiCalls: { increment: 1 } } });
-            } catch (error) {
-              console.error('[refundBonusAiCall]', error);
-            }
-          },
-        };
-      }
-    }
+  // Take one unit of today's allowance. Each update only succeeds while the row
+  // still allows it, so ten requests at once can't all read "2 used" and pass.
+  const increment = () =>
+    prisma.user.updateMany({
+      where: { id: userId, aiCallsToday: { lt: limit } },
+      data: { aiCallsToday: { increment: 1 } },
+    });
+  let taken = needsReset
+    ? await prisma.user.updateMany({
+        // Range, not equality: rows created with the DB default now() keep
+        // microseconds, and the Date we read back is cut to milliseconds.
+        where: { id: userId, aiCallsResetAt: { gte: user.aiCallsResetAt, lt: new Date(user.aiCallsResetAt.getTime() + 1) } },
+        data: { aiCallsToday: 1, aiCallsResetAt: now },
+      })
+    : await increment();
+  // Another request reset the day first: count against the fresh counter instead.
+  if (needsReset && taken.count === 0) taken = await increment();
+
+  if (taken.count > 0) {
+    const bonus = Math.max(0, user.bonusAiCalls ?? 0);
+    const remaining = paid ? -1 : Math.max(0, limit - (currentCalls + 1)) + bonus;
+    return { ok: true, remaining, currentCalls, needsReset, refund: () => refundAiQuota(userId) };
+  }
+
+  if (paid) {
     return {
       ok: false,
       response: NextResponse.json(
         {
-          error: 'AI_LIMIT_REACHED',
-          message: `Free plan: ${limit} AI scans per day`,
-          callsUsed: currentCalls,
+          error: 'AI_DAILY_CAP',
+          message: `Daily AI limit reached (${limit} per day). It resets at midnight.`,
           limit,
         },
-        { status: 429 }
+        { status: 429 },
       ),
     };
   }
 
-  // Take the unit before calling the AI so parallel requests can't slip past the limit.
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      aiCallsToday: needsReset ? 1 : { increment: 1 },
-      aiCallsResetAt: needsReset ? now : undefined,
-    },
+  // Free daily allowance used up → spend a bonus scan (earned from invites) if there is one.
+  const spent = await prisma.user.updateMany({
+    where: { id: userId, bonusAiCalls: { gt: 0 } },
+    data: { bonusAiCalls: { decrement: 1 } },
   });
+  if (spent.count > 0) {
+    return {
+      ok: true,
+      remaining: Math.max(0, (user.bonusAiCalls ?? 0) - 1),
+      currentCalls,
+      needsReset,
+      refund: async () => {
+        try {
+          await prisma.user.update({ where: { id: userId }, data: { bonusAiCalls: { increment: 1 } } });
+        } catch (error) {
+          console.error('[refundBonusAiCall]', error);
+        }
+      },
+    };
+  }
 
-  const remaining = limit === -1 ? -1 : limit - (currentCalls + 1) + bonus;
-  return { ok: true, remaining, currentCalls, needsReset, refund: () => refundAiQuota(userId) };
+  return {
+    ok: false,
+    response: NextResponse.json(
+      {
+        error: 'AI_LIMIT_REACHED',
+        message: `Free plan: ${limit} AI scans per day`,
+        callsUsed: Math.max(currentCalls, limit),
+        limit,
+      },
+      { status: 429 }
+    ),
+  };
 }
 
 /**
@@ -119,7 +148,11 @@ export async function refundAiQuota(userId: string): Promise<void> {
   }
 }
 
-/** The user's IANA time zone, sent by the app on every request. */
+/**
+ * The IANA time zone the app sends on every request. Fine for display and for
+ * bucketing the user's own data; for anything that limits or rewards, use
+ * trustedTimeZone() from lib/timezone.ts instead.
+ */
 export function requestTimeZone(request: Request): string | null {
   return request.headers.get('x-timezone');
 }

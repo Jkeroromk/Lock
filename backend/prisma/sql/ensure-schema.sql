@@ -197,3 +197,30 @@ ALTER TABLE "pet_profiles" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "pet_days" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "pet_collection" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "pet_pats" ENABLE ROW LEVEL SECURITY;
+
+-- 2026-10-25: security hardening (claude/security-audit.md)
+-- Daily limits use a time zone kept on the server, not the x-timezone header of
+-- each request (switching the header used to reset the free scan count).
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "time_zone" TEXT;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "time_zone_set_at" TIMESTAMPTZ(6);
+
+-- Free first week, once per email: survives account deletion, stores only a
+-- keyed hash (lib/trial-claims.ts).
+CREATE TABLE IF NOT EXISTS "trial_claims" (
+    "email_hash"    TEXT           NOT NULL,
+    "first_seen_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "trial_claims_pkey" PRIMARY KEY ("email_hash")
+);
+ALTER TABLE "trial_claims" ENABLE ROW LEVEL SECURITY;
+
+-- The automatic-RLS event trigger function doesn't need to be callable over
+-- the REST API (event triggers run regardless of EXECUTE).
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.proname = 'rls_auto_enable'
+  ) THEN
+    REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+  END IF;
+END $$;

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { requestTimeZone } from '@/lib/ai-rate-limit';
-import { cleanName, petState, safeTimeZone } from '@/lib/pet';
+import { trustedTimeZone } from '@/lib/timezone';
+import { cleanName, petState } from '@/lib/pet';
 
 // PUT /api/pet/names — rename the coach and/or the buddy. Body: { coachName?, buddyName? }
 export async function PUT(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function PUT(request: NextRequest) {
   try {
     const updated = await prisma.petProfile.updateMany({ where: { userId }, data });
     if (updated.count === 0) return NextResponse.json({ error: 'No pet' }, { status: 404 });
-    return NextResponse.json(await petState(userId, safeTimeZone(requestTimeZone(request))));
+    return NextResponse.json(await petState(userId, await trustedTimeZone(userId, request)));
   } catch (error) {
     console.error('[PUT /api/pet/names]', error);
     return NextResponse.json({ error: 'Failed to rename' }, { status: 500 });

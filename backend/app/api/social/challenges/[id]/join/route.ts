@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { sendPushToUser } from '@/lib/notify';
+import { isBlockedEitherWay } from '@/lib/blocks';
+import { pushName, pushText } from '@/lib/sanitize';
 
 // POST /api/social/challenges/[id]/join
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -11,7 +13,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   try {
     const challenge = await prisma.challenge.findUnique({ where: { id: params.id } });
-    if (!challenge || challenge.status !== 'ACTIVE') {
+    // A block either way looks the same as a missing challenge.
+    if (!challenge || challenge.status !== 'ACTIVE' || (challenge.creatorId !== userId && (await isBlockedEitherWay(userId, challenge.creatorId)))) {
       return NextResponse.json({ error: 'Challenge not found or ended' }, { status: 404 });
     }
 
@@ -36,8 +39,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         where: { id: userId },
         select: { name: true, username: true },
       });
-      const displayName = joinerName?.name || joinerName?.username || '有人';
-      await sendPushToUser(challenge.creatorId, '有人加入了你的挑战 🏆', `${displayName} 加入了「${challenge.title}」`, { type: 'CHALLENGE_JOINED', challengeId: params.id })
+      const displayName = pushName(joinerName, '有人');
+      const title = pushText(challenge.title, 24) ?? '挑战';
+      await sendPushToUser(challenge.creatorId, '有人加入了你的挑战 🏆', `${displayName} 加入了「${title}」`, { type: 'CHALLENGE_JOINED', challengeId: params.id })
         .catch(() => {});
     }
 

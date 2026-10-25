@@ -7,6 +7,12 @@ export const FREE_DAILY_AI_CALLS = 3;
  * App Store involved (2026-10-20). Keep in sync with lib/plans.ts in the app.
  */
 export const PRO_TRIAL_DAYS = 7;
+/**
+ * Fair-use ceiling on "unlimited" AI (Pro, the first week, MAX): photo/label
+ * scans and AI plan generations per local day. Far above real use (a heavy
+ * logger does ~15), but it caps what one scripted account can cost us.
+ */
+export const PAID_DAILY_AI_CALLS = 100;
 /** Extra scans an inviter earns when a new user joins with their invite code. */
 export const INVITE_BONUS_AI_CALLS = 5;
 /** Extra scans the new user gets for joining with a friend's invite code. */

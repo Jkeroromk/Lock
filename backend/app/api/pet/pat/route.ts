@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
-import { requestTimeZone } from '@/lib/ai-rate-limit';
+import { trustedTimeZone } from '@/lib/timezone';
 import { isBlockedEitherWay } from '@/lib/blocks';
 import { sendPushToUser } from '@/lib/notify';
-import { MAX_PATS_RECEIVED, XP, localDayKey, safeTimeZone } from '@/lib/pet';
+import { MAX_PATS_RECEIVED, XP, localDayKey } from '@/lib/pet';
+import { pushName, pushText } from '@/lib/sanitize';
 
 // POST /api/pet/pat — pat a friend's buddy (+2), once per friend per day.
 // Body: { friendId }
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticateRequest();
   if (auth instanceof NextResponse) return auth;
   const { userId } = auth;
-  const tz = safeTimeZone(requestTimeZone(request));
+  const tz = await trustedTimeZone(userId, request);
 
   const body = await request.json().catch(() => null);
   const friendId = typeof body?.friendId === 'string' ? body.friendId : null;
@@ -51,10 +52,17 @@ export async function POST(request: NextRequest) {
     if (created.count === 0) {
       return NextResponse.json({ error: 'Already patted today', code: 'ALREADY' }, { status: 409 });
     }
+    // Several friends patting at the same moment can all pass the count above;
+    // whoever lands past the cap takes their pat back.
+    if ((await prisma.petPat.count({ where: { toUser: friendId, dayKey } })) > MAX_PATS_RECEIVED) {
+      await prisma.petPat.deleteMany({ where: { fromUser: userId, toUser: friendId, dayKey } });
+      return NextResponse.json({ error: 'Too many pats today', code: 'FULL' }, { status: 429 });
+    }
 
     const me = await prisma.user.findUnique({ where: { id: userId }, select: { name: true, username: true } });
-    const who = me?.name || me?.username || '好友';
-    await sendPushToUser(friendId, `${pet.buddyName} 被摸了摸 🐾`, `${who} 摸了摸你的 ${pet.buddyName}，成长值 +${XP.pat}`, {
+    const who = pushName(me, '好友');
+    const buddy = pushText(pet.buddyName, 12) ?? '伙伴';
+    await sendPushToUser(friendId, `${buddy} 被摸了摸 🐾`, `${who} 摸了摸你的 ${buddy}，成长值 +${XP.pat}`, {
       type: 'PET_PAT',
     }).catch(() => {});
 

@@ -5,6 +5,7 @@ import { isBlockedEitherWay } from '@/lib/blocks';
 import { findUserByHandle } from '@/lib/find-user';
 import { getMaxFriends } from '@/lib/plans';
 import { sendPushToUser } from '@/lib/notify';
+import { pushName } from '@/lib/sanitize';
 
 // GET /api/social/friends — list accepted friends
 export async function GET(request: NextRequest) {
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
       where: { id: userId },
       select: { name: true, username: true },
     }));
-    const displayName = senderName?.name || senderName?.username || '有人';
+    const displayName = pushName(senderName, '有人');
     await sendPushToUser(target.id, '新好友请求 👋', `${displayName} 想添加你为好友`, { type: 'FRIEND_REQUEST' })
       .catch(() => {});
 
