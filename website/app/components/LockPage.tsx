@@ -639,7 +639,7 @@ function Social({ t }: { t: T }) {
               {rows.map((r, i) => (
                 <li key={r.n} className={r.me ? 'me' : ''}>
                   <span className="rk mono">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="av av-pet" aria-hidden="true"><img src={`/pet/${r.pet}.webp`} alt="" width={40} height={40} loading="lazy" /></span>
+                  <span className="av av-pet" aria-hidden="true"><img src={`/pet/avatar/${r.pet}.webp`} alt="" width={44} height={44} loading="lazy" /></span>
                   <span className="nm">{r.n}<span className="dy mono"><b className="tnum">{r.d}</b> {s.days}</span></span>
                   {r.me ? <span /> : <span className={`pat mono ${r.patted ? 'done' : ''}`}>{r.patted ? s.patted : s.pat}</span>}
                 </li>

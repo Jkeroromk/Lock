@@ -560,7 +560,7 @@
 /* social: buddies on the leaderboard */
 .board li { grid-template-columns: 30px 44px 1fr auto; }
 .board .av-pet { width: 44px; height: 44px; padding: 0; overflow: hidden; background: #FFF6D6; }
-.board .av-pet img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.25) translateY(4%); }
+.board .av-pet img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 .board .nm { display: grid; gap: 1px; }
 .board .nm .dy { font-weight: 500; }
 .pat { font-size: 11px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 10px; background: var(--card); }
