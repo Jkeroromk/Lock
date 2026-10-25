@@ -11,7 +11,7 @@ const sections: LegalSection[] = [
     title: 'Service Description',
     content: (
       <>
-        <p>Lock provides AI food recognition and calorie tracking, workout planning and logging, weight tracking, health data monitoring (steps, active energy), social features (friends, leaderboards, Moments, challenges) and personalised diet and training analysis.</p>
+        <p>Lock provides AI food recognition and calorie tracking, workout planning and logging, weight tracking, health data monitoring (steps, active energy), social features (friends, leaderboards, challenges, buddies), an Apple Watch app and Live Activities for workouts (Lock 1.1 and later) and personalised diet and training analysis.</p>
         <p>Content provided by Lock is for informational purposes only and does not constitute medical advice.</p>
       </>
     ),
@@ -47,7 +47,7 @@ const sections: LegalSection[] = [
     title: 'User Content & Zero Tolerance',
     content: (
       <>
-        <p>You are responsible for the Moments, comments, challenges and profile information you post. Lock has <B>zero tolerance for objectionable content and abusive users</B>. You agree not to post or send:</p>
+        <p>You are responsible for the profile information, buddy and coach names, and challenges you create. Lock has <B>zero tolerance for objectionable content and abusive users</B>. You agree not to post or send:</p>
         <List items={[
           'Sexual, nude or sexually suggestive content',
           'Harassment, bullying, threats or hate speech',
@@ -56,7 +56,7 @@ const sections: LegalSection[] = [
           "Content that violates others' privacy or intellectual property",
           'Anything illegal',
         ]} />
-        <p>You can report content from the &ldquo;···&rdquo; menu on any Moment, and block users from Moments, comments, the leaderboard and friend requests. We review reports within 24 hours, remove violating content, and warn, restrict or permanently ban users who break these rules.</p>
+        <p>You can block a user from the friends leaderboard (and unblock them in Settings), and report abuse to <Mail />. We review reports within 24 hours, remove violating content, and warn, restrict or permanently ban users who break these rules.</p>
       </>
     ),
   },
@@ -116,7 +116,7 @@ export default function TermsOfService() {
   return (
     <LegalPage
       title="Terms of Service"
-      lastUpdated="October 18, 2026"
+      lastUpdated="October 25, 2026"
       intro={<p>By downloading, installing or using Lock, you agree to be bound by these Terms of Service. If you do not agree, do not use the app.</p>}
       sections={sections}
     />
