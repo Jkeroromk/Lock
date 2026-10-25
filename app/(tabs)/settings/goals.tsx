@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
@@ -9,28 +8,18 @@ import GoalsModal from '@/components/settings/GoalsModal';
 
 /** Daily targets and body tracking. */
 export default function GoalsScreen() {
-  const { user, setUser, dailyCalorieGoal, dailyStepGoal, setDailyCalorieGoal, setDailyStepGoal } = useStore();
+  const { dailyCalorieGoal, dailyStepGoal, goalSettings } = useStore();
   const { t } = useTranslation();
   const router = useRouter();
   const [showGoalsModal, setShowGoalsModal] = useState(false);
-
-  const handleSaveGoals = (
-    goals: { dailyCalorieGoal: number; dailyStepGoal: number },
-    body: Partial<{ height?: number; weight?: number; age?: number; gender?: string; goal?: string; exerciseFrequency?: string }>,
-  ) => {
-    setDailyCalorieGoal(goals.dailyCalorieGoal);
-    setDailyStepGoal(goals.dailyStepGoal);
-    if (Object.keys(body).length > 0) setUser({ ...user, ...body } as any);
-    setShowGoalsModal(false);
-    Alert.alert(t('settings.success'), t('settings.goalsUpdated'));
-  };
+  const mode = goalSettings?.calorieMode === 'custom' ? t('goals.custom') : t('goals.recommended');
 
   return (
     <SettingsPage title={t('settings.groupGoals' as any)}>
       <SettingItem
         icon="flag-outline"
         title={t('settings.goals')}
-        description={t('settings.dailyGoalsSummary', { calories: String(dailyCalorieGoal), steps: String(dailyStepGoal) })}
+        description={`${t('settings.dailyGoalsSummary', { calories: dailyCalorieGoal.toLocaleString(), steps: dailyStepGoal.toLocaleString() })} · ${mode}`}
         onPress={() => setShowGoalsModal(true)}
       />
       <SettingItem
@@ -39,14 +28,7 @@ export default function GoalsScreen() {
         description={t('settings.weightTrackerDescription' as any)}
         onPress={() => router.push('/(tabs)/settings/weight-tracker')}
       />
-      <GoalsModal
-        visible={showGoalsModal}
-        user={user}
-        dailyCalorieGoal={dailyCalorieGoal}
-        dailyStepGoal={dailyStepGoal}
-        onSave={handleSaveGoals}
-        onCancel={() => setShowGoalsModal(false)}
-      />
+      <GoalsModal visible={showGoalsModal} onClose={() => setShowGoalsModal(false)} />
     </SettingsPage>
   );
 }

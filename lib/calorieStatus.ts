@@ -1,4 +1,5 @@
 import { useStore, localDateKey } from '@/store/useStore';
+import { useCalorieGoal } from '@/hooks/useDailyGoals';
 
 /**
  * How today's intake compares with the calorie goal.
@@ -30,7 +31,7 @@ export function todaysCalories(): number {
 export function useCalorieStatus(extra = 0) {
   const todayCalories = useStore((s) => s.todayCalories);
   const todayDate = useStore((s) => s.todayDate);
-  const goal = useStore((s) => s.dailyCalorieGoal) || 2000;
+  const { goal } = useCalorieGoal();
   const userGoal = useStore((s) => s.user?.goal);
   const enabled = useStore((s) => s.calorieWarnings);
   const base = todayDate && todayDate !== localDateKey() ? 0 : Math.round(todayCalories || 0);

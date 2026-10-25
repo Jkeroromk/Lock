@@ -74,6 +74,7 @@ export default function Index() {
           bonusAiCalls: profile.bonusAiCalls ?? 0,
           isAdmin: profile.isAdmin === true,
         } as any);
+        if (completedOnboarding) useStore.getState().applyServerGoals(profile.goalSettings);
       })
       .catch(async () => {
         // Offline / server error: fall back to the local onboarding flag.

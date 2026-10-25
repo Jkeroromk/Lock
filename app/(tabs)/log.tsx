@@ -24,6 +24,7 @@ import ResultCard, { FoodResult } from '@/components/log/ResultCard';
 import ImagePickerButtons from '@/components/log/ImagePickerButtons';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { calorieGoalNow } from '@/hooks/useDailyGoals';
 
 type LogMode = 'photo' | 'label' | 'barcode';
 
@@ -168,8 +169,8 @@ export default function LogScreen() {
       clearImage(); setResult(null); refreshToday();
       // Back to Today so the ring fills up; a toast instead of an OK-only alert.
       router.navigate('/(tabs)/today');
-      const { calorieWarnings, dailyCalorieGoal, user: me } = useStore.getState();
-      const goal = dailyCalorieGoal || 2000;
+      const { calorieWarnings, user: me } = useStore.getState();
+      const goal = calorieGoalNow();
       const after = before + Math.round(saved.calories);
       const overGoal = calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
       const water = liquidMl > 0 ? (t('water.autoAdded' as any) as string).replace('{ml}', String(liquidMl)) : '';

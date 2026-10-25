@@ -8,8 +8,8 @@ import {
 
 /** Today's steps (when Health is connected) and the usual protein target, for the server to score the day. */
 export async function petSyncInput(): Promise<PetSyncInput> {
-  const goal = useStore.getState().dailyCalorieGoal || 2000;
-  const input: PetSyncInput = { proteinBase: macroTargets(goal).protein };
+  const { dailyCalorieGoal, user } = useStore.getState();
+  const input: PetSyncInput = { proteinBase: macroTargets(dailyCalorieGoal || 2000, user).protein };
   try {
     if (await isHealthConnected()) {
       const { steps } = await getHealthData();
