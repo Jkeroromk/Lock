@@ -562,6 +562,7 @@ const zhTW = {
     idle: '在 iPhone 上開始訓練',
     idleHint: '每一組會出現在這裡，點一下就記好。',
     saved: '訓練已儲存',
+  },
   // Daily goals editor (components/settings/GoalsModal.tsx).
   goals: {
     calories: '每日熱量',

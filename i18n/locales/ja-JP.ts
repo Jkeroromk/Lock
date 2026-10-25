@@ -568,6 +568,7 @@ const jaJP = {
     idle: 'iPhone でトレーニングを開始',
     idleHint: 'セットがここに表示されます。タップで記録。',
     saved: 'トレーニングを保存しました',
+  },
   // Daily goals editor (components/settings/GoalsModal.tsx).
   goals: {
     calories: '1日の摂取カロリー',

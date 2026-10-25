@@ -630,6 +630,7 @@ const enUS = {
     idle: 'Start a workout on your iPhone',
     idleHint: 'Your sets show up here. Tap to log them.',
     saved: 'Workout saved',
+  },
   // Daily goals editor (components/settings/GoalsModal.tsx).
   goals: {
     calories: 'Daily calories',

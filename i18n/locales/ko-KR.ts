@@ -577,6 +577,7 @@ const koKR = {
     idle: 'iPhone에서 운동을 시작하세요',
     idleHint: '세트가 여기에 표시돼요. 탭하면 기록돼요.',
     saved: '운동이 저장되었어요',
+  },
   // Daily goals editor (components/settings/GoalsModal.tsx).
   goals: {
     calories: '하루 섭취 칼로리',
