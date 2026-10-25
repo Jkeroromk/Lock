@@ -46,6 +46,8 @@ ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "referred_by_id" TEXT;
 -- Friend ID: 8 digits for adding friends, separate from the invite code
 -- (which only pays the sign-up reward). Existing accounts get one here.
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "friend_code" TEXT;
+-- Daily goal settings (calorie mode, pace, training-day bonus, step mode), synced from the app.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "goal_settings" JSONB;
 CREATE UNIQUE INDEX IF NOT EXISTS "users_friend_code_key" ON "users"("friend_code");
 DO $$
 DECLARE r RECORD; c TEXT;

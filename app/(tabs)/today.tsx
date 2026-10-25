@@ -19,6 +19,8 @@ import ConnectHealthCard from '@/components/today/ConnectHealthCard';
 import TrainingEntryCard from '@/components/today/TrainingEntryCard';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useStepGoal } from '@/hooks/useDailyGoals';
+import { useAdaptiveStepGoal } from '@/hooks/useAdaptiveStepGoal';
 
 export default function TodayScreen() {
   const tabInset = useTabBarInset();
@@ -127,7 +129,8 @@ export default function TodayScreen() {
     }),
     { protein: 0, carbs: 0, fat: 0 }
   );
-  const STEP_GOAL = 10000;
+  const STEP_GOAL = useStepGoal();
+  useAdaptiveStepGoal();
   const ENERGY_GOAL = 500;
 
   return (

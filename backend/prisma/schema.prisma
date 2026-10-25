@@ -39,6 +39,7 @@ model User {
   inviteRewards   Int      @default(0) @map("invite_rewards")  // how many invites have paid out (capped)
   referredById    String?  @map("referred_by_id")             // who invited this user; set once
   pushToken       String?  @map("push_token")
+  goalSettings    Json?    @map("goal_settings") // daily calorie / step goal settings (app lib/goals.ts)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 

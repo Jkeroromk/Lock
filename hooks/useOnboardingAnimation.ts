@@ -14,6 +14,7 @@ import {
 } from 'react-native-reanimated';
 import { useStore, Gender, Goal, ExerciseFrequency, ExpectedTimeframe } from '@/store/useStore';
 import { updateProfile } from '@/services/api';
+import { defaultSettings } from '@/lib/goals';
 
 interface OnboardingData {
   height: number;
@@ -102,7 +103,13 @@ export function useOnboardingAnimation({
       await AsyncStorage.setItem(`lock_onboarding_done_${userId}`, 'true').catch(() => {});
     }
 
+    // Work out the daily goals from what they just told us (calories from
+    // height / weight / age / activity / goal, steps from activity).
+    const goalSettings = defaultSettings(onboardingData);
+    useStore.getState().setGoalSettings(goalSettings, { sync: false });
+
     const payload = {
+      goalSettings: useStore.getState().goalSettings ?? goalSettings,
       name: user?.name ?? undefined,
       hasCompletedOnboarding: true,
       height: onboardingData.height,

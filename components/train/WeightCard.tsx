@@ -9,6 +9,7 @@ import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { fetchWeightRecords, logWeight, type WeightRecord } from '@/services/weight';
 import { fmtWeight, kgTo, toKg, useWeightUnit } from '@/lib/units';
+import { useStore } from '@/store/useStore';
 
 const RANGES = [30, 90] as const;
 const CHART_H = 110;
@@ -78,6 +79,7 @@ export default function WeightCard({ refreshKey = 0 }: { refreshKey?: number }) 
     setSaving(true);
     try {
       await logWeight(Math.round(kg * 100) / 100);
+      useStore.getState().noteWeight(Math.round(kg * 100) / 100);
       setLogging(false);
       await load();
     } catch {
