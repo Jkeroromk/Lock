@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { sendPushToUser } from '@/lib/notify';
-import { isInTrialWeek, INVITE_BONUS_AI_CALLS, INVITEE_BONUS_AI_CALLS, MAX_INVITE_REWARDS } from '@/lib/plans';
+import { isInProTrial, INVITE_BONUS_AI_CALLS, INVITEE_BONUS_AI_CALLS, MAX_INVITE_REWARDS } from '@/lib/plans';
 
 export type RedeemError = 'INVALID_CODE' | 'SELF' | 'NOT_NEW' | 'ALREADY_REDEEMED';
 export type RedeemResult =
@@ -23,7 +23,7 @@ export async function redeemReferral(newUserId: string, inviterId: string): Prom
   ]);
   if (!newUser || !inviter) return { ok: false, error: 'INVALID_CODE' };
   if (newUser.referredById) return { ok: false, error: 'ALREADY_REDEEMED' };
-  if (!isInTrialWeek(newUser.createdAt)) return { ok: false, error: 'NOT_NEW' };
+  if (!isInProTrial(newUser.createdAt)) return { ok: false, error: 'NOT_NEW' };
 
   // Claim the referral first; a second request from the same account does nothing.
   const claimed = await prisma.user.updateMany({
