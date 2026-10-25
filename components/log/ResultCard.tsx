@@ -5,6 +5,7 @@ import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useStore } from '@/store/useStore';
 import { useCalorieStatus } from '@/lib/calorieStatus';
+import { useCalorieGoal } from '@/hooks/useDailyGoals';
 import { FONTS } from '@/constants/fonts';
 import { Bar, Button, Card, IconButton, Label, RADIUS, STROKE } from '@/components/ui/bxc';
 import { macroTargets } from '@/components/today/CaloriesCard';
@@ -36,10 +37,11 @@ const MACROS = ['protein', 'carbs', 'fat'] as const;
 export default function ResultCard({ result, isEditing, editedData, saving, onEdit, onCancelEdit, onSaveEdit, onChange, onSaveMeal }: Props) {
   const c = useTheme();
   const { t } = useTranslation();
-  const { dailyCalorieGoal } = useStore();
+  const user = useStore((st) => st.user);
+  const { goal: calorieGoal } = useCalorieGoal();
   const projected = useCalorieStatus(result.calories);
   const projectedWarn = projected.level === 'over' || projected.level === 'way';
-  const targets = macroTargets(dailyCalorieGoal || 2000);
+  const targets = macroTargets(calorieGoal, user);
 
   const inputStyle = {
     color: c.textPrimary, borderWidth: STROKE.control, borderColor: c.textPrimary, borderRadius: RADIUS.control,

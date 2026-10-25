@@ -9,6 +9,7 @@ import { FONTS } from '@/constants/fonts';
 import { Card, Ring, Bar, Label } from '@/components/ui/bxc';
 import { Ionicons } from '@expo/vector-icons';
 import { calorieLevel } from '@/lib/calorieStatus';
+import { useCalorieGoal } from '@/hooks/useDailyGoals';
 
 interface CaloriesCardProps {
   todayCalories: number;
@@ -44,13 +45,13 @@ function MacroRow({ label, value, target, badge }: { label: string; value: numbe
 export default function CaloriesCard({ todayCalories, protein, carbs, fat }: CaloriesCardProps) {
   const { t } = useTranslation();
   const c = useTheme();
-  const { dailyCalorieGoal, calorieWarnings, user } = useStore();
-
-  const goal = dailyCalorieGoal || 2000;
+  const { calorieWarnings, user } = useStore();
+  // Base goal plus the training-day bonus (when that's on in the goal settings).
+  const { goal, bonus } = useCalorieGoal();
   const eaten = Math.round(todayCalories);
   const over = eaten > goal;
   const left = Math.abs(goal - eaten);
-  const targets = macroTargets(goal);
+  const targets = macroTargets(goal, user);
   const protein_ = useProteinTarget();
   const isLight = c.backgroundPrimary !== c.ink;
   const level = calorieWarnings ? calorieLevel(eaten, goal, user?.goal) : 'ok';
@@ -84,9 +85,18 @@ export default function CaloriesCard({ todayCalories, protein, carbs, fat }: Cal
           />
           <MacroRow label={t('log.carbs')} value={carbs} target={targets.carbs} />
           <MacroRow label={t('log.fat')} value={fat} target={targets.fat} />
-          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>
-            {t('today.eatenOfGoal', { eaten: eaten.toLocaleString(), goal: goal.toLocaleString() })}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>
+              {t('today.eatenOfGoal', { eaten: eaten.toLocaleString(), goal: goal.toLocaleString() })}
+            </Text>
+            {bonus > 0 ? (
+              <View style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 6, backgroundColor: c.accent, transform: [{ rotate: '-3deg' }] }}>
+                <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 9, color: c.onAccent }}>
+                  {t('goals.trainingBadge', { n: String(bonus) })}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
       </View>
 

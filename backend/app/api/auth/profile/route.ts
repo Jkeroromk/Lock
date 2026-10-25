@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isAdmin } from '@/lib/admin';
@@ -48,6 +49,27 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/** Keeps only the known goal-setting fields, with sane ranges. */
+function cleanGoalSettings(input: unknown): Prisma.InputJsonValue | typeof Prisma.DbNull {
+  if (!input || typeof input !== 'object') return Prisma.DbNull;
+  const s = input as Record<string, unknown>;
+  const n = (v: unknown, min: number, max: number, fallback: number) => {
+    const x = typeof v === 'number' ? v : typeof v === 'string' ? parseFloat(v) : NaN;
+    return Number.isFinite(x) ? Math.min(max, Math.max(min, x)) : fallback;
+  };
+  const updatedAt = typeof s.updatedAt === 'string' && !isNaN(Date.parse(s.updatedAt)) ? s.updatedAt : new Date().toISOString();
+  return {
+    v: 1,
+    calorieMode: s.calorieMode === 'custom' ? 'custom' : 'auto',
+    calories: Math.round(n(s.calories, 0, 6000, 0)),
+    pace: Math.round(n(s.pace, -1, 1, 0) * 100) / 100,
+    trainingBonus: s.trainingBonus !== false,
+    stepMode: s.stepMode === 'adaptive' ? 'adaptive' : 'fixed',
+    steps: Math.round(n(s.steps, 1000, 50000, 8000)),
+    updatedAt,
+  };
+}
+
 // PUT /api/auth/profile — update profile fields
 export async function PUT(request: NextRequest) {
   const authResult = await authenticateRequest();
@@ -59,7 +81,7 @@ export async function PUT(request: NextRequest) {
     const {
       name, email, username, bio, avatarEmoji, avatarImage, showGender,
       height, age, weight, gender, goal,
-      exerciseFrequency, expectedTimeframe, hasCompletedOnboarding,
+      exerciseFrequency, expectedTimeframe, hasCompletedOnboarding, goalSettings,
     } = body;
 
     const data = {
@@ -78,6 +100,7 @@ export async function PUT(request: NextRequest) {
       ...(exerciseFrequency !== undefined && { exerciseFrequency }),
       ...(expectedTimeframe !== undefined && { expectedTimeframe }),
       ...(hasCompletedOnboarding !== undefined && { hasCompletedOnboarding }),
+      ...(goalSettings !== undefined && { goalSettings: cleanGoalSettings(goalSettings) }),
     };
 
     const user = await prisma.user.upsert({

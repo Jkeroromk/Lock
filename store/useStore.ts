@@ -3,7 +3,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { deviceLanguage } from '@/lib/deviceLanguage';
-import { fetchTodayData, fetchWeeklyData } from '@/services/api';
+import { fetchTodayData, fetchWeeklyData, updateProfile } from '@/services/api';
+import { baseCalories, defaultSettings, normalizeSettings, type GoalSettings } from '@/lib/goals';
 
 export type Gender = 'male' | 'female' | 'other';
 export type Goal = 'lose_weight' | 'lose_fat' | 'gain_muscle';
@@ -74,8 +75,21 @@ interface StoreState {
   language: LanguageCode;
   hasSelectedLanguage?: boolean;
   themeMode: ThemeMode;
+  /** Base daily calorie goal (no training-day bonus), derived from goalSettings. */
   dailyCalorieGoal: number;
+  /** Daily step goal in effect (fixed, or the adaptive one), derived from goalSettings. */
   dailyStepGoal: number;
+  /** How the goals are worked out; synced to the server. Null until set up. */
+  goalSettings: GoalSettings | null;
+  /** The adaptive step goal and the week (Monday's date) it was worked out for. */
+  adaptiveSteps: { goal: number; week: string } | null;
+  /** Saves new settings, recomputes the goals and uploads them (unless sync is false). */
+  setGoalSettings: (settings: GoalSettings, opts?: { sync?: boolean }) => void;
+  setAdaptiveSteps: (value: { goal: number; week: string } | null) => void;
+  /** A new body weight was logged: keep the profile (and auto calories) in step. */
+  noteWeight: (kg: number) => void;
+  /** Takes the server's copy when it's newer; sets things up for accounts without one. */
+  applyServerGoals: (server: unknown) => void;
   /** Display unit for body and lifting weights; data is always stored in kg. */
   weightUnit: WeightUnit;
   setWeightUnit: (unit: WeightUnit) => void;
@@ -96,6 +110,23 @@ interface StoreState {
   refreshToday: () => Promise<void>;
   fetchWeeklyData: () => Promise<void>;
   clearSession: () => void;
+}
+
+/** Goals worked out from the settings (and profile, for auto calories). */
+function derivedGoals(
+  user: Partial<User> | null,
+  settings: GoalSettings,
+  adaptive: { goal: number } | null,
+): { dailyCalorieGoal: number; dailyStepGoal: number } {
+  return {
+    dailyCalorieGoal: baseCalories(user ?? {}, settings),
+    dailyStepGoal: settings.stepMode === 'adaptive' && adaptive?.goal ? adaptive.goal : settings.steps,
+  };
+}
+
+/** Uploads goal settings; a failure is fine, the next launch tries again. */
+function uploadGoals(settings: GoalSettings) {
+  updateProfile({ goalSettings: settings } as any).catch(() => {});
 }
 
 /** Local calendar day, e.g. "2026-10-11". */
@@ -122,7 +153,51 @@ export const useStore = create<StoreState>()(
       setWeightUnit: (unit) => set({ weightUnit: unit }),
       pendingInviteCode: null,
       setPendingInviteCode: (code) => set({ pendingInviteCode: code }),
-      setUser: (user) => set({ user }),
+      // Calories in auto mode follow the profile (weight, age, activity…).
+      setUser: (user) => set((state) => ({
+        user,
+        ...(state.goalSettings && user ? derivedGoals(user, state.goalSettings, state.adaptiveSteps) : {}),
+      })),
+      goalSettings: null,
+      adaptiveSteps: null,
+      setGoalSettings: (settings, opts) => {
+        const state = useStore.getState();
+        const next = { ...settings, updatedAt: new Date().toISOString() };
+        set({ goalSettings: next, ...derivedGoals(state.user, next, state.adaptiveSteps) });
+        if (opts?.sync !== false) uploadGoals(next);
+      },
+      noteWeight: (kg) => {
+        const me = useStore.getState().user;
+        if (me) useStore.getState().setUser({ ...me, weight: kg });
+      },
+      setAdaptiveSteps: (value) => set((state) => ({
+        adaptiveSteps: value,
+        ...(state.goalSettings ? derivedGoals(state.user, state.goalSettings, value) : {}),
+      })),
+      applyServerGoals: (server) => {
+        const state = useStore.getState();
+        const remote = normalizeSettings(server);
+        const local = state.goalSettings;
+        if (remote && (!local || remote.updatedAt > local.updatedAt)) {
+          set({ goalSettings: remote, ...derivedGoals(state.user, remote, state.adaptiveSteps) });
+          return;
+        }
+        if (local) {
+          // This device has newer settings than the server: send them up.
+          if (!remote || local.updatedAt > remote.updatedAt) uploadGoals(local);
+          return;
+        }
+        // First time with goal settings: keep numbers the user typed before
+        // (anything but the old 2000 / 10000 defaults), work out the rest.
+        const base = defaultSettings(state.user ?? {});
+        const migrated: GoalSettings = {
+          ...base,
+          ...(state.dailyCalorieGoal && state.dailyCalorieGoal !== 2000 ? { calorieMode: 'custom' as const, calories: state.dailyCalorieGoal } : {}),
+          ...(state.dailyStepGoal && state.dailyStepGoal !== 10000 ? { steps: state.dailyStepGoal } : {}),
+        };
+        set({ goalSettings: migrated, ...derivedGoals(state.user, migrated, state.adaptiveSteps) });
+        uploadGoals(migrated);
+      },
       setPlan: (plan) => set((state) => ({
         user: state.user ? { ...state.user, plan } : state.user,
       })),
@@ -161,6 +236,11 @@ export const useStore = create<StoreState>()(
           todayDate: null,
           weeklyDays: [],
           hasSelectedLanguage: false,
+          // Goals belong to the account: the next sign-in loads its own.
+          goalSettings: null,
+          adaptiveSteps: null,
+          dailyCalorieGoal: 2000,
+          dailyStepGoal: 10000,
         });
       },
     }),
@@ -184,6 +264,8 @@ export const useStore = create<StoreState>()(
         dailyCalorieGoal: state.dailyCalorieGoal,
         calorieWarnings: state.calorieWarnings,
         dailyStepGoal: state.dailyStepGoal,
+        goalSettings: state.goalSettings,
+        adaptiveSteps: state.adaptiveSteps,
         weightUnit: state.weightUnit,
         todayCalories: state.todayCalories,
         todayMeals: state.todayMeals,

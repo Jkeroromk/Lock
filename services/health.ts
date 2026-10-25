@@ -183,3 +183,38 @@ export const syncHealthData = async (): Promise<void> => {
   const healthData = await getHealthData();
   await syncHealthDataToBackend(healthData.steps, healthData.activeEnergy);
 };
+
+/**
+ * Step totals for each of the last `days` full days (not today), oldest first.
+ * Days without data are 0. iOS only; other platforms return [].
+ */
+export const getDailySteps = async (days = 14): Promise<number[]> => {
+  if (Platform.OS !== 'ios' || !(await requestHealthPermissions())) return [];
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - days, 0, 0, 0, 0);
+  const key = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getDailyStepCountSamples(
+        { startDate: start.toISOString(), endDate: end.toISOString(), period: 1440 },
+        (err: unknown, results: { value: number; startDate: string }[]) => {
+          if (err || !Array.isArray(results)) return resolve([]);
+          const byDay = new Map<string, number>();
+          for (const r of results) {
+            const k = key(new Date(r.startDate));
+            byDay.set(k, (byDay.get(k) ?? 0) + (Number(r.value) || 0));
+          }
+          const out: number[] = [];
+          for (let i = 0; i < days; i++) {
+            const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+            out.push(Math.round(byDay.get(key(d)) ?? 0));
+          }
+          resolve(out);
+        },
+      );
+    } catch {
+      resolve([]);
+    }
+  });
+};

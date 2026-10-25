@@ -53,12 +53,12 @@ export async function POST(request: NextRequest) {
       record = await prisma.weightRecord.create({
         data: { userId, weight: Number(weight), note: note ?? null },
       });
-      // 同时更新 User.weight（最新体重）
-      await prisma.user.update({
-        where: { id: userId },
-        data: { weight: Number(weight) },
-      });
     }
+    // 同时更新 User.weight（最新体重）：新增和改今天的记录都算，推荐热量跟着体重走
+    await prisma.user.update({
+      where: { id: userId },
+      data: { weight: Number(weight) },
+    });
 
     return NextResponse.json(record, { status: 201 });
   } catch (error) {

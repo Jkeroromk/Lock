@@ -59,6 +59,7 @@ export default function WeightTrackerScreen() {
     setSaving(true);
     try {
       await logWeight(Math.round(w * 100) / 100, inputNote.trim() || undefined);
+      useStore.getState().noteWeight(Math.round(w * 100) / 100);
       await load();
       setShowModal(false);
       setInputWeight('');

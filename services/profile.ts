@@ -25,6 +25,8 @@ export interface UserProfile {
   bonusAiCalls?: number;
   /** Team account: no AI limits. */
   isAdmin?: boolean;
+  /** Daily goal settings (lib/goals.ts GoalSettings), synced across devices. */
+  goalSettings?: unknown;
 }
 
 export const fetchProfile = async (): Promise<UserProfile> => {

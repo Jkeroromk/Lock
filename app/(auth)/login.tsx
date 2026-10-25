@@ -102,6 +102,8 @@ export default function LoginScreen() {
       bonusAiCalls: profile.bonusAiCalls ?? 0,
       isAdmin: profile.isAdmin === true,
     });
+    // Daily goals follow the account (new accounts get theirs at the end of onboarding).
+    if (completedOnboarding) useStore.getState().applyServerGoals(profile.goalSettings);
 
     if (rememberMe && email) AsyncStorage.setItem('lock_saved_email', email).catch(() => {});
 
