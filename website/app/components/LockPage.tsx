@@ -689,9 +689,16 @@ function Faq({ t }: { t: T }) {
   const [open, setOpen] = useState(0);
   return (
     <section className="sec wrap faq-sec" id="faq">
-      <div>
+      <div className="faq-side">
         <Reveal><p className="eyebrow">{t.faq.eyebrow}</p></Reveal>
         <Reveal delay={1} as="h2"><span className="h2">{t.faq.title}</span></Reveal>
+        <Reveal delay={2}><p className="lead faq-sub">{t.faq.sub}</p></Reveal>
+        <Reveal delay={3} className="card help-card">
+          <span className="sticker help-tag">{I.spark(12)} {t.faq.helpT}</span>
+          <p>{t.faq.helpD}</p>
+          <a className="btn btn-ink btn-md" href="mailto:support@jkeroro.com">support@jkeroro.com</a>
+          <a className="help-link" href="/support">{t.faq.helpLink} {I.arrow(16)}</a>
+        </Reveal>
       </div>
       <div className="faq">
         {t.faq.items.map((it, i) => (
@@ -741,18 +748,19 @@ function Footer({ t }: { t: T }) {
   const f = t.footer;
   return (
     <footer className="foot">
-      <div className="wrap foot-in">
+      <div className="wrap foot-top">
         <div className="foot-brand">
           <a href="#top" className="brand"><img src="/icons/open-lock.png" alt="" width={34} height={34} /><span>Lock</span></a>
           <p>{f.tag}</p>
         </div>
-        <nav className="foot-col" aria-label={f.product}>
-          <span className="mono">{f.product}</span>
+        <a href={APPSTORE_URL} className="btn btn-accent btn-md">{I.apple(16)}<span>{t.download}</span></a>
+      </div>
+      <div className="wrap foot-links">
+        <nav className="foot-row" aria-label={f.product}>
           <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#train">{t.nav.train}</a><a href="#watch">{t.nav.watch}</a><a href="#buddy">{t.nav.buddy}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
         </nav>
-        <nav className="foot-col" aria-label={f.company}>
-          <span className="mono">{f.company}</span>
-          <a href="/support">{f.links.support}</a><a href="/privacy">{f.links.privacy}</a><a href="/terms">{f.links.terms}</a><a href={APPSTORE_URL}>App Store</a>
+        <nav className="foot-row foot-legal" aria-label={f.company}>
+          <a href="/support">{f.links.support}</a><a href="/privacy">{f.links.privacy}</a><a href="/terms">{f.links.terms}</a>
         </nav>
       </div>
       <div className="wrap foot-base mono">

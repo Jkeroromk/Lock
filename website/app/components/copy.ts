@@ -153,6 +153,10 @@ export const COPY = {
     faq: {
       eyebrow: 'FAQ',
       title: 'Things people ask.',
+      sub: 'Quick answers about scans, pricing, workouts and your data.',
+      helpT: 'Still stuck?',
+      helpD: 'Write to us and we’ll get back to you within 24 hours.',
+      helpLink: 'More answers on the Support page',
       items: [
         { q: 'How accurate is the photo scan?', a: 'Lock’s AI estimates calories, protein, carbs and fat from your photo. Like any estimate it can be off, so every entry is editable. For packaged food, scan the barcode or nutrition label for exact numbers.' },
         { q: 'Is Lock free?', a: 'Yes. Your first week is Pro, free, with no card needed. After that, the free plan includes 3 AI scans a day, one AI diet review a week, and unlimited barcode and manual logging. Workout plans and logging are free too. Invite a friend and you both get 5 bonus scans.' },
@@ -323,6 +327,10 @@ export const COPY = {
     faq: {
       eyebrow: '常见问题',
       title: '大家常问的。',
+      sub: '关于识别、价格、训练和数据的快速解答。',
+      helpT: '还没找到答案？',
+      helpD: '给我们发邮件，24 小时内回复你。',
+      helpLink: '支持页面有更多解答',
       items: [
         { q: '拍照识别准吗？', a: 'Lock 的 AI 会根据照片估算卡路里、蛋白质、碳水和脂肪。估算难免有偏差，所以每条记录都可以修改。包装食品可以扫条形码或营养成分表，拿到准确数字。' },
         { q: 'Lock 收费吗？', a: '可以免费用。首周免费享受 Pro 全部功能，不用绑卡；之后免费版每天 3 次 AI 识别、每周 1 次 AI 饮食分析，条码和手动记录不限次数。训练计划和训练记录也是免费的。邀请好友，双方各得 5 次。' },
