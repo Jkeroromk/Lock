@@ -83,6 +83,9 @@ const I = {
   arrowUp: (s = 14) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
   ),
+  heart: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
+  ),
   spark: (s = 14) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z" /></svg>
   ),
@@ -143,10 +146,10 @@ function Nav({ t, toggleLang, dark, toggleDark }: { t: T; toggleLang: () => void
           <span>Lock</span>
         </a>
         <nav className="nav-links" aria-label="Sections">
-          <a href="#how">{t.nav.how}</a>
           <a href="#features">{t.nav.features}</a>
           <a href="#train">{t.nav.train}</a>
-          <a href="#social">{t.nav.social}</a>
+          <a href="#watch">{t.nav.watch}</a>
+          <a href="#buddy">{t.nav.buddy}</a>
           <a href="#pricing">{t.nav.pricing}</a>
           <a href="#faq">{t.nav.faq}</a>
         </nav>
@@ -411,6 +414,7 @@ function Train({ t }: { t: T }) {
         {/* weekly plan */}
         <Reveal className="cell c5 card">
           <div className="cell-txt"><h3>{tr.plan.t}</h3><p>{tr.plan.d}</p></div>
+          <span className="sticker ai-chip" aria-hidden="true">{I.spark(12)} {tr.plan.ai}</span>
           <div className="week" aria-hidden="true">
             {tr.plan.days.map((d, i) => {
               const rest = d === tr.plan.days[2];
@@ -494,15 +498,126 @@ function Train({ t }: { t: T }) {
   );
 }
 
+/* ── Watch + Live Activity (1.1) ──────── */
+function Watch({ t }: { t: T }) {
+  const w = t.watch;
+  const [ref, seen] = useInView<HTMLDivElement>(0.3);
+  return (
+    <section className="sec wrap" id="watch">
+      <Reveal><p className="eyebrow">{w.eyebrow} <span className="new-tag">{w.tag}</span></p></Reveal>
+      <Reveal delay={1} as="h2"><span className="h2">{w.title}</span></Reveal>
+      <Reveal delay={2}><p className="lead train-lead">{w.sub}</p></Reveal>
+      <div className="bento" ref={ref}>
+        <Reveal className="cell c7 card inverse watch-cell">
+          <div className="cell-txt"><h3>{w.wt}</h3><p>{w.wd}</p></div>
+          <div className="watch-stage" aria-hidden="true">
+            <div className="watch">
+              <span className="crown" />
+              <span className="side-btn" />
+              <div className="watch-screen">
+                <div className="ws-top mono"><span>{w.set}</span><span className="hr">{I.heart(11)} <b className="tnum">132</b></span></div>
+                <p className="ws-ex">{w.ex}</p>
+                <p className="ws-load tnum">100<small> kg</small> × 5</p>
+                <span className={`ws-btn ${seen ? 'pulse' : ''}`}>{I.check(14)} {w.complete}</span>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+        <Reveal delay={1} className="cell c5 card">
+          <div className="cell-txt"><h3>{w.lt}</h3><p>{w.ld}</p></div>
+          <div className="lock-stage" aria-hidden="true">
+            <div className="island"><span className="isl-l">{I.timer(12)}</span><span className="isl-r mono tnum">1:24</span></div>
+            <p className="lock-date">{w.lockTime}</p>
+            <p className="lock-clock tnum">6:42</p>
+            <div className="live">
+              <div className="live-top">
+                <img src="/icons/open-lock.png" alt="" width={22} height={22} />
+                <span className="mono small">{w.rest}</span>
+                <b className="tnum live-time">1:24</b>
+              </div>
+              <span className="live-bar"><i style={{ width: seen ? '38%' : '100%' }} /></span>
+              <div className="live-btns mono"><span>+15s</span><span>{w.skip}</span></div>
+              <p className="live-next mono small">{w.ex} · {w.set} · 100 kg × 5 {w.reps}</p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+      <Reveal><p className="req mono small">{w.req}</p></Reveal>
+    </section>
+  );
+}
+
+/* ── Buddy ────────────────────────────── */
+function Buddy({ t }: { t: T }) {
+  const b = t.buddy;
+  const [ref, seen] = useInView<HTMLDivElement>(0.3);
+  const xp = 212, next = 400;
+  return (
+    <section className="sec wrap" id="buddy">
+      <Reveal><p className="eyebrow">{b.eyebrow}</p></Reveal>
+      <Reveal delay={1} as="h2"><span className="h2">{b.title}</span></Reveal>
+      <Reveal delay={2}><p className="lead train-lead">{b.sub}</p></Reveal>
+      <div className="bento" ref={ref}>
+        <Reveal className="cell c7 card buddy-cell">
+          <div className="scene" aria-hidden="true">
+            <span className="bubble">{b.bubble}</span>
+            <img className={`coach ${seen ? 'hop' : ''}`} src="/pet/coach_cheer.webp" alt="" width={190} height={190} />
+            <img className="pet" src="/pet/corgi_2.webp" alt="" width={150} height={150} />
+            <span className="floor" />
+          </div>
+          <div className="buddy-meta">
+            <div className="bm-name">
+              <b>{b.buddyName}</b>
+              <span className="mono small">{b.stage} · {b.day} · {b.coach}</span>
+            </div>
+            <div className="bm-xp">
+              <span className="bar"><i style={{ width: seen ? `${(xp / next) * 100}%` : 0 }} /></span>
+              <span className="mono small">{b.growth} <b className="tnum">{xp}</b> / {next}</span>
+            </div>
+          </div>
+        </Reveal>
+        <Reveal delay={1} className="cell c5 card">
+          <div className="cell-txt"><h3>{b.today}</h3></div>
+          <ul className="grow-list">
+            {b.rows.map(([k, v], i) => (
+              <li key={k} className={b.done[i] ? 'ok' : ''}>
+                <span className="gl-ck">{b.done[i] ? I.check(12) : null}</span>
+                <span className="gl-k">{k}</span>
+                <span className="gl-v mono tnum">{v}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+        <Reveal className="cell c12 card stages-cell">
+          <div className="cell-txt"><h3>{b.stagesT}</h3><p>{b.stagesD}</p></div>
+          <div className="stages" aria-hidden="true">
+            {['corgi', 'cat', 'penguin'].map((k) => (
+              <div key={k} className="stage-row">
+                {[1, 2, 3].map((n) => (
+                  <figure key={n}>
+                    <img src={`/pet/${k}_${n}.webp`} alt="" width={96} height={96} loading="lazy" />
+                    {k === 'corgi' && <figcaption className="mono small">{b.stages[n - 1]}</figcaption>}
+                  </figure>
+                ))}
+              </div>
+            ))}
+          </div>
+          <p className="mono small kinds">{b.kinds}</p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 /* ── Social ───────────────────────────── */
 function Social({ t }: { t: T }) {
   const s = t.social;
   const rows = [
-    { n: 'Mia', d: 46 },
-    { n: s.you, d: 30, me: true },
-    { n: 'Leo', d: 21 },
-    { n: 'Sam', d: 12 },
-    { n: 'Ava', d: 9 },
+    { n: 'Mia', d: 46, pet: 'corgi_3', patted: true },
+    { n: s.you, d: 30, me: true, pet: 'cat_2' },
+    { n: 'Leo', d: 21, pet: 'penguin_2' },
+    { n: 'Sam', d: 12, pet: 'corgi_1' },
+    { n: 'Ava', d: 9, pet: 'penguin_1' },
   ];
   const [ref, seen] = useInView<HTMLDivElement>(0.3);
   return (
@@ -524,9 +639,9 @@ function Social({ t }: { t: T }) {
               {rows.map((r, i) => (
                 <li key={r.n} className={r.me ? 'me' : ''}>
                   <span className="rk mono">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="av" aria-hidden="true">{r.n[0]}</span>
-                  <span className="nm">{r.n}</span>
-                  <span className="dy mono"><b className="tnum">{r.d}</b> {s.days}</span>
+                  <span className="av av-pet" aria-hidden="true"><img src={`/pet/${r.pet}.webp`} alt="" width={40} height={40} loading="lazy" /></span>
+                  <span className="nm">{r.n}<span className="dy mono"><b className="tnum">{r.d}</b> {s.days}</span></span>
+                  {r.me ? <span /> : <span className={`pat mono ${r.patted ? 'done' : ''}`}>{r.patted ? s.patted : s.pat}</span>}
                 </li>
               ))}
             </ol>
@@ -633,7 +748,7 @@ function Footer({ t }: { t: T }) {
         </div>
         <nav className="foot-col" aria-label={f.product}>
           <span className="mono">{f.product}</span>
-          <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#train">{t.nav.train}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
+          <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#train">{t.nav.train}</a><a href="#watch">{t.nav.watch}</a><a href="#buddy">{t.nav.buddy}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
         </nav>
         <nav className="foot-col" aria-label={f.company}>
           <span className="mono">{f.company}</span>
@@ -689,6 +804,8 @@ export default function LockPage() {
         <How t={t} />
         <Features t={t} />
         <Train t={t} />
+        <Watch t={t} />
+        <Buddy t={t} />
         <Social t={t} />
         <Pricing t={t} />
         <Faq t={t} />
