@@ -21,6 +21,7 @@ import { dayTitle } from '@/components/train/dayTitle';
 import { deleteWorkout, type SessionSummary } from '@/services/workouts';
 import UnitToggle from '@/components/train/UnitToggle';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 export default function TrainScreen() {
   const tabInset = useTabBarInset();
@@ -92,13 +93,32 @@ export default function TrainScreen() {
       {
         text: t('common.delete'),
         style: 'destructive',
-        onPress: async () => {
-          removeSession(s.id);
-          try { await deleteWorkout(s.id); } catch { refresh(); }
-        },
+        onPress: () => removeNow(s),
       },
     ]);
   };
+
+  // Swipe left on a recent workout shows Delete; tapping it deletes right away
+  // (the swipe is the confirmation, as in Mail). Long-press still asks first.
+  const removeNow = async (s: SessionSummary) => {
+    removeSession(s.id);
+    try { await deleteWorkout(s.id); } catch { refresh(); }
+  };
+
+  const deleteAction = (s: SessionSummary) => (
+    <PressScale
+      onPress={() => removeNow(s)}
+      accessibilityRole="button"
+      accessibilityLabel={t('common.delete')}
+      style={{
+        width: 88, marginLeft: 8, borderRadius: 16, borderWidth: 2, borderColor: c.ink,
+        backgroundColor: c.danger, alignItems: 'center', justifyContent: 'center', gap: 2,
+      }}
+    >
+      <Ionicons name="trash" size={20} color="#FFFFFF" />
+      <Text style={{ fontWeight: '800', fontSize: 13, color: '#FFFFFF' }}>{t('common.delete')}</Text>
+    </PressScale>
+  );
 
   const dateCaption = now.toLocaleDateString(language, { weekday: 'short', month: 'short', day: 'numeric' });
 
@@ -286,8 +306,14 @@ export default function TrainScreen() {
                       const [y, m, d] = s.dayKey.split('-').map(Number);
                       const date = new Date(y, m - 1, d, 12);
                       return (
-                        <PressScale
+                        <ReanimatedSwipeable
                           key={s.id}
+                          friction={2}
+                          rightThreshold={40}
+                          overshootRight={false}
+                          renderRightActions={() => deleteAction(s)}
+                        >
+                        <PressScale
                           onLongPress={() => confirmDelete(s)}
                           accessibilityRole="button"
                           accessibilityHint={t('train.deleteSessionTitle')}
@@ -310,6 +336,7 @@ export default function TrainScreen() {
                             </Sticker>
                           ) : null}
                         </PressScale>
+                        </ReanimatedSwipeable>
                       );
                     })}
                   </View>

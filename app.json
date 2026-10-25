@@ -2,7 +2,7 @@
   "expo": {
     "name": "Lock",
     "slug": "lock",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "runtimeVersion": {
       "policy": "fingerprint"
     },
@@ -27,6 +27,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.jkeroro.lockin",
+      "appleTeamId": "KBBN9626H9",
       "buildNumber": "1",
       "usesAppleSignIn": true,
       "entitlements": {
@@ -38,7 +39,8 @@
         "NSCameraUsageDescription": "Lock uses the camera to photograph meals for AI-powered calorie analysis.",
         "NSPhotoLibraryUsageDescription": "Lock accesses your photo library to choose a meal photo or profile picture.",
         "NSPhotoLibraryAddUsageDescription": "Lock saves meal photos to your photo library.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSSupportsLiveActivities": true
       }
     },
     "android": {
@@ -88,20 +90,30 @@
           {
             "name": "RingL",
             "ios": "./assets/icons/icon-ring-l.png",
-            "android": { "foregroundImage": "./assets/icons/android-fg-ring-l.png", "backgroundColor": "#0A0A0A" }
+            "android": {
+              "foregroundImage": "./assets/icons/android-fg-ring-l.png",
+              "backgroundColor": "#0A0A0A"
+            }
           },
           {
             "name": "StickerL",
             "ios": "./assets/icons/icon-sticker-l.png",
-            "android": { "foregroundImage": "./assets/icons/android-fg-sticker-l.png", "backgroundColor": "#FFD43B" }
+            "android": {
+              "foregroundImage": "./assets/icons/android-fg-sticker-l.png",
+              "backgroundColor": "#FFD43B"
+            }
           },
           {
             "name": "KeyholeDial",
             "ios": "./assets/icons/icon-keyhole-dial.png",
-            "android": { "foregroundImage": "./assets/icons/android-fg-keyhole-dial.png", "backgroundColor": "#0A0A0A" }
+            "android": {
+              "foregroundImage": "./assets/icons/android-fg-keyhole-dial.png",
+              "backgroundColor": "#0A0A0A"
+            }
           }
         ]
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "scheme": "lock",
     "extra": {

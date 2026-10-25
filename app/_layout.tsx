@@ -11,6 +11,7 @@ import * as SecureStore from 'expo-secure-store';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ToastHost } from '@/components/ui/Toast';
 import UpdateNotifier from '@/components/UpdateNotifier';
+import WorkoutBridge from '@/components/WorkoutBridge';
 import { enableScreens } from 'react-native-screens';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
@@ -116,6 +117,7 @@ export default function RootLayout() {
         </Stack>
         <ToastHost />
         <UpdateNotifier />
+        <WorkoutBridge />
         <StatusBar style={colors.backgroundPrimary === '#0A0A0A' ? 'light' : 'dark'} />
       </ClerkProvider>
     </GestureHandlerRootView>

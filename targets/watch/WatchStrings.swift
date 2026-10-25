@@ -1,0 +1,142 @@
+import Foundation
+
+/// Strings for before the phone has sent its labels (first launch, idle screen).
+/// Once the phone syncs, the app's own `live` strings are used instead.
+enum WatchStrings {
+  private static let table: [String: [String: String]] = [
+    "en": [
+      "finished": "Workout finished",
+      "openPhoneToSave": "Open Lock on your iPhone to save it",
+      "done": "Done",
+      "idle": "Start a workout on your iPhone",
+      "idleHint": "Your sets show up here. Tap to log them.",
+      "saved": "Workout saved",
+      "complete": "Complete set",
+      "rest": "Rest",
+      "skip": "Skip",
+      "reps": "reps",
+      "setOf": "Set {i}/{n}",
+      "progress": "{done}/{total} sets",
+      "allDone": "All sets done",
+      "finish": "Finish workout",
+      "finishAsk": "Finish and save this workout?",
+      "cancel": "Cancel",
+      "undo": "Undo last set",
+      "exercises": "Exercises",
+      "next": "Next",
+      "saving": "Saving on iPhone…",
+      "bodyweight": "Bodyweight",
+      "needReps": "Turn the crown to set reps",
+    ],
+    "zh-Hans": [
+      "finished": "训练已结束",
+      "openPhoneToSave": "在 iPhone 上打开 Lock 即可保存",
+      "done": "好",
+      "idle": "在 iPhone 上开始训练",
+      "idleHint": "每一组会出现在这里，点一下就记好。",
+      "saved": "训练已保存",
+      "complete": "完成这组",
+      "rest": "组间休息",
+      "skip": "跳过",
+      "reps": "次",
+      "setOf": "第 {i}/{n} 组",
+      "progress": "{done}/{total} 组",
+      "allDone": "全部完成",
+      "finish": "完成训练",
+      "finishAsk": "结束并保存这次训练？",
+      "cancel": "取消",
+      "undo": "撤销上一组",
+      "exercises": "动作",
+      "next": "接下来",
+      "saving": "正在 iPhone 上保存…",
+      "bodyweight": "自重",
+      "needReps": "转动表冠设定次数",
+    ],
+    "zh-Hant": [
+      "finished": "訓練已結束",
+      "openPhoneToSave": "在 iPhone 上打開 Lock 即可儲存",
+      "done": "好",
+      "idle": "在 iPhone 上開始訓練",
+      "idleHint": "每一組會出現在這裡，點一下就記好。",
+      "saved": "訓練已儲存",
+      "complete": "完成這組",
+      "rest": "組間休息",
+      "skip": "跳過",
+      "reps": "次",
+      "setOf": "第 {i}/{n} 組",
+      "progress": "{done}/{total} 組",
+      "allDone": "全部完成",
+      "finish": "完成訓練",
+      "finishAsk": "結束並儲存這次訓練？",
+      "cancel": "取消",
+      "undo": "撤銷上一組",
+      "exercises": "動作",
+      "next": "接下來",
+      "saving": "正在 iPhone 上儲存…",
+      "bodyweight": "自重",
+      "needReps": "轉動錶冠設定次數",
+    ],
+    "ja": [
+      "finished": "トレーニング終了",
+      "openPhoneToSave": "iPhone で Lock を開くと保存されます",
+      "done": "OK",
+      "idle": "iPhone でトレーニングを開始",
+      "idleHint": "セットがここに表示されます。タップで記録。",
+      "saved": "トレーニングを保存しました",
+      "complete": "このセット完了",
+      "rest": "休憩",
+      "skip": "スキップ",
+      "reps": "回",
+      "setOf": "セット {i}/{n}",
+      "progress": "{done}/{total} セット",
+      "allDone": "全セット完了",
+      "finish": "トレーニング終了",
+      "finishAsk": "終了して保存しますか？",
+      "cancel": "キャンセル",
+      "undo": "前のセットを取り消す",
+      "exercises": "種目",
+      "next": "次",
+      "saving": "iPhone で保存中…",
+      "bodyweight": "自重",
+      "needReps": "Digital Crown で回数を設定",
+    ],
+    "ko": [
+      "finished": "운동 종료",
+      "openPhoneToSave": "iPhone에서 Lock을 열면 저장돼요",
+      "done": "확인",
+      "idle": "iPhone에서 운동을 시작하세요",
+      "idleHint": "세트가 여기에 표시돼요. 탭하면 기록돼요.",
+      "saved": "운동이 저장되었어요",
+      "complete": "세트 완료",
+      "rest": "휴식",
+      "skip": "건너뛰기",
+      "reps": "회",
+      "setOf": "{i}/{n} 세트",
+      "progress": "{done}/{total} 세트",
+      "allDone": "모든 세트 완료",
+      "finish": "운동 완료",
+      "finishAsk": "운동을 끝내고 저장할까요?",
+      "cancel": "취소",
+      "undo": "이전 세트 취소",
+      "exercises": "운동",
+      "next": "다음",
+      "saving": "iPhone에서 저장 중…",
+      "bodyweight": "맨몸",
+      "needReps": "Digital Crown으로 횟수 설정",
+    ],
+  ]
+
+  private static let language: String = {
+    let pref = Locale.preferredLanguages.first?.lowercased() ?? "en"
+    if pref.hasPrefix("zh") {
+      return pref.contains("hant") || pref.contains("-tw") || pref.contains("-hk") || pref.contains("-mo") ? "zh-Hant" : "zh-Hans"
+    }
+    if pref.hasPrefix("ja") { return "ja" }
+    if pref.hasPrefix("ko") { return "ko" }
+    return "en"
+  }()
+
+  static func fallback(_ key: String) -> String {
+    table[language]?[key] ?? table["en"]?[key] ?? key
+  }
+}

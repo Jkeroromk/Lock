@@ -8,13 +8,20 @@ const isExpoGo = Constants.appOwnership === 'expo';
 
 if (!isExpoGo) {
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
+    handleNotification: async (notification) => {
+      // "Rest's up" / "Open Lock to save" are scheduled natively for the Lock
+      // Screen; inside the app the workout screen already covers them.
+      if (notification.request.identifier === 'lock-rest' || notification.request.identifier === 'lock-save') {
+        return { shouldShowAlert: false, shouldPlaySound: false, shouldSetBadge: false, shouldShowBanner: false, shouldShowList: false };
+      }
+      return {
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      };
+    },
   });
 }
 
