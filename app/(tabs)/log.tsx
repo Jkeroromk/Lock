@@ -89,7 +89,14 @@ export default function LogScreen() {
   const pickImage = async () => {
     const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!granted) { Alert.alert(t('common.error'), t('log.needPermission')); return; }
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsEditing: true, aspect: [4, 3], quality: 0.8 });
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      // No crop step and no re-encoding: on iOS the crop option forces the old,
+      // slow picker, and converting HEIC → JPEG at quality 0.8 waits after picking.
+      // The photo is downsized for analysis anyway.
+      allowsEditing: false,
+      preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
+    });
     if (!r.canceled && r.assets[0]) { setImage(r.assets[0].uri); setResult(null); }
   };
 

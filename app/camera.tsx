@@ -127,7 +127,14 @@ export default function CameraScreen() {
 
   const pickFromLibrary = async () => {
     // The system photo picker needs no library permission; asking first only added a delay.
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsEditing: true, aspect: [4, 3], quality: 0.8 });
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      // No crop step and no re-encoding: on iOS the crop option forces the old,
+      // slow picker, and converting HEIC → JPEG at quality 0.8 waits after picking.
+      // The photo is downsized for analysis anyway.
+      allowsEditing: false,
+      preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
+    });
     if (!r.canceled && r.assets[0]) sendPhoto(r.assets[0].uri);
   };
 
