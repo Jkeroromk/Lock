@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeOut, SlideInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOut, SlideInDown, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { Text } from '@/components/ui/Text';
 import { Button, PressScale } from '@/components/ui/bxc';
 import { CartSheet } from '@/components/log/MealCart';
@@ -75,6 +75,10 @@ export default function CameraScreen() {
   const [mode, setMode] = useState<Mode>(params.mode === 'scan' ? 'scan' : params.mode === 'label' ? 'label' : 'photo');
   const [torch, setTorch] = useState(false);
   const [taking, setTaking] = useState(false);
+  // White flash the instant the shutter is pressed, so it feels immediate
+  // even while the photo is still being captured and saved.
+  const flash = useSharedValue(0);
+  const flashStyle = useAnimatedStyle(() => ({ opacity: flash.value }));
   const [ready, setReady] = useState(false);
 
   const [lookingUp, setLookingUp] = useState(false);
@@ -109,8 +113,10 @@ export default function CameraScreen() {
   const takePhoto = async () => {
     if (!camRef.current || taking) return;
     setTaking(true);
+    flash.value = withSequence(withTiming(0.85, { duration: 60 }), withTiming(0, { duration: 260 }));
     try {
-      const pic = await camRef.current.takePictureAsync({ quality: 0.8 });
+      // Analysis shrinks photos to 1024 px anyway; lower quality saves encode time.
+      const pic = await camRef.current.takePictureAsync({ quality: 0.6, skipProcessing: true });
       if (pic?.uri) sendPhoto(pic.uri);
     } catch {
       Alert.alert(t('log.analysisFailed'), t('camera.photoFailed'));
@@ -120,8 +126,7 @@ export default function CameraScreen() {
   };
 
   const pickFromLibrary = async () => {
-    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!granted) { Alert.alert(t('common.error'), t('log.needPermission')); return; }
+    // The system photo picker needs no library permission; asking first only added a delay.
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsEditing: true, aspect: [4, 3], quality: 0.8 });
     if (!r.canceled && r.assets[0]) sendPhoto(r.assets[0].uri);
   };
@@ -259,6 +264,7 @@ export default function CameraScreen() {
             {mode === 'photo' ? t('camera.photoHint') : mode === 'label' ? t('camera.labelHint') : lookingUp ? t('log.lookingUp' as any) : t('camera.scanHint')}
           </Text>
         </View>
+        <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: '#FFFFFF' }, flashStyle]} />
         {added ? (
           <Animated.View entering={FadeInDown.duration(220)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: 14, left: 14, right: 14, alignItems: 'center' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 14, backgroundColor: PAPER }}>
