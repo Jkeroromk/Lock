@@ -17,6 +17,7 @@ const zhTW = {
     ofGoal: '目標 {goal}',
   },
   log: {
+    addToList: "加入清單", viewList: "查看", listTitle: "待記錄清單", listSummary: "{n} 項 · {kcal} kcal · 蛋白質 {p}g", listTotal: "合計", listEmpty: "清單是空的。掃碼、拍照後點「加入清單」，最後一起記錄。", clearList: "清空", clearListConfirm: "清空待記錄清單？", keepScanning: "繼續新增", logAll: "全部記錄（{n}）", addedToList: "已加入清單 · {food}", listCount: "清單裡共 {n} 項", loggedAll: "已記錄 {n} 項", logAllPartial: "有 {n} 項沒記上，還留在清單裡，稍後再試。", removeItem: "移除", lessServing: "減少份數", moreServing: "增加份數",
     foodName: '食物名稱', photoShort: '拍照', labelShort: '標籤', barcodeShort: '條碼', aiAnalyzed: 'AI 已辨識',
     startLogging: '開始記錄',
     takeOrSelect: '拍攝或選擇餐食照片以分析營養資訊',

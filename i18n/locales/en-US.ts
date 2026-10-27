@@ -18,6 +18,7 @@ const enUS = {
     ofGoal: 'of {goal}',
   },
   log: {
+    addToList: "Add to list", viewList: "View", listTitle: "To-log list", listSummary: "{n} items · {kcal} kcal · {p}g protein", listTotal: "Total", listEmpty: "Your list is empty. Scan or snap foods, tap \"Add to list\", then log them all at once.", clearList: "Clear", clearListConfirm: "Clear the list?", keepScanning: "Add more", logAll: "Log all ({n})", addedToList: "Added to list · {food}", listCount: "{n} on the list", loggedAll: "Logged {n} items", logAllPartial: "{n} item(s) didn't save and are still on the list. Try again in a moment.", removeItem: "Remove", lessServing: "Fewer servings", moreServing: "More servings",
     foodName: 'Food name', photoShort: 'Photo', labelShort: 'Label', barcodeShort: 'Barcode', aiAnalyzed: 'AI analyzed',
     startLogging: 'Start Logging',
     takeOrSelect: 'Take or select meal photos to analyze nutritional information',

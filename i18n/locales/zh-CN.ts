@@ -30,6 +30,7 @@ const zhCN = {
     ofGoal: '目标 {goal}',
   },
   log: {
+    addToList: "加入清单", viewList: "查看", listTitle: "待记录清单", listSummary: "{n} 项 · {kcal} kcal · 蛋白质 {p}g", listTotal: "合计", listEmpty: "清单是空的。扫码、拍照后点「加入清单」，最后一起记录。", clearList: "清空", clearListConfirm: "清空待记录清单？", keepScanning: "继续添加", logAll: "全部记录（{n}）", addedToList: "已加入清单 · {food}", listCount: "清单里共 {n} 项", loggedAll: "已记录 {n} 项", logAllPartial: "有 {n} 项没记上，还留在清单里，稍后再试。", removeItem: "移除", lessServing: "减少份数", moreServing: "增加份数",
     foodName: '食物名称', photoShort: '拍照', labelShort: '标签', barcodeShort: '条码', aiAnalyzed: 'AI 已识别',
     startLogging: '开始记录',
     takeOrSelect: '拍摄或选择餐食照片以分析营养信息',
