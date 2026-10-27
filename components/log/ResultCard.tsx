@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
@@ -17,6 +17,8 @@ export interface FoodResult {
   carbs: number;
   fat: number;
   confidence: number;
+  /** Product photo from a barcode lookup. */
+  imageUrl?: string;
 }
 
 interface Props {
@@ -54,6 +56,11 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
     <Card variant="hero" padding={16} style={{ marginBottom: 14 }}>
       {/* Name + kcal */}
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+        {result.imageUrl && !isEditing ? (
+          <View style={{ width: 64, height: 64, borderRadius: 14, overflow: 'hidden', borderWidth: 1.5, borderColor: c.borderSecondary, backgroundColor: '#FFFFFF' }}>
+            <Image source={{ uri: result.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" accessibilityIgnoresInvertColors />
+          </View>
+        ) : null}
         <View style={{ flex: 1 }}>
           {isEditing ? (
             <TextInput

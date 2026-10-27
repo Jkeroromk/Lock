@@ -121,7 +121,7 @@ export default function LogScreen() {
     if (lookingUp) return;
     setLookingUp(true);
     try {
-      const found = await lookupBarcode(code);
+      const found = await lookupBarcode(code, language);
       if (found) { setResultWithEdit(found); }
       else {
         Alert.alert(t('log.productNotFound' as any), (t('log.productNotFoundMsg' as any) as string).replace('{code}', code), [
@@ -164,7 +164,8 @@ export default function LogScreen() {
       const thumb = image ? await makeMealThumbnail(image) : null;
       await logMeal({
         food_name: result.food, calories: result.calories, protein: result.protein, carbs: result.carbs, fat: result.fat,
-        image_url: thumb?.uri || '',
+        // Barcode products have no photo of ours; use the product's own picture.
+        image_url: thumb?.uri || result.imageUrl || '',
         thumbnail: thumb?.base64, // stored server-side so the photo shows on every device
       });
       const saved = result;
@@ -197,7 +198,7 @@ export default function LogScreen() {
     const cart = useMealCartStore.getState();
     cart.add({
       food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat,
-      source: mode, thumbUri: thumb?.uri, thumbBase64: thumb?.base64,
+      source: mode, thumbUri: thumb?.uri ?? r.imageUrl, thumbBase64: thumb?.base64,
     });
     const n = useMealCartStore.getState().items.length;
     clearImage(); setResult(null); setLookingUp(false);
