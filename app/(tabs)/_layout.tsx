@@ -4,9 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HardShadow, PressScale, MOTION } from '@/components/ui/bxc';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Alert, Platform } from 'react-native';
+import { View, Platform } from 'react-native';
 import { Text } from '@/components/ui/Text';
-import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
 import Constants from 'expo-constants';
 import { useTranslation } from '@/i18n';
@@ -19,7 +18,6 @@ function LogTabButton(props: any) {
   const segments = useSegments();
   const router = useRouter();
   const { onPress, accessibilityState } = props;
-  const [isOpeningCamera, setIsOpeningCamera] = useState(false);
   const { t } = useTranslation();
   const colors = useTheme();
   
@@ -30,66 +28,19 @@ function LogTabButton(props: any) {
   // 检测是否为iOS模拟器（模拟器上Constants.isDevice为false）
   const isIOSSimulator = Platform.OS === 'ios' && !Constants.isDevice;
   
-  const handlePress = async () => {
-    // 如果是iOS模拟器，只导航不打开相机
+  // Opens our own camera (拍照 · 扫码). The simulator has no camera: go to the log tab.
+  const handlePress = () => {
     if (isIOSSimulator) {
-      if (!isOnLogPage) {
-        onPress();
-      }
+      if (!isOnLogPage) onPress();
       return;
     }
-    
-    // 立即打开相机（不等待导航）
-    try {
-      setIsOpeningCamera(true);
-      
-      // 先请求权限
-      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-      
-      if (permissionResult.granted === false) {
-        Alert.alert(t('log.needPermission'), t('log.cameraPermissionDesc' as any));
-        setIsOpeningCamera(false);
-        // 即使没有权限，也导航到log页面
-        if (!isOnLogPage) {
-          onPress();
-        }
-        return;
-      }
-
-      // 打开相机
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
-
-      // 如果拍照成功，导航到log页面并传递图片
-      if (!result.canceled && result.assets[0]) {
-        router.push({
-          pathname: '/(tabs)/log',
-          params: { imageUri: result.assets[0].uri },
-        });
-      } else {
-        // 如果取消拍照，仍然导航到log页面（如果不在log页面）
-        if (!isOnLogPage) {
-          onPress();
-        }
-      }
-    } catch (error: any) {
-      // 即使出错，也导航到log页面
-      if (!isOnLogPage) {
-        onPress();
-      }
-    } finally {
-      setIsOpeningCamera(false);
-    }
+    router.push('/camera');
   };
-  
+
   return (
     <PressScale
       onPress={handlePress}
       scaleTo={0.88}
-      disabled={isOpeningCamera}
       accessibilityRole="button"
       accessibilityLabel={t('tabs.log')}
       accessibilityState={{ selected: isSelected }}

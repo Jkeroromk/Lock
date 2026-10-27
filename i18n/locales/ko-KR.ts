@@ -608,6 +608,27 @@ const koKR = {
     adaptiveHint: '매주 월요일에 업데이트돼요.',
     body: '신체 정보',
   },
+  camera: {
+    modeLabel: "영양표",
+    labelHint: "영양성분표가 잘 보이게 찍어 주세요",
+    title: "식사 기록",
+    modePhoto: "사진",
+    modeScan: "스캔",
+    photoHint: "접시 전체를 찍으면 모든 음식을 계산해요",
+    scanHint: "바코드를 비추면 자동으로 인식해요",
+    fromLibrary: "앨범에서 선택",
+    shutter: "촬영",
+    torch: "손전등",
+    listChip: "목록 {n}개 · {kcal} kcal",
+    servings: "수량",
+    logNow: "바로 기록",
+    added: "추가됨: {food}",
+    notThis: "이게 아니에요",
+    notFound: "바코드를 찾지 못했어요",
+    notFoundBody: "{code} 는 아직 상품 데이터에 없어요. 직접 입력하거나 영양성분표를 찍어 주세요.",
+    keepScanning: "계속 스캔",
+    photoFailed: "촬영하지 못했어요. 다시 시도해 주세요.",
+  },
 };
 
 export default koKR;

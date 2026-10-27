@@ -599,6 +599,27 @@ const jaJP = {
     adaptiveHint: '毎週月曜に更新されます。',
     body: 'からだのデータ',
   },
+  camera: {
+    modeLabel: "成分表",
+    labelHint: "栄養成分表示をはっきり写してください",
+    title: "食事を記録",
+    modePhoto: "写真",
+    modeScan: "スキャン",
+    photoHint: "お皿全体を写すと、全部まとめて計算します",
+    scanHint: "バーコードに向けると自動で読み取ります",
+    fromLibrary: "写真から選ぶ",
+    shutter: "撮影",
+    torch: "ライト",
+    listChip: "リスト {n} 品 · {kcal} kcal",
+    servings: "数量",
+    logNow: "すぐ記録",
+    added: "追加：{food}",
+    notThis: "これじゃない",
+    notFound: "バーコードが見つかりません",
+    notFoundBody: "{code} はまだ商品データにありません。手入力するか、栄養成分表示を撮影してください。",
+    keepScanning: "続けてスキャン",
+    photoFailed: "撮影できませんでした。もう一度どうぞ。",
+  },
 };
 
 export default jaJP;

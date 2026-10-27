@@ -756,6 +756,27 @@ const zhCN = {
     adaptiveHint: '每周一自动更新。',
     body: '身体数据',
   },
+  camera: {
+    modeLabel: "标签",
+    labelHint: "把营养成分表拍清楚",
+    title: "记录一餐",
+    modePhoto: "拍照",
+    modeScan: "扫码",
+    photoHint: "整盘拍进来，每样都会算上",
+    scanHint: "对准条码，自动识别",
+    fromLibrary: "从相册选",
+    shutter: "拍照",
+    torch: "手电筒",
+    listChip: "清单 {n} 项 · {kcal} kcal",
+    servings: "份数",
+    logNow: "直接记录",
+    added: "已加入：{food}",
+    notThis: "不是这个",
+    notFound: "没找到这个条码",
+    notFoundBody: "{code} 还不在商品库里。可以手动填写，或者扫营养标签。",
+    keepScanning: "继续扫",
+    photoFailed: "没拍成功，再试一次",
+  },
 };
 
 export default zhCN;
