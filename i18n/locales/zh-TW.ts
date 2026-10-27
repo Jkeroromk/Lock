@@ -593,6 +593,27 @@ const zhTW = {
     adaptiveHint: '每週一自動更新。',
     body: '身體數據',
   },
+  camera: {
+    modeLabel: "標示",
+    labelHint: "把營養標示拍清楚",
+    title: "記錄一餐",
+    modePhoto: "拍照",
+    modeScan: "掃碼",
+    photoHint: "整盤拍進來，每樣都會算上",
+    scanHint: "對準條碼，自動辨識",
+    fromLibrary: "從相簿選",
+    shutter: "拍照",
+    torch: "手電筒",
+    listChip: "清單 {n} 項 · {kcal} kcal",
+    servings: "份數",
+    logNow: "直接記錄",
+    added: "已加入：{food}",
+    notThis: "不是這個",
+    notFound: "沒找到這個條碼",
+    notFoundBody: "{code} 還不在商品庫裡。可以手動填寫，或者掃營養標示。",
+    keepScanning: "繼續掃",
+    photoFailed: "沒拍成功，再試一次",
+  },
 };
 
 export default zhTW;

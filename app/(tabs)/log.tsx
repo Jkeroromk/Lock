@@ -23,7 +23,8 @@ import BarcodeScanner from '@/components/log/BarcodeScanner';
 import ResultCard, { FoodResult } from '@/components/log/ResultCard';
 import ImagePickerButtons from '@/components/log/ImagePickerButtons';
 import { CartBar, CartSheet } from '@/components/log/MealCart';
-import { useMealCartStore, cartItemName } from '@/store/useMealCartStore';
+import { useMealCartStore } from '@/store/useMealCartStore';
+import { useMealLogging } from '@/hooks/useMealLogging';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { calorieGoalNow } from '@/hooks/useDailyGoals';
@@ -58,17 +59,31 @@ export default function LogScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ food: '', calories: '', protein: '', carbs: '', fat: '' });
   const [listOpen, setListOpen] = useState(false);
-  const [loggingAll, setLoggingAll] = useState(false);
+  const listLogging = useMealLogging();
 
   // Photo taken from the yellow camera button in the tab bar arrives as a param.
-  const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
+  const { imageUri, imageMode, manualCode } = useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string }>();
+  // A photo from our camera is analysed straight away (no extra tap).
+  const [autoAnalyze, setAutoAnalyze] = useState<'food' | 'label' | null>(null);
+  // Camera found no product for a barcode: type it in here.
+  useEffect(() => {
+    if (!manualCode) return;
+    setMode('barcode');
+    setImage(null);
+    setResult({ food: manualCode, calories: 0, protein: 0, carbs: 0, fat: 0, confidence: 1 });
+    setEditedData({ food: manualCode, calories: '0', protein: '0', carbs: '0', fat: '0' });
+    setIsEditing(true);
+    router.setParams({ manualCode: undefined } as any);
+  }, [manualCode]);
   useEffect(() => {
     if (!imageUri) return;
-    setMode('photo');
+    const m = imageMode === 'label' ? 'label' : 'photo';
+    setMode(m);
     setImage(imageUri);
     setResult(null);
+    setAutoAnalyze(m === 'label' ? 'label' : 'food');
     setIsEditing(false);
-    router.setParams({ imageUri: undefined } as any);
+    router.setParams({ imageUri: undefined, imageMode: undefined } as any);
   }, [imageUri]);
 
   const pickImage = async () => {
@@ -92,6 +107,13 @@ export default function LogScreen() {
     setEditedData({ food: r.food, calories: String(r.calories), protein: String(r.protein), carbs: String(r.carbs), fat: String(r.fat) });
     setIsEditing(false);
   };
+
+  useEffect(() => {
+    if (!autoAnalyze || !image || analyzing || result) return;
+    const m = autoAnalyze;
+    setAutoAnalyze(null);
+    analyzeImage(m);
+  }, [autoAnalyze, image]);
 
   const analyzeImage = async (analysisMode: 'food' | 'label') => {
     if (!image) return;
@@ -209,60 +231,11 @@ export default function LogScreen() {
     });
   };
 
-  /** Log every item on the list as its own meal; failures stay on the list. */
   const logAll = async () => {
-    const items = useMealCartStore.getState().items;
-    if (!items.length || loggingAll) return;
-    const drinks = items
-      .map((it) => ({ it, ml: Math.round(detectLiquidMl(it.food) * it.servings) }))
-      .filter((d) => d.ml > 0);
-    const drinkMl = drinks.reduce((sum, d) => sum + d.ml, 0);
-    const countWater = drinkMl > 0 && (await askCountAsWater(drinks.map((d) => d.it.food).join(', '), drinkMl));
-    setLoggingAll(true);
-    const before = todaysCalories();
-    const done: string[] = [];
-    let kcal = 0;
-    const r1 = (v: number) => Math.round(v * 10) / 10;
-    for (const it of items) {
-      try {
-        await logMeal({
-          food_name: cartItemName(it),
-          calories: Math.round(it.calories * it.servings),
-          protein: r1(it.protein * it.servings),
-          carbs: r1(it.carbs * it.servings),
-          fat: r1(it.fat * it.servings),
-          image_url: it.thumbUri || '',
-          thumbnail: it.thumbBase64,
-        });
-        done.push(it.id);
-        kcal += Math.round(it.calories * it.servings);
-      } catch {}
+    if (await listLogging.logAll()) {
+      setListOpen(false);
+      router.navigate('/(tabs)/today');
     }
-    const loggedMl = countWater ? drinks.filter((d) => done.includes(d.it.id)).reduce((sum, d) => sum + d.ml, 0) : 0;
-    if (loggedMl > 0) await addWater(loggedMl).catch(() => {});
-    useMealCartStore.getState().removeMany(done);
-    setLoggingAll(false);
-    if (done.length) refreshToday();
-
-    const failed = items.length - done.length;
-    if (failed > 0) {
-      Alert.alert(t('log.saveFailed'), t('log.logAllPartial', { n: String(failed) }));
-      return;
-    }
-    setListOpen(false);
-    router.navigate('/(tabs)/today');
-    const { calorieWarnings, user: me } = useStore.getState();
-    const goal = calorieGoalNow();
-    const after = before + kcal;
-    const overGoal = calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
-    const water = loggedMl > 0 ? (t('water.autoAdded' as any) as string).replace('{ml}', String(loggedMl)) : '';
-    showToast({
-      message: t('log.loggedAll', { n: String(done.length) }),
-      detail: overGoal
-        ? [t('calorieWarn.toastOver' as any, { kcal: (after - goal).toLocaleString() }), water].filter(Boolean).join(' · ')
-        : [`${kcal.toLocaleString()} kcal`, water].filter(Boolean).join(' · '),
-      icon: overGoal ? 'warning' : undefined,
-    });
   };
 
   const handleModeChange = (newMode: LogMode) => { setMode(newMode); clearImage(); setResult(null); setLookingUp(false); };
@@ -352,7 +325,7 @@ export default function LogScreen() {
           </>
         )}
       </ScrollView>
-      <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={loggingAll} />
+      <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={listLogging.logging} />
     </SafeAreaView>
     </TabFocusFade>
   );

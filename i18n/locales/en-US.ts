@@ -661,6 +661,27 @@ const enUS = {
     adaptiveHint: 'Updates every Monday.',
     body: 'Body',
   },
+  camera: {
+    modeLabel: "Label",
+    labelHint: "Fill the frame with the nutrition label",
+    title: "Log a meal",
+    modePhoto: "Photo",
+    modeScan: "Scan",
+    photoHint: "Fit the whole plate in — every item counts",
+    scanHint: "Point at a barcode to scan",
+    fromLibrary: "Choose from library",
+    shutter: "Take photo",
+    torch: "Flashlight",
+    listChip: "List {n} · {kcal} kcal",
+    servings: "Servings",
+    logNow: "Log now",
+    added: "Added: {food}",
+    notThis: "Not this",
+    notFound: "Barcode not found",
+    notFoundBody: "{code} isn't in the product database yet. Enter it by hand, or photograph the nutrition label.",
+    keepScanning: "Keep scanning",
+    photoFailed: "Couldn't take the photo. Try again.",
+  },
 };
 
 export default enUS;
