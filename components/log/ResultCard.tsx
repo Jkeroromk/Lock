@@ -29,12 +29,14 @@ interface Props {
   onSaveEdit: () => void;
   onChange: (key: string, val: string) => void;
   onSaveMeal: () => void;
+  /** Put this result on the 待记录 list and go scan the next one. */
+  onAddToList?: () => void;
 }
 
 const MACROS = ['protein', 'carbs', 'fat'] as const;
 
 /** AI / barcode result: hero card with kcal, macro bars (share of today's target) and save. */
-export default function ResultCard({ result, isEditing, editedData, saving, onEdit, onCancelEdit, onSaveEdit, onChange, onSaveMeal }: Props) {
+export default function ResultCard({ result, isEditing, editedData, saving, onEdit, onCancelEdit, onSaveEdit, onChange, onSaveMeal, onAddToList }: Props) {
   const c = useTheme();
   const { t } = useTranslation();
   const user = useStore((st) => st.user);
@@ -140,13 +142,25 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
             <Button label={t('log.saveChanges')} variant="solid" onPress={onSaveEdit} style={{ flex: 2 }} />
           </>
         ) : (
-          <Button
-            label={saving ? t('log.saving' as any) : t('log.saveMeal')}
-            icon="checkmark"
-            loading={saving}
-            onPress={onSaveMeal}
-            style={{ flex: 1 }}
-          />
+          <>
+            {onAddToList ? (
+              <Button
+                label={t('log.addToList')}
+                icon="add"
+                variant="outline"
+                disabled={saving}
+                onPress={onAddToList}
+                style={{ flex: 1 }}
+              />
+            ) : null}
+            <Button
+              label={saving ? t('log.saving' as any) : t('log.saveMeal')}
+              icon="checkmark"
+              loading={saving}
+              onPress={onSaveMeal}
+              style={{ flex: onAddToList ? 1.2 : 1 }}
+            />
+          </>
         )}
       </View>
     </Card>

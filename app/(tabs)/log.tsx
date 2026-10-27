@@ -22,6 +22,8 @@ import { getQuota, proTrialDaysLeft } from '@/lib/plans';
 import BarcodeScanner from '@/components/log/BarcodeScanner';
 import ResultCard, { FoodResult } from '@/components/log/ResultCard';
 import ImagePickerButtons from '@/components/log/ImagePickerButtons';
+import { CartBar, CartSheet } from '@/components/log/MealCart';
+import { useMealCartStore, cartItemName } from '@/store/useMealCartStore';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { calorieGoalNow } from '@/hooks/useDailyGoals';
@@ -55,6 +57,8 @@ export default function LogScreen() {
   const [result, setResult] = useState<FoodResult | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ food: '', calories: '', protein: '', carbs: '', fat: '' });
+  const [listOpen, setListOpen] = useState(false);
+  const [loggingAll, setLoggingAll] = useState(false);
 
   // Photo taken from the yellow camera button in the tab bar arrives as a param.
   const { imageUri } = useLocalSearchParams<{ imageUri?: string }>();
@@ -185,6 +189,81 @@ export default function LogScreen() {
     finally { setSaving(false); }
   };
 
+  /** Put the current result on the list and get ready for the next scan. */
+  const addToList = async () => {
+    if (!result) return;
+    const r = result;
+    const thumb = mode === 'photo' && image ? await makeMealThumbnail(image) : null;
+    const cart = useMealCartStore.getState();
+    cart.add({
+      food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat,
+      source: mode, thumbUri: thumb?.uri, thumbBase64: thumb?.base64,
+    });
+    const n = useMealCartStore.getState().items.length;
+    clearImage(); setResult(null); setLookingUp(false);
+    showToast({
+      message: t('log.addedToList', { food: r.food }),
+      detail: t('log.listCount', { n: String(n) }),
+      action: { label: t('log.viewList'), onPress: () => setListOpen(true) },
+    });
+  };
+
+  /** Log every item on the list as its own meal; failures stay on the list. */
+  const logAll = async () => {
+    const items = useMealCartStore.getState().items;
+    if (!items.length || loggingAll) return;
+    const drinks = items
+      .map((it) => ({ it, ml: Math.round(detectLiquidMl(it.food) * it.servings) }))
+      .filter((d) => d.ml > 0);
+    const drinkMl = drinks.reduce((sum, d) => sum + d.ml, 0);
+    const countWater = drinkMl > 0 && (await askCountAsWater(drinks.map((d) => d.it.food).join(', '), drinkMl));
+    setLoggingAll(true);
+    const before = todaysCalories();
+    const done: string[] = [];
+    let kcal = 0;
+    const r1 = (v: number) => Math.round(v * 10) / 10;
+    for (const it of items) {
+      try {
+        await logMeal({
+          food_name: cartItemName(it),
+          calories: Math.round(it.calories * it.servings),
+          protein: r1(it.protein * it.servings),
+          carbs: r1(it.carbs * it.servings),
+          fat: r1(it.fat * it.servings),
+          image_url: it.thumbUri || '',
+          thumbnail: it.thumbBase64,
+        });
+        done.push(it.id);
+        kcal += Math.round(it.calories * it.servings);
+      } catch {}
+    }
+    const loggedMl = countWater ? drinks.filter((d) => done.includes(d.it.id)).reduce((sum, d) => sum + d.ml, 0) : 0;
+    if (loggedMl > 0) await addWater(loggedMl).catch(() => {});
+    useMealCartStore.getState().removeMany(done);
+    setLoggingAll(false);
+    if (done.length) refreshToday();
+
+    const failed = items.length - done.length;
+    if (failed > 0) {
+      Alert.alert(t('log.saveFailed'), t('log.logAllPartial', { n: String(failed) }));
+      return;
+    }
+    setListOpen(false);
+    router.navigate('/(tabs)/today');
+    const { calorieWarnings, user: me } = useStore.getState();
+    const goal = calorieGoalNow();
+    const after = before + kcal;
+    const overGoal = calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
+    const water = loggedMl > 0 ? (t('water.autoAdded' as any) as string).replace('{ml}', String(loggedMl)) : '';
+    showToast({
+      message: t('log.loggedAll', { n: String(done.length) }),
+      detail: overGoal
+        ? [t('calorieWarn.toastOver' as any, { kcal: (after - goal).toLocaleString() }), water].filter(Boolean).join(' · ')
+        : [`${kcal.toLocaleString()} kcal`, water].filter(Boolean).join(' · '),
+      icon: overGoal ? 'warning' : undefined,
+    });
+  };
+
   const handleModeChange = (newMode: LogMode) => { setMode(newMode); clearImage(); setResult(null); setLookingUp(false); };
 
   const modeCaption = mode === 'barcode' ? t('log.barcodeScanDesc' as any) : mode === 'label' ? t('log.labelScanDesc' as any) : t('log.takeOrSelect');
@@ -204,6 +283,8 @@ export default function LogScreen() {
           style={{ marginBottom: 14 }}
         />
 
+        <CartBar onOpen={() => setListOpen(true)} />
+
         {/* Barcode mode */}
         {mode === 'barcode' && (
           <>
@@ -215,7 +296,7 @@ export default function LogScreen() {
             ) : result ? null : (
               <BarcodeScanner onScanned={handleBarcodeScan} />
             )}
-            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} /></Appear>}
+            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} /></Appear>}
             {result && !isEditing && (
               <Button label={t('log.rescan' as any)} icon="barcode-outline" variant="outline" onPress={() => { setResult(null); setLookingUp(false); }} />
             )}
@@ -262,7 +343,7 @@ export default function LogScreen() {
                 )}
               </View>
             )}
-            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} /></Appear>}
+            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} /></Appear>}
             {!image && <ImagePickerButtons mode={mode as 'photo' | 'label'} onTakePhoto={takePhoto} onPickImage={pickImage} />}
             {image && !isEditing && !analyzing && (
               <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} />
@@ -270,6 +351,7 @@ export default function LogScreen() {
           </>
         )}
       </ScrollView>
+      <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={loggingAll} />
     </SafeAreaView>
     </TabFocusFade>
   );

@@ -17,6 +17,7 @@ const koKR = {
     ofGoal: '목표 {goal}',
   },
   log: {
+    addToList: "목록에 추가", viewList: "보기", listTitle: "기록 대기 목록", listSummary: "{n}개 · {kcal} kcal · 단백질 {p}g", listTotal: "합계", listEmpty: "목록이 비어 있어요. 스캔하거나 사진을 찍고 \"목록에 추가\"한 뒤 한 번에 기록하세요.", clearList: "비우기", clearListConfirm: "목록을 비울까요?", keepScanning: "계속 추가", logAll: "모두 기록 ({n})", addedToList: "목록에 추가됨 · {food}", listCount: "목록에 {n}개", loggedAll: "{n}개 기록 완료", logAllPartial: "{n}개는 저장하지 못해 목록에 남아 있어요. 잠시 후 다시 시도하세요.", removeItem: "삭제", lessServing: "수량 줄이기", moreServing: "수량 늘리기",
     foodName: '음식 이름', photoShort: '사진', labelShort: '라벨', barcodeShort: '바코드', aiAnalyzed: 'AI 분석 완료',
     startLogging: '기록 시작',
     takeOrSelect: '식사 사진을 촬영하거나 선택하여 영양 정보 분석',

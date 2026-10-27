@@ -17,6 +17,7 @@ const jaJP = {
     ofGoal: '目標 {goal}',
   },
   log: {
+    addToList: "リストに追加", viewList: "見る", listTitle: "記録待ちリスト", listSummary: "{n} 品 · {kcal} kcal · たんぱく質 {p}g", listTotal: "合計", listEmpty: "リストは空です。スキャンや撮影のあと「リストに追加」して、最後にまとめて記録できます。", clearList: "クリア", clearListConfirm: "リストをクリアしますか？", keepScanning: "追加を続ける", logAll: "すべて記録（{n}）", addedToList: "リストに追加 · {food}", listCount: "リストに {n} 品", loggedAll: "{n} 品を記録しました", logAllPartial: "{n} 品を保存できず、リストに残っています。少し待ってからもう一度。", removeItem: "削除", lessServing: "数量を減らす", moreServing: "数量を増やす",
     foodName: '食品名', photoShort: '写真', labelShort: 'ラベル', barcodeShort: 'バーコード', aiAnalyzed: 'AI 解析済み',
     startLogging: '記録を開始',
     takeOrSelect: '食事の写真を撮影または選択して栄養情報を分析',
