@@ -8,13 +8,31 @@ import { VISION_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib
 // downsizes photos to ~1024px (~200 KB), so this is only a sanity cap.
 const MAX_BASE64_LENGTH = 4_000_000;
 
+interface VisionItem {
+  name: string;
+  portion?: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
 interface VisionResponse {
-  food: string;
+  /** Label mode, and older single-food answers. */
+  food?: string;
+  items?: VisionItem[];
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
   confidence: number;
+}
+
+/** "南瓜、水煮蛋、山药" / "Pumpkin, Boiled eggs, Yam". */
+function joinNames(names: string[], lang: string | undefined): string {
+  const cjk = typeof lang === 'string' && (lang.startsWith('zh') || lang.startsWith('ja'));
+  const joined = names.join(cjk ? '、' : ', ');
+  return joined.length > 80 ? `${joined.slice(0, 79)}…` : joined;
 }
 
 // AI calls can take up to ~30s; don't let the function be cut off first.
@@ -74,16 +92,21 @@ Instructions:
 - If only per-100g values are present, use those.
 - Look for: Calories/Energy, Total Fat, Total Carbohydrate, Protein.
 - Return only the JSON, no other text.`
-      : `Analyze this food image and return JSON in exactly this format:
+      : `Analyze this meal photo. Identify EVERY separate food that is part of the meal, not just the biggest one.
+Return JSON in exactly this format:
 {
-  "food": "<food name>",
-  "calories": <number>,
-  "protein": <number in grams>,
-  "carbs": <number in grams>,
-  "fat": <number in grams>,
+  "items": [
+    { "name": "<food name>", "portion": "<count and/or estimated grams, e.g. '2 eggs (~100 g)'>", "calories": <number>, "protein": <grams>, "carbs": <grams>, "fat": <grams> }
+  ],
   "confidence": <number between 0 and 1>
 }
 
+Rules:
+- List each food on its own: e.g. pumpkin on one plate and eggs plus yam on another are three items.
+- Count pieces (2 eggs, 3 dumplings) and estimate each portion from its size; a dinner plate is about 22 cm across.
+- Nutrition values are for the whole visible portion of that item, not per 100 g.
+- Leave out: sealed or unopened packages and drink cartons, screens, decorations, utensils, empty containers. Include a drink only if it is poured into a glass or cup.
+- If the photo shows a single dish, return one item.
 ${langInstruction}
 Return only the JSON, no other text.`;
 
@@ -100,20 +123,53 @@ Return only the JSON, no other text.`;
           },
         ],
         temperature: 0.1,
+        maxTokens: 3000,
       });
 
       const analysis = extractJson<VisionResponse>(content);
       const num = (v: unknown) => (typeof v === 'number' && isFinite(v) ? v : Number(v) || 0);
-      if (!analysis.food || !isFinite(Number(analysis.calories))) {
+
+      // Food photos: add up every item so side dishes (e.g. two eggs) count.
+      const items = Array.isArray(analysis.items)
+        ? analysis.items.filter((it) => it && typeof it.name === 'string' && it.name.trim() && isFinite(num(it.calories)))
+        : [];
+      let food: string;
+      let totals: { calories: number; protein: number; carbs: number; fat: number };
+      if (items.length > 0) {
+        food = joinNames(items.map((it) => it.name.trim()), lang);
+        totals = items.reduce(
+          (t, it) => ({
+            calories: t.calories + Math.max(0, num(it.calories)),
+            protein: t.protein + Math.max(0, num(it.protein)),
+            carbs: t.carbs + Math.max(0, num(it.carbs)),
+            fat: t.fat + Math.max(0, num(it.fat)),
+          }),
+          { calories: 0, protein: 0, carbs: 0, fat: 0 },
+        );
+      } else if (analysis.food && isFinite(Number(analysis.calories))) {
+        food = String(analysis.food);
+        totals = {
+          calories: num(analysis.calories), protein: num(analysis.protein),
+          carbs: num(analysis.carbs), fat: num(analysis.fat),
+        };
+      } else {
         throw new Error(`Invalid AI response: ${content.slice(0, 200)}`);
       }
 
       return NextResponse.json({
-        food: String(analysis.food),
-        calories: Math.round(num(analysis.calories)),
-        protein: Math.round(num(analysis.protein)),
-        carbs: Math.round(num(analysis.carbs)),
-        fat: Math.round(num(analysis.fat)),
+        food,
+        calories: Math.round(totals.calories),
+        protein: Math.round(totals.protein),
+        carbs: Math.round(totals.carbs),
+        fat: Math.round(totals.fat),
+        items: items.map((it) => ({
+          name: it.name.trim(),
+          portion: typeof it.portion === 'string' ? it.portion : undefined,
+          calories: Math.round(num(it.calories)),
+          protein: Math.round(num(it.protein)),
+          carbs: Math.round(num(it.carbs)),
+          fat: Math.round(num(it.fat)),
+        })),
         confidence: Math.min(1, Math.max(0, num(analysis.confidence) || 0.5)),
         remaining: quota.remaining,
       });
