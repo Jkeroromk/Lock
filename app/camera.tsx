@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeOut, SlideInDown, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown, FadeOut, SlideInDown, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { Text } from '@/components/ui/Text';
 import { Button, PressScale } from '@/components/ui/bxc';
 import { CartSheet } from '@/components/log/MealCart';
@@ -244,7 +244,7 @@ export default function CameraScreen() {
           enableTorch={torch}
           onCameraReady={() => setReady(true)}
           barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39'] }}
-          onBarcodeScanned={scanning ? onBarcode : undefined}
+          onBarcodeScanned={mode === 'scan' ? onBarcode : undefined}
         />
         <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           {mode !== 'scan' ? (
@@ -252,7 +252,7 @@ export default function CameraScreen() {
               <Brackets w="100%" h="100%" />
             </View>
           ) : (
-            <View style={{ alignItems: 'center', gap: 16, marginTop: sheetOpen ? -220 : 0 }}>
+            <View style={{ alignItems: 'center', gap: 16, opacity: sheetOpen ? 0 : 1 }}>
               <View>
                 <Brackets w={270} h={130} size={30} />
                 <View style={{ position: 'absolute', left: 18, right: 18, top: 63, height: 3, borderRadius: 2, backgroundColor: YELLOW, opacity: scanning ? 1 : 0.35 }} />
@@ -325,7 +325,7 @@ export default function CameraScreen() {
       {/* Scan result */}
       {sheetOpen ? (
         <Animated.View
-          entering={SlideInDown.springify().damping(20)}
+          entering={SlideInDown.duration(260).easing(Easing.out(Easing.cubic))}
           style={{
             position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: 12, paddingHorizontal: 18, paddingBottom: insets.bottom + 18,
             borderTopLeftRadius: 28, borderTopRightRadius: 28, backgroundColor: c.backgroundPrimary, gap: 14,
