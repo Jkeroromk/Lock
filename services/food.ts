@@ -9,6 +9,8 @@ export interface FoodAnalysis {
   carbs: number;
   fat: number;
   confidence: number;
+  /** Product photo (barcode lookups). */
+  imageUrl?: string;
 }
 
 export interface MealData {
@@ -105,24 +107,91 @@ export const updateMeal = async (
   }
 };
 
-export const lookupBarcode = async (barcode: string): Promise<FoodAnalysis | null> => {
+/** OFF numbers can arrive as strings; anything unusable becomes undefined. */
+const offNum = (v: unknown): number | undefined => {
+  const n = typeof v === 'number' ? v : typeof v === 'string' ? parseFloat(v) : NaN;
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
+};
+
+/**
+ * Open Food Facts lookup. Values are for one serving when the product says
+ * what a serving is, otherwise per 100 g — never a mix of the two (the old
+ * code took kcal per serving but protein per 100 g when one was missing).
+ */
+export const lookupBarcode = async (barcode: string, lang?: string): Promise<FoodAnalysis | null> => {
   try {
     const response = await axios.get(
-      `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
+      `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json`,
       { headers: { 'User-Agent': 'LockApp/1.0 (health tracking)' }, timeout: 8000 },
     );
     const product = response.data?.product;
     if (!product) return null;
     const n = product.nutriments ?? {};
-    const name: string = product.product_name_en || product.product_name || product.abbreviated_product_name || '';
-    if (!name) return null;
+
+    // kcal for a basis ("serving" | "100g"), falling back to kJ.
+    const kcal = (basis: string) => {
+      const direct = offNum(n[`energy-kcal_${basis}`]);
+      if (direct !== undefined) return direct;
+      const kj = offNum(n[`energy-kj_${basis}`]) ?? offNum(n[`energy_${basis}`]);
+      return kj !== undefined ? kj / 4.184 : undefined;
+    };
+
+    const servingG = offNum(product.serving_quantity);
+    const per100 = {
+      calories: kcal('100g'),
+      protein: offNum(n.proteins_100g),
+      carbs: offNum(n.carbohydrates_100g),
+      fat: offNum(n.fat_100g),
+    };
+    const perServing = {
+      calories: kcal('serving'),
+      protein: offNum(n.proteins_serving),
+      carbs: offNum(n.carbohydrates_serving),
+      fat: offNum(n.fat_serving),
+    };
+    const scale = servingG && servingG > 0 && servingG < 2000 ? servingG / 100 : null;
+
+    let values: { calories?: number; protein?: number; carbs?: number; fat?: number };
+    let basisLabel: string;
+    if (perServing.calories !== undefined || scale) {
+      // One serving: use the label's per-serving figure, else scale per-100 g.
+      const pick = (k: keyof typeof per100) =>
+        perServing[k] ?? (scale && per100[k] !== undefined ? per100[k]! * scale : undefined);
+      values = { calories: pick('calories'), protein: pick('protein'), carbs: pick('carbs'), fat: pick('fat') };
+      basisLabel = String(product.serving_size || (servingG ? `${servingG} g` : '')).trim();
+    } else {
+      values = per100;
+      basisLabel = '100 g';
+    }
+
+    const protein = values.protein ?? 0;
+    const carbs = values.carbs ?? 0;
+    const fat = values.fat ?? 0;
+    // Missing energy but macros present: 4/4/9.
+    const calories = values.calories ?? (protein || carbs || fat ? protein * 4 + carbs * 4 + fat * 9 : 0);
+
+    const short = (lang || 'en').slice(0, 2).toLowerCase();
+    const baseName: string = (
+      product[`product_name_${short}`] || product.product_name_en || product.product_name ||
+      product.generic_name || product.abbreviated_product_name || ''
+    ).trim();
+    if (!baseName) return null;
+    const brand = String(product.brands || '').split(',')[0].trim();
+    const named = brand && !baseName.toLowerCase().includes(brand.toLowerCase()) ? `${brand} ${baseName}` : baseName;
+    const food = basisLabel ? `${named} (${basisLabel})` : named;
+
+    const imageUrl: string | undefined =
+      product.image_front_small_url || product.image_front_url || product.image_small_url || product.image_url || undefined;
+
+    const r1 = (v: number) => Math.round(v * 10) / 10;
     return {
-      food: name,
-      calories: Math.round(n['energy-kcal_serving'] ?? n['energy-kcal_100g'] ?? 0),
-      protein: Math.round((n['proteins_serving'] ?? n['proteins_100g'] ?? 0) * 10) / 10,
-      carbs: Math.round((n['carbohydrates_serving'] ?? n['carbohydrates_100g'] ?? 0) * 10) / 10,
-      fat: Math.round((n['fat_serving'] ?? n['fat_100g'] ?? 0) * 10) / 10,
-      confidence: 0.95,
+      food,
+      calories: Math.round(calories),
+      protein: r1(protein),
+      carbs: r1(carbs),
+      fat: r1(fat),
+      confidence: values.calories !== undefined ? 0.95 : 0.6,
+      imageUrl: typeof imageUrl === 'string' && imageUrl.startsWith('https://') ? imageUrl : undefined,
     };
   } catch {
     return null;
