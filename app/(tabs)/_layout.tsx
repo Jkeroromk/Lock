@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View, Platform } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { useEffect, useRef, useState } from 'react';
-import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
@@ -25,8 +25,9 @@ function LogTabButton(props: any) {
   const isOnLogPage = pathname?.includes('/log') || segments?.includes('log') || false;
   const isSelected = isOnLogPage || (accessibilityState?.selected ?? false);
   
-  // 检测是否为iOS模拟器（模拟器上Constants.isDevice为false）
-  const isIOSSimulator = Platform.OS === 'ios' && !Constants.isDevice;
+  // iOS simulator has no camera. Constants.isDevice no longer exists (it was
+  // always undefined, so every phone was treated as a simulator); expo-device has it.
+  const isIOSSimulator = Platform.OS === 'ios' && Device.isDevice === false;
   
   // Opens our own camera (拍照 · 扫码). The simulator has no camera: go to the log tab.
   const handlePress = () => {
