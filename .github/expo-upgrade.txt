@@ -1,8 +1,8 @@
 # One command per line, run in order by .github/workflows/expo-upgrade.yml
-# Batch 2: drop unused native/JS libraries, update plugins for SDK 58.
-npm uninstall moti victory-native react-native-calendars react-native-worklets-core
-npm install --save-exact @bacons/apple-targets@5.0.0
-npx expo install @expo/config-plugins expo-alternate-app-icons@latest
-npx expo install --check
-npm view react-native-purchases@latest peerDependencies
-npm view react-native-health@latest version
+# Batch 3: missing peer dependencies; check whether @expo/config-plugins is still needed; try an iOS prebuild.
+npx expo install expo-constants expo-haptics expo-linear-gradient
+npm uninstall @expo/config-plugins
+npx expo config --type prebuild --json > /dev/null && echo CONFIG_OK_WITHOUT_CONFIG_PLUGINS || { echo NEED_CONFIG_PLUGINS; npx expo install @expo/config-plugins; }
+npx expo prebuild --platform ios --no-install --clean > /tmp/prebuild.log 2>&1 && echo PREBUILD_OK || echo PREBUILD_FAILED; tail -40 /tmp/prebuild.log
+grep -n "SceneDelegate\|UIApplicationSceneManifest" -r ios --include=*.plist --include=*.swift -l | head
+ls ios

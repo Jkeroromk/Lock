@@ -98,12 +98,12 @@ const TAB_ICONS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof
 
 type Route = BottomTabBarProps['state']['routes'][number];
 
-/** Press handler for a tab, same rules as the default tab bar. */
-function useTabPress({ state, navigation }: BottomTabBarProps) {
+/** Press handler for a tab, same rules as expo-router's own tab bar. */
+function useTabPress({ state, emitter, navigateToTab }: BottomTabBarProps) {
   return (route: Route) => () => {
     const focused = state.routes[state.index]?.key === route.key;
-    const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-    if (!focused && !event.defaultPrevented) navigation.navigate(route.name as never);
+    const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+    if (!focused && !event.defaultPrevented) navigateToTab(route.key);
   };
 }
 

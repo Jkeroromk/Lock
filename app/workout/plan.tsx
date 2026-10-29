@@ -1,7 +1,7 @@
 import { View, ScrollView, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, useState } from 'react';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useLocalSearchParams, usePreventRemove, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Button, Card, IconButton, Label, PressScale, TextField } from '@/components/ui/bxc';
@@ -26,7 +26,6 @@ export default function PlanEditorScreen() {
   const c = useTheme();
   const { t, language } = useTranslation();
   const router = useRouter();
-  const navigation = useNavigation();
   const params = useLocalSearchParams<{ day?: string }>();
   const storedPlan = useWorkoutStore((s) => s.plan);
   const setPlan = useWorkoutStore((s) => s.setPlan);
@@ -42,18 +41,15 @@ export default function PlanEditorScreen() {
   const [moving, setMoving] = useState(false);
   const leaving = useRef(false);
 
-  // Unsaved changes: ask before leaving (back button and swipe).
-  useEffect(() => {
-    const unsub = (navigation as any).addListener('beforeRemove', (e: any) => {
-      if (!dirty || leaving.current) return;
-      e.preventDefault();
-      Alert.alert(t('train.unsavedTitle'), t('train.unsavedBody'), [
-        { text: t('train.keepEditing'), style: 'cancel' },
-        { text: t('train.discardChanges'), style: 'destructive', onPress: () => { leaving.current = true; navigation.dispatch(e.data.action); } },
-      ]);
-    });
-    return unsub;
-  }, [navigation, dirty]);
+  // Unsaved changes: ask before leaving (back button and swipe). After saving,
+  // leaving.current is set and the screen just goes.
+  usePreventRemove(dirty, ({ repeat }) => {
+    if (leaving.current) { repeat(); return; }
+    Alert.alert(t('train.unsavedTitle'), t('train.unsavedBody'), [
+      { text: t('train.keepEditing'), style: 'cancel' },
+      { text: t('train.discardChanges'), style: 'destructive', onPress: () => { leaving.current = true; repeat(); } },
+    ]);
+  });
 
   const key = String(day);
   const current = draft[key] ?? { exercises: [] };
