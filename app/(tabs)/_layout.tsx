@@ -1,34 +1,45 @@
 import { Tabs, usePathname, useSegments, useRouter } from 'expo-router';
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HardShadow, PressScale, MOTION } from '@/components/ui/bxc';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Platform } from 'react-native';
-import { Text } from '@/components/ui/Text';
-import { useEffect, useRef, useState } from 'react';
+import { View, Platform, type ViewStyle } from 'react-native';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import * as Device from 'expo-device';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
 import { TAB_BAR_HEIGHT } from '@/hooks/useTabBarInset';
+import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT } from '@/hooks/useDeviceLayout';
 
+// Props expo-router passes to a custom tab bar (taken from Tabs itself, so it
+// follows whatever navigation library expo-router uses underneath).
+type BottomTabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
+
+type LogVariant = 'raised' | 'rail' | 'fab';
+
+/**
+ * The yellow camera button. raised: sticks out of the phone tab bar; rail:
+ * inside the outer-display rail; fab: on its own at the bottom right of the
+ * open Duo, so it never sits on the fold.
+ */
 function LogTabButton(props: any) {
   const pathname = usePathname();
   const segments = useSegments();
   const router = useRouter();
   const { onPress, accessibilityState } = props;
+  const variant: LogVariant = props.variant ?? 'raised';
   const { t } = useTranslation();
   const colors = useTheme();
-  
+
   // 检测是否在log页面
   const isOnLogPage = pathname?.includes('/log') || segments?.includes('log') || false;
   const isSelected = isOnLogPage || (accessibilityState?.selected ?? false);
-  
+
   // iOS simulator has no camera. Constants.isDevice no longer exists (it was
   // always undefined, so every phone was treated as a simulator); expo-device has it.
   const isIOSSimulator = Platform.OS === 'ios' && Device.isDevice === false;
-  
+
   // Opens our own camera (拍照 · 扫码). The simulator has no camera: go to the log tab.
   const handlePress = () => {
     if (isIOSSimulator) {
@@ -38,6 +49,15 @@ function LogTabButton(props: any) {
     router.push('/camera');
   };
 
+  const size = variant === 'rail' ? 50 : variant === 'fab' ? 64 : 62;
+  const radius = variant === 'rail' ? 17 : variant === 'fab' ? 22 : 20;
+  const wrapper: ViewStyle =
+    variant === 'raised'
+      ? { flex: 1, alignItems: 'center', justifyContent: 'center' }
+      : variant === 'rail'
+        ? { width: RAIL_WIDTH, height: 66, alignItems: 'center', justifyContent: 'center' }
+        : { alignItems: 'center', justifyContent: 'center' };
+
   return (
     <PressScale
       onPress={handlePress}
@@ -45,15 +65,15 @@ function LogTabButton(props: any) {
       accessibilityRole="button"
       accessibilityLabel={t('tabs.log')}
       accessibilityState={{ selected: isSelected }}
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+      style={wrapper}
     >
-      <View style={{ marginTop: -34, transform: [{ rotate: '-4deg' }] }}>
-        <HardShadow color={colors.ink} radius={20} offset={4}>
+      <View style={{ marginTop: variant === 'raised' ? -34 : 0, transform: [{ rotate: '-4deg' }] }}>
+        <HardShadow color={colors.ink} radius={radius} offset={variant === 'rail' ? 3 : 4}>
           <View
             style={{
-              width: 62,
-              height: 62,
-              borderRadius: 20,
+              width: size,
+              height: size,
+              borderRadius: radius,
               backgroundColor: colors.accent,
               borderWidth: 2,
               borderColor: colors.ink,
@@ -61,7 +81,7 @@ function LogTabButton(props: any) {
               justifyContent: 'center',
             }}
           >
-            <Ionicons name={isSelected ? 'camera' : 'camera-outline'} size={28} color={colors.onAccent} />
+            <Ionicons name={isSelected ? 'camera' : 'camera-outline'} size={variant === 'rail' ? 24 : 28} color={colors.onAccent} />
           </View>
         </HardShadow>
       </View>
@@ -76,14 +96,83 @@ const TAB_ICONS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof
   settings: { on: 'person', off: 'person-outline' },
 };
 
+type Route = BottomTabBarProps['state']['routes'][number];
+
+/** Press handler for a tab, same rules as expo-router's own tab bar. */
+function useTabPress({ state, emitter, navigateToTab }: BottomTabBarProps) {
+  return (route: Route) => () => {
+    const focused = state.routes[state.index]?.key === route.key;
+    const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+    if (!focused && !event.defaultPrevented) navigateToTab(route.key);
+  };
+}
+
+/**
+ * One tab icon. The phone bar draws its own sliding dot; the rail and the
+ * open-Duo bar mark the active tab with a fixed yellow dot (left / below).
+ */
+function TabIcon({
+  route, focused, onPress, label, overGoal, style, indicator,
+}: {
+  route: Route; focused: boolean; onPress: () => void; label: string; overGoal: boolean;
+  style: ViewStyle; indicator?: 'left' | 'below';
+}) {
+  const colors = useTheme();
+  const { t } = useTranslation();
+  const icons = TAB_ICONS[route.name];
+  if (!icons) return null;
+  return (
+    <PressScale
+      onPress={onPress}
+      scaleTo={0.86}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={[label, route.name === 'today' && overGoal ? t('calorieWarn.tabBadge' as any) : ''].filter(Boolean).join(', ')}
+      style={[{ alignItems: 'center', justifyContent: 'center' }, style]}
+    >
+      <View>
+        <Ionicons
+          name={focused ? icons.on : icons.off}
+          size={23}
+          color={focused ? colors.tabIconActive : colors.tabIconInactive}
+        />
+        {route.name === 'today' && overGoal ? (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute', top: -3, right: -5, width: 10, height: 10, borderRadius: 5,
+              backgroundColor: colors.danger, borderWidth: 2, borderColor: colors.tabBar,
+            }}
+          />
+        ) : null}
+      </View>
+      {focused && indicator ? (
+        <View
+          pointerEvents="none"
+          style={[
+            { position: 'absolute', width: 5, height: 5, borderRadius: 2.5, backgroundColor: colors.accent },
+            indicator === 'left' ? { left: 7, top: '50%', marginTop: -2.5 } : { bottom: 13, left: '50%', marginLeft: -2.5 },
+          ]}
+        />
+      ) : null}
+    </PressScale>
+  );
+}
+
+function tabLabel(descriptors: BottomTabBarProps['descriptors'], route: Route) {
+  const title = descriptors[route.key]?.options.title;
+  return typeof title === 'string' ? title : route.name;
+}
+
 /**
  * Floating pill tab bar (B×C). Sits in the layout flow so screens need no extra
  * padding. The yellow dot slides to the active tab; icons squash on press.
  */
-function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+function PhoneTabBar(props: BottomTabBarProps & { maxWidth?: number }) {
+  const { state, descriptors, maxWidth } = props;
   const colors = useTheme();
   const insets = useSafeAreaInsets();
-  const { t } = useTranslation();
+  const pressFor = useTabPress(props);
   // Red dot on Today while over the calorie goal, visible from every tab.
   const overGoal = isWarning(useCalorieStatus().level);
   const [barWidth, setBarWidth] = useState(0);
@@ -109,11 +198,16 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     // (screens pad their scroll content with useTabBarInset).
     <View
       pointerEvents="box-none"
-      style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingBottom: Math.max(insets.bottom, 12) }}
+      style={{
+        position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16,
+        paddingBottom: Math.max(insets.bottom, 12), alignItems: 'center',
+      }}
     >
       <View
         onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         style={{
+          width: '100%',
+          maxWidth,
           height: TAB_BAR_HEIGHT,
           borderRadius: TAB_BAR_HEIGHT / 2,
           backgroundColor: colors.tabBar,
@@ -128,48 +222,19 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         />
         {state.routes.map((route, index) => {
           const focused = state.index === index;
-          const { options } = descriptors[route.key];
-          const onPress = () => {
-            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!focused && !event.defaultPrevented) navigation.navigate(route.name as never);
-          };
-
           if (route.name === 'log') {
-            return <LogTabButton key={route.key} onPress={onPress} accessibilityState={{ selected: focused }} />;
+            return <LogTabButton key={route.key} onPress={pressFor(route)} accessibilityState={{ selected: focused }} />;
           }
-
-          const icons = TAB_ICONS[route.name];
-          if (!icons) return null;
           return (
-            <PressScale
+            <TabIcon
               key={route.key}
-              onPress={onPress}
-              scaleTo={0.86}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: focused }}
-              accessibilityLabel={[
-                typeof options.title === 'string' ? options.title : route.name,
-                route.name === 'today' && overGoal ? t('calorieWarn.tabBadge' as any) : '',
-              ].filter(Boolean).join(', ')}
-              style={{ flex: 1, height: 66, alignItems: 'center', justifyContent: 'center', paddingBottom: 8 }}
-            >
-              <View>
-                <Ionicons
-                  name={focused ? icons.on : icons.off}
-                  size={23}
-                  color={focused ? colors.tabIconActive : colors.tabIconInactive}
-                />
-                {route.name === 'today' && overGoal ? (
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: 'absolute', top: -3, right: -5, width: 10, height: 10, borderRadius: 5,
-                      backgroundColor: colors.danger, borderWidth: 2, borderColor: colors.tabBar,
-                    }}
-                  />
-                ) : null}
-              </View>
-            </PressScale>
+              route={route}
+              focused={focused}
+              onPress={pressFor(route)}
+              label={tabLabel(descriptors, route)}
+              overGoal={overGoal}
+              style={{ flex: 1, height: 66, paddingBottom: 8 }}
+            />
           );
         })}
       </View>
@@ -177,13 +242,177 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   );
 }
 
+/**
+ * iPhone Duo outer display: the same pill, standing up along the right edge
+ * where the right thumb rests. The camera stays in the middle.
+ */
+function RailTabBar(props: BottomTabBarProps) {
+  const { state, descriptors } = props;
+  const colors = useTheme();
+  const insets = useSafeAreaInsets();
+  const pressFor = useTabPress(props);
+  const overGoal = isWarning(useCalorieStatus().level);
+  // The Duo's status bar is a column on the right edge (reported as the right
+  // inset). The rail shares that column, below the status bar, so content
+  // only loses the column once.
+  const column = railColumnWidth(insets.right);
+
+  return (
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: 'absolute', top: 0, bottom: 0, right: 0, width: column,
+        paddingTop: STATUS_COLUMN_HEIGHT, paddingBottom: Math.max(insets.bottom, 12),
+        alignItems: 'center', justifyContent: 'center',
+      }}
+    >
+      <View style={{ width: RAIL_WIDTH, borderRadius: RAIL_WIDTH / 2, backgroundColor: colors.tabBar, paddingVertical: 6, alignItems: 'center' }}>
+        {state.routes.map((route, index) => {
+          const focused = state.index === index;
+          if (route.name === 'log') {
+            return <LogTabButton key={route.key} variant="rail" onPress={pressFor(route)} accessibilityState={{ selected: focused }} />;
+          }
+          return (
+            <TabIcon
+              key={route.key}
+              route={route}
+              focused={focused}
+              onPress={pressFor(route)}
+              label={tabLabel(descriptors, route)}
+              overGoal={overGoal}
+              indicator="left"
+              style={{ width: RAIL_WIDTH, height: 62 }}
+            />
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+/** Distance between tab icons on the open-Duo bar; also the slot each tab owns. */
+const ISLAND_SLOT = 72;
+/** Hit area inside a slot: narrower than the slot, so the icons next to the
+ *  40pt fold reach at most 6pt into its edge (icons themselves stay clear). */
+const ISLAND_HIT = 44;
+const ISLAND_PAD = 8;
+const FAB_SIZE = 64;
+const LEFT_TABS = ['today', 'train'];
+const RIGHT_TABS = ['dashboard', 'settings'];
+
+/**
+ * iPhone Duo open: one pill with four evenly spaced tabs. The two middle slots
+ * meet at the centre, so the fold falls in the normal gap between tabs 2 and 3
+ * and the icons stay off it. Folded part-way like a book, the pill splits at
+ * the fold into two islands that slide to the middle of their half. The camera
+ * is its own button at the bottom right.
+ */
+function InnerTabBar(props: BottomTabBarProps) {
+  const { state, descriptors } = props;
+  const colors = useTheme();
+  const insets = useSafeAreaInsets();
+  const pressFor = useTabPress(props);
+  const overGoal = isWarning(useCalorieStatus().level);
+  const { width, fold, book } = useDeviceLayout();
+
+  const H = TAB_BAR_HEIGHT;
+  const center = width / 2;
+  // The camera sits in the right-hand status-bar column (or 16pt in from the edge).
+  const fabRight = Math.max(16, (insets.right - FAB_SIZE) / 2);
+  const fabLeftEdge = width - fabRight - FAB_SIZE;
+  // Book posture: each island centred in what is left of its half.
+  const foldStart = fold ? fold.start : center - 12;
+  const foldEnd = fold ? fold.start + fold.width : center + 12;
+  const leftCenter = (insets.left + foldStart) / 2;
+  const rightCenter = (foldEnd + fabLeftEdge - 12) / 2;
+  // Flat: padding only on the outer side, the slots meet at the centre.
+  // Book: padding on both sides.
+  const flatWidth = ISLAND_PAD + ISLAND_SLOT * 2;
+  const bookWidth = ISLAND_PAD * 2 + ISLAND_SLOT * 2;
+
+  const split = useSharedValue(book ? 1 : 0);
+  useEffect(() => {
+    split.value = withSpring(book ? 1 : 0, MOTION.slide);
+  }, [book]);
+
+  const leftStyle = useAnimatedStyle(() => {
+    const s = split.value;
+    return {
+      width: flatWidth + ISLAND_PAD * s,
+      paddingRight: ISLAND_PAD * s,
+      left: (center - flatWidth) * (1 - s) + (leftCenter - bookWidth / 2) * s,
+      borderTopRightRadius: (H / 2) * s,
+      borderBottomRightRadius: (H / 2) * s,
+    };
+  });
+  const rightStyle = useAnimatedStyle(() => {
+    const s = split.value;
+    return {
+      width: flatWidth + ISLAND_PAD * s,
+      paddingLeft: ISLAND_PAD * s,
+      left: center * (1 - s) + (rightCenter - bookWidth / 2) * s,
+      borderTopLeftRadius: (H / 2) * s,
+      borderBottomLeftRadius: (H / 2) * s,
+    };
+  });
+
+  const renderTabs = (names: string[]) =>
+    state.routes
+      .filter((route) => names.includes(route.name))
+      .map((route) => (
+        <View key={route.key} style={{ width: ISLAND_SLOT, height: H, alignItems: 'center', justifyContent: 'center' }}>
+          <TabIcon
+            route={route}
+            focused={state.routes[state.index]?.key === route.key}
+            onPress={pressFor(route)}
+            label={tabLabel(descriptors, route)}
+            overGoal={overGoal}
+            indicator="below"
+            style={{ width: ISLAND_HIT, height: H, paddingBottom: 8 }}
+          />
+        </View>
+      ));
+
+  const logRoute = state.routes.find((r) => r.name === 'log');
+  const island: ViewStyle = {
+    position: 'absolute', top: 0, height: H, backgroundColor: colors.tabBar,
+    borderRadius: H / 2, flexDirection: 'row', alignItems: 'center',
+  };
+
+  return (
+    <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: H + Math.max(insets.bottom, 12) }}>
+      <Animated.View style={[island, { paddingLeft: ISLAND_PAD }, leftStyle]}>{renderTabs(LEFT_TABS)}</Animated.View>
+      <Animated.View style={[island, { paddingRight: ISLAND_PAD }, rightStyle]}>{renderTabs(RIGHT_TABS)}</Animated.View>
+      {logRoute ? (
+        <View pointerEvents="box-none" style={{ position: 'absolute', top: (H - FAB_SIZE) / 2, right: fabRight }}>
+          <LogTabButton
+            variant="fab"
+            onPress={pressFor(logRoute)}
+            accessibilityState={{ selected: state.routes[state.index]?.key === logRoute.key }}
+          />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function AdaptiveTabBar(props: BottomTabBarProps) {
+  const { kind } = useDeviceLayout();
+  if (kind === 'outer') return <RailTabBar {...props} />;
+  if (kind === 'inner') return <InnerTabBar {...props} />;
+  if (kind === 'wide') return <PhoneTabBar {...props} maxWidth={460} />;
+  return <PhoneTabBar {...props} />;
+}
+
 export default function TabLayout() {
   const { t } = useTranslation();
   const colors = useTheme();
-  
+  const { kind } = useDeviceLayout();
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
-      tabBar={(props) => <FloatingTabBar {...props} />}
+      tabBar={(props) => <AdaptiveTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         // Tabs mount on first visit. Mounting all five at launch fired every
@@ -193,24 +422,27 @@ export default function TabLayout() {
         // switching and leave a blank screen. Each tab fades in itself
         // (components/ui/TabFocusFade), which always ends fully visible.
         animation: 'none',
+        // Behind every tab: the app background. Each tab fades and lifts in
+        // (TabFocusFade); since SDK 58 the default scene colour is white, which
+        // showed as a white strip at the top and a grey flash on every switch.
+        // Outer display: also keep content clear of the tab rail on the right.
+        // Screens already pad for the right inset (status-bar column); add
+        // only what the rail needs beyond it.
+        sceneStyle: kind === 'outer'
+          ? { paddingRight: Math.max(0, railColumnWidth(insets.right) - insets.right), backgroundColor: colors.backgroundPrimary }
+          : { backgroundColor: colors.backgroundPrimary },
       }}
     >
       <Tabs.Screen
         name="today"
         options={{
           title: t('tabs.today'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="today" size={size} color={color} />
-          ),
         }}
       />
       <Tabs.Screen
         name="train"
         options={{
           title: t('tabs.train'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="barbell" size={size} color={color} />
-          ),
         }}
       />
       <Tabs.Screen
@@ -225,18 +457,12 @@ export default function TabLayout() {
         name="dashboard"
         options={{
           title: t('tabs.social'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
-          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: t('tabs.user'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
         }}
       />
     </Tabs>

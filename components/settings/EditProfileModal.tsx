@@ -4,6 +4,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput } from '@/components/ui/Text';
 import { useState, useEffect, useRef } from 'react';
+import type { ComponentRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from '@/i18n';
@@ -52,7 +53,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
   const { height: windowH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [kb, setKb] = useState(0);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const fieldY = useRef<{ username: number; bio: number }>({ username: 0, bio: 0 });
   const focused = useRef<'username' | 'bio' | null>(null);
 

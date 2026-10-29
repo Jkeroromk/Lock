@@ -6,7 +6,9 @@
 import AppIntents
 import Foundation
 #if canImport(LockWorkout)
-import LockWorkout
+// Explicitly internal: Expo's generated module provider imports LockWorkout as
+// `internal`, and Swift 6.3 (Xcode 27) rejects mixing that with a plain import.
+internal import LockWorkout
 #endif
 
 @available(iOS 17.0, *)

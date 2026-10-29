@@ -22,14 +22,16 @@ permissions:
 
 jobs:
   compile:
-    runs-on: macos-15
+    # Same image and Xcode as the TestFlight build (testflight.yml).
+    runs-on: xcode-27
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      - name: Select Xcode 27.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
+          xcodebuild -version
 
       - uses: actions/setup-node@v4
         with:
@@ -46,7 +48,14 @@ jobs:
 
       - name: Pods
         working-directory: ios
-        run: pod install
+        run: |
+          set -o pipefail
+          pod install 2>&1 | tee "$RUNNER_TEMP/pods.log" || {
+            # Logs aren't always reachable, so surface the error as an annotation.
+            msg=$(grep -E -A8 '\[!\]|Error|error' "$RUNNER_TEMP/pods.log" | head -40 | cut -c1-300 | awk 'BEGIN{ORS="%0A"} {gsub(/%/,"%25"); gsub(/\r/,""); print}')
+            echo "::error title=pod install::$msg"
+            exit 1
+          }
 
       - name: Build (simulator, unsigned)
         run: |

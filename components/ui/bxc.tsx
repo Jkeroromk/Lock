@@ -4,7 +4,7 @@
  * Button, IconButton, ScreenHeader, Segmented, Corners, TextField.
  * Motion: PressScale (press feedback), Appear (staggered entrance); Ring and Bar animate.
  */
-import { ReactNode, forwardRef, useEffect, useState } from 'react';
+import { ReactNode, forwardRef, useEffect, useState, type ComponentRef } from 'react';
 import { View, Pressable, ActivityIndicator, TextInput as RNTextInput, type ViewStyle, type StyleProp, type PressableProps, type TextInputProps, type GestureResponderEvent } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, useAnimatedProps, withSpring, withTiming, Easing, FadeInDown,
@@ -476,7 +476,7 @@ export function Corners({ color, inset = 12, size = 30, stroke = 4 }: {
 
 // ── TextField ──────────────────────────────────────────────────────────────
 /** 52pt stroked input. `right` renders inside the field (e.g. a show-password toggle). */
-export const TextField = forwardRef<RNTextInput, TextInputProps & { right?: ReactNode; containerStyle?: StyleProp<ViewStyle> }>(
+export const TextField = forwardRef<ComponentRef<typeof RNTextInput>, TextInputProps & { right?: ReactNode; containerStyle?: StyleProp<ViewStyle> }>(
   function TextField({ style, right, containerStyle, ...props }, ref) {
     const c = useTheme();
     return (

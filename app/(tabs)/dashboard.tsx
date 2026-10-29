@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/i18n';
-import { Appear, IconButton, ScreenHeader, Segmented } from '@/components/ui/bxc';
+import { Appear, IconButton, Label, ScreenHeader, Segmented } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard';
 import ChallengesList from '@/components/dashboard/ChallengesList';
@@ -19,11 +19,14 @@ import {
 } from '@/services/api';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import TwoPane from '@/components/layout/TwoPane';
 
 type Tab = 'friends' | 'challenges' | 'pet';
 
 export default function DashboardScreen() {
   const tabInset = useTabBarInset();
+  const { twoPane } = useDeviceLayout();
   const { t } = useTranslation();
   const colors = useTheme();
   const { addFriend: deepLinkCode } = useLocalSearchParams<{ addFriend?: string }>();
@@ -109,6 +112,111 @@ export default function DashboardScreen() {
       ? { label: t('pet.collection'), icon: 'grid-outline', onPress: () => router.push('/pet/collection') }
       : { label: t('pet.setupTitle'), icon: 'paw-outline', onPress: () => router.push('/pet/setup') },
   };
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      tintColor={colors.textPrimary}
+      colors={Platform.OS === 'android' ? [colors.textPrimary] : undefined}
+      progressBackgroundColor={Platform.OS === 'android' ? colors.backgroundPrimary : undefined}
+    />
+  );
+
+  const modals = (
+    <>
+      <AddFriendModal
+        visible={showAddFriend}
+        onClose={() => { setShowAddFriend(false); setPendingFriendId(undefined); }}
+        onSuccess={loadAll}
+        initialValue={pendingFriendId}
+      />
+      <CreateChallengeModal
+        visible={showCreateChallenge}
+        onClose={() => setShowCreateChallenge(false)}
+        onSuccess={() => { loadAll(); }}
+      />
+    </>
+  );
+
+  // Open iPhone Duo (or any wide window): leaderboard / challenges on the
+  // left, the buddy always on the right.
+  if (twoPane) {
+    const leftTab: Tab = activeTab === 'pet' ? 'friends' : activeTab;
+    return (
+      <TabFocusFade>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
+        <TwoPane
+          left={
+            <ScrollView
+              style={{ flex: 1 }}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}
+              refreshControl={refreshControl}
+            >
+              <ScreenHeader
+                title={t('tabs.social')}
+                right={
+                  <IconButton
+                    icon={FAB_CONFIG[leftTab].icon}
+                    filled
+                    onPress={FAB_CONFIG[leftTab].onPress}
+                    accessibilityLabel={FAB_CONFIG[leftTab].label}
+                  />
+                }
+              />
+              <Segmented
+                value={leftTab}
+                onChange={(k) => setActiveTab(k)}
+                options={TAB_CONFIG.filter(({ key }) => key !== 'pet').map(({ key, label }) => ({ key, label, badge: key === 'friends' && requests.length > 0 }))}
+                style={{ marginBottom: 16 }}
+              />
+              {initialLoading ? (
+                <View style={{ paddingVertical: 64, alignItems: 'center' }}>
+                  <ActivityIndicator size="large" color={colors.textPrimary} />
+                </View>
+              ) : leftTab === 'friends' ? (
+                <Appear key="friends">
+                  {requests.length > 0 && (
+                    <>
+                      <FriendRequestsCard requests={requests} onUpdate={loadAll} />
+                      <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
+                    </>
+                  )}
+                  <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
+                </Appear>
+              ) : (
+                <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
+              )}
+            </ScrollView>
+          }
+          right={
+            <ScrollView
+              style={{ flex: 1 }}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, minHeight: 44 }}>
+                <Label>{t('pet.tab')}</Label>
+                <IconButton
+                  icon={FAB_CONFIG.pet.icon}
+                  onPress={FAB_CONFIG.pet.onPress}
+                  accessibilityLabel={FAB_CONFIG.pet.label}
+                />
+              </View>
+              {initialLoading ? null : (
+                <Appear key="pet">
+                  <PetHome friends={leaderboard} onFriendsChanged={setLeaderboard} />
+                </Appear>
+              )}
+            </ScrollView>
+          }
+        />
+        {modals}
+      </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
 
   return (
     <TabFocusFade>

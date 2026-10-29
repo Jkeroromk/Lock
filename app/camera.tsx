@@ -198,7 +198,7 @@ export default function CameraScreen() {
   // ── Permission ──
   if (!permission?.granted) {
     return (
-      <View style={{ flex: 1, backgroundColor: INK, paddingTop: insets.top + 10, paddingHorizontal: 18 }}>
+      <View style={{ flex: 1, backgroundColor: INK, paddingTop: insets.top + 10, paddingLeft: insets.left + 18, paddingRight: insets.right + 18 }}>
         <RoundButton icon="close" label={t('common.close')} onPress={close} />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 }}>
           {!permission ? (
@@ -220,7 +220,9 @@ export default function CameraScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: INK }}>
+    // Left/right insets: on iPhone Duo the status bar is a column on the right
+    // edge, which covered the torch button.
+    <View style={{ flex: 1, backgroundColor: INK, paddingLeft: insets.left, paddingRight: insets.right }}>
       {/* Top bar */}
       <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <RoundButton icon="close" label={t('common.close')} onPress={close} />

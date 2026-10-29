@@ -1,0 +1,60 @@
+name: Expo upgrade
+
+# Runs dependency upgrade commands from CI, where the npm registry is
+# reachable: put one shell command per line in .github/expo-upgrade.txt on a
+# branch and push. The job runs them in order, then expo-doctor and tsc, and
+# commits package.json, package-lock.json, app.json and the logs in
+# .github/upgrade-logs/ back to the branch.
+on:
+  push:
+    branches-ignore: [main]
+    paths: ['.github/expo-upgrade.txt']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: expo-upgrade-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: tsc before
+        run: |
+          mkdir -p .github/upgrade-logs
+          npx tsc --noEmit --pretty false > .github/upgrade-logs/tsc-before.log 2>&1 || true
+      - name: Run commands
+        run: |
+          : > .github/upgrade-logs/commands.log
+          while IFS= read -r line || [ -n "$line" ]; do
+            [ -z "$line" ] && continue
+            case "$line" in \#*) continue ;; esac
+            echo "\$ $line" | tee -a .github/upgrade-logs/commands.log
+            bash -c "$line" >> .github/upgrade-logs/commands.log 2>&1 || echo "!! exit $?" | tee -a .github/upgrade-logs/commands.log
+          done < .github/expo-upgrade.txt
+      - name: expo-doctor
+        run: npx --yes expo-doctor@latest > .github/upgrade-logs/doctor.log 2>&1 || true
+      - name: tsc after
+        run: npx tsc --noEmit --pretty false > .github/upgrade-logs/tsc-after.log 2>&1 || true
+      - name: Versions
+        run: npm ls --depth=0 > .github/upgrade-logs/versions.log 2>&1 || true
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json .github/upgrade-logs
+          if [ -f app.json ]; then git add app.json; fi
+          git commit -m "Expo upgrade: run .github/expo-upgrade.txt" || echo "nothing to commit"
+          git push

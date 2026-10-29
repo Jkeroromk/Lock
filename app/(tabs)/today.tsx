@@ -21,9 +21,12 @@ import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useStepGoal } from '@/hooks/useDailyGoals';
 import { useAdaptiveStepGoal } from '@/hooks/useAdaptiveStepGoal';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import TwoPane from '@/components/layout/TwoPane';
 
 export default function TodayScreen() {
   const tabInset = useTabBarInset();
+  const { twoPane } = useDeviceLayout();
   const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
   // Today's numbers from the last session are shown instantly; fresh data replaces them.
   const hasFreshCache = todayDate === localDateKey();
@@ -133,78 +136,138 @@ export default function TodayScreen() {
   useAdaptiveStepGoal();
   const ENERGY_GOAL = 500;
 
+  const calories = (
+    <Appear index={0}>
+    <CaloriesCard
+      todayCalories={todayCalories}
+      protein={macros.protein}
+      carbs={macros.carbs}
+      fat={macros.fat}
+    />
+    </Appear>
+  );
+
+  const training = (
+    <Appear index={1}>
+      <TrainingEntryCard />
+    </Appear>
+  );
+
+  const health = healthConnected === false ? (
+    <Appear index={1}>
+      <ConnectHealthCard onConnect={handleConnectHealth} connecting={connectingHealth} />
+    </Appear>
+  ) : (
+    <Appear index={1} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 12, marginBottom: 14 }}>
+      <HealthStatsCard
+        inverse
+        label={t('today.steps')}
+        value={healthData.steps}
+        goal={STEP_GOAL}
+        caption={t('today.ofGoal', { goal: STEP_GOAL.toLocaleString() })}
+      />
+      <HealthStatsCard
+        label={t('today.energy')}
+        value={healthData.activeEnergy}
+        unit={t('today.kcal')}
+        goal={ENERGY_GOAL}
+        caption={t('today.ofGoal', { goal: `${ENERGY_GOAL} ${t('today.kcal')}` })}
+      />
+    </Appear>
+  );
+
+  const water = (
+    <Appear index={2}>
+    <WaterCard
+      waterMl={waterMl}
+      goalMl={waterGoalMl}
+      canUndo={waterLogCount > 0 || waterMl > 0}
+      onAdd={handleAddWater}
+      onUndo={handleUndoWater}
+      onSetGoal={handleSetWaterGoal}
+    />
+    </Appear>
+  );
+
+  const meals = (
+    <Appear index={3}>
+      <MealsList meals={todayMeals} />
+    </Appear>
+  );
+
+  const skeleton = (
+    <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
+      <Skeleton height={180} borderRadius={24} />
+      <Skeleton height={70} borderRadius={18} />
+      <Skeleton height={70} borderRadius={18} />
+      <Skeleton height={70} borderRadius={18} />
+      <Skeleton height={120} borderRadius={18} />
+    </View>
+  );
+
+  const refreshControl = (
+    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />
+  );
+
+  // Open iPhone Duo (or any wide window): the day's numbers on the left, the
+  // workout and meals on the right, each side scrolling on its own.
+  if (twoPane) {
+    return (
+      <TabFocusFade>
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <TwoPane
+          left={
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}
+              refreshControl={refreshControl}
+            >
+              <DateHeader language={language} streak={streak} />
+              {loading ? skeleton : (
+                <View>
+                  {calories}
+                  {health}
+                  {water}
+                </View>
+              )}
+            </ScrollView>
+          }
+          right={
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}
+            >
+              {loading ? null : (
+                <View>
+                  {training}
+                  {meals}
+                </View>
+              )}
+            </ScrollView>
+          }
+        />
+      </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
+
   return (
     <TabFocusFade>
-    <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: tabInset }}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />
-          }
+          refreshControl={refreshControl}
         >
           <View style={{ paddingHorizontal: 18, paddingTop: 0, paddingBottom: 8 }}>
             <DateHeader language={language} streak={streak} />
-            {loading ? (
-              <View style={{ gap: DIMENSIONS.SPACING * 0.8 }}>
-                <Skeleton height={180} borderRadius={24} />
-                <Skeleton height={70} borderRadius={18} />
-                <Skeleton height={70} borderRadius={18} />
-                <Skeleton height={70} borderRadius={18} />
-                <Skeleton height={120} borderRadius={18} />
-              </View>
-            ) : (
+            {loading ? skeleton : (
               <View>
-                <Appear index={0}>
-                <CaloriesCard
-                  todayCalories={todayCalories}
-                  protein={macros.protein}
-                  carbs={macros.carbs}
-                  fat={macros.fat}
-                />
-                </Appear>
-
-                <Appear index={1}>
-                  <TrainingEntryCard />
-                </Appear>
-
-                {healthConnected === false ? (
-                  <Appear index={1}>
-                    <ConnectHealthCard onConnect={handleConnectHealth} connecting={connectingHealth} />
-                  </Appear>
-                ) : (
-                <Appear index={1} style={{ flexDirection: 'row', alignItems: 'stretch', gap: 12, marginBottom: 14 }}>
-                  <HealthStatsCard
-                    inverse
-                    label={t('today.steps')}
-                    value={healthData.steps}
-                    goal={STEP_GOAL}
-                    caption={t('today.ofGoal', { goal: STEP_GOAL.toLocaleString() })}
-                  />
-                  <HealthStatsCard
-                    label={t('today.energy')}
-                    value={healthData.activeEnergy}
-                    unit={t('today.kcal')}
-                    goal={ENERGY_GOAL}
-                    caption={t('today.ofGoal', { goal: `${ENERGY_GOAL} ${t('today.kcal')}` })}
-                  />
-                </Appear>
-                )}
-
-                <Appear index={2}>
-                <WaterCard
-                  waterMl={waterMl}
-                  goalMl={waterGoalMl}
-                  canUndo={waterLogCount > 0 || waterMl > 0}
-                  onAdd={handleAddWater}
-                  onUndo={handleUndoWater}
-                  onSetGoal={handleSetWaterGoal}
-                />
-                </Appear>
-
-                <Appear index={3}>
-                  <MealsList meals={todayMeals} />
-                </Appear>
+                {calories}
+                {training}
+                {health}
+                {water}
+                {meals}
               </View>
             )}
           </View>

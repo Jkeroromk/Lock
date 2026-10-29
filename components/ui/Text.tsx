@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import type { ComponentRef } from 'react';
 import {
   Text as RNText,
   TextInput as RNTextInput,
@@ -20,7 +21,7 @@ function fontStyle(style: TextProps['style'], cjk: boolean): TextStyle | null {
     // The bundled fonts have no CJK glyphs, so iOS would fall back to the
     // system font at regular weight. Use the system font directly instead,
     // so the requested weight applies, and give the glyphs room.
-    const fix: TextStyle = { fontFamily: undefined };
+    const fix: { -readonly [K in keyof TextStyle]: TextStyle[K] } = { fontFamily: undefined };
     if (flat.fontSize && flat.lineHeight && flat.lineHeight < flat.fontSize * CJK_MIN_LINE_HEIGHT) {
       fix.lineHeight = Math.ceil(flat.fontSize * CJK_MIN_LINE_HEIGHT);
     }
@@ -34,13 +35,13 @@ function fontStyle(style: TextProps['style'], cjk: boolean): TextStyle | null {
 }
 
 /** Drop-in replacement for React Native's Text that applies the Lock fonts. */
-export const Text = forwardRef<RNText, TextProps>(function Text({ style, ...rest }, ref) {
+export const Text = forwardRef<ComponentRef<typeof RNText>, TextProps>(function Text({ style, ...rest }, ref) {
   const cjk = childrenHaveCJK(rest.children);
   return <RNText ref={ref} {...rest} style={[style, fontStyle(style, cjk)]} />;
 });
 
 /** Drop-in replacement for React Native's TextInput that applies the Lock fonts. */
-export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput({ style, ...rest }, ref) {
+export const TextInput = forwardRef<ComponentRef<typeof RNTextInput>, TextInputProps>(function TextInput({ style, ...rest }, ref) {
   const cjk = hasCJK(rest.value ?? rest.defaultValue ?? rest.placeholder);
   return <RNTextInput ref={ref} {...rest} style={[style, fontStyle(style as TextProps['style'], cjk)]} />;
 });

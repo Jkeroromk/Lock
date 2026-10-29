@@ -1,0 +1,4 @@
+# One command per line, run in order by .github/workflows/expo-upgrade.yml
+# Batch 4: RevenueCat 10.x (iOS SDK 5.99, builds with Xcode 27). Expo apps stay on 10.x until the v11 pod ships.
+npm install react-native-purchases@^10.16.0
+npx expo install --check

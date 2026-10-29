@@ -196,7 +196,7 @@ export default function AccountSecurityScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundPrimary }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <View style={{
         flexDirection: 'row', alignItems: 'center',
         paddingHorizontal: DIMENSIONS.CARD_PADDING,
@@ -225,7 +225,7 @@ export default function AccountSecurityScreen() {
       </View>
 
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: tabInset }}
       >

@@ -4,6 +4,7 @@ import { Text, TextInput } from '@/components/ui/Text';
 import type { TextInput as RNTextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
@@ -23,7 +24,7 @@ export default function OtpVerificationScreen({ email, isLoading, onVerify, onRe
   const colors = useTheme();
   const [code, setCode] = useState('');
   const [focused, setFocused] = useState(false);
-  const inputRef = useRef<RNTextInput | null>(null);
+  const inputRef = useRef<ComponentRef<typeof RNTextInput> | null>(null);
   const currentCode = code;
 
   // Pull a 6-digit code out of whatever was copied (e.g. the whole email line).
