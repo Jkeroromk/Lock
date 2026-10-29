@@ -5,7 +5,8 @@ import { Dimensions } from 'react-native';
 // phone in landscape the app would otherwise start with everything twice as
 // big, and it would keep those sizes after the window changes.
 const PHONE_MIN_WIDTH = 360;
-const PHONE_MAX_WIDTH = 430;
+// 440 = the widest iPhone (Pro Max), so every phone keeps exactly the sizes it had.
+const PHONE_MAX_WIDTH = 440;
 const SCREEN_WIDTH = Math.min(Math.max(Dimensions.get('window').width, PHONE_MIN_WIDTH), PHONE_MAX_WIDTH);
 
 export const DIMENSIONS = {
