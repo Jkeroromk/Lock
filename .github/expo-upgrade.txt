@@ -1,0 +1,11 @@
+# One command per line, run in order by .github/workflows/expo-upgrade.yml
+npm view expo dist-tags
+npm view @bacons/apple-targets dist-tags
+npm view @bacons/apple-targets@latest peerDependencies
+npm view react-native-purchases dist-tags
+npm view @clerk/clerk-expo dist-tags
+npm view nativewind dist-tags
+npm view expo-hinge@latest version peerDependencies
+npx expo install expo@^58.0.0
+npx expo install --fix
+npx expo install expo-hinge react-native-safe-area-context
