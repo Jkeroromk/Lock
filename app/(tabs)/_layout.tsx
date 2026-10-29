@@ -411,8 +411,13 @@ export default function TabLayout() {
         // switching and leave a blank screen. Each tab fades in itself
         // (components/ui/TabFocusFade), which always ends fully visible.
         animation: 'none',
-        // Outer display: keep content clear of the tab rail on the right.
-        sceneStyle: kind === 'outer' ? { paddingRight: RAIL_SPACE, backgroundColor: colors.backgroundPrimary } : undefined,
+        // Behind every tab: the app background. Each tab fades and lifts in
+        // (TabFocusFade); since SDK 58 the default scene colour is white, which
+        // showed as a white strip at the top and a grey flash on every switch.
+        // Outer display: also keep content clear of the tab rail on the right.
+        sceneStyle: kind === 'outer'
+          ? { paddingRight: RAIL_SPACE, backgroundColor: colors.backgroundPrimary }
+          : { backgroundColor: colors.backgroundPrimary },
       }}
     >
       <Tabs.Screen
