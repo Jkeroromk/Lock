@@ -128,6 +128,13 @@ jobs:
           plist="$RUNNER_TEMP/Info.plist"
           unzip -p "$RUNNER_TEMP/lock.ipa" 'Payload/*.app/Info.plist' > "$plist"
           echo "build=$(plutil -extract CFBundleVersion raw "$plist")" >> "$GITHUB_OUTPUT"
+          # What the binary was built with, and the keys that decide whether
+          # iPhone Duo resizes the app (shown as an annotation; logs aren't
+          # always reachable).
+          get() { plutil -extract "$1" raw "$plist" 2>/dev/null || echo '-'; }
+          orient=$(plutil -extract UISupportedInterfaceOrientations json -o - "$plist" 2>/dev/null || echo '-')
+          scenes=$(plutil -extract UIApplicationSceneManifest json -o - "$plist" 2>/dev/null | head -c 200 || echo '-')
+          echo "::notice title=Binary::build $(get CFBundleShortVersionString) ($(get CFBundleVersion)) · SDK $(get DTSDKName) · Xcode $(get DTXcode) ($(get DTXcodeBuild)) · min iOS $(get MinimumOSVersion) · UIRequiresFullScreen=$(get UIRequiresFullScreen) · orientations=$orient · scenes=$scenes"
           echo "### Build $(plutil -extract CFBundleShortVersionString raw "$plist") ($(plutil -extract CFBundleVersion raw "$plist"))" >> "$GITHUB_STEP_SUMMARY"
           # OTA updates only reach builds with the same runtime version.
           expo="$RUNNER_TEMP/Expo.plist"
