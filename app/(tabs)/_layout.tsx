@@ -10,7 +10,7 @@ import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
 import { TAB_BAR_HEIGHT } from '@/hooks/useTabBarInset';
-import { useDeviceLayout, RAIL_WIDTH, RAIL_MARGIN, RAIL_SPACE } from '@/hooks/useDeviceLayout';
+import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT } from '@/hooks/useDeviceLayout';
 
 // Props expo-router passes to a custom tab bar (taken from Tabs itself, so it
 // follows whatever navigation library expo-router uses underneath).
@@ -252,15 +252,18 @@ function RailTabBar(props: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const pressFor = useTabPress(props);
   const overGoal = isWarning(useCalorieStatus().level);
+  // The Duo's status bar is a column on the right edge (reported as the right
+  // inset). The rail shares that column, below the status bar, so content
+  // only loses the column once.
+  const column = railColumnWidth(insets.right);
 
   return (
     <View
       pointerEvents="box-none"
       style={{
-        position: 'absolute', top: 0, bottom: 0, right: 0,
-        width: RAIL_SPACE + insets.right,
-        paddingRight: Math.max(insets.right, RAIL_MARGIN),
-        alignItems: 'flex-end', justifyContent: 'center',
+        position: 'absolute', top: 0, bottom: 0, right: 0, width: column,
+        paddingTop: STATUS_COLUMN_HEIGHT, paddingBottom: Math.max(insets.bottom, 12),
+        alignItems: 'center', justifyContent: 'center',
       }}
     >
       <View style={{ width: RAIL_WIDTH, borderRadius: RAIL_WIDTH / 2, backgroundColor: colors.tabBar, paddingVertical: 6, alignItems: 'center' }}>
@@ -293,6 +296,7 @@ const ISLAND_SLOT = 72;
  *  40pt fold reach at most 6pt into its edge (icons themselves stay clear). */
 const ISLAND_HIT = 44;
 const ISLAND_PAD = 8;
+const FAB_SIZE = 64;
 const LEFT_TABS = ['today', 'train'];
 const RIGHT_TABS = ['dashboard', 'settings'];
 
@@ -313,8 +317,14 @@ function InnerTabBar(props: BottomTabBarProps) {
 
   const H = TAB_BAR_HEIGHT;
   const center = width / 2;
-  const leftCenter = (fold ? fold.start : center - 12) / 2;
-  const rightCenter = width - leftCenter;
+  // The camera sits in the right-hand status-bar column (or 16pt in from the edge).
+  const fabRight = Math.max(16, (insets.right - FAB_SIZE) / 2);
+  const fabLeftEdge = width - fabRight - FAB_SIZE;
+  // Book posture: each island centred in what is left of its half.
+  const foldStart = fold ? fold.start : center - 12;
+  const foldEnd = fold ? fold.start + fold.width : center + 12;
+  const leftCenter = (insets.left + foldStart) / 2;
+  const rightCenter = (foldEnd + fabLeftEdge - 12) / 2;
   // Flat: padding only on the outer side, the slots meet at the centre.
   // Book: padding on both sides.
   const flatWidth = ISLAND_PAD + ISLAND_SLOT * 2;
@@ -374,7 +384,7 @@ function InnerTabBar(props: BottomTabBarProps) {
       <Animated.View style={[island, { paddingLeft: ISLAND_PAD }, leftStyle]}>{renderTabs(LEFT_TABS)}</Animated.View>
       <Animated.View style={[island, { paddingRight: ISLAND_PAD }, rightStyle]}>{renderTabs(RIGHT_TABS)}</Animated.View>
       {logRoute ? (
-        <View pointerEvents="box-none" style={{ position: 'absolute', top: 1, right: Math.max(insets.right, 16) + 12 }}>
+        <View pointerEvents="box-none" style={{ position: 'absolute', top: (H - FAB_SIZE) / 2, right: fabRight }}>
           <LogTabButton
             variant="fab"
             onPress={pressFor(logRoute)}
@@ -398,6 +408,7 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const colors = useTheme();
   const { kind } = useDeviceLayout();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -415,8 +426,10 @@ export default function TabLayout() {
         // (TabFocusFade); since SDK 58 the default scene colour is white, which
         // showed as a white strip at the top and a grey flash on every switch.
         // Outer display: also keep content clear of the tab rail on the right.
+        // Screens already pad for the right inset (status-bar column); add
+        // only what the rail needs beyond it.
         sceneStyle: kind === 'outer'
-          ? { paddingRight: RAIL_SPACE, backgroundColor: colors.backgroundPrimary }
+          ? { paddingRight: Math.max(0, railColumnWidth(insets.right) - insets.right), backgroundColor: colors.backgroundPrimary }
           : { backgroundColor: colors.backgroundPrimary },
       }}
     >

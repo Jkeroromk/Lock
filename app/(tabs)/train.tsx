@@ -22,9 +22,12 @@ import { deleteWorkout, type SessionSummary } from '@/services/workouts';
 import UnitToggle from '@/components/train/UnitToggle';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import TwoPane from '@/components/layout/TwoPane';
 
 export default function TrainScreen() {
   const tabInset = useTabBarInset();
+  const { twoPane } = useDeviceLayout();
   const c = useTheme();
   const { t, language } = useTranslation();
   const router = useRouter();
@@ -122,226 +125,279 @@ export default function TrainScreen() {
 
   const dateCaption = now.toLocaleDateString(language, { weekday: 'short', month: 'short', day: 'numeric' });
 
+  const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.textPrimary} />;
+
+  const headerEl = (
+    <>
+    <ScreenHeader
+      title={t('train.title')}
+      caption={dateCaption}
+      right={
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+        <UnitToggle />
+        <PressScale
+          onPress={() => openPlan()}
+          accessibilityRole="button"
+          accessibilityLabel={t('train.editPlan')}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 14, borderRadius: 13, borderWidth: 2, borderColor: c.borderPrimary }}
+        >
+          <Ionicons name="create-outline" size={17} color={c.textPrimary} />
+          <Text style={{ fontWeight: '700', fontSize: 14, color: c.textPrimary }}>{t('train.editPlan')}</Text>
+        </PressScale>
+        </View>
+      }
+    />
+
+    {/* Week strip */}
+    <Appear index={0} style={{ flexDirection: 'row', gap: 6, marginBottom: 16 }}>
+      {week.map((d, i) => {
+        const key = weekKeys[i];
+        const wd = d.getDay();
+        const pd = plan[String(wd)];
+        const isToday = key === todayKey;
+        const done = doneKeys.has(key);
+        const label = pd && pd.exercises.length ? dayTitle(pd, wd, t, true) : t('train.restShort');
+        const bg = isToday ? c.accent : done ? c.surfaceInverse : 'transparent';
+        const fg = isToday ? c.onAccent : done ? c.textInverse : c.textPrimary;
+        return (
+          <PressScale
+            key={key}
+            onPress={() => openPlan(wd)}
+            accessibilityRole="button"
+            accessibilityLabel={`${t(`train.wdl.d${wd}`)} ${label}`}
+            style={{
+              flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: 12, gap: 4,
+              borderWidth: 2, borderColor: isToday || done ? c.ink : c.borderSecondary, backgroundColor: bg,
+              transform: isToday ? [{ rotate: '-4deg' }] : undefined,
+            }}
+          >
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: isToday || done ? fg : c.textSecondary }}>{t(`train.wd.d${wd}`)}</Text>
+            {done && !isToday ? (
+              <Ionicons name="checkmark" size={16} color={c.accent} />
+            ) : (
+              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85} style={{ fontWeight: '800', fontSize: 16, color: pd?.exercises.length ? fg : c.textTertiary }}>
+                {label}
+              </Text>
+            )}
+          </PressScale>
+        );
+      })}
+    </Appear>
+
+    </>
+  );
+  const skeletonEl = (
+      <View style={{ gap: 12 }}>
+        <Skeleton height={240} borderRadius={24} />
+        <Skeleton height={90} borderRadius={18} />
+      </View>
+  );
+  // Plan side: today's workout and this week's numbers.
+  const planEl = (
+    <>
+      {failed && !sessions.length && !hasPlan ? (
+        <Text style={{ color: c.textSecondary, marginBottom: 12 }}>{t('train.loadFailed')}</Text>
+      ) : null}
+
+      {/* Today */}
+      <Appear index={1}>
+        <Card variant="hero" style={{ marginBottom: 14 }} padding={18}>
+          {active ? (
+            <View style={{ gap: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Label>{t('train.inProgress')}</Label>
+                <Sticker>{t('train.setsDone', {
+                  done: String(active.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0)),
+                  total: String(active.exercises.reduce((n, e) => n + e.sets.length, 0)),
+                })}</Sticker>
+              </View>
+              <Text style={{ fontSize: 28, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{active.title ?? t('train.freeTitle')}</Text>
+              <Button variant="solid" icon="play" label={t('train.resume')} onPress={() => router.push('/workout/session')} />
+            </View>
+          ) : hasToday && todayPlan ? (
+            <View style={{ gap: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Label>{trainedToday ? t('train.doneTodayTitle') : t('train.today')}</Label>
+                {trainedToday ? <Sticker><Ionicons name="checkmark" size={13} color={c.onAccent} /></Sticker> : null}
+              </View>
+              <View>
+                <Text style={{ fontSize: 28, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{dayTitle(todayPlan, todayIdx, t)}</Text>
+                <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 4 }}>
+                  {t('train.exercisesN', { n: String(todayPlan.exercises.length) })} · {t('train.setsN', { n: String(daySets(todayPlan)) })} · {t('train.aboutMin', { n: String(dayMinutes(todayPlan)) })}
+                </Text>
+              </View>
+              <View style={{ gap: 0 }}>
+                {todayPlan.exercises.slice(0, 3).map((e, i) => (
+                  <View key={`${e.id}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, borderTopWidth: i ? 1 : 0, borderColor: c.divider, gap: 10 }}>
+                    <Text numberOfLines={1} style={{ flex: 1, fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{exerciseName(e.id, language)}</Text>
+                    <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: c.textSecondary }}>{e.sets}×{e.reps}</Text>
+                    <Text style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '600', color: c.textPrimary, minWidth: 64, textAlign: 'right' }}>
+                      {e.weight > 0 ? fmtWeightUnit(e.weight, unit) : isBodyweight(e.id) ? t('train.bodyweight') : '—'}
+                    </Text>
+                  </View>
+                ))}
+                {todayPlan.exercises.length > 3 ? (
+                  <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, paddingTop: 4 }}>{t('train.moreN', { n: String(todayPlan.exercises.length - 3) })}</Text>
+                ) : null}
+              </View>
+              <Button
+                variant={trainedToday ? 'outline' : 'solid'}
+                icon={trainedToday ? 'refresh' : 'play'}
+                label={trainedToday ? t('train.trainAgain') : t('train.start')}
+                onPress={startPlanned}
+              />
+            </View>
+          ) : hasPlan ? (
+            <View style={{ gap: 10 }}>
+              <Label>{t('train.today')}</Label>
+              <Text style={{ fontSize: 28, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{t('train.restDay')}</Text>
+              <Text style={{ fontSize: 15, lineHeight: 21, color: c.textSecondary }}>{t('train.restDayBody')}</Text>
+              <Button variant="outline" icon="flash-outline" label={t('train.freeWorkout')} onPress={startFree} style={{ marginTop: 4 }} />
+            </View>
+          ) : (
+            <View style={{ gap: 10 }}>
+              <Text style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{t('train.noPlanTitle')}</Text>
+              <Text style={{ fontSize: 15, lineHeight: 21, color: c.textSecondary }}>{t('train.noPlanBody')}</Text>
+              <Button icon="sparkles" label={t('train.aiPlanCta')} onPress={() => setAiPlan(true)} style={{ marginTop: 4 }} />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Button variant="outline" icon="create-outline" label={t('train.makePlan')} onPress={() => openPlan(todayIdx)} style={{ flex: 1, paddingHorizontal: 8 }} />
+                <Button variant="outline" icon="flash-outline" label={t('train.freeWorkout')} onPress={startFree} style={{ flex: 1, paddingHorizontal: 8 }} />
+              </View>
+            </View>
+          )}
+        </Card>
+      </Appear>
+
+      {/* Stats */}
+      <Appear index={2} style={{ flexDirection: 'row', gap: 10, marginBottom: 18 }}>
+        <StatTile label={t('train.weekWorkouts')} value={String(weekSessions.length)} suffix={planned ? `/ ${planned}` : undefined} />
+        <StatTile label={t('train.newRecords')} value={String(weekPrs)} suffix={t('train.recordsUnit')} highlight />
+      </Appear>
+
+    </>
+  );
+  // History side: weight, AI plan and insights, recent workouts.
+  const historyEl = (
+    <>
+      <Appear index={3}>
+        <WeightCard refreshKey={refreshKey} />
+      </Appear>
+
+      <Appear index={4}>
+        {hasPlan ? (
+          <PressScale
+            onPress={() => setAiPlan(true)}
+            accessibilityRole="button"
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: c.surfaceInverse, marginBottom: 14 }}
+          >
+            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] }}>
+              <Ionicons name="sparkles" size={19} color={c.onAccent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: c.textInverse }}>{t('train.aiPlanTitle')}</Text>
+              <Text numberOfLines={2} style={{ fontSize: 13, lineHeight: 18, color: c.textInverse, opacity: 0.75, marginTop: 2 }}>{t('train.aiPlanRedo')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={c.textInverse} />
+          </PressScale>
+        ) : null}
+        <AiInsightsCard />
+      </Appear>
+
+      {/* Recent */}
+      <Appear index={5}>
+        <Label style={{ marginBottom: 8 }}>{t('train.recent')}</Label>
+        {sessions.length === 0 ? (
+          <Text style={{ fontSize: 14, color: c.textSecondary }}>{t('train.noSessions')}</Text>
+        ) : (
+          <View style={{ gap: 8 }}>
+            {sessions.slice(0, 6).map((s) => {
+              const [y, m, d] = s.dayKey.split('-').map(Number);
+              const date = new Date(y, m - 1, d, 12);
+              return (
+                <ReanimatedSwipeable
+                  key={s.id}
+                  friction={2}
+                  rightThreshold={40}
+                  overshootRight={false}
+                  renderRightActions={() => deleteAction(s)}
+                >
+                <PressScale
+                  onLongPress={() => confirmDelete(s)}
+                  accessibilityRole="button"
+                  accessibilityHint={t('train.deleteSessionTitle')}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, borderWidth: 2, borderColor: c.borderSecondary, backgroundColor: c.cardBackground }}
+                >
+                  <View style={{ width: 46, alignItems: 'center' }}>
+                    <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{t(`train.wdl.d${date.getDay()}`)}</Text>
+                    <Text style={{ fontWeight: '800', fontSize: 18, color: c.textPrimary }}>{`${m}/${d}`}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{s.title ?? t('train.freeTitle')}</Text>
+                    <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 2 }}>
+                      {t('train.setsN', { n: String(s.setCount) })} · {Math.round(kgTo(s.volume, unit)).toLocaleString()} {unit} · {t('train.minutesN', { n: String(Math.max(1, Math.round(s.durationSec / 60))) })}
+                    </Text>
+                  </View>
+                  {s.prCount > 0 ? (
+                    <Sticker rotate={-6}>
+                      <Ionicons name="trophy" size={12} color={c.onAccent} />
+                      <Text style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 12, color: c.onAccent }}>{s.prCount}</Text>
+                    </Sticker>
+                  ) : null}
+                </PressScale>
+                </ReanimatedSwipeable>
+              );
+            })}
+          </View>
+        )}
+      </Appear>
+    </>
+  );
+
+  // Open iPhone Duo (or any wide window): plan on the left, history on the
+  // right, each side scrolling on its own.
+  if (twoPane) {
+    return (
+      <TabFocusFade>
+        <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
+          <TwoPane
+            left={
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}
+                refreshControl={refreshControl}
+              >
+                {headerEl}
+                {loading ? skeletonEl : planEl}
+              </ScrollView>
+            }
+            right={
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}
+              >
+                {loading ? null : historyEl}
+              </ScrollView>
+            }
+          />
+          <AiPlanSheet visible={aiPlan} onClose={() => setAiPlan(false)} />
+        </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
+
   return (
     <TabFocusFade>
       <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.textPrimary} />}
+          refreshControl={refreshControl}
         >
-          <ScreenHeader
-            title={t('train.title')}
-            caption={dateCaption}
-            right={
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-              <UnitToggle />
-              <PressScale
-                onPress={() => openPlan()}
-                accessibilityRole="button"
-                accessibilityLabel={t('train.editPlan')}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 14, borderRadius: 13, borderWidth: 2, borderColor: c.borderPrimary }}
-              >
-                <Ionicons name="create-outline" size={17} color={c.textPrimary} />
-                <Text style={{ fontWeight: '700', fontSize: 14, color: c.textPrimary }}>{t('train.editPlan')}</Text>
-              </PressScale>
-              </View>
-            }
-          />
-
-          {/* Week strip */}
-          <Appear index={0} style={{ flexDirection: 'row', gap: 6, marginBottom: 16 }}>
-            {week.map((d, i) => {
-              const key = weekKeys[i];
-              const wd = d.getDay();
-              const pd = plan[String(wd)];
-              const isToday = key === todayKey;
-              const done = doneKeys.has(key);
-              const label = pd && pd.exercises.length ? dayTitle(pd, wd, t, true) : t('train.restShort');
-              const bg = isToday ? c.accent : done ? c.surfaceInverse : 'transparent';
-              const fg = isToday ? c.onAccent : done ? c.textInverse : c.textPrimary;
-              return (
-                <PressScale
-                  key={key}
-                  onPress={() => openPlan(wd)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t(`train.wdl.d${wd}`)} ${label}`}
-                  style={{
-                    flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: 12, gap: 4,
-                    borderWidth: 2, borderColor: isToday || done ? c.ink : c.borderSecondary, backgroundColor: bg,
-                    transform: isToday ? [{ rotate: '-4deg' }] : undefined,
-                  }}
-                >
-                  <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: isToday || done ? fg : c.textSecondary }}>{t(`train.wd.d${wd}`)}</Text>
-                  {done && !isToday ? (
-                    <Ionicons name="checkmark" size={16} color={c.accent} />
-                  ) : (
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85} style={{ fontWeight: '800', fontSize: 16, color: pd?.exercises.length ? fg : c.textTertiary }}>
-                      {label}
-                    </Text>
-                  )}
-                </PressScale>
-              );
-            })}
-          </Appear>
-
-          {loading ? (
-            <View style={{ gap: 12 }}>
-              <Skeleton height={240} borderRadius={24} />
-              <Skeleton height={90} borderRadius={18} />
-            </View>
-          ) : (
+          {headerEl}
+          {loading ? skeletonEl : (
             <>
-              {failed && !sessions.length && !hasPlan ? (
-                <Text style={{ color: c.textSecondary, marginBottom: 12 }}>{t('train.loadFailed')}</Text>
-              ) : null}
-
-              {/* Today */}
-              <Appear index={1}>
-                <Card variant="hero" style={{ marginBottom: 14 }} padding={18}>
-                  {active ? (
-                    <View style={{ gap: 12 }}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Label>{t('train.inProgress')}</Label>
-                        <Sticker>{t('train.setsDone', {
-                          done: String(active.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0)),
-                          total: String(active.exercises.reduce((n, e) => n + e.sets.length, 0)),
-                        })}</Sticker>
-                      </View>
-                      <Text style={{ fontSize: 28, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{active.title ?? t('train.freeTitle')}</Text>
-                      <Button variant="solid" icon="play" label={t('train.resume')} onPress={() => router.push('/workout/session')} />
-                    </View>
-                  ) : hasToday && todayPlan ? (
-                    <View style={{ gap: 12 }}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Label>{trainedToday ? t('train.doneTodayTitle') : t('train.today')}</Label>
-                        {trainedToday ? <Sticker><Ionicons name="checkmark" size={13} color={c.onAccent} /></Sticker> : null}
-                      </View>
-                      <View>
-                        <Text style={{ fontSize: 28, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{dayTitle(todayPlan, todayIdx, t)}</Text>
-                        <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 4 }}>
-                          {t('train.exercisesN', { n: String(todayPlan.exercises.length) })} · {t('train.setsN', { n: String(daySets(todayPlan)) })} · {t('train.aboutMin', { n: String(dayMinutes(todayPlan)) })}
-                        </Text>
-                      </View>
-                      <View style={{ gap: 0 }}>
-                        {todayPlan.exercises.slice(0, 3).map((e, i) => (
-                          <View key={`${e.id}-${i}`} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, borderTopWidth: i ? 1 : 0, borderColor: c.divider, gap: 10 }}>
-                            <Text numberOfLines={1} style={{ flex: 1, fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{exerciseName(e.id, language)}</Text>
-                            <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: c.textSecondary }}>{e.sets}×{e.reps}</Text>
-                            <Text style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '600', color: c.textPrimary, minWidth: 64, textAlign: 'right' }}>
-                              {e.weight > 0 ? fmtWeightUnit(e.weight, unit) : isBodyweight(e.id) ? t('train.bodyweight') : '—'}
-                            </Text>
-                          </View>
-                        ))}
-                        {todayPlan.exercises.length > 3 ? (
-                          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, paddingTop: 4 }}>{t('train.moreN', { n: String(todayPlan.exercises.length - 3) })}</Text>
-                        ) : null}
-                      </View>
-                      <Button
-                        variant={trainedToday ? 'outline' : 'solid'}
-                        icon={trainedToday ? 'refresh' : 'play'}
-                        label={trainedToday ? t('train.trainAgain') : t('train.start')}
-                        onPress={startPlanned}
-                      />
-                    </View>
-                  ) : hasPlan ? (
-                    <View style={{ gap: 10 }}>
-                      <Label>{t('train.today')}</Label>
-                      <Text style={{ fontSize: 28, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{t('train.restDay')}</Text>
-                      <Text style={{ fontSize: 15, lineHeight: 21, color: c.textSecondary }}>{t('train.restDayBody')}</Text>
-                      <Button variant="outline" icon="flash-outline" label={t('train.freeWorkout')} onPress={startFree} style={{ marginTop: 4 }} />
-                    </View>
-                  ) : (
-                    <View style={{ gap: 10 }}>
-                      <Text style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{t('train.noPlanTitle')}</Text>
-                      <Text style={{ fontSize: 15, lineHeight: 21, color: c.textSecondary }}>{t('train.noPlanBody')}</Text>
-                      <Button icon="sparkles" label={t('train.aiPlanCta')} onPress={() => setAiPlan(true)} style={{ marginTop: 4 }} />
-                      <View style={{ flexDirection: 'row', gap: 8 }}>
-                        <Button variant="outline" icon="create-outline" label={t('train.makePlan')} onPress={() => openPlan(todayIdx)} style={{ flex: 1, paddingHorizontal: 8 }} />
-                        <Button variant="outline" icon="flash-outline" label={t('train.freeWorkout')} onPress={startFree} style={{ flex: 1, paddingHorizontal: 8 }} />
-                      </View>
-                    </View>
-                  )}
-                </Card>
-              </Appear>
-
-              {/* Stats */}
-              <Appear index={2} style={{ flexDirection: 'row', gap: 10, marginBottom: 18 }}>
-                <StatTile label={t('train.weekWorkouts')} value={String(weekSessions.length)} suffix={planned ? `/ ${planned}` : undefined} />
-                <StatTile label={t('train.newRecords')} value={String(weekPrs)} suffix={t('train.recordsUnit')} highlight />
-              </Appear>
-
-              <Appear index={3}>
-                <WeightCard refreshKey={refreshKey} />
-              </Appear>
-
-              <Appear index={4}>
-                {hasPlan ? (
-                  <PressScale
-                    onPress={() => setAiPlan(true)}
-                    accessibilityRole="button"
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: c.surfaceInverse, marginBottom: 14 }}
-                  >
-                    <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] }}>
-                      <Ionicons name="sparkles" size={19} color={c.onAccent} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 16, fontWeight: '800', color: c.textInverse }}>{t('train.aiPlanTitle')}</Text>
-                      <Text numberOfLines={2} style={{ fontSize: 13, lineHeight: 18, color: c.textInverse, opacity: 0.75, marginTop: 2 }}>{t('train.aiPlanRedo')}</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={c.textInverse} />
-                  </PressScale>
-                ) : null}
-                <AiInsightsCard />
-              </Appear>
-
-              {/* Recent */}
-              <Appear index={5}>
-                <Label style={{ marginBottom: 8 }}>{t('train.recent')}</Label>
-                {sessions.length === 0 ? (
-                  <Text style={{ fontSize: 14, color: c.textSecondary }}>{t('train.noSessions')}</Text>
-                ) : (
-                  <View style={{ gap: 8 }}>
-                    {sessions.slice(0, 6).map((s) => {
-                      const [y, m, d] = s.dayKey.split('-').map(Number);
-                      const date = new Date(y, m - 1, d, 12);
-                      return (
-                        <ReanimatedSwipeable
-                          key={s.id}
-                          friction={2}
-                          rightThreshold={40}
-                          overshootRight={false}
-                          renderRightActions={() => deleteAction(s)}
-                        >
-                        <PressScale
-                          onLongPress={() => confirmDelete(s)}
-                          accessibilityRole="button"
-                          accessibilityHint={t('train.deleteSessionTitle')}
-                          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, borderWidth: 2, borderColor: c.borderSecondary, backgroundColor: c.cardBackground }}
-                        >
-                          <View style={{ width: 46, alignItems: 'center' }}>
-                            <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{t(`train.wdl.d${date.getDay()}`)}</Text>
-                            <Text style={{ fontWeight: '800', fontSize: 18, color: c.textPrimary }}>{`${m}/${d}`}</Text>
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }}>{s.title ?? t('train.freeTitle')}</Text>
-                            <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 2 }}>
-                              {t('train.setsN', { n: String(s.setCount) })} · {Math.round(kgTo(s.volume, unit)).toLocaleString()} {unit} · {t('train.minutesN', { n: String(Math.max(1, Math.round(s.durationSec / 60))) })}
-                            </Text>
-                          </View>
-                          {s.prCount > 0 ? (
-                            <Sticker rotate={-6}>
-                              <Ionicons name="trophy" size={12} color={c.onAccent} />
-                              <Text style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 12, color: c.onAccent }}>{s.prCount}</Text>
-                            </Sticker>
-                          ) : null}
-                        </PressScale>
-                        </ReanimatedSwipeable>
-                      );
-                    })}
-                  </View>
-                )}
-              </Appear>
+              {planEl}
+              {historyEl}
             </>
           )}
         </ScrollView>

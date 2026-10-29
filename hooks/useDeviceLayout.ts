@@ -17,10 +17,23 @@ export type ScreenKind = 'phone' | 'outer' | 'inner' | 'wide';
 export const WIDE_MIN_WIDTH = 700;
 /** Width of the fold region in the middle of the open Duo (simulator: 40pt). */
 export const FOLD_WIDTH = 40;
-/** Outer display: tab rail size and the space screens leave free for it. */
+/** Outer display: tab rail width. */
 export const RAIL_WIDTH = 66;
-export const RAIL_MARGIN = 10;
-export const RAIL_SPACE = RAIL_WIDTH + RAIL_MARGIN + 6;
+/** Smallest right-hand column that fits the rail with some room. */
+const RAIL_COLUMN_MIN = RAIL_WIDTH + 16;
+/**
+ * Height of the Duo's vertical status bar at the top of the right-hand column
+ * (time, signal, battery). The rail starts below it.
+ */
+export const STATUS_COLUMN_HEIGHT = 170;
+
+/**
+ * Width of the right-hand column on the outer display: the status-bar column
+ * (the right safe-area inset), widened if needed so the rail fits in it.
+ */
+export function railColumnWidth(rightInset: number) {
+  return Math.max(rightInset, RAIL_COLUMN_MIN);
+}
 
 export type DeviceLayout = {
   kind: ScreenKind;
