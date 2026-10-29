@@ -1,0 +1,193 @@
+$ npm view expo dist-tags
+{
+  'sdk-52': '52.0.49',
+  'sdk-53': '53.0.27',
+  'canary-sdk-55': '55.0.3-canary-20260429-a5e59cf',
+  'canary-sdk-56': '56.0.6-canary-20260701-9100865',
+  canary: '58.0.0-canary-20260909-ea7a89a',
+  next: '58.0.11',
+  'sdk-57': '57.0.31',
+  'sdk-56': '56.0.24',
+  'sdk-55': '55.0.32',
+  'sdk-54': '54.0.38',
+  latest: '58.0.21'
+}
+$ npm view @bacons/apple-targets dist-tags
+{ latest: '5.0.0' }
+$ npm view @bacons/apple-targets@latest peerDependencies
+{ expo: '>=52' }
+$ npm view react-native-purchases dist-tags
+{
+  snapshot: '1.1.0-snapshot',
+  'expo-patch': '2.0.1',
+  next: '8.9.1-vc-beta.1',
+  hotfix: '9.15.3',
+  latest: '11.0.0'
+}
+$ npm view @clerk/clerk-expo dist-tags
+{
+  next: '0.9.68-next.2',
+  staging: '0.19.16-staging.v4f9214a',
+  'alpha-v5': '1.0.0-alpha-v5.18',
+  'beta-v5': '1.0.0-beta-v5.21',
+  beta: '1.0.0-beta.49',
+  'latest-v4': '0.20.36',
+  canary: '2.19.10-canary.v20251208170916',
+  snapshot: '2.19.24-snapshot.v20260216124703',
+  'snapshot-v5': '2.19.40-snapshot.v20260619160001',
+  latest: '2.20.0',
+  'latest-v5': '2.20.2'
+}
+$ npm view nativewind dist-tags
+{
+  preview: '5.0.0-rc.0',
+  rc: '5.0.0-rc.0',
+  'rc-staging': '5.0.0-rc.0',
+  latest: '4.2.7',
+  nightly: '0.0.0-nightly.7dbaf18'
+}
+$ npm view expo-hinge@latest version peerDependencies
+version = '58.0.2'
+peerDependencies = {
+  expo: '*',
+  react: '*',
+  'react-native': '*',
+  'react-native-worklets': '*',
+  'react-native-reanimated': '*'
+}
+$ npx expo install expo@^58.0.0
+› Installing 1 other package using npm
+› Using ^58.0.0 instead of ~54.0.37 for expo because this version was explicitly provided. Packages excluded from dependency validation should be listed in expo.install.exclude in package.json. Learn more: https://docs.expo.dev/more/expo-cli/#configuring-dependency-validation
+> npm install
+
+added 108 packages, removed 40 packages, changed 113 packages, and audited 1203 packages in 13s
+
+143 packages are looking for funding
+  run `npm fund` for details
+
+45 vulnerabilities (12 low, 14 moderate, 18 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+$ npx expo install --fix
+The following packages should be updated for best compatibility with the installed expo version:
+  expo-apple-authentication@8.0.8 - expected version: ~58.0.2
+  expo-auth-session@7.0.10 - expected version: ~58.0.16
+  expo-camera@17.0.10 - expected version: ~58.0.14
+  expo-clipboard@8.0.8 - expected version: ~58.0.4
+  expo-device@8.0.10 - expected version: ~58.0.5
+  expo-file-system@19.0.21 - expected version: ~58.0.13
+  expo-font@14.0.11 - expected version: ~58.0.11
+  expo-image-manipulator@14.0.8 - expected version: ~58.0.16
+  expo-image-picker@17.0.10 - expected version: ~58.0.10
+  expo-linking@8.0.11 - expected version: ~58.0.15
+  expo-notifications@0.32.16 - expected version: ~58.1.7
+  expo-router@6.0.23 - expected version: ~58.0.28
+  expo-secure-store@15.0.8 - expected version: ~58.0.2
+  expo-status-bar@3.0.9 - expected version: ~58.0.4
+  expo-updates@29.0.20 - expected version: ~58.0.19
+  expo-web-browser@15.0.10 - expected version: ~58.0.7
+  react@19.1.0 - expected version: 19.3.0
+  react-dom@19.1.0 - expected version: 19.3.0
+  react-native@0.81.5 - expected version: 0.88.1
+  react-native-gesture-handler@2.28.0 - expected version: ~3.3.0
+  react-native-reanimated@4.1.5 - expected version: 4.7.1
+  react-native-safe-area-context@5.6.2 - expected version: ~5.10.1
+  react-native-screens@4.16.0 - expected version: ~4.30.0
+  react-native-svg@15.12.1 - expected version: 15.16.0
+  react-native-worklets@0.5.1 - expected version: 0.13.0
+  @babel/core@7.28.5 - expected version: ^7.29.7
+  @types/react@19.1.17 - expected version: ~19.3.0
+  typescript@5.9.3 - expected version: ~6.0.3
+Your project may not work correctly until you install the expected versions of the packages.
+› Installing 28 SDK 58.0.0 compatible native modules using npm
+> npm install
+
+added 25 packages, removed 187 packages, changed 79 packages, and audited 1041 packages in 14s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+33 vulnerabilities (6 low, 10 moderate, 16 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+Skipping config plugin check: Cannot find module '@expo/config-plugins'
+Require stack:
+- /home/runner/work/Lock/Lock/node_modules/expo-alternate-app-icons/plugin/build/android/withAdaptiveIconsGenerator.js
+- /home/runner/work/Lock/Lock/node_modules/expo-alternate-app-icons/plugin/build/index.js
+- /home/runner/work/Lock/Lock/node_modules/expo-alternate-app-icons/app.plugin.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/require-utils/build/load.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/require-utils/build/index.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/node_modules/@expo/config/build/Config.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/node_modules/@expo/config/build/index.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/build/src/install/checkPackages.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/build/src/install/installAsync.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/build/src/install/index.js
+> npm install
+
+changed 5 packages, and audited 1041 packages in 3s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+32 vulnerabilities (5 low, 10 moderate, 16 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+$ npx expo install expo-hinge react-native-safe-area-context
+› Installing 2 SDK 58.0.0 compatible native modules using npm
+> npm install
+
+added 1 package, and audited 1042 packages in 2s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+32 vulnerabilities (5 low, 10 moderate, 16 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+Skipping config plugin check: Cannot find module '@expo/config-plugins'
+Require stack:
+- /home/runner/work/Lock/Lock/node_modules/expo-alternate-app-icons/plugin/build/android/withAdaptiveIconsGenerator.js
+- /home/runner/work/Lock/Lock/node_modules/expo-alternate-app-icons/plugin/build/index.js
+- /home/runner/work/Lock/Lock/node_modules/expo-alternate-app-icons/app.plugin.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/require-utils/build/load.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/require-utils/build/index.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/node_modules/@expo/config/build/Config.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/node_modules/@expo/config/build/index.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/build/src/install/installAsync.js
+- /home/runner/work/Lock/Lock/node_modules/@expo/cli/build/src/install/index.js

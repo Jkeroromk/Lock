@@ -1,0 +1,49 @@
+app/(tabs)/_layout.tsx(2,40): error TS2307: Cannot find module '@react-navigation/bottom-tabs' or its corresponding type declarations.
+app/(tabs)/_layout.tsx(129,28): error TS7006: Parameter 'route' implicitly has an 'any' type.
+app/(tabs)/_layout.tsx(129,35): error TS7006: Parameter 'index' implicitly has an 'any' type.
+app/(tabs)/_layout.tsx(203,48): error TS2322: Type '____ColorValue_Internal' is not assignable to type 'string | NativeColorValue | undefined'.
+  Type 'null' is not assignable to type 'string | NativeColorValue | undefined'.
+app/(tabs)/_layout.tsx(212,50): error TS2322: Type '____ColorValue_Internal' is not assignable to type 'string | NativeColorValue | undefined'.
+  Type 'null' is not assignable to type 'string | NativeColorValue | undefined'.
+app/(tabs)/_layout.tsx(229,49): error TS2322: Type '____ColorValue_Internal' is not assignable to type 'string | NativeColorValue | undefined'.
+  Type 'null' is not assignable to type 'string | NativeColorValue | undefined'.
+app/(tabs)/_layout.tsx(238,49): error TS2322: Type '____ColorValue_Internal' is not assignable to type 'string | NativeColorValue | undefined'.
+  Type 'null' is not assignable to type 'string | NativeColorValue | undefined'.
+app/(tabs)/settings/contacts.tsx(184,41): error TS2551: Property 'absoluteFillObject' does not exist on type 'typeof import("/home/runner/work/Lock/Lock/node_modules/react-native/types_generated/Libraries/StyleSheet/StyleSheetExports")'. Did you mean 'absoluteFill'?
+app/(tabs)/settings/preferences.tsx(44,11): error TS18049: 'appState.current' is possibly 'null' or 'undefined'.
+app/_layout.tsx(22,8): error TS2882: Cannot find module or type declarations for side-effect import of '../global.css'.
+app/workout/plan.tsx(47,42): error TS2345: Argument of type '"beforeRemove"' is not assignable to parameter of type 'keyof EventMapCore<Readonly<{ key: string; routeKeySeq: number; index: number; routeNames: never[]; history?: unknown[] | undefined; routes: NavigationRoute<RootParamList, never>[]; type?: string | undefined; stale: false; }>>'.
+app/workout/session.tsx(187,21): error TS2322: Type 'RefObject<(((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<...>) | null>' is not assignable to type 'Ref<ScrollViewInstance> | undefined'.
+  Type 'RefObject<(((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<...>) | null>' is not assignable to type 'RefObject<ScrollViewInstance | null>'.
+    Type '(((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<{ ...; }>) | null' is not assignable to type 'ScrollViewInstance | null'.
+      Type '((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<{ Context: Context<...>; }>' is not assignable to type 'ScrollViewInstance | null'.
+app/workout/session.tsx(358,36): error TS2339: Property 'scrollTo' does not exist on type '((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<{ Context: Context<...>; }>'.
+components/auth/ForgotPasswordScreen.tsx(91,156): error TS2339: Property 'focus' does not exist on type 'TextInputType'.
+components/auth/ForgotPasswordScreen.tsx(94,62): error TS2339: Property 'focus' does not exist on type 'TextInputType'.
+components/auth/OtpVerificationScreen.tsx(90,48): error TS2339: Property 'focus' does not exist on type 'TextInputType'.
+components/auth/OtpVerificationScreen.tsx(151,75): error TS2339: Property 'focus' does not exist on type 'TextInputType'.
+components/calendar/DayMealsModal.tsx(80,34): error TS2551: Property 'absoluteFillObject' does not exist on type 'typeof import("/home/runner/work/Lock/Lock/node_modules/react-native/types_generated/Libraries/StyleSheet/StyleSheetExports")'. Did you mean 'absoluteFill'?
+components/settings/EditProfileModal.tsx(61,41): error TS2339: Property 'scrollTo' does not exist on type '((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<{ Context: Context<...>; }>'.
+components/settings/EditProfileModal.tsx(174,15): error TS2322: Type 'RefObject<(((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<...>) | null>' is not assignable to type 'Ref<ScrollViewInstance> | undefined'.
+  Type 'RefObject<(((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<...>) | null>' is not assignable to type 'RefObject<ScrollViewInstance | null>'.
+    Type '(((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<{ ...; }>) | null' is not assignable to type 'ScrollViewInstance | null'.
+      Type '((props: Omit<ScrollViewProps, "ref"> & { ref?: Ref<ScrollViewInstance> | undefined; }) => ReactNode) & Readonly<{ Context: Context<...>; }>' is not assignable to type 'ScrollViewInstance | null'.
+components/ui/Text.tsx(25,11): error TS2540: Cannot assign to 'lineHeight' because it is a read-only property.
+components/ui/Text.tsx(27,59): error TS2540: Cannot assign to 'letterSpacing' because it is a read-only property.
+components/ui/Text.tsx(28,49): error TS2540: Cannot assign to 'textTransform' because it is a read-only property.
+components/ui/Text.tsx(39,18): error TS2322: Type 'ForwardedRef<(props: Omit<TextProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode>' is not assignable to type 'Ref<ReactNativeElement> | undefined'.
+  Type '(instance: ((props: Omit<TextProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode) | null) => void' is not assignable to type 'Ref<ReactNativeElement> | undefined'.
+    Type '(instance: ((props: Omit<TextProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode) | null) => void' is not assignable to type '(instance: ReactNativeElement | null) => void | (() => VoidOrUndefinedOnly)'.
+      Types of parameters 'instance' and 'instance' are incompatible.
+        Type 'ReactNativeElement | null' is not assignable to type '((props: Omit<TextProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode) | null'.
+          Type 'ReactNativeElement' is not assignable to type '(props: Omit<TextProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode'.
+            Type 'ReactNativeElement' provides no match for the signature '(props: Omit<TextProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }): ReactNode'.
+components/ui/Text.tsx(45,23): error TS2322: Type 'ForwardedRef<TextInputType>' is not assignable to type 'Ref<_TextInputInstance> | undefined'.
+  Type '(instance: TextInputType | null) => void' is not assignable to type 'Ref<_TextInputInstance> | undefined'.
+    Type '(instance: TextInputType | null) => void' is not assignable to type '(instance: _TextInputInstance | null) => void | (() => VoidOrUndefinedOnly)'.
+      Types of parameters 'instance' and 'instance' are incompatible.
+        Type '_TextInputInstance | null' is not assignable to type 'TextInputType | null'.
+          Type '_TextInputInstance' is not assignable to type 'TextInputType'.
+            Type '_TextInputInstance' is not assignable to type 'InternalTextInput'.
+              Type '_TextInputInstance' provides no match for the signature '(props: Omit<TextInputProps, "ref"> & { ref?: Ref<_TextInputInstance> | undefined; }): ReactNode'.
+hooks/useOnboardingAnimation.ts(44,37): error TS2694: Namespace 'global.NodeJS' has no exported member 'Timeout'.
