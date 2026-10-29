@@ -44,7 +44,7 @@ export default function PlanEditorScreen() {
 
   // Unsaved changes: ask before leaving (back button and swipe).
   useEffect(() => {
-    const unsub = navigation.addListener('beforeRemove', (e: any) => {
+    const unsub = (navigation as any).addListener('beforeRemove', (e: any) => {
       if (!dirty || leaving.current) return;
       e.preventDefault();
       Alert.alert(t('train.unsavedTitle'), t('train.unsavedBody'), [

@@ -41,7 +41,7 @@ export default function PreferencesScreen() {
     isHealthConnected().then(setHealthConnected);
     getNotificationPermissionStatus().then(setNotificationsEnabled);
     const sub = AppState.addEventListener('change', (next) => {
-      if (appState.current.match(/inactive|background/) && next === 'active') {
+      if (appState.current?.match(/inactive|background/) && next === 'active') {
         getNotificationPermissionStatus().then(setNotificationsEnabled);
       }
       appState.current = next;

@@ -77,7 +77,7 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
     >
       <View style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Animated.View
-          style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', opacity: fadeAnim }}
+          style={{ ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.5)', opacity: fadeAnim }}
         >
           <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
         </Animated.View>

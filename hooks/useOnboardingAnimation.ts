@@ -41,7 +41,7 @@ export function useOnboardingAnimation({
 }: UseOnboardingAnimationProps) {
   const router = useRouter();
   const { userId: clerkUserId } = useAuth();
-  const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
+  const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // 动画值
   const fadeAnim = useSharedValue(0);

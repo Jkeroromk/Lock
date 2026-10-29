@@ -1,11 +1,8 @@
 # One command per line, run in order by .github/workflows/expo-upgrade.yml
-npm view expo dist-tags
-npm view @bacons/apple-targets dist-tags
-npm view @bacons/apple-targets@latest peerDependencies
-npm view react-native-purchases dist-tags
-npm view @clerk/clerk-expo dist-tags
-npm view nativewind dist-tags
-npm view expo-hinge@latest version peerDependencies
-npx expo install expo@^58.0.0
-npx expo install --fix
-npx expo install expo-hinge react-native-safe-area-context
+# Batch 2: drop unused native/JS libraries, update plugins for SDK 58.
+npm uninstall moti victory-native react-native-calendars react-native-worklets-core
+npm install --save-exact @bacons/apple-targets@5.0.0
+npx expo install @expo/config-plugins expo-alternate-app-icons@latest
+npx expo install --check
+npm view react-native-purchases@latest peerDependencies
+npm view react-native-health@latest version

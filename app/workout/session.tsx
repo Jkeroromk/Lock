@@ -1,6 +1,7 @@
 import { View, ScrollView, TextInput, Alert, Vibration, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ComponentRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
@@ -37,7 +38,7 @@ export default function WorkoutSessionScreen() {
   const [picker, setPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const restAlerted = useRef<number | null>(null);
-  const tabsRef = useRef<ScrollView>(null);
+  const tabsRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
