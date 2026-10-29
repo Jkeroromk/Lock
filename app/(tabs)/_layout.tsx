@@ -287,16 +287,21 @@ function RailTabBar(props: BottomTabBarProps) {
   );
 }
 
-const ISLAND_SLOT = 64;
-const ISLAND_PAD = 6;
+/** Distance between tab icons on the open-Duo bar; also the slot each tab owns. */
+const ISLAND_SLOT = 72;
+/** Hit area inside a slot: narrower than the slot, so the icons next to the
+ *  40pt fold reach at most 6pt into its edge (icons themselves stay clear). */
+const ISLAND_HIT = 44;
+const ISLAND_PAD = 8;
 const LEFT_TABS = ['today', 'train'];
 const RIGHT_TABS = ['dashboard', 'settings'];
 
 /**
- * iPhone Duo open: one pill across the middle with two tabs on each side, so
- * the fold falls between tabs and nothing tappable sits on it. Folded part-way
- * like a book, the pill splits at the fold into two islands that slide to the
- * middle of their half. The camera is its own button at the bottom right.
+ * iPhone Duo open: one pill with four evenly spaced tabs. The two middle slots
+ * meet at the centre, so the fold falls in the normal gap between tabs 2 and 3
+ * and the icons stay off it. Folded part-way like a book, the pill splits at
+ * the fold into two islands that slide to the middle of their half. The camera
+ * is its own button at the bottom right.
  */
 function InnerTabBar(props: BottomTabBarProps) {
   const { state, descriptors } = props;
@@ -307,36 +312,35 @@ function InnerTabBar(props: BottomTabBarProps) {
   const { width, fold, book } = useDeviceLayout();
 
   const H = TAB_BAR_HEIGHT;
-  const bottom = Math.max(insets.bottom, 12);
-  const base = ISLAND_PAD * 2 + ISLAND_SLOT * 2;
-  const half = (fold?.width ?? 24) / 2;
   const center = width / 2;
-  const leftCenter = (fold ? fold.start : center - half) / 2;
+  const leftCenter = (fold ? fold.start : center - 12) / 2;
   const rightCenter = width - leftCenter;
+  // Flat: padding only on the outer side, the slots meet at the centre.
+  // Book: padding on both sides.
+  const flatWidth = ISLAND_PAD + ISLAND_SLOT * 2;
+  const bookWidth = ISLAND_PAD * 2 + ISLAND_SLOT * 2;
 
   const split = useSharedValue(book ? 1 : 0);
   useEffect(() => {
     split.value = withSpring(book ? 1 : 0, MOTION.slide);
   }, [book]);
 
-  // Flat: each island reaches the middle, inner corners square, so the two
-  // read as one pill. Book: inner corners round, each centred in its half.
   const leftStyle = useAnimatedStyle(() => {
     const s = split.value;
-    const w = base + half * (1 - s);
     return {
-      width: w,
-      left: (center - w) * (1 - s) + (leftCenter - base / 2) * s,
+      width: flatWidth + ISLAND_PAD * s,
+      paddingRight: ISLAND_PAD * s,
+      left: (center - flatWidth) * (1 - s) + (leftCenter - bookWidth / 2) * s,
       borderTopRightRadius: (H / 2) * s,
       borderBottomRightRadius: (H / 2) * s,
     };
   });
   const rightStyle = useAnimatedStyle(() => {
     const s = split.value;
-    const w = base + half * (1 - s);
     return {
-      width: w,
-      left: center * (1 - s) + (rightCenter - base / 2) * s,
+      width: flatWidth + ISLAND_PAD * s,
+      paddingLeft: ISLAND_PAD * s,
+      left: center * (1 - s) + (rightCenter - bookWidth / 2) * s,
       borderTopLeftRadius: (H / 2) * s,
       borderBottomLeftRadius: (H / 2) * s,
     };
@@ -346,28 +350,29 @@ function InnerTabBar(props: BottomTabBarProps) {
     state.routes
       .filter((route) => names.includes(route.name))
       .map((route) => (
-        <TabIcon
-          key={route.key}
-          route={route}
-          focused={state.routes[state.index]?.key === route.key}
-          onPress={pressFor(route)}
-          label={tabLabel(descriptors, route)}
-          overGoal={overGoal}
-          indicator="below"
-          style={{ width: ISLAND_SLOT, height: H, paddingBottom: 8 }}
-        />
+        <View key={route.key} style={{ width: ISLAND_SLOT, height: H, alignItems: 'center', justifyContent: 'center' }}>
+          <TabIcon
+            route={route}
+            focused={state.routes[state.index]?.key === route.key}
+            onPress={pressFor(route)}
+            label={tabLabel(descriptors, route)}
+            overGoal={overGoal}
+            indicator="below"
+            style={{ width: ISLAND_HIT, height: H, paddingBottom: 8 }}
+          />
+        </View>
       ));
 
   const logRoute = state.routes.find((r) => r.name === 'log');
   const island: ViewStyle = {
     position: 'absolute', top: 0, height: H, backgroundColor: colors.tabBar,
-    borderRadius: H / 2, flexDirection: 'row', alignItems: 'center', paddingHorizontal: ISLAND_PAD,
+    borderRadius: H / 2, flexDirection: 'row', alignItems: 'center',
   };
 
   return (
-    <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: H + bottom }}>
-      <Animated.View style={[island, { justifyContent: 'flex-start' }, leftStyle]}>{renderTabs(LEFT_TABS)}</Animated.View>
-      <Animated.View style={[island, { justifyContent: 'flex-end' }, rightStyle]}>{renderTabs(RIGHT_TABS)}</Animated.View>
+    <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: H + Math.max(insets.bottom, 12) }}>
+      <Animated.View style={[island, { paddingLeft: ISLAND_PAD }, leftStyle]}>{renderTabs(LEFT_TABS)}</Animated.View>
+      <Animated.View style={[island, { paddingRight: ISLAND_PAD }, rightStyle]}>{renderTabs(RIGHT_TABS)}</Animated.View>
       {logRoute ? (
         <View pointerEvents="box-none" style={{ position: 'absolute', top: 1, right: Math.max(insets.right, 16) + 12 }}>
           <LogTabButton

@@ -214,7 +214,7 @@ export default function TodayScreen() {
   if (twoPane) {
     return (
       <TabFocusFade>
-      <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
         <TwoPane
           left={
             <ScrollView
@@ -253,7 +253,7 @@ export default function TodayScreen() {
 
   return (
     <TabFocusFade>
-    <SafeAreaView className="flex-1" edges={['top', 'left', 'right']} style={{ backgroundColor: colors.backgroundPrimary }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: tabInset }}
