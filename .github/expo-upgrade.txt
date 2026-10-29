@@ -1,8 +1,4 @@
 # One command per line, run in order by .github/workflows/expo-upgrade.yml
-# Batch 3: missing peer dependencies; check whether @expo/config-plugins is still needed; try an iOS prebuild.
-npx expo install expo-constants expo-haptics expo-linear-gradient
-npm uninstall @expo/config-plugins
-npx expo config --type prebuild --json > /dev/null && echo CONFIG_OK_WITHOUT_CONFIG_PLUGINS || { echo NEED_CONFIG_PLUGINS; npx expo install @expo/config-plugins; }
-npx expo prebuild --platform ios --no-install --clean > /tmp/prebuild.log 2>&1 && echo PREBUILD_OK || echo PREBUILD_FAILED; tail -40 /tmp/prebuild.log
-grep -n "SceneDelegate\|UIApplicationSceneManifest" -r ios --include=*.plist --include=*.swift -l | head
-ls ios
+# Batch 4: RevenueCat 10.x (iOS SDK 5.99, builds with Xcode 27). Expo apps stay on 10.x until the v11 pod ships.
+npm install react-native-purchases@^10.16.0
+npx expo install --check
