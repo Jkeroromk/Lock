@@ -1,25 +1,8 @@
-$ npm uninstall moti victory-native react-native-calendars react-native-worklets-core
+$ npx expo install expo-constants expo-haptics expo-linear-gradient
+› Installing 3 SDK 58.0.0 compatible native modules using npm
+> npm install
 
-removed 79 packages, and audited 963 packages in 3s
-
-122 packages are looking for funding
-  run `npm fund` for details
-
-32 vulnerabilities (5 low, 10 moderate, 16 high, 1 critical)
-
-To address issues that do not require attention, run:
-  npm audit fix
-
-To address all issues possible (including breaking changes), run:
-  npm audit fix --force
-
-Some issues need review, and may require choosing
-a different dependency.
-
-Run `npm audit` for details.
-$ npm install --save-exact @bacons/apple-targets@5.0.0
-
-added 16 packages, changed 1 package, and audited 979 packages in 4s
+added 2 packages, and audited 980 packages in 3s
 
 122 packages are looking for funding
   run `npm fund` for details
@@ -36,11 +19,9 @@ Some issues need review, and may require choosing
 a different dependency.
 
 Run `npm audit` for details.
-$ npx expo install @expo/config-plugins expo-alternate-app-icons@latest
-› Installing 1 SDK 58.0.0 compatible native module and 1 other package using npm
-> npm install --save expo-alternate-app-icons@latest
+$ npm uninstall @expo/config-plugins
 
-added 17 packages, removed 18 packages, changed 2 packages, and audited 978 packages in 3s
+up to date, audited 980 packages in 3s
 
 122 packages are looking for funding
   run `npm fund` for details
@@ -57,13 +38,22 @@ Some issues need review, and may require choosing
 a different dependency.
 
 Run `npm audit` for details.
-$ npx expo install --check
-Dependencies are up to date
-$ npm view react-native-purchases@latest peerDependencies
-{
-  react: '>= 16.6.3',
-  'react-native': '>= 0.80.0',
-  'react-native-web': '*'
-}
-$ npm view react-native-health@latest version
-1.19.0
+$ npx expo config --type prebuild --json > /dev/null && echo CONFIG_OK_WITHOUT_CONFIG_PLUGINS || { echo NEED_CONFIG_PLUGINS; npx expo install @expo/config-plugins; }
+CONFIG_OK_WITHOUT_CONFIG_PLUGINS
+$ npx expo prebuild --platform ios --no-install --clean > /tmp/prebuild.log 2>&1 && echo PREBUILD_OK || echo PREBUILD_FAILED; tail -40 /tmp/prebuild.log
+PREBUILD_OK
+- Creating native directory (./ios)
+✔ Created native directory
+- Updating package.json
+✔ Updated package.json
+- Running prebuild
+✔ Finished prebuild
+$ grep -n "SceneDelegate\|UIApplicationSceneManifest" -r ios --include=*.plist --include=*.swift -l | head
+ios/Lock/Info.plist
+ios/Lock/SceneDelegate.swift
+ios/Lock/AppDelegate.swift
+$ ls ios
+Lock
+Lock.xcodeproj
+Podfile
+Podfile.properties.json
