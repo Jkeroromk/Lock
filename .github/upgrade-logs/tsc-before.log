@@ -1,0 +1,9 @@
+app/(tabs)/_layout.tsx(102,31): error TS2339: Property 'navigation' does not exist on type 'BottomTabBarProps'.
+components/ui/bxc.tsx(489,11): error TS2322: Type 'ForwardedRef<TextInputType>' is not assignable to type 'Ref<_TextInputInstance> | undefined'.
+  Type '(instance: TextInputType | null) => void' is not assignable to type 'Ref<_TextInputInstance> | undefined'.
+    Type '(instance: TextInputType | null) => void' is not assignable to type '(instance: _TextInputInstance | null) => void | (() => VoidOrUndefinedOnly)'.
+      Types of parameters 'instance' and 'instance' are incompatible.
+        Type '_TextInputInstance | null' is not assignable to type 'TextInputType | null'.
+          Type '_TextInputInstance' is not assignable to type 'TextInputType'.
+            Type '_TextInputInstance' is not assignable to type 'InternalTextInput'.
+              Type '_TextInputInstance' provides no match for the signature '(props: Omit<TextInputProps, "ref"> & { ref?: Ref<_TextInputInstance> | undefined; }): ReactNode'.
