@@ -61,5 +61,17 @@
     "tailwindcss": "^3.4.1",
     "typescript": "~6.0.3"
   },
-  "private": true
+  "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-health",
+          "react-native-google-fit",
+          "lock-workout"
+        ],
+        "listUnknownPackages": false
+      }
+    }
+  }
 }
