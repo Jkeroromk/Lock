@@ -89,4 +89,3 @@ export function useDeviceLayout(): DeviceLayout {
     tabletop: kind === 'innerTall' && hinge.book,
   };
 }
-}
