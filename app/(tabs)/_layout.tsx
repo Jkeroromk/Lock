@@ -400,7 +400,9 @@ function AdaptiveTabBar(props: BottomTabBarProps) {
   const { kind } = useDeviceLayout();
   if (kind === 'outer') return <RailTabBar {...props} />;
   if (kind === 'inner') return <InnerTabBar {...props} />;
-  if (kind === 'wide') return <PhoneTabBar {...props} maxWidth={460} />;
+  // Duo turned a quarter: the fold runs across the middle, so the usual bar at
+  // the bottom (camera in the middle) is clear of it.
+  if (kind === 'wide' || kind === 'innerTall') return <PhoneTabBar {...props} maxWidth={460} />;
   return <PhoneTabBar {...props} />;
 }
 
