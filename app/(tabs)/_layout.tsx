@@ -10,7 +10,7 @@ import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
 import { TAB_BAR_HEIGHT } from '@/hooks/useTabBarInset';
-import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT } from '@/hooks/useDeviceLayout';
+import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT, INNER_PAGE_TOP, INNER_PAGE_SIDE } from '@/hooks/useDeviceLayout';
 
 // Props expo-router passes to a custom tab bar (taken from Tabs itself, so it
 // follows whatever navigation library expo-router uses underneath).
@@ -430,9 +430,14 @@ export default function TabLayout() {
         // Outer display: also keep content clear of the tab rail on the right.
         // Screens already pad for the right inset (status-bar column); add
         // only what the rail needs beyond it.
+        // Open Duo held side by side: the status bar is a column on the right,
+        // so the top inset is ~0 and page titles sat in the top-left corner.
+        // Give every tab page a page margin there.
         sceneStyle: kind === 'outer'
           ? { paddingRight: Math.max(0, railColumnWidth(insets.right) - insets.right), backgroundColor: colors.backgroundPrimary }
-          : { backgroundColor: colors.backgroundPrimary },
+          : kind === 'inner'
+            ? { paddingTop: Math.max(0, INNER_PAGE_TOP - insets.top), paddingHorizontal: INNER_PAGE_SIDE, backgroundColor: colors.backgroundPrimary }
+            : { backgroundColor: colors.backgroundPrimary },
       }}
     >
       <Tabs.Screen

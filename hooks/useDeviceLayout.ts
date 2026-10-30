@@ -20,6 +20,12 @@ export type ScreenKind = 'phone' | 'outer' | 'inner' | 'innerTall' | 'wide';
 export const WIDE_MIN_WIDTH = 700;
 /** Width of the fold region in the middle of the open Duo (simulator: 40pt). */
 export const FOLD_WIDTH = 40;
+/**
+ * Open Duo side by side: page margin added around every tab page (the status
+ * bar is a column on the right, so there is almost no top inset).
+ */
+export const INNER_PAGE_TOP = 28;
+export const INNER_PAGE_SIDE = 10;
 /** Outer display: tab rail width. */
 export const RAIL_WIDTH = 66;
 /** Smallest right-hand column that fits the rail with some room. */

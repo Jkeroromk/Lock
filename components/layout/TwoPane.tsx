@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import { useDeviceLayout, INNER_PAGE_SIDE } from '@/hooks/useDeviceLayout';
 import { useTheme } from '@/hooks/useTheme';
 
 /** How far content fades out before it reaches the fold. */
@@ -57,7 +57,11 @@ export default function TwoPane({ left: firstPane, right: secondPane, gap = 24 }
     );
   }
 
-  const firstWidth = fold ? fold.start - insets.left : Math.floor((width - insets.left - insets.right - gap) / 2);
+  // Side by side on the Duo, tab pages also have INNER_PAGE_SIDE of margin
+  // (app/(tabs)/_layout.tsx), so the left pane starts that much further in.
+  const firstWidth = fold
+    ? fold.start - insets.left - INNER_PAGE_SIDE
+    : Math.floor((width - insets.left - insets.right - gap) / 2);
   const middle = fold ? fold.width : gap;
   return (
     <View style={{ flex: 1, flexDirection: 'row' }}>
