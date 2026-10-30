@@ -15,6 +15,7 @@ import { lookupBarcode, type FoodAnalysis } from '@/services/api';
 import { useMealCartStore, cartTotals } from '@/store/useMealCartStore';
 import { useMealLogging } from '@/hooks/useMealLogging';
 import { useTheme } from '@/hooks/useTheme';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 
 type Mode = 'photo' | 'label' | 'scan';
 
@@ -69,6 +70,7 @@ export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const camRef = useRef<CameraView>(null);
   const c = useTheme();
+  const layout = useDeviceLayout();
   // Scan events arrive many times a second; state updates are too slow to gate them.
   const scanBusy = useRef(false);
 
@@ -219,69 +221,274 @@ export default function CameraScreen() {
     );
   }
 
+  const hint = mode === 'photo' ? t('camera.photoHint') : mode === 'label' ? t('camera.labelHint') : lookingUp ? t('log.lookingUp' as any) : t('camera.scanHint');
+
+  const camera = (
+    <CameraView
+      ref={camRef}
+      style={{ flex: 1 }}
+      facing="back"
+      enableTorch={torch}
+      onCameraReady={() => setReady(true)}
+      barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39'] }}
+      onBarcodeScanned={mode === 'scan' ? onBarcode : undefined}
+    />
+  );
+
+  /** Brackets / scan line over the preview; the hint only where the controls don't repeat it. */
+  const finderOverlay = (showHint: boolean) => (
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      {mode !== 'scan' ? (
+        <View style={{ position: 'absolute', left: 20, right: 20, top: 20, bottom: 20 }}>
+          <Brackets w="100%" h="100%" />
+        </View>
+      ) : (
+        <View style={{ alignItems: 'center', gap: 16, opacity: sheetOpen ? 0 : 1 }}>
+          <View>
+            <Brackets w={270} h={130} size={30} />
+            <View style={{ position: 'absolute', left: 18, right: 18, top: 63, height: 3, borderRadius: 2, backgroundColor: YELLOW, opacity: scanning ? 1 : 0.35 }} />
+          </View>
+          {lookingUp ? <ActivityIndicator color={YELLOW} /> : null}
+        </View>
+      )}
+      {showHint ? (
+        <Text style={{ position: 'absolute', left: 0, right: 0, bottom: 26, textAlign: 'center', fontSize: 14, color: MUTED }}>{hint}</Text>
+      ) : null}
+    </View>
+  );
+
+  const flashLayer = <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: '#FFFFFF' }, flashStyle]} />;
+
+  const addedToast = (top: number) =>
+    added ? (
+      <Animated.View entering={FadeInDown.duration(220)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top, left: 14, right: 14, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 14, backgroundColor: PAPER }}>
+          <Ionicons name="checkmark-circle" size={18} color={INK} />
+          <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: '700', color: INK, maxWidth: 260 }}>{t('camera.added', { food: added })}</Text>
+        </View>
+      </Animated.View>
+    ) : null;
+
+  const listChip =
+    items.length > 0 ? (
+      <PressScale
+        onPress={() => setListOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel={t('log.viewList')}
+        style={{ height: 40, paddingHorizontal: 14, borderRadius: 20, backgroundColor: YELLOW, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+      >
+        <Ionicons name="list" size={16} color={INK} />
+        <Text style={{ fontSize: 14, fontWeight: '800', color: INK }}>
+          {t('camera.listChip', { n: String(items.length), kcal: Math.round(totals.calories).toLocaleString() })}
+        </Text>
+      </PressScale>
+    ) : null;
+
+  const torchButton = <RoundButton icon={torch ? 'flash' : 'flash-outline'} label={t('camera.torch')} onPress={() => setTorch((v) => !v)} active={torch} />;
+  const closeButton = <RoundButton icon="close" label={t('common.close')} onPress={close} />;
+
+  const modeLabel = (m: Mode) => (m === 'photo' ? t('camera.modePhoto') : m === 'label' ? t('camera.modeLabel') : t('camera.modeScan'));
+  const MODE_ICON: Record<Mode, string> = { photo: 'camera-outline', label: 'document-text-outline', scan: 'barcode-outline' };
+
+  const libraryButton = (size: number) => (
+    <Pressable onPress={pickFromLibrary} accessibilityRole="button" accessibilityLabel={t('camera.fromLibrary')}
+      style={{ width: size, height: size, borderRadius: size * 0.3, borderWidth: 2, borderColor: LINE, backgroundColor: FINDER, alignItems: 'center', justifyContent: 'center' }}>
+      <Ionicons name="images-outline" size={22} color={PAPER} />
+    </Pressable>
+  );
+
+  const shutterButton = (size: number) =>
+    mode !== 'scan' ? (
+      <Pressable onPress={takePhoto} disabled={!ready || taking} accessibilityRole="button" accessibilityLabel={t('camera.shutter')}
+        style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 4, borderColor: PAPER, alignItems: 'center', justifyContent: 'center', opacity: ready ? 1 : 0.5 }}>
+        {taking ? <ActivityIndicator color={YELLOW} /> : <View style={{ width: size - 18, height: size - 18, borderRadius: (size - 18) / 2, backgroundColor: YELLOW }} />}
+      </Pressable>
+    ) : (
+      <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+        <Ionicons name="barcode-outline" size={34} color={'#8C8B86'} />
+      </View>
+    );
+
+  const listButton = (size: number) => (
+    <Pressable onPress={() => setListOpen(true)} accessibilityRole="button" accessibilityLabel={t('log.viewList')}
+      style={{ width: size, height: size, borderRadius: size * 0.3, borderWidth: 2, borderColor: LINE, backgroundColor: FINDER, alignItems: 'center', justifyContent: 'center' }}>
+      <Ionicons name="list" size={22} color={PAPER} />
+      {items.length > 0 ? (
+        <View style={{ position: 'absolute', top: -8, right: -8, minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 5, backgroundColor: YELLOW, borderWidth: 2, borderColor: INK, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, fontWeight: '700', color: INK }}>{items.length}</Text>
+        </View>
+      ) : null}
+    </Pressable>
+  );
+
+  /** Scanned product (or "not found"): a bottom sheet on phones, a card beside the preview on the open Duo. */
+  const scanResult = found ? (
+    <>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ width: 64, height: 64, borderRadius: 14, borderWidth: 1.5, borderColor: c.borderSecondary, backgroundColor: '#FFFFFF', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+          {found.imageUrl ? (
+            <Image source={{ uri: found.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" accessibilityIgnoresInvertColors />
+          ) : (
+            <Ionicons name="barcode-outline" size={26} color="#0A0A0A" />
+          )}
+        </View>
+        <Text numberOfLines={3} style={{ flex: 1, fontSize: 17, fontWeight: '800', lineHeight: 21, color: c.textPrimary }}>{found.food}</Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 36, fontWeight: '800', letterSpacing: -1.4, lineHeight: 38, color: c.textPrimary }}>{Math.round(found.calories * servings)}</Text>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary }}>KCAL</Text>
+        </View>
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        {([['protein', found.protein], ['carbs', found.carbs], ['fat', found.fat]] as const).map(([k, v]) => (
+          <View key={k} style={{ flex: 1, paddingVertical: 9, paddingHorizontal: 10, borderRadius: 12, backgroundColor: c.cardBackground, borderWidth: 1.5, borderColor: c.divider, gap: 2 }}>
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary }}>{t(`log.${k}`)}</Text>
+            <Text style={{ fontSize: 19, fontWeight: '800', color: c.textPrimary }}>{Math.round(v * servings * 10) / 10}g</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 13, color: c.textSecondary }}>{t('camera.servings')}</Text>
+        <Pressable onPress={() => setServings((v) => Math.max(0.5, v <= 1 ? v - 0.5 : v - 1))} accessibilityRole="button" accessibilityLabel={t('log.lessServing')} hitSlop={6}
+          style={{ width: 36, height: 36, borderRadius: 10, borderWidth: 2, borderColor: c.borderPrimary, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="remove" size={18} color={c.textPrimary} />
+        </Pressable>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 15, fontWeight: '700', minWidth: 34, textAlign: 'center', color: c.textPrimary }}>×{servings}</Text>
+        <Pressable onPress={() => setServings((v) => Math.min(20, v < 1 ? v + 0.5 : v + 1))} accessibilityRole="button" accessibilityLabel={t('log.moreServing')} hitSlop={6}
+          style={{ width: 36, height: 36, borderRadius: 10, borderWidth: 2, borderColor: c.borderPrimary, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="add" size={18} color={c.textPrimary} />
+        </Pressable>
+        <Pressable onPress={resumeScanning} hitSlop={8} accessibilityRole="button" style={{ marginLeft: 'auto' }}>
+          <Text style={{ fontSize: 14, fontWeight: '700', color: c.textSecondary }}>{t('camera.notThis')}</Text>
+        </Pressable>
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button label={t('log.addToList')} icon="add" onPress={addToList} disabled={logging} style={{ flex: 1 }} />
+        <Button label={t('camera.logNow')} variant="outline" onPress={logNow} loading={logging} style={{ flex: 1 }} />
+      </View>
+    </>
+  ) : (
+    <>
+      <View style={{ gap: 4 }}>
+        <Text style={{ fontSize: 20, fontWeight: '800', color: c.textPrimary }}>{t('camera.notFound')}</Text>
+        <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary }}>{t('camera.notFoundBody', { code: missing ?? '' })}</Text>
+      </View>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button label={t('camera.keepScanning')} onPress={resumeScanning} style={{ flex: 1 }} />
+        <Button label={t('log.manualEntry' as any)} variant="outline" onPress={() => goTo('/(tabs)/log', { manualCode: missing ?? '' })} style={{ flex: 1 }} />
+      </View>
+    </>
+  );
+
+  const cartSheet = <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={onLogAll} logging={logging} />;
+
+  // ── iPhone Duo open: preview on one half, controls on the other, nothing on the fold ──
+  // Side by side: preview left, controls under the right thumb.
+  // Turned a quarter (held like a laptop or stood on a table like a tripod):
+  // preview on top, controls on the bottom half.
+  if (layout.fold) {
+    const { fold } = layout;
+    const side = fold.axis === 'vertical';
+    const R = 28;
+    const finderBox = side
+      ? { left: 0, top: 0, bottom: 0, width: fold.start, borderTopRightRadius: R, borderBottomRightRadius: R }
+      : { left: 0, right: 0, top: 0, height: fold.start, borderBottomLeftRadius: R, borderBottomRightRadius: R };
+    const controlsBox = side
+      ? {
+          left: fold.start + fold.width, right: 0, top: 0, bottom: 0, borderTopLeftRadius: R, borderBottomLeftRadius: R,
+          paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20, paddingLeft: 26, paddingRight: insets.right + 22,
+        }
+      : {
+          left: 0, right: 0, top: fold.start + fold.width, bottom: 0, borderTopLeftRadius: R, borderTopRightRadius: R,
+          paddingTop: 22, paddingBottom: insets.bottom + 18, paddingLeft: insets.left + 26, paddingRight: insets.right + 26,
+        };
+    const barTop = insets.top + 16;
+
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000000' }}>
+        <View style={[{ position: 'absolute', overflow: 'hidden', backgroundColor: FINDER }, finderBox]}>
+          {camera}
+          {finderOverlay(false)}
+          {flashLayer}
+          <View style={{ position: 'absolute', top: barTop, left: insets.left + 16, right: side ? 16 : insets.right + 16, flexDirection: 'row', justifyContent: 'space-between' }}>
+            {closeButton}
+            {torchButton}
+          </View>
+          {addedToast(barTop + 56)}
+        </View>
+
+        <View style={[{ position: 'absolute', backgroundColor: INK, gap: side ? 18 : 14 }, controlsBox]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 40, gap: 10 }}>
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 1, color: '#8C8B86' }}>{t('camera.title')}</Text>
+            {listChip}
+          </View>
+
+          {sheetOpen ? (
+            <Animated.View entering={FadeInDown.duration(220)} style={{ borderRadius: 24, padding: 18, gap: 14, backgroundColor: c.backgroundPrimary }}>
+              {scanResult}
+            </Animated.View>
+          ) : (
+            <>
+              <View accessibilityRole="tablist" style={{ flexDirection: side ? 'column' : 'row', gap: side ? 10 : 8 }}>
+                {(['photo', 'label', 'scan'] as const).map((m) => {
+                  const on = m === mode;
+                  return (
+                    <Pressable
+                      key={m}
+                      onPress={() => switchMode(m)}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: on }}
+                      style={{
+                        flex: side ? undefined : 1, height: side ? 56 : 50, paddingHorizontal: 16, borderRadius: side ? 18 : 25,
+                        borderWidth: 2, borderColor: on ? YELLOW : LINE, backgroundColor: on ? YELLOW : 'transparent',
+                        flexDirection: 'row', alignItems: 'center', justifyContent: side ? 'flex-start' : 'center', gap: 10,
+                      }}
+                    >
+                      <Ionicons name={MODE_ICON[m] as any} size={20} color={on ? INK : MUTED} />
+                      <Text style={{ fontSize: side ? 17 : 15, fontWeight: on ? '800' : '700', color: on ? INK : MUTED }}>{modeLabel(m)}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Text style={{ fontSize: 15, lineHeight: 21, color: MUTED }}>{hint}</Text>
+            </>
+          )}
+
+          <View style={{ flex: 1 }} />
+          {/* The bottom half is short when turned a quarter: the product card takes the room. */}
+          {sheetOpen && !side ? null : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: side ? 4 : 30 }}>
+              {libraryButton(58)}
+              {shutterButton(side ? 96 : 92)}
+              {listButton(58)}
+            </View>
+          )}
+        </View>
+
+        {cartSheet}
+      </View>
+    );
+  }
+
   return (
     // Left/right insets: on iPhone Duo the status bar is a column on the right
     // edge, which covered the torch button.
     <View style={{ flex: 1, backgroundColor: INK, paddingLeft: insets.left, paddingRight: insets.right }}>
       {/* Top bar */}
       <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 18, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <RoundButton icon="close" label={t('common.close')} onPress={close} />
-        {items.length > 0 ? (
-          <PressScale
-            onPress={() => setListOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t('log.viewList')}
-            style={{ height: 40, paddingHorizontal: 14, borderRadius: 20, backgroundColor: YELLOW, flexDirection: 'row', alignItems: 'center', gap: 6 }}
-          >
-            <Ionicons name="list" size={16} color={INK} />
-            <Text style={{ fontSize: 14, fontWeight: '800', color: INK }}>
-              {t('camera.listChip', { n: String(items.length), kcal: Math.round(totals.calories).toLocaleString() })}
-            </Text>
-          </PressScale>
-        ) : (
-          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 1, color: '#8C8B86' }}>{t('camera.title')}</Text>
-        )}
-        <RoundButton icon={torch ? 'flash' : 'flash-outline'} label={t('camera.torch')} onPress={() => setTorch((v) => !v)} active={torch} />
+        {closeButton}
+        {listChip ?? <Text style={{ fontFamily: FONTS.mono, fontSize: 12, letterSpacing: 1, color: '#8C8B86' }}>{t('camera.title')}</Text>}
+        {torchButton}
       </View>
 
       {/* Viewfinder */}
       <View style={{ flex: 1, marginHorizontal: 14, borderRadius: 28, overflow: 'hidden', backgroundColor: FINDER }}>
-        <CameraView
-          ref={camRef}
-          style={{ flex: 1 }}
-          facing="back"
-          enableTorch={torch}
-          onCameraReady={() => setReady(true)}
-          barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39'] }}
-          onBarcodeScanned={mode === 'scan' ? onBarcode : undefined}
-        />
-        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          {mode !== 'scan' ? (
-            <View style={{ position: 'absolute', left: 20, right: 20, top: 20, bottom: 20 }}>
-              <Brackets w="100%" h="100%" />
-            </View>
-          ) : (
-            <View style={{ alignItems: 'center', gap: 16, opacity: sheetOpen ? 0 : 1 }}>
-              <View>
-                <Brackets w={270} h={130} size={30} />
-                <View style={{ position: 'absolute', left: 18, right: 18, top: 63, height: 3, borderRadius: 2, backgroundColor: YELLOW, opacity: scanning ? 1 : 0.35 }} />
-              </View>
-              {lookingUp ? <ActivityIndicator color={YELLOW} /> : null}
-            </View>
-          )}
-          <Text style={{ position: 'absolute', left: 0, right: 0, bottom: 26, textAlign: 'center', fontSize: 14, color: MUTED }}>
-            {mode === 'photo' ? t('camera.photoHint') : mode === 'label' ? t('camera.labelHint') : lookingUp ? t('log.lookingUp' as any) : t('camera.scanHint')}
-          </Text>
-        </View>
-        <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: '#FFFFFF' }, flashStyle]} />
-        {added ? (
-          <Animated.View entering={FadeInDown.duration(220)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: 14, left: 14, right: 14, alignItems: 'center' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 14, backgroundColor: PAPER }}>
-              <Ionicons name="checkmark-circle" size={18} color={INK} />
-              <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: '700', color: INK, maxWidth: 260 }}>{t('camera.added', { food: added })}</Text>
-            </View>
-          </Animated.View>
-        ) : null}
+        {camera}
+        {finderOverlay(true)}
+        {flashLayer}
+        {addedToast(14)}
       </View>
 
       {/* Modes */}
@@ -296,9 +503,7 @@ export default function CameraScreen() {
               accessibilityState={{ selected: on }}
               style={{ height: 36, paddingHorizontal: 18, borderRadius: 18, backgroundColor: on ? YELLOW : 'transparent', justifyContent: 'center' }}
             >
-              <Text style={{ fontSize: 15, fontWeight: on ? '800' : '700', color: on ? INK : MUTED }}>
-                {m === 'photo' ? t('camera.modePhoto') : m === 'label' ? t('camera.modeLabel') : t('camera.modeScan')}
-              </Text>
+              <Text style={{ fontSize: 15, fontWeight: on ? '800' : '700', color: on ? INK : MUTED }}>{modeLabel(m)}</Text>
             </Pressable>
           );
         })}
@@ -306,29 +511,9 @@ export default function CameraScreen() {
 
       {/* Controls */}
       <View style={{ height: 96, paddingHorizontal: 34, paddingBottom: insets.bottom, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Pressable onPress={pickFromLibrary} accessibilityRole="button" accessibilityLabel={t('camera.fromLibrary')}
-          style={{ width: 54, height: 54, borderRadius: 16, borderWidth: 2, borderColor: LINE, backgroundColor: FINDER, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="images-outline" size={22} color={PAPER} />
-        </Pressable>
-        {mode !== 'scan' ? (
-          <Pressable onPress={takePhoto} disabled={!ready || taking} accessibilityRole="button" accessibilityLabel={t('camera.shutter')}
-            style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 4, borderColor: PAPER, alignItems: 'center', justifyContent: 'center', opacity: ready ? 1 : 0.5 }}>
-            {taking ? <ActivityIndicator color={YELLOW} /> : <View style={{ width: 62, height: 62, borderRadius: 31, backgroundColor: YELLOW }} />}
-          </Pressable>
-        ) : (
-          <View style={{ width: 80, height: 80, alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="barcode-outline" size={34} color={'#8C8B86'} />
-          </View>
-        )}
-        <Pressable onPress={() => setListOpen(true)} accessibilityRole="button" accessibilityLabel={t('log.viewList')}
-          style={{ width: 54, height: 54, borderRadius: 16, borderWidth: 2, borderColor: LINE, backgroundColor: FINDER, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="list" size={22} color={PAPER} />
-          {items.length > 0 ? (
-            <View style={{ position: 'absolute', top: -8, right: -8, minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 5, backgroundColor: YELLOW, borderWidth: 2, borderColor: INK, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, fontWeight: '700', color: INK }}>{items.length}</Text>
-            </View>
-          ) : null}
-        </Pressable>
+        {libraryButton(54)}
+        {shutterButton(80)}
+        {listButton(54)}
       </View>
 
       {/* Scan result */}
@@ -341,69 +526,11 @@ export default function CameraScreen() {
           }}
         >
           <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.borderSecondary }} />
-          {found ? (
-            <>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <View style={{ width: 64, height: 64, borderRadius: 14, borderWidth: 1.5, borderColor: c.borderSecondary, backgroundColor: '#FFFFFF', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-                  {found.imageUrl ? (
-                    <Image source={{ uri: found.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" accessibilityIgnoresInvertColors />
-                  ) : (
-                    <Ionicons name="barcode-outline" size={26} color="#0A0A0A" />
-                  )}
-                </View>
-                <Text numberOfLines={3} style={{ flex: 1, fontSize: 17, fontWeight: '800', lineHeight: 21, color: c.textPrimary }}>{found.food}</Text>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={{ fontSize: 36, fontWeight: '800', letterSpacing: -1.4, lineHeight: 38, color: c.textPrimary }}>{Math.round(found.calories * servings)}</Text>
-                  <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary }}>KCAL</Text>
-                </View>
-              </View>
-
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {([['protein', found.protein], ['carbs', found.carbs], ['fat', found.fat]] as const).map(([k, v]) => (
-                  <View key={k} style={{ flex: 1, paddingVertical: 9, paddingHorizontal: 10, borderRadius: 12, backgroundColor: c.cardBackground, borderWidth: 1.5, borderColor: c.divider, gap: 2 }}>
-                    <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary }}>{t(`log.${k}`)}</Text>
-                    <Text style={{ fontSize: 19, fontWeight: '800', color: c.textPrimary }}>{Math.round(v * servings * 10) / 10}g</Text>
-                  </View>
-                ))}
-              </View>
-
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Text style={{ fontSize: 13, color: c.textSecondary }}>{t('camera.servings')}</Text>
-                <Pressable onPress={() => setServings((v) => Math.max(0.5, v <= 1 ? v - 0.5 : v - 1))} accessibilityRole="button" accessibilityLabel={t('log.lessServing')} hitSlop={6}
-                  style={{ width: 36, height: 36, borderRadius: 10, borderWidth: 2, borderColor: c.borderPrimary, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name="remove" size={18} color={c.textPrimary} />
-                </Pressable>
-                <Text style={{ fontFamily: FONTS.mono, fontSize: 15, fontWeight: '700', minWidth: 34, textAlign: 'center', color: c.textPrimary }}>×{servings}</Text>
-                <Pressable onPress={() => setServings((v) => Math.min(20, v < 1 ? v + 0.5 : v + 1))} accessibilityRole="button" accessibilityLabel={t('log.moreServing')} hitSlop={6}
-                  style={{ width: 36, height: 36, borderRadius: 10, borderWidth: 2, borderColor: c.borderPrimary, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name="add" size={18} color={c.textPrimary} />
-                </Pressable>
-                <Pressable onPress={resumeScanning} hitSlop={8} accessibilityRole="button" style={{ marginLeft: 'auto' }}>
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: c.textSecondary }}>{t('camera.notThis')}</Text>
-                </Pressable>
-              </View>
-
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button label={t('log.addToList')} icon="add" onPress={addToList} disabled={logging} style={{ flex: 1 }} />
-                <Button label={t('camera.logNow')} variant="outline" onPress={logNow} loading={logging} style={{ flex: 1 }} />
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={{ gap: 4 }}>
-                <Text style={{ fontSize: 20, fontWeight: '800', color: c.textPrimary }}>{t('camera.notFound')}</Text>
-                <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary }}>{t('camera.notFoundBody', { code: missing ?? '' })}</Text>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button label={t('camera.keepScanning')} onPress={resumeScanning} style={{ flex: 1 }} />
-                <Button label={t('log.manualEntry' as any)} variant="outline" onPress={() => goTo('/(tabs)/log', { manualCode: missing ?? '' })} style={{ flex: 1 }} />
-              </View>
-            </>
-          )}
+          {scanResult}
         </Animated.View>
       ) : null}
 
-      <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={onLogAll} logging={logging} />
+      {cartSheet}
     </View>
   );
 }
