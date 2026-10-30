@@ -3,6 +3,7 @@ const koKR = {
     today: '오늘', train: '운동', calendar: '캘린더', log: '기록', social: '소셜', user: '사용자',
   },
   today: {
+    snapMeal: '이 식사 찍기', snapMealSub: '사진, 영양성분표 또는 바코드',
     openCalendar: '캘린더',
     connectHealthTitle: 'Apple 건강 연결', connectHealthBody: '걸음 수와 활동 에너지를 자동으로 동기화해 여기에 보여줘요.', connectHealthCta: '연결',
     todayCalories: '오늘의 칼로리', target: '목표', remaining: '남음', kcal: 'kcal',
@@ -442,6 +443,7 @@ const koKR = {
     saveFailed: '저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.', libraryTitle: '운동 라이브러리', search: '운동 검색', all: '전체',
     addN: '{n}개 운동 추가', noResults: '운동을 찾을 수 없어요', end: '종료', exerciseOf: '운동 {i} / {n}',
     setsDone: '{done} / {total}세트 완료', colSet: '세트', colLast: '지난번', colKg: 'KG',
+    completeSet: '이 세트 완료', setOf: '세트 {i} / {n}', nextUp: '다음 세트', bestLabel: '최고 기록', repsShort: '회', elapsedLabel: '경과', exerciseDone: '이 운동 완료', wtStep: '무게', repStep: '횟수',
     colReps: '횟수', addSet: '+ 세트 추가', rest: '세트 간 휴식', skip: '건너뛰기',
     next: '다음', prToast: '신기록 {w} × {r}', prToastReps: '신기록 {r}회', emptyWorkout: '운동을 추가해서 시작해 보세요.',
     finishTitle: '운동을 종료할까요?', finishBody: '{done} / {total}세트 완료.', finishSave: '운동 저장', discard: '버리기',
@@ -609,6 +611,7 @@ const koKR = {
     body: '신체 정보',
   },
   camera: {
+    todayLeft: '오늘 {kcal} kcal 남음', todayOver: '오늘 {kcal} kcal 초과', proteinLeft: '단백질 {g}g 더', proteinDone: '단백질 목표 달성',
     modeLabel: "영양표",
     labelHint: "영양성분표가 잘 보이게 찍어 주세요",
     title: "식사 기록",

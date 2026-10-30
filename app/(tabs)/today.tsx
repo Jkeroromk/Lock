@@ -23,10 +23,13 @@ import { useStepGoal } from '@/hooks/useDailyGoals';
 import { useAdaptiveStepGoal } from '@/hooks/useAdaptiveStepGoal';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
+import SnapMealCard from '@/components/today/SnapMealCard';
+import { useProteinTarget } from '@/hooks/useProteinTarget';
 
 export default function TodayScreen() {
   const tabInset = useTabBarInset();
-  const { twoPane } = useDeviceLayout();
+  const { twoPane, tabletop } = useDeviceLayout();
+  const proteinTarget = useProteinTarget().target;
   const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
   // Today's numbers from the last session are shown instantly; fresh data replaces them.
   const hasFreshCache = todayDate === localDateKey();
@@ -209,8 +212,58 @@ export default function TodayScreen() {
     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />
   );
 
-  // Open iPhone Duo (or any wide window): the day's numbers on the left, the
-  // workout and meals on the right, each side scrolling on its own.
+  const snap = (
+    <Appear index={0}>
+      <SnapMealCard proteinLeft={proteinTarget - macros.protein} />
+    </Appear>
+  );
+
+  // Open iPhone Duo turned a quarter and stood up like a laptop: the day's
+  // numbers on the top half (read at a glance), and a deck of things to tap on
+  // the bottom half — snap / workout / water in one column, meals in the other.
+  if (twoPane && tabletop) {
+    return (
+      <TabFocusFade>
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <TwoPane
+          left={
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: 24 }}
+              refreshControl={refreshControl}
+            >
+              <DateHeader language={language} streak={streak} />
+              {loading ? skeleton : (
+                <View>
+                  {calories}
+                  {health}
+                </View>
+              )}
+            </ScrollView>
+          }
+          right={
+            loading ? null : (
+              <View style={{ flex: 1, flexDirection: 'row', gap: 14, paddingHorizontal: 18 }}>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 22, paddingBottom: tabInset }}>
+                  {snap}
+                  {training}
+                  {water}
+                </ScrollView>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 22, paddingBottom: tabInset }}>
+                  {meals}
+                </ScrollView>
+              </View>
+            )
+          }
+        />
+      </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
+
+  // Open iPhone Duo side by side (flat or half folded like a book), or any
+  // wide window: the day's numbers on the left page, snap / workout / meals on
+  // the right page, each side scrolling on its own.
   if (twoPane) {
     return (
       <TabFocusFade>
@@ -239,6 +292,7 @@ export default function TodayScreen() {
             >
               {loading ? null : (
                 <View>
+                  {snap}
                   {training}
                   {meals}
                 </View>

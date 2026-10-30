@@ -7,6 +7,7 @@ const zhCN = {
     user: '用户',
   },
   today: {
+    snapMeal: '拍这一餐', snapMealSub: '拍照、营养标签或扫码',
     openCalendar: '日历',
     connectHealthTitle: '连接 Apple 健康', connectHealthBody: '自动同步步数和活动消耗，直接显示在这里。', connectHealthCta: '连接',
     todayCalories: '今日卡路里',
@@ -590,6 +591,7 @@ const zhCN = {
     saveFailed: '保存失败，请检查网络后再试', libraryTitle: '动作库', search: '搜索动作', all: '全部',
     addN: '添加 {n} 个动作', noResults: '没有找到这个动作', end: '结束', exerciseOf: '动作 {i} / {n}',
     setsDone: '已完成 {done} / {total} 组', colSet: '组', colLast: '上次', colKg: 'KG',
+    completeSet: '完成这组', setOf: '第 {i} / {n} 组', nextUp: '下一组', bestLabel: '纪录', repsShort: '次', elapsedLabel: '已练', exerciseDone: '这个动作练完了', wtStep: '重量', repStep: '次数',
     colReps: '次数', addSet: '+ 加一组', rest: '组间休息', skip: '跳过',
     next: '下一个', prToast: '新纪录 {w} × {r}', prToastReps: '新纪录 {r} 次', emptyWorkout: '先添加一个动作，开始训练吧。',
     finishTitle: '结束训练？', finishBody: '已完成 {done} / {total} 组。', finishSave: '保存训练', discard: '放弃',
@@ -757,6 +759,7 @@ const zhCN = {
     body: '身体数据',
   },
   camera: {
+    todayLeft: '今天还能吃 {kcal} 千卡', todayOver: '今天已超出 {kcal} 千卡', proteinLeft: '蛋白质还差 {g}g', proteinDone: '蛋白质已达标',
     modeLabel: "标签",
     labelHint: "把营养成分表拍清楚",
     title: "记录一餐",

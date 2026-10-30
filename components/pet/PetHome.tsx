@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Modal, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { useEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from 'react';
+import { View, Modal, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, type RefreshControlProps } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,7 @@ import { COACH_IMAGES, STAGE_XP, XP, buddyImage, type CoachPose } from '@/consta
 import { usePetStore } from '@/store/usePetStore';
 import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { isHealthConnected } from '@/services/health';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import { patFriendPet, type LeaderboardEntry, type PetState } from '@/services/api';
 
 const SCENE_BG = '#FFF3C4';
@@ -69,6 +71,30 @@ function GrowthRow({ icon, label, value, xp, earned, first }: {
       }}>
         <Text style={{ fontFamily: FONTS.mono, fontSize: 12, fontWeight: '600', color: earned ? c.onAccent : c.textSecondary }}>+{xp}</Text>
       </View>
+    </View>
+  );
+}
+
+
+type Growth = { key: string; icon: string; label: string; value: string; xp: number; earned: boolean };
+
+/** One growth source as a square card (open Duo stood up: a row you swipe through). */
+function GrowthTile({ icon, label, value, xp, earned }: Omit<Growth, 'key'>) {
+  const c = useTheme();
+  return (
+    <View style={{
+      width: 148, height: 124, padding: 12, borderRadius: 20, borderWidth: 2, justifyContent: 'space-between',
+      borderColor: earned ? c.ink : c.borderSecondary, backgroundColor: earned ? c.accent : c.cardBackground,
+    }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Ionicons name={icon as any} size={20} color={earned ? c.onAccent : c.textPrimary} />
+        {earned ? <Ionicons name="checkmark-circle" size={18} color={c.onAccent} /> : null}
+      </View>
+      <View>
+        <Text numberOfLines={1} style={{ fontSize: 15, fontWeight: '800', color: earned ? c.onAccent : c.textPrimary }}>{label}</Text>
+        <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontSize: 11, color: earned ? c.onAccent : c.textSecondary, marginTop: 1 }}>{value}</Text>
+      </View>
+      <Text style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.5, color: earned ? c.onAccent : c.textPrimary }}>+{xp}</Text>
     </View>
   );
 }
@@ -243,16 +269,36 @@ function GrowModal({ visible, onClose, s }: { visible: boolean; onClose: () => v
   );
 }
 
-/** The 伙伴 tab inside 社交. */
-export default function PetHome({ friends, onFriendsChanged }: {
+/**
+ * The 伙伴 tab inside 社交.
+ * - stack (default): scene, growth and friends one after another in the page's scroll.
+ * - panel: open Duo side by side, the right-hand page. The scene stays put at
+ *   the top; growth and friends scroll below it.
+ * - tabletop: open Duo turned a quarter and stood up. The top half is the
+ *   buddy's room (nothing scrolls there); the bottom half has the toolbar and
+ *   growth / friends, or whatever `details` replaces them with.
+ */
+export default function PetHome({ friends, onFriendsChanged, layout = 'stack', corner, toolbar, details, bottomInset = 0, refreshControl }: {
   friends: LeaderboardEntry[];
   onFriendsChanged: (next: LeaderboardEntry[]) => void;
+  layout?: 'stack' | 'panel' | 'tabletop';
+  /** panel: a button laid over the scene's top-right corner. */
+  corner?: ReactNode;
+  /** tabletop: the row at the top of the bottom half (tabs, add button). */
+  toolbar?: ReactNode;
+  /** tabletop: shown in the bottom half instead of growth and friends (another tab). */
+  details?: ReactNode;
+  /** panel / tabletop: room to leave under the scrolling part for the tab bar. */
+  bottomInset?: number;
+  refreshControl?: ReactElement<RefreshControlProps>;
 }) {
   const c = useTheme();
   const { t } = useTranslation();
   const tt = t as T;
   const { state: s, loading, error, sync } = usePetStore();
   const plan = useWorkoutStore((st) => st.plan);
+  const { fold } = useDeviceLayout();
+  const insets = useSafeAreaInsets();
   const coachRef = useRef<PetSpriteHandle>(null);
   const buddyRef = useRef<PetSpriteHandle>(null);
   const [healthOn, setHealthOn] = useState(false);
@@ -298,8 +344,34 @@ export default function PetHome({ friends, onFriendsChanged }: {
     return () => clearTimeout(id);
   }, [pose]);
 
+  const tabletop = layout === 'tabletop' && fold?.axis === 'horizontal';
+
+  /** Tabletop: the room on the top half, the rest below, nothing on the hinge. */
+  const tabletopFrame = (room: ReactNode, below: ReactNode) => (
+    <View style={{ flex: 1, backgroundColor: c.track }}>
+      <View style={{
+        height: Math.max(0, fold!.start - insets.top), overflow: 'hidden', backgroundColor: SCENE_BG,
+        borderBottomLeftRadius: 28, borderBottomRightRadius: 28,
+      }}>
+        {room}
+      </View>
+      <View style={{ height: fold!.width }} />
+      <View style={{ flex: 1, minHeight: 0, overflow: 'hidden', backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28 }}>
+        {toolbar}
+        <ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: bottomInset }}
+          refreshControl={refreshControl}
+        >
+          {below}
+        </ScrollView>
+      </View>
+    </View>
+  );
+
   if (!s) {
-    return (
+    const status = (
       <View style={{ paddingVertical: 64, alignItems: 'center', gap: 14 }}>
         {loading || !error ? (
           <ActivityIndicator size="large" color={c.textPrimary} />
@@ -311,6 +383,8 @@ export default function PetHome({ friends, onFriendsChanged }: {
         )}
       </View>
     );
+    if (tabletop) return tabletopFrame(<View style={{ flex: 1, justifyContent: 'center' }}>{status}</View>, details ?? null);
+    return status;
   }
 
   const others = friends.filter((f) => !f.isMe).sort((a, b) => Number(!!b.pet) - Number(!!a.pet));
@@ -332,23 +406,60 @@ export default function PetHome({ friends, onFriendsChanged }: {
     </View>
   );
 
+  /** panel: pinned scene on top, the rest scrolls under it. */
+  const panelFrame = (scene: ReactNode, rest: ReactNode) => (
+    <View style={{ flex: 1, paddingTop: 16 }}>
+      <View style={{ paddingHorizontal: 18 }}>
+        {scene}
+        {corner ? <View style={{ position: 'absolute', top: 10, right: 28 }}>{corner}</View> : null}
+      </View>
+      <ScrollView
+        style={{ flex: 1, marginTop: 6 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 8, paddingBottom: bottomInset }}
+      >
+        {rest}
+      </ScrollView>
+    </View>
+  );
+
   // ── Not adopted yet ──
   if (!s.profile) {
+    if (tabletop) {
+      return tabletopFrame(
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 24 }}>
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 110, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
+          <PetSprite source={COACH_IMAGES.wave} size={150} onPress={() => {}} accessibilityLabel={t('pet.setupTitle')} />
+          <Text style={{ fontSize: 24, fontWeight: '800', color: INK, textAlign: 'center' }}>{t('pet.emptyTitle')}</Text>
+          <Text style={{ fontSize: 14, lineHeight: 20, color: INK, textAlign: 'center', maxWidth: 420 }}>{t('pet.emptyBody')}</Text>
+        </View>,
+        details ?? (
+          <>
+            <Button label={t('pet.emptyCta')} onPress={() => router.push('/pet/setup')} style={{ marginTop: 4 }} />
+            {friendsSection}
+          </>
+        ),
+      );
+    }
+    const adopt = (
+      <HardShadow color={c.cardShadow} radius={RADIUS.hero}>
+        <View style={{ borderRadius: RADIUS.hero, borderWidth: 2, borderColor: c.borderStrong, backgroundColor: c.cardBackground, overflow: 'hidden' }}>
+          <View style={{ height: layout === 'panel' ? 160 : 190, backgroundColor: SCENE_BG, borderBottomWidth: 2, borderBottomColor: INK, alignItems: 'center', justifyContent: 'flex-end' }}>
+            <View style={{ position: 'absolute', left: -20, right: -20, bottom: -36, height: 70, borderRadius: 200, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
+            <PetSprite source={COACH_IMAGES.wave} size={layout === 'panel' ? 136 : 160} style={{ marginBottom: 6 }} onPress={() => {}} accessibilityLabel={t('pet.setupTitle')} />
+          </View>
+          <View style={{ padding: 16, gap: 8 }}>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: c.textPrimary }}>{t('pet.emptyTitle')}</Text>
+            <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary }}>{t('pet.emptyBody')}</Text>
+            <Button label={t('pet.emptyCta')} onPress={() => router.push('/pet/setup')} style={{ marginTop: 6 }} />
+          </View>
+        </View>
+      </HardShadow>
+    );
+    if (layout === 'panel') return panelFrame(adopt, friendsSection);
     return (
       <View>
-        <HardShadow color={c.cardShadow} radius={RADIUS.hero}>
-          <View style={{ borderRadius: RADIUS.hero, borderWidth: 2, borderColor: c.borderStrong, backgroundColor: c.cardBackground, overflow: 'hidden' }}>
-            <View style={{ height: 190, backgroundColor: SCENE_BG, borderBottomWidth: 2, borderBottomColor: INK, alignItems: 'center', justifyContent: 'flex-end' }}>
-              <View style={{ position: 'absolute', left: -20, right: -20, bottom: -36, height: 70, borderRadius: 200, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
-              <PetSprite source={COACH_IMAGES.wave} size={160} style={{ marginBottom: 6 }} onPress={() => {}} accessibilityLabel={t('pet.setupTitle')} />
-            </View>
-            <View style={{ padding: 16, gap: 8 }}>
-              <Text style={{ fontSize: 22, fontWeight: '800', color: c.textPrimary }}>{t('pet.emptyTitle')}</Text>
-              <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary }}>{t('pet.emptyBody')}</Text>
-              <Button label={t('pet.emptyCta')} onPress={() => router.push('/pet/setup')} style={{ marginTop: 6 }} />
-            </View>
-          </View>
-        </HardShadow>
+        {adopt}
         {friendsSection}
       </View>
     );
@@ -371,117 +482,207 @@ export default function PetHome({ friends, onFriendsChanged }: {
   };
 
   const stepsXp = f.steps >= 10000 ? XP.steps10k : XP.steps8k;
+  const growth: Growth[] = [
+    { key: 'training', icon: 'barbell-outline', label: t('pet.rowTraining'), value: f.trained ? t('pet.done') : t('pet.notYet'), xp: XP.training, earned: f.trained },
+    {
+      key: 'steps', icon: 'footsteps-outline', label: t('pet.rowSteps'),
+      value: healthOn || f.steps > 0 ? `${f.steps.toLocaleString()} / ${(f.steps >= 8000 ? 10000 : 8000).toLocaleString()}` : t('pet.stepsUnknown'),
+      xp: stepsXp, earned: f.steps >= 8000,
+    },
+    { key: 'meals', icon: 'restaurant-outline', label: t('pet.rowMeals'), value: `${Math.min(f.meals, 3)} / 3`, xp: XP.meals, earned: f.meals >= 3 },
+    {
+      key: 'protein', icon: 'water-outline', label: t('pet.rowProtein'),
+      value: f.proteinTarget ? `${f.protein} / ${f.proteinTarget}g` : `${f.protein}g`,
+      xp: XP.protein, earned: f.proteinTarget > 0 && f.protein >= f.proteinTarget,
+    },
+    ...(f.pats > 0 ? [{ key: 'pats', icon: 'paw-outline', label: t('pet.rowPats'), value: `${f.pats} / 5`, xp: f.pats * XP.pat, earned: true }] : []),
+  ];
+  const growthTotal = `+${f.xp + f.pats * XP.pat} / ${65 + 5 * XP.pat}`;
+
+  const stageTrack = (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      {[1, 2, 3].map((st) => (
+        <Text key={st} style={{ fontFamily: FONTS.mono, fontSize: 11, fontWeight: st <= stage ? '600' : '400', color: st <= stage ? c.textPrimary : c.textSecondary }}>
+          {st <= stage ? '●' : '○'} {stageLabel(tt, st)}{st > 1 ? ` ${STAGE_XP[st - 2]}` : ''}
+        </Text>
+      ))}
+    </View>
+  );
+
+  const xpFooter = (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+      <Text style={{ fontSize: 13, fontWeight: '700', color: c.textPrimary }}>
+        {s.nextAt ? t('pet.xpLine', { xp: String(xp), next: String(s.nextAt) }) : t('pet.xpMax', { xp: String(xp) })}
+      </Text>
+      {s.nextAt ? (
+        <Text numberOfLines={1} style={{ fontSize: 13, color: c.textSecondary, flexShrink: 1 }}>{t('pet.toNext', { n: String(s.nextAt - xp), stage: stageLabel(tt, stage + 1) })}</Text>
+      ) : (
+        <Pressable onPress={() => router.push('/pet/collection')} hitSlop={8}>
+          <Text style={{ fontSize: 13, fontWeight: '800', color: c.textPrimary, textDecorationLine: 'underline' }}>{t('pet.readyToGraduate')}</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+
+  const bubble = (style: object, fontSize = 13) => (
+    <View style={[{
+      position: 'absolute', paddingHorizontal: 12, paddingVertical: 9,
+      borderWidth: 2, borderColor: INK, backgroundColor: '#FFFFFF',
+      borderTopLeftRadius: 14, borderTopRightRadius: 14, borderBottomRightRadius: 14, borderBottomLeftRadius: 4,
+    }, style]}>
+      <Text style={{ fontSize, fontWeight: '600', lineHeight: Math.round(fontSize * 1.38), color: INK }}>{line}</Text>
+    </View>
+  );
+
+  const coachSprite = (size: number) => (
+    <PetSprite
+      ref={coachRef}
+      source={COACH_IMAGES[shownPose]}
+      blinkSource={shownPose === 'idle' ? COACH_IMAGES.blink : undefined}
+      sleeping={shownPose === 'sleep'}
+      sad={shownPose === 'sad'}
+      size={size}
+      onPress={pokeCoach}
+      accessibilityLabel={t('pet.coachTag', { name: p.coachName })}
+    />
+  );
+
+  const buddySprite = (scale: number) => (
+    <PetSprite
+      ref={buddyRef}
+      source={buddyImage(p.buddyKind, stage)}
+      size={Math.round((stage === 1 ? 112 : stage === 2 ? 126 : 138) * scale)}
+      sleeping={shownPose === 'sleep'}
+      onPress={() => {}}
+      accessibilityLabel={`${p.buddyName} · ${stageLabel(tt, stage)}`}
+    />
+  );
+
+  const coachTag = (style: object) => (
+    <Pressable onPress={() => setRenaming(true)} style={[{ position: 'absolute' }, style]} hitSlop={8}>
+      <Sticker background={INK} color="#FFD43B" style={{ paddingHorizontal: 8, paddingVertical: 4 }}>
+        {t('pet.coachTag', { name: p.coachName })}
+      </Sticker>
+    </Pressable>
+  );
+
+  const nameRow = (
+    <Pressable onPress={() => setRenaming(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, minHeight: layout === 'panel' ? 44 : undefined }} accessibilityRole="button" accessibilityLabel={t('pet.rename')}>
+      <Text numberOfLines={1} style={{ fontSize: 24, fontWeight: '800', letterSpacing: -0.5, color: c.textPrimary, flexShrink: 1 }}>{p.buddyName}</Text>
+      <Sticker>{stageLabel(tt, stage)}</Sticker>
+      <Ionicons name="pencil" size={14} color={c.textTertiary} />
+    </Pressable>
+  );
+
+  const modals = (
+    <>
+      <RenameSheet visible={renaming} onClose={() => setRenaming(false)} coachName={p.coachName} buddyName={p.buddyName} />
+      <GrowModal visible={growing} onClose={() => setGrowing(false)} s={s} />
+    </>
+  );
+
+  // ── Tabletop: the buddy's room fills the top half ──
+  if (tabletop) {
+    const room = (
+      <View style={{ flex: 1 }}>
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 118, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
+        {bubble({ left: 22, top: 18, maxWidth: 320 }, 16)}
+        <View style={{ position: 'absolute', right: 18, top: 10, alignItems: 'flex-end' }}>
+          <Pressable onPress={() => setRenaming(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 }} accessibilityRole="button" accessibilityLabel={t('pet.rename')}>
+            <Text numberOfLines={1} style={{ fontSize: 22, fontWeight: '800', letterSpacing: -0.5, color: INK, maxWidth: 200 }}>{p.buddyName}</Text>
+            <Sticker background={INK} color="#FFD43B">{stageLabel(tt, stage)}</Sticker>
+          </Pressable>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: '#55544F' }}>{t('pet.day', { n: String(p.buddyDay) })}</Text>
+        </View>
+        <View style={{ position: 'absolute', left: 10, bottom: 82 }}>{coachSprite(170)}</View>
+        {coachTag({ left: 34, bottom: 80 })}
+        <View style={{ position: 'absolute', right: 40, bottom: 86 }}>{buddySprite(1.3)}</View>
+        <View style={{
+          position: 'absolute', left: 18, right: 18, bottom: 14, padding: 10, gap: 7, borderRadius: 16,
+          borderWidth: 2, borderColor: INK, backgroundColor: c.cardBackground,
+        }}>
+          <Bar progress={progress} height={10} color={c.accent} />
+          {xpFooter}
+        </View>
+      </View>
+    );
+    const below = details ?? (
+      <>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+          <Label>{t('pet.todayGrowth')}</Label>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '600', color: c.textPrimary }}>{growthTotal}</Text>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -18 }} contentContainerStyle={{ gap: 10, paddingHorizontal: 18 }}>
+          {growth.map(({ key, ...g }) => <GrowthTile key={key} {...g} />)}
+        </ScrollView>
+        <Text style={{ fontSize: 12, color: c.textSecondary, paddingTop: 8 }}>{t('pet.restNote')}</Text>
+        {friendsSection}
+      </>
+    );
+    return (
+      <>
+        {tabletopFrame(room, below)}
+        {modals}
+      </>
+    );
+  }
+
+  const sceneHeight = layout === 'panel' ? 176 : 214;
+  const scene = (
+    <HardShadow color={c.cardShadow} radius={RADIUS.hero}>
+      <View style={{ borderRadius: RADIUS.hero, borderWidth: 2, borderColor: c.borderStrong, backgroundColor: c.cardBackground, overflow: 'hidden' }}>
+        <View style={{ height: sceneHeight, backgroundColor: SCENE_BG, borderBottomWidth: 2, borderBottomColor: INK }}>
+          <View style={{ position: 'absolute', left: -20, right: -20, bottom: -36, height: 70, borderRadius: 200, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
+          {bubble({ left: 14, top: 14, maxWidth: layout === 'panel' ? 200 : 220 })}
+          <View style={{ position: 'absolute', left: 4, bottom: 4 }}>{coachSprite(layout === 'panel' ? 118 : 140)}</View>
+          <View style={{ position: 'absolute', right: 18, bottom: 8 }}>{buddySprite(layout === 'panel' ? 0.85 : 1)}</View>
+          {coachTag({ left: 26, bottom: 6 })}
+        </View>
+
+        <View style={{ padding: layout === 'panel' ? 12 : 16, gap: layout === 'panel' ? 6 : 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            {nameRow}
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary }}>{t('pet.day', { n: String(p.buddyDay) })}</Text>
+          </View>
+          {layout === 'panel' ? null : stageTrack}
+          <Bar progress={progress} height={layout === 'panel' ? 10 : 12} color={c.accent} />
+          {xpFooter}
+        </View>
+      </View>
+    </HardShadow>
+  );
+
+  const growthCard = (
+    <Card style={{ marginTop: layout === 'panel' ? 0 : 14 }} padding={14}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+        <Label>{t('pet.todayGrowth')}</Label>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '600', color: c.textPrimary }}>{growthTotal}</Text>
+      </View>
+      {growth.map(({ key, ...g }, i) => <GrowthRow key={key} first={i === 0} {...g} />)}
+      <Text style={{ fontSize: 12, color: c.textSecondary, paddingTop: 6 }}>{t('pet.restNote')}</Text>
+    </Card>
+  );
+
+  if (layout === 'panel') {
+    return (
+      <>
+        {panelFrame(scene, <>{growthCard}{friendsSection}</>)}
+        {modals}
+      </>
+    );
+  }
 
   return (
     <View>
       {/* Scene + growth bar */}
-      <HardShadow color={c.cardShadow} radius={RADIUS.hero}>
-        <View style={{ borderRadius: RADIUS.hero, borderWidth: 2, borderColor: c.borderStrong, backgroundColor: c.cardBackground, overflow: 'hidden' }}>
-          <View style={{ height: 214, backgroundColor: SCENE_BG, borderBottomWidth: 2, borderBottomColor: INK }}>
-            <View style={{ position: 'absolute', left: -20, right: -20, bottom: -36, height: 70, borderRadius: 200, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
-            <View style={{
-              position: 'absolute', left: 14, top: 14, maxWidth: 220, paddingHorizontal: 12, paddingVertical: 9,
-              borderWidth: 2, borderColor: INK, backgroundColor: '#FFFFFF',
-              borderTopLeftRadius: 14, borderTopRightRadius: 14, borderBottomRightRadius: 14, borderBottomLeftRadius: 4,
-            }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', lineHeight: 18, color: INK }}>{line}</Text>
-            </View>
-            <View style={{ position: 'absolute', left: 4, bottom: 4 }}>
-              <PetSprite
-                ref={coachRef}
-                source={COACH_IMAGES[shownPose]}
-                blinkSource={shownPose === 'idle' ? COACH_IMAGES.blink : undefined}
-                sleeping={shownPose === 'sleep'}
-                sad={shownPose === 'sad'}
-                size={140}
-                onPress={pokeCoach}
-                accessibilityLabel={t('pet.coachTag', { name: p.coachName })}
-              />
-            </View>
-            <View style={{ position: 'absolute', right: 18, bottom: 8 }}>
-              <PetSprite
-                ref={buddyRef}
-                source={buddyImage(p.buddyKind, stage)}
-                size={stage === 1 ? 112 : stage === 2 ? 126 : 138}
-                sleeping={shownPose === 'sleep'}
-                onPress={() => {}}
-                accessibilityLabel={`${p.buddyName} · ${stageLabel(tt, stage)}`}
-              />
-            </View>
-            <Pressable onPress={() => setRenaming(true)} style={{ position: 'absolute', left: 26, bottom: 6 }} hitSlop={8}>
-              <Sticker background={INK} color="#FFD43B" style={{ paddingHorizontal: 8, paddingVertical: 4 }}>
-                {t('pet.coachTag', { name: p.coachName })}
-              </Sticker>
-            </Pressable>
-          </View>
-
-          <View style={{ padding: 16, gap: 10 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Pressable onPress={() => setRenaming(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }} accessibilityRole="button" accessibilityLabel={t('pet.rename')}>
-                <Text numberOfLines={1} style={{ fontSize: 24, fontWeight: '800', letterSpacing: -0.5, color: c.textPrimary, flexShrink: 1 }}>{p.buddyName}</Text>
-                <Sticker>{stageLabel(tt, stage)}</Sticker>
-                <Ionicons name="pencil" size={14} color={c.textTertiary} />
-              </Pressable>
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary }}>{t('pet.day', { n: String(p.buddyDay) })}</Text>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              {[1, 2, 3].map((st) => (
-                <Text key={st} style={{ fontFamily: FONTS.mono, fontSize: 11, fontWeight: st <= stage ? '600' : '400', color: st <= stage ? c.textPrimary : c.textSecondary }}>
-                  {st <= stage ? '●' : '○'} {stageLabel(tt, st)}{st > 1 ? ` ${STAGE_XP[st - 2]}` : ''}
-                </Text>
-              ))}
-            </View>
-            <Bar progress={progress} height={12} color={c.accent} />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: c.textPrimary }}>
-                {s.nextAt ? t('pet.xpLine', { xp: String(xp), next: String(s.nextAt) }) : t('pet.xpMax', { xp: String(xp) })}
-              </Text>
-              {s.nextAt ? (
-                <Text style={{ fontSize: 13, color: c.textSecondary }}>{t('pet.toNext', { n: String(s.nextAt - xp), stage: stageLabel(tt, stage + 1) })}</Text>
-              ) : (
-                <Pressable onPress={() => router.push('/pet/collection')} hitSlop={8}>
-                  <Text style={{ fontSize: 13, fontWeight: '800', color: c.textPrimary, textDecorationLine: 'underline' }}>{t('pet.readyToGraduate')}</Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
-        </View>
-      </HardShadow>
+      {scene}
 
       {/* Today's growth */}
-      <Card style={{ marginTop: 14 }} padding={14}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-          <Label>{t('pet.todayGrowth')}</Label>
-          <Text style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '600', color: c.textPrimary }}>
-            +{f.xp + f.pats * XP.pat} / {65 + 5 * XP.pat}
-          </Text>
-        </View>
-        <GrowthRow first icon="barbell-outline" label={t('pet.rowTraining')} value={f.trained ? t('pet.done') : t('pet.notYet')} xp={XP.training} earned={f.trained} />
-        <GrowthRow
-          icon="footsteps-outline"
-          label={t('pet.rowSteps')}
-          value={healthOn || f.steps > 0 ? `${f.steps.toLocaleString()} / ${(f.steps >= 8000 ? 10000 : 8000).toLocaleString()}` : t('pet.stepsUnknown')}
-          xp={stepsXp}
-          earned={f.steps >= 8000}
-        />
-        <GrowthRow icon="restaurant-outline" label={t('pet.rowMeals')} value={`${Math.min(f.meals, 3)} / 3`} xp={XP.meals} earned={f.meals >= 3} />
-        <GrowthRow
-          icon="water-outline"
-          label={t('pet.rowProtein')}
-          value={f.proteinTarget ? `${f.protein} / ${f.proteinTarget}g` : `${f.protein}g`}
-          xp={XP.protein}
-          earned={f.proteinTarget > 0 && f.protein >= f.proteinTarget}
-        />
-        {f.pats > 0 ? (
-          <GrowthRow icon="paw-outline" label={t('pet.rowPats')} value={`${f.pats} / 5`} xp={f.pats * XP.pat} earned />
-        ) : null}
-        <Text style={{ fontSize: 12, color: c.textSecondary, paddingTop: 6 }}>{t('pet.restNote')}</Text>
-      </Card>
+      {growthCard}
 
       {friendsSection}
 
-      <RenameSheet visible={renaming} onClose={() => setRenaming(false)} coachName={p.coachName} buddyName={p.buddyName} />
-      <GrowModal visible={growing} onClose={() => setGrowing(false)} s={s} />
+      {modals}
     </View>
   );
 }

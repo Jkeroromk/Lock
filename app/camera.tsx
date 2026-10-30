@@ -16,6 +16,9 @@ import { useMealCartStore, cartTotals } from '@/store/useMealCartStore';
 import { useMealLogging } from '@/hooks/useMealLogging';
 import { useTheme } from '@/hooks/useTheme';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import { useCalorieGoal } from '@/hooks/useDailyGoals';
+import { useProteinTarget } from '@/hooks/useProteinTarget';
+import { useStore } from '@/store/useStore';
 
 type Mode = 'photo' | 'label' | 'scan';
 
@@ -71,6 +74,11 @@ export default function CameraScreen() {
   const camRef = useRef<CameraView>(null);
   const c = useTheme();
   const layout = useDeviceLayout();
+  // Where the day stands, shown beside the preview on the open Duo.
+  const { goal: kcalGoal } = useCalorieGoal();
+  const proteinTarget = useProteinTarget().target;
+  const todayCalories = useStore((s) => s.todayCalories);
+  const todayProtein = useStore((s) => s.todayMeals.reduce((n, m) => n + (Number(m.protein) || 0), 0));
   // Scan events arrive many times a second; state updates are too slow to gate them.
   const scanBusy = useRef(false);
 
@@ -405,6 +413,23 @@ export default function CameraScreen() {
           paddingTop: 22, paddingBottom: insets.bottom + 18, paddingLeft: insets.left + 26, paddingRight: insets.right + 26,
         };
     const barTop = insets.top + 16;
+    const kcalLeft = Math.round(kcalGoal - todayCalories);
+    const proteinLeft = Math.round(proteinTarget - todayProtein);
+    const dayCard = (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: FINDER, borderWidth: 2, borderColor: LINE }}>
+        <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: YELLOW, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] }}>
+          <Ionicons name="restaurant-outline" size={20} color={INK} />
+        </View>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '800', color: PAPER }}>
+            {kcalLeft >= 0 ? t('camera.todayLeft', { kcal: kcalLeft.toLocaleString() }) : t('camera.todayOver', { kcal: (-kcalLeft).toLocaleString() })}
+          </Text>
+          <Text numberOfLines={1} style={{ fontSize: 13, color: MUTED }}>
+            {proteinLeft > 0 ? t('camera.proteinLeft', { g: String(proteinLeft) }) : t('camera.proteinDone')}
+          </Text>
+        </View>
+      </View>
+    );
 
     return (
       <View style={{ flex: 1, backgroundColor: '#000000' }}>
@@ -453,6 +478,7 @@ export default function CameraScreen() {
                 })}
               </View>
               <Text style={{ fontSize: 15, lineHeight: 21, color: MUTED }}>{hint}</Text>
+              {dayCard}
             </>
           )}
 
