@@ -195,6 +195,7 @@ export default function WorkoutSessionScreen() {
     const lastHere = cur >= 0 ? last[cur] ?? null : last[last.length - 1] ?? null;
     const fmtSet = (w: number, r: number) => (w > 0 ? `${fmtWeight(w, unit)}×${r}` : `${r}`);
     const volumeKg = exercises.reduce((n, e) => n + e.sets.filter((x) => x.done).reduce((m, x) => m + boxKg(x.weight, unit) * Math.round(num(x.reps)), 0), 0);
+    const volumeText = `${Math.round(kgTo(volumeKg, unit)).toLocaleString()} ${unit}`;
 
     // The one big button: finish this set → go to the next exercise → finish the workout.
     const main = curSet
@@ -261,7 +262,6 @@ export default function WorkoutSessionScreen() {
         <Text numberOfLines={1} style={{ fontSize: 20, fontWeight: '800', color: accent ? c.accent : onInk }}>{value}</Text>
       </View>
     );
-    const volumeText = `${Math.round(kgTo(volumeKg, unit)).toLocaleString()} ${unit}`;
     const infoCards = (
       <>
         {infoCard(t('train.colLast'), lastHere ? fmtSet(lastHere.weight, lastHere.reps) : '—')}
