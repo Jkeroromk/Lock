@@ -42,7 +42,7 @@ export type DeviceLayout = {
   kind: ScreenKind;
   width: number;
   height: number;
-  /** Two panes (inner, innerTall or wide). */
+  /** Two panes (inner, wide, or innerTall stood up like a laptop). */
   twoPane: boolean;
   /**
    * The fold region. axis 'vertical': a column at x = start (inner);
@@ -83,7 +83,10 @@ export function useDeviceLayout(): DeviceLayout {
     kind,
     width,
     height,
-    twoPane: kind === 'inner' || kind === 'innerTall' || kind === 'wide',
+    // Turned a quarter and lying flat, the fold runs across the middle and
+    // scrolling content passes over it smoothly: one page, like a tall phone.
+    // Split into top and bottom only when stood up like a laptop.
+    twoPane: kind === 'inner' || kind === 'wide' || (kind === 'innerTall' && hinge.book),
     fold,
     book: kind === 'inner' && hinge.book,
     tabletop: kind === 'innerTall' && hinge.book,

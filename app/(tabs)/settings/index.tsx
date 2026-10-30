@@ -17,6 +17,8 @@ import SettingItem from '@/components/settings/SettingItem';
 import EditProfileModal from '@/components/settings/EditProfileModal';
 import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import TwoPane from '@/components/layout/TwoPane';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -26,6 +28,7 @@ const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
  */
 export default function SettingsScreen() {
   const tabInset = useTabBarInset();
+  const { twoPane } = useDeviceLayout();
   const { user, setUser, language, dailyCalorieGoal } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
@@ -42,64 +45,101 @@ export default function SettingsScreen() {
     { icon: 'information-circle-outline', title: t('settings.about'), description: t('settings.aboutDescription'), route: '/(tabs)/settings/about' },
   ] as const;
 
+  const header = <ScreenHeader title={t('settings.title' as any)} />;
+  const profile = (
+    <Appear index={0}>
+      <UserProfileCard user={user} onEdit={() => setShowEditProfileModal(true)} />
+    </Appear>
+  );
+  const rows = groups.map((g, i) => (
+    <Appear key={g.route} index={i + 1}>
+      <SettingItem icon={g.icon} title={g.title} description={g.description} onPress={() => router.push(g.route as any)} />
+    </Appear>
+  ));
+  const footer = (
+    <>
+      {/* Logout */}
+      <TouchableOpacity
+        onPress={() => {
+          Alert.alert(t('settings.logout'), t('settings.confirmLogout'), [
+            { text: t('settings.cancel'), style: 'cancel' },
+            {
+              text: t('settings.logoutConfirm'),
+              style: 'destructive',
+              onPress: async () => {
+                await signOut();
+                const { clearSession } = useStore.getState();
+                clearSession();
+                router.replace('/(auth)/login');
+              },
+            },
+          ]);
+        }}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        style={{
+          minHeight: 52, borderRadius: 14, borderWidth: 2, borderColor: colors.danger,
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8,
+        }}
+      >
+        <Ionicons name="log-out-outline" size={19} color={colors.danger} />
+        <Text style={{ fontSize: 17, fontWeight: '800', color: colors.danger }}>{t('settings.logout')}</Text>
+      </TouchableOpacity>
+
+      <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, textAlign: 'center', marginTop: 16, marginBottom: 8 }}>
+        LOCK v{APP_VERSION}
+      </Text>
+    </>
+  );
+  const modal = (
+    <>
+    <EditProfileModal
+      visible={showEditProfileModal}
+      user={user}
+      onSave={(updated) => {
+        setUser({ ...user, ...updated } as any);
+        setShowEditProfileModal(false);
+      }}
+      onCancel={() => setShowEditProfileModal(false)}
+    />
+    </>
+  );
+
+  // Open iPhone Duo (or any wide window): the profile on the left, the
+  // settings list on the right.
+  if (twoPane) {
+    return (
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <TwoPane
+          left={
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}>
+              {header}
+              {profile}
+            </ScrollView>
+          }
+          right={
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}>
+              {rows}
+              {footer}
+            </ScrollView>
+          }
+        />
+        {modal}
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: tabInset }}>
         <View style={{ paddingHorizontal: 18 }}>
-          <ScreenHeader title={t('settings.title' as any)} />
-          <Appear index={0}>
-            <UserProfileCard user={user} onEdit={() => setShowEditProfileModal(true)} />
-          </Appear>
-
-          {groups.map((g, i) => (
-            <Appear key={g.route} index={i + 1}>
-              <SettingItem icon={g.icon} title={g.title} description={g.description} onPress={() => router.push(g.route as any)} />
-            </Appear>
-          ))}
-
-          {/* Logout */}
-          <TouchableOpacity
-            onPress={() => {
-              Alert.alert(t('settings.logout'), t('settings.confirmLogout'), [
-                { text: t('settings.cancel'), style: 'cancel' },
-                {
-                  text: t('settings.logoutConfirm'),
-                  style: 'destructive',
-                  onPress: async () => {
-                    await signOut();
-                    const { clearSession } = useStore.getState();
-                    clearSession();
-                    router.replace('/(auth)/login');
-                  },
-                },
-              ]);
-            }}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            style={{
-              minHeight: 52, borderRadius: 14, borderWidth: 2, borderColor: colors.danger,
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8,
-            }}
-          >
-            <Ionicons name="log-out-outline" size={19} color={colors.danger} />
-            <Text style={{ fontSize: 17, fontWeight: '800', color: colors.danger }}>{t('settings.logout')}</Text>
-          </TouchableOpacity>
-
-          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, textAlign: 'center', marginTop: 16, marginBottom: 8 }}>
-            LOCK v{APP_VERSION}
-          </Text>
+          {header}
+          {profile}
+          {rows}
+          {footer}
         </View>
       </ScrollView>
-
-      <EditProfileModal
-        visible={showEditProfileModal}
-        user={user}
-        onSave={(updated) => {
-          setUser({ ...user, ...updated } as any);
-          setShowEditProfileModal(false);
-        }}
-        onCancel={() => setShowEditProfileModal(false)}
-      />
+      {modal}
     </SafeAreaView>
   );
 }
