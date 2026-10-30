@@ -236,21 +236,21 @@ export default function WorkoutSessionScreen() {
     );
 
     // Giant number: the rest clock while resting, otherwise this set's target.
-    const bigNumber = (
+    const bigNumber = (timerSize: number, targetSize: number) => (
       <View style={{ gap: 4 }}>
         <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: onInk, opacity: 0.7 }}>
           {resting ? t('train.rest') : curSet ? t('train.nextUp') : t('train.exerciseDone')}
         </Text>
         {resting ? (
-          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: side ? 128 : 136, fontWeight: '800', letterSpacing: -6, lineHeight: side ? 132 : 140, color: onInk, fontVariant: ['tabular-nums'] }}>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: timerSize, fontWeight: '800', letterSpacing: -timerSize * 0.045, lineHeight: Math.round(timerSize * 1.04), color: onInk, fontVariant: ['tabular-nums'] }}>
             {mmss(restLeft ?? 0)}
           </Text>
         ) : curSet ? (
-          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: side ? 76 : 88, fontWeight: '800', letterSpacing: -3, lineHeight: side ? 84 : 96, color: c.accent }}>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: targetSize, fontWeight: '800', letterSpacing: -targetSize * 0.035, lineHeight: Math.round(targetSize * 1.1), color: c.accent }}>
             {bodyweight && num(shownWeight) === 0 ? `${shownReps} ${t('train.repsShort')}` : `${shownWeight} × ${shownReps}`}
           </Text>
         ) : (
-          <Ionicons name="checkmark-circle" size={96} color={c.accent} />
+          <Ionicons name="checkmark-circle" size={Math.min(96, targetSize)} color={c.accent} />
         )}
         {resting ? <Bar progress={active.restTotal ? (restLeft ?? 0) / active.restTotal : 0} height={10} color={c.accent} style={{ marginTop: 8 }} /> : null}
       </View>
@@ -290,13 +290,13 @@ export default function WorkoutSessionScreen() {
     );
 
     // Progress through the exercises: tap one to jump to it.
-    const exerciseStrip = (
+    const exerciseStrip = (h = 44) => (
       <View style={{ flexDirection: 'row', gap: 6 }}>
         {exercises.map((e, i) => {
           const finished = e.sets.length > 0 && e.sets.every((x) => x.done);
           return (
             <PressScale key={`${e.id}-${i}`} onPress={() => setCurrent(i)} accessibilityRole="tab" accessibilityState={{ selected: i === ei }}
-              accessibilityLabel={exerciseName(e.id, language)} style={{ flex: 1, height: 44, justifyContent: 'center' }}>
+              accessibilityLabel={exerciseName(e.id, language)} hitSlop={{ top: (44 - h) / 2, bottom: (44 - h) / 2 }} style={{ flex: 1, height: h, justifyContent: 'center' }}>
               <View style={{ height: i === ei ? 12 : 8, borderRadius: 6, backgroundColor: finished ? c.accent : i === ei ? onInk : 'rgba(127,127,127,0.35)' }} />
             </PressScale>
           );
@@ -365,26 +365,33 @@ export default function WorkoutSessionScreen() {
     );
 
     if (!side) {
-      // Tabletop: display on top, controls below.
+      // Tabletop: display on top, controls below. The top half is short
+      // (status bar above, hinge below), so the big numbers are sized to the
+      // room that is left instead of overflowing up into the status bar.
+      const topPad = Math.max(insets.top, 24) + 12;
+      const STRIP = 32;
+      const middle = fold.start - topPad - 16 - 44 - 46 - STRIP - 30;
+      const timerSize = Math.max(56, Math.min(136, middle - 44));
+      const targetSize = Math.max(44, Math.min(88, Math.round((middle - 24) * 0.62)));
       return (
         <View style={{ flex: 1, backgroundColor: c.track }}>
           <View style={{
-            position: 'absolute', left: 0, right: 0, top: 0, height: fold.start, backgroundColor: ink, borderBottomLeftRadius: R, borderBottomRightRadius: R,
-            paddingTop: insets.top + 14, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: 18, gap: 10,
+            position: 'absolute', left: 0, right: 0, top: 0, height: fold.start, overflow: 'hidden', backgroundColor: ink, borderBottomLeftRadius: R, borderBottomRightRadius: R,
+            paddingTop: topPad, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: 16, gap: 10,
           }}>
             {header}
             {title}
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 18 }}>
-              <View style={{ flex: 1 }}>{bigNumber}</View>
-              <View style={{ width: 168, gap: 10 }}>{infoCards}</View>
+            <View style={{ flex: 1, minHeight: 0, overflow: 'hidden', flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+              <View style={{ flex: 1 }}>{bigNumber(timerSize, targetSize)}</View>
+              {middle >= 140 ? <View style={{ width: 168, gap: 10 }}>{infoCards}</View> : null}
             </View>
-            {setChips(true)}
-            {exerciseStrip}
+            {exerciseStrip(STRIP)}
           </View>
           <View style={{
             position: 'absolute', left: 0, right: 0, top: fold.start + fold.width, bottom: 0, backgroundColor: c.backgroundPrimary, borderTopLeftRadius: R, borderTopRightRadius: R,
-            paddingTop: 22, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: insets.bottom + 18, gap: 14,
+            paddingTop: 20, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: insets.bottom + 18, gap: 12,
           }}>
+            {setChips(false)}
             {steppers(false)}
             {mainButton}
             {resting ? restRow(false) : otherRow(false)}
@@ -403,8 +410,8 @@ export default function WorkoutSessionScreen() {
         }}>
           {header}
           {title}
-          {exerciseStrip}
-          <View style={{ flex: 1, justifyContent: 'center' }}>{bigNumber}</View>
+          {exerciseStrip()}
+          <View style={{ flex: 1, minHeight: 0, justifyContent: 'center', overflow: 'hidden' }}>{bigNumber(128, 76)}</View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <View style={{ flex: 1 }}>{infoCard(t('train.colLast'), lastHere ? fmtSet(lastHere.weight, lastHere.reps) : '—')}</View>
             <View style={{ flex: 1 }}>{infoCard(t('train.bestLabel'), best ? fmtSet(best.weight, best.reps) : '—', !!todayPr)}</View>
