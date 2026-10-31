@@ -1,16 +1,10 @@
 import { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@clerk/clerk-expo';
-import Constants from 'expo-constants';
-import { Text } from '@/components/ui/Text';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { languageNames } from '@/i18n/locales';
 import { useTheme } from '@/hooks/useTheme';
-import { FONTS } from '@/constants/fonts';
 import { Appear, ScreenHeader } from '@/components/ui/bxc';
 import UserProfileCard from '@/components/settings/UserProfileCard';
 import SettingItem from '@/components/settings/SettingItem';
@@ -19,8 +13,8 @@ import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
-
-const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
+import { SettingsFooter, useSettingsGroups } from '@/components/settings/SettingsMenu';
+import { settingsSplit } from '@/components/settings/settingsSplit';
 
 /**
  * Settings home: profile card plus one row per category. Each category opens
@@ -28,22 +22,15 @@ const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
  */
 export default function SettingsScreen() {
   const tabInset = useTabBarInset();
-  const { twoPane } = useDeviceLayout();
-  const { user, setUser, language, dailyCalorieGoal } = useStore();
+  const { twoPane, kind } = useDeviceLayout();
+  const { user, setUser } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
   const router = useRouter();
-  const { signOut } = useAuth();
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   useRefreshRewards();
 
-  const groups = [
-    { icon: 'flag-outline', title: t('settings.groupGoals' as any), description: `${dailyCalorieGoal.toLocaleString()} kcal · ${t('settings.weightTracker' as any)}`, route: '/(tabs)/settings/goals' },
-    { icon: 'options-outline', title: t('settings.groupPreferences' as any), description: `${languageNames[language]} · ${t('settings.appIcon')} · ${t('settings.notifications')}`, route: '/(tabs)/settings/preferences' },
-    { icon: 'people-outline', title: t('settings.groupFriends' as any), description: `${t('settings.contacts' as any)} · ${t('block.blockedUsers')}`, route: '/(tabs)/settings/friends' },
-    { icon: 'person-circle-outline', title: t('settings.groupAccount' as any), description: `${t('settings.accountSecurity')} · ${t('settings.subscriptionPlan')}`, route: '/(tabs)/settings/account' },
-    { icon: 'information-circle-outline', title: t('settings.about'), description: t('settings.aboutDescription'), route: '/(tabs)/settings/about' },
-  ] as const;
+  const groups = useSettingsGroups();
 
   const header = <ScreenHeader title={t('settings.title' as any)} />;
   const profile = (
@@ -56,41 +43,7 @@ export default function SettingsScreen() {
       <SettingItem icon={g.icon} title={g.title} description={g.description} onPress={() => router.push(g.route as any)} />
     </Appear>
   ));
-  const footer = (
-    <>
-      {/* Logout */}
-      <TouchableOpacity
-        onPress={() => {
-          Alert.alert(t('settings.logout'), t('settings.confirmLogout'), [
-            { text: t('settings.cancel'), style: 'cancel' },
-            {
-              text: t('settings.logoutConfirm'),
-              style: 'destructive',
-              onPress: async () => {
-                await signOut();
-                const { clearSession } = useStore.getState();
-                clearSession();
-                router.replace('/(auth)/login');
-              },
-            },
-          ]);
-        }}
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        style={{
-          minHeight: 52, borderRadius: 14, borderWidth: 2, borderColor: colors.danger,
-          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8,
-        }}
-      >
-        <Ionicons name="log-out-outline" size={19} color={colors.danger} />
-        <Text style={{ fontSize: 17, fontWeight: '800', color: colors.danger }}>{t('settings.logout')}</Text>
-      </TouchableOpacity>
-
-      <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: colors.textSecondary, textAlign: 'center', marginTop: 16, marginBottom: 8 }}>
-        LOCK v{APP_VERSION}
-      </Text>
-    </>
-  );
+  const footer = <SettingsFooter />;
   const modal = (
     <>
     <EditProfileModal
@@ -105,8 +58,21 @@ export default function SettingsScreen() {
     </>
   );
 
-  // Open iPhone Duo (or any wide window): the profile on the left, the
-  // settings list on the right.
+  // Open iPhone Duo side by side (or a wide window): the Settings list is on
+  // the left page (app/(tabs)/settings/_layout.tsx); this home page is the
+  // right page's default, showing the profile.
+  if (settingsSplit(kind)) {
+    return (
+      <SafeAreaView edges={['top', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}>
+          {profile}
+        </ScrollView>
+        {modal}
+      </SafeAreaView>
+    );
+  }
+
+  // Tabletop: the profile on the top half, the settings list below.
   if (twoPane) {
     return (
       <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>

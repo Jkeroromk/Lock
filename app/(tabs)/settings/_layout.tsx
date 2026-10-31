@@ -1,9 +1,30 @@
 import { Stack } from 'expo-router';
 import TabFocusFade from '@/components/ui/TabFocusFade';
+import TwoPane from '@/components/layout/TwoPane';
+import SettingsMenu from '@/components/settings/SettingsMenu';
+import { settingsSplit } from '@/components/settings/settingsSplit';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 
 export default function SettingsLayout() {
+  const { kind } = useDeviceLayout();
+  // Open iPhone Duo side by side: the list stays on the left page and every
+  // Settings page opens on the right page (each was a stretched phone page).
+  if (settingsSplit(kind)) {
+    return (
+      <TabFocusFade>
+        <TwoPane left={<SettingsMenu />} right={<SettingsStack />} />
+      </TabFocusFade>
+    );
+  }
   return (
     <TabFocusFade>
+      <SettingsStack />
+    </TabFocusFade>
+  );
+}
+
+function SettingsStack() {
+  return (
     <Stack
       screenOptions={{
         headerShown: false,
@@ -74,7 +95,6 @@ export default function SettingsLayout() {
         options={{ headerShown: false }}
       />
     </Stack>
-    </TabFocusFade>
   );
 }
 
