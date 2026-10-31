@@ -13,6 +13,9 @@ import { FONTS } from '@/constants/fonts';
 import { Appear, ScreenHeader } from '@/components/ui/bxc';
 import SettingItem from '@/components/settings/SettingItem';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import { View } from 'react-native';
+import { SETTINGS_TOP_ROW } from '@/components/settings/settingsSplit';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -72,9 +75,9 @@ export function SettingsFooter() {
 }
 
 /**
- * Open iPhone Duo: the Settings list stays on the left page while the chosen
- * category (and anything it opens) shows on the right page, like Settings on
- * an iPad. The open category is highlighted.
+ * Open iPhone Duo: the Settings list stays on the right page (bottom half when
+ * turned a quarter) while the chosen category, and anything it opens, shows on
+ * the other half — like Settings on an iPad. The open category is highlighted.
  */
 export default function SettingsMenu() {
   const { t } = useTranslation();
@@ -83,6 +86,10 @@ export default function SettingsMenu() {
   const pathname = usePathname();
   const tabInset = useTabBarInset();
   const groups = useSettingsGroups();
+  const { fold } = useDeviceLayout();
+  // Side by side: start level with the pages' titles on the left page.
+  // Turned a quarter the list is the bottom half and needs no title.
+  const side = fold?.axis !== 'horizontal';
   const page = pathname.split('/').filter(Boolean).pop() ?? '';
   const active = groups.find((g) => g.key === page || g.pages.includes(page))?.key;
 
@@ -95,9 +102,14 @@ export default function SettingsMenu() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'left']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}>
-        <ScreenHeader title={t('settings.title' as any)} />
+    <SafeAreaView edges={['top', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingTop: side ? 0 : 22, paddingBottom: tabInset }}>
+        {side ? (
+          <>
+            <View style={{ height: SETTINGS_TOP_ROW }} />
+            <ScreenHeader title={t('settings.title' as any)} style={{ marginTop: 0 }} />
+          </>
+        ) : null}
         {groups.map((g, i) => (
           <Appear key={g.key} index={i}>
             <SettingItem icon={g.icon} title={g.title} description={g.description} selected={active === g.key} onPress={() => open(g)} />

@@ -12,9 +12,8 @@ import EditProfileModal from '@/components/settings/EditProfileModal';
 import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
-import TwoPane from '@/components/layout/TwoPane';
 import { SettingsFooter, useSettingsGroups } from '@/components/settings/SettingsMenu';
-import { settingsSplit } from '@/components/settings/settingsSplit';
+import { settingsSplit, SETTINGS_TOP_ROW } from '@/components/settings/settingsSplit';
 
 /**
  * Settings home: profile card plus one row per category. Each category opens
@@ -22,7 +21,7 @@ import { settingsSplit } from '@/components/settings/settingsSplit';
  */
 export default function SettingsScreen() {
   const tabInset = useTabBarInset();
-  const { twoPane, kind } = useDeviceLayout();
+  const { kind } = useDeviceLayout();
   const { user, setUser } = useStore();
   const { t } = useTranslation();
   const colors = useTheme();
@@ -58,38 +57,17 @@ export default function SettingsScreen() {
     </>
   );
 
-  // Open iPhone Duo side by side (or a wide window): the Settings list is on
-  // the left page (app/(tabs)/settings/_layout.tsx); this home page is the
-  // right page's default, showing the profile.
+  // Open iPhone Duo (or a wide window): the Settings list is on the other
+  // half (app/(tabs)/settings/_layout.tsx); this home page is the default
+  // page beside it, showing the profile. Titles line up with the list's.
   if (settingsSplit(kind)) {
     return (
-      <SafeAreaView edges={['top', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}>
+          <View style={{ height: SETTINGS_TOP_ROW }} />
+          <ScreenHeader title={t('tabs.user')} style={{ marginTop: 0 }} />
           {profile}
         </ScrollView>
-        {modal}
-      </SafeAreaView>
-    );
-  }
-
-  // Tabletop: the profile on the top half, the settings list below.
-  if (twoPane) {
-    return (
-      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-        <TwoPane
-          left={
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }}>
-              {header}
-              {profile}
-            </ScrollView>
-          }
-          right={
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}>
-              {rows}
-              {footer}
-            </ScrollView>
-          }
-        />
         {modal}
       </SafeAreaView>
     );

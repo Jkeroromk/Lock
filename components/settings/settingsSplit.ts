@@ -1,9 +1,16 @@
 import type { ScreenKind } from '@/hooks/useDeviceLayout';
 
 /**
- * Settings as list + page side by side: the open iPhone Duo held side by side,
- * or a wide window. (Stood up like a laptop it stays one page at a time.)
+ * Settings as page + list: the open iPhone Duo (side by side: page on the
+ * left, list on the right; turned a quarter: page on top, list below), or a
+ * wide window. Phones and the outer display show one page at a time.
  */
 export function settingsSplit(kind: ScreenKind) {
-  return kind === 'inner' || kind === 'wide';
+  return kind === 'inner' || kind === 'innerTall' || kind === 'wide';
 }
+
+/**
+ * Height of the back-button row on Settings pages (components/settings/SettingsPage).
+ * The list and the profile page leave the same space so all titles line up.
+ */
+export const SETTINGS_TOP_ROW = 48;

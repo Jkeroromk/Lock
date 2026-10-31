@@ -4,15 +4,21 @@ import TwoPane from '@/components/layout/TwoPane';
 import SettingsMenu from '@/components/settings/SettingsMenu';
 import { settingsSplit } from '@/components/settings/settingsSplit';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function SettingsLayout() {
   const { kind } = useDeviceLayout();
-  // Open iPhone Duo side by side: the list stays on the left page and every
-  // Settings page opens on the right page (each was a stretched phone page).
+  const colors = useTheme();
+  // Open iPhone Duo: every Settings page opens on the left page (top half
+  // when turned a quarter) and the list stays on the right page (bottom
+  // half), under the thumb. Each page was a phone page stretched across both.
   if (settingsSplit(kind)) {
     return (
       <TabFocusFade>
-        <TwoPane left={<SettingsMenu />} right={<SettingsStack />} />
+        <SafeAreaView edges={['top', 'left']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+          <TwoPane left={<SettingsStack />} right={<SettingsMenu />} />
+        </SafeAreaView>
       </TabFocusFade>
     );
   }
