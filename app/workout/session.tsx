@@ -172,6 +172,50 @@ export default function WorkoutSessionScreen() {
   //   two metres away (big numbers, no scrolling), the bottom half has big buttons.
   // - Side by side (flat or half folded like a book): left thumb runs the clock,
   //   right thumb runs the set.
+  // Open Duo, workout with no exercises yet (free workout): the same two halves,
+  // with one big "add exercise" button where the set controls will be.
+  if (layout.fold && !ex && (layout.tabletop || layout.kind === 'inner')) {
+    const fold = layout.fold;
+    const side = fold.axis === 'vertical';
+    const R = 28;
+    const first = side
+      ? { left: 0, top: 0, bottom: 0, width: fold.start, borderTopRightRadius: R, borderBottomRightRadius: R, paddingTop: insets.top + 22, paddingLeft: insets.left + 26, paddingRight: 24, paddingBottom: insets.bottom + 20 }
+      : { left: 0, right: 0, top: 0, height: fold.start, borderBottomLeftRadius: R, borderBottomRightRadius: R, paddingTop: Math.max(insets.top, 24) + 12, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: 18 };
+    const second = side
+      ? { left: fold.start + fold.width, right: 0, top: 0, bottom: 0, borderTopLeftRadius: R, borderBottomLeftRadius: R, paddingTop: insets.top + 22, paddingLeft: 24, paddingRight: insets.right + 20, paddingBottom: insets.bottom + 20 }
+      : { left: 0, right: 0, top: fold.start + fold.width, bottom: 0, borderTopLeftRadius: R, borderTopRightRadius: R, paddingTop: 22, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: insets.bottom + 18 };
+    return (
+      <View style={{ flex: 1, backgroundColor: c.track }}>
+        <View style={[{ position: 'absolute', backgroundColor: c.surfaceInverse, gap: 14 }, first]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <PressScale onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t('common.close')}
+              style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(127,127,127,0.55)', alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="chevron-down" size={20} color={c.textInverse} />
+            </PressScale>
+            <Text style={{ flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: c.textInverse, opacity: 0.7 }}>{t('train.elapsedLabel')} {mmss(elapsed)}</Text>
+          </View>
+          <Text numberOfLines={2} style={{ fontSize: 38, fontWeight: '800', letterSpacing: -1, color: c.textInverse }}>{active.title ?? t('train.freeTitle')}</Text>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Text style={{ fontSize: 18, lineHeight: 26, color: c.textInverse, opacity: 0.75 }}>{t('train.emptyWorkout')}</Text>
+          </View>
+        </View>
+        <View style={[{ position: 'absolute', backgroundColor: c.backgroundPrimary, gap: 14 }, second]}>
+          <PressScale onPress={() => setPicker(true)} scaleTo={0.97} accessibilityRole="button"
+            style={{ flex: 1, minHeight: 72, borderRadius: 28, borderWidth: 3, borderColor: c.ink, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', gap: 10, shadowColor: c.ink, shadowOpacity: 1, shadowRadius: 0, shadowOffset: { width: 5, height: 5 } }}>
+            <Ionicons name="add" size={44} color={c.onAccent} />
+            <Text style={{ fontSize: 30, fontWeight: '800', color: c.onAccent }}>{t('train.addExercise')}</Text>
+          </PressScale>
+          <PressScale onPress={onEnd} accessibilityRole="button"
+            style={{ height: 56, borderRadius: 28, borderWidth: 2, borderColor: c.borderPrimary, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 16, fontWeight: '800', color: c.textPrimary }}>{t('train.end')}</Text>
+          </PressScale>
+        </View>
+        <ExercisePicker visible={picker} onClose={() => setPicker(false)} exclude={ids}
+          onAdd={(picked) => { addExercises(picked); loadHistory(picked); }} />
+      </View>
+    );
+  }
+
   const posture = layout.fold && ex ? (layout.tabletop ? 'table' : layout.kind === 'inner' ? 'book' : null) : null;
   if (posture && layout.fold && ex) {
     const fold = layout.fold;
@@ -304,8 +348,10 @@ export default function WorkoutSessionScreen() {
       </View>
     );
 
-    const stepper = (value: string, unitLabel: string, onMinus: () => void, onPlus: () => void, a11y: string) => (
-      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10, borderRadius: 22, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, opacity: curSet ? 1 : 0.4 }}>
+    // Side by side the two steppers are stacked: they must keep their own
+    // height (flex: 1 in a column squashed them to nothing).
+    const stepper = (value: string, unitLabel: string, onMinus: () => void, onPlus: () => void, a11y: string, grow: boolean) => (
+      <View style={{ ...(grow ? { flex: 1 } : null), minHeight: 76, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10, borderRadius: 22, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, opacity: curSet ? 1 : 0.4 }}>
         <PressScale onPress={onMinus} disabled={!curSet} scaleTo={0.88} accessibilityRole="button" accessibilityLabel={`${a11y} −`}
           style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.backgroundPrimary, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="remove" size={24} color={c.textPrimary} />
@@ -322,8 +368,8 @@ export default function WorkoutSessionScreen() {
     );
     const steppers = (vertical: boolean) => (
       <View style={{ flexDirection: vertical ? 'column' : 'row', gap: 12 }}>
-        {stepper(shownWeight, bodyweight ? `+${unit}` : unit, () => nudgeWeight(-step), () => nudgeWeight(step), t('train.wtStep'))}
-        {stepper(shownReps, t('train.repsShort'), () => nudgeReps(-1), () => nudgeReps(1), t('train.repStep'))}
+        {stepper(shownWeight, bodyweight ? `+${unit}` : unit, () => nudgeWeight(-step), () => nudgeWeight(step), t('train.wtStep'), !vertical)}
+        {stepper(shownReps, t('train.repsShort'), () => nudgeReps(-1), () => nudgeReps(1), t('train.repStep'), !vertical)}
       </View>
     );
 
