@@ -3,6 +3,7 @@ const jaJP = {
     today: '今日', train: 'トレーニング', calendar: 'カレンダー', log: '記録', social: 'ソーシャル', user: 'ユーザー',
   },
   today: {
+    snapMeal: 'この食事を撮る', snapMealSub: '写真・栄養成分表示・バーコード',
     openCalendar: 'カレンダー',
     connectHealthTitle: 'Apple ヘルスケアと連携', connectHealthBody: '歩数とアクティブエネルギーを自動で同期してここに表示します。', connectHealthCta: '連携する',
     todayCalories: '今日のカロリー', target: '目標', remaining: '残り', kcal: 'kcal',
@@ -433,6 +434,7 @@ const jaJP = {
     saveFailed: '保存できませんでした。接続を確認してもう一度お試しください。', libraryTitle: '種目ライブラリ', search: '種目を検索', all: 'すべて',
     addN: '{n} 種目を追加', noResults: '種目が見つかりません', end: '終了', exerciseOf: '種目 {i} / {n}',
     setsDone: '{done} / {total} セット完了', colSet: 'セット', colLast: '前回', colKg: 'KG',
+    completeSet: 'このセット完了', setOf: 'セット {i} / {n}', nextUp: '次のセット', bestLabel: '自己ベスト', repsShort: '回', elapsedLabel: '経過', exerciseDone: 'この種目は完了', wtStep: '重量', repStep: '回数',
     colReps: '回数', addSet: '+ セット追加', rest: 'インターバル', skip: 'スキップ',
     next: '次へ', prToast: '自己ベスト {w} × {r}', prToastReps: '自己ベスト {r} 回', emptyWorkout: '種目を追加して始めましょう。',
     finishTitle: 'トレーニングを終了しますか？', finishBody: '{done} / {total} セット完了。', finishSave: '保存する', discard: '破棄',
@@ -600,6 +602,7 @@ const jaJP = {
     body: 'からだのデータ',
   },
   camera: {
+    todayLeft: '今日はあと {kcal} kcal', todayOver: '今日は {kcal} kcal オーバー', proteinLeft: 'タンパク質あと {g}g', proteinDone: 'タンパク質達成',
     modeLabel: "成分表",
     labelHint: "栄養成分表示をはっきり写してください",
     title: "食事を記録",

@@ -3,6 +3,7 @@ const enUS = {
     today: 'Today', train: 'Train', calendar: 'Calendar', log: 'Log', social: 'Social', user: 'User',
   },
   today: {
+    snapMeal: 'Snap this meal', snapMealSub: 'Photo, nutrition label or barcode',
     openCalendar: 'Calendar',
     connectHealthTitle: 'Connect Apple Health', connectHealthBody: 'See your steps and active energy here, synced automatically.', connectHealthCta: 'Connect',
     todayCalories: "Today's Calories", target: 'Target', remaining: 'Remaining',
@@ -495,6 +496,7 @@ const enUS = {
     saveFailed: 'Couldn\'t save. Check your connection and try again.', libraryTitle: 'Exercises', search: 'Search exercises', all: 'All',
     addN: 'Add {n} exercises', noResults: 'No exercise found', end: 'End', exerciseOf: 'Exercise {i} / {n}',
     setsDone: '{done} / {total} sets done', colSet: 'Set', colLast: 'Last', colKg: 'KG',
+    completeSet: 'Done — next set', setOf: 'Set {i} / {n}', nextUp: 'Next set', bestLabel: 'Best', repsShort: 'reps', elapsedLabel: 'Elapsed', exerciseDone: 'Exercise done', wtStep: 'Weight', repStep: 'Reps',
     colReps: 'Reps', addSet: '+ Add set', rest: 'Rest', skip: 'Skip',
     next: 'Next', prToast: 'New record {w} × {r}', prToastReps: 'New record: {r} reps', emptyWorkout: 'Add an exercise to get started.',
     finishTitle: 'End workout?', finishBody: '{done} / {total} sets done.', finishSave: 'Save workout', discard: 'Discard',
@@ -662,6 +664,7 @@ const enUS = {
     body: 'Body',
   },
   camera: {
+    todayLeft: '{kcal} kcal left today', todayOver: '{kcal} kcal over today', proteinLeft: '{g}g protein to go', proteinDone: 'Protein goal reached',
     modeLabel: "Label",
     labelHint: "Fill the frame with the nutrition label",
     title: "Log a meal",

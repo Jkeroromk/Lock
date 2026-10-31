@@ -3,6 +3,7 @@ const zhTW = {
     today: '今天', train: '訓練', calendar: '日曆', log: '記錄', social: '社交', user: '用戶',
   },
   today: {
+    snapMeal: '拍這一餐', snapMealSub: '拍照、營養標示或掃碼',
     openCalendar: '日曆',
     connectHealthTitle: '連結 Apple 健康', connectHealthBody: '自動同步步數和活動消耗，直接顯示在這裡。', connectHealthCta: '連結',
     todayCalories: '今日卡路里', target: '目標', remaining: '剩餘', kcal: '大卡',
@@ -427,6 +428,7 @@ const zhTW = {
     saveFailed: '儲存失敗，請檢查網路後再試', libraryTitle: '動作庫', search: '搜尋動作', all: '全部',
     addN: '加入 {n} 個動作', noResults: '找不到這個動作', end: '結束', exerciseOf: '動作 {i} / {n}',
     setsDone: '已完成 {done} / {total} 組', colSet: '組', colLast: '上次', colKg: 'KG',
+    completeSet: '完成這組', setOf: '第 {i} / {n} 組', nextUp: '下一組', bestLabel: '紀錄', repsShort: '下', elapsedLabel: '已練', exerciseDone: '這個動作練完了', wtStep: '重量', repStep: '次數',
     colReps: '次數', addSet: '+ 加一組', rest: '組間休息', skip: '跳過',
     next: '下一個', prToast: '新紀錄 {w} × {r}', prToastReps: '新紀錄 {r} 次', emptyWorkout: '先加入一個動作，開始訓練吧。',
     finishTitle: '結束訓練？', finishBody: '已完成 {done} / {total} 組。', finishSave: '儲存訓練', discard: '放棄',
@@ -594,6 +596,7 @@ const zhTW = {
     body: '身體數據',
   },
   camera: {
+    todayLeft: '今天還能吃 {kcal} 大卡', todayOver: '今天已超出 {kcal} 大卡', proteinLeft: '蛋白質還差 {g}g', proteinDone: '蛋白質已達標',
     modeLabel: "標示",
     labelHint: "把營養標示拍清楚",
     title: "記錄一餐",

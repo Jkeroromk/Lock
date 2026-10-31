@@ -1,9 +1,36 @@
 import { Stack } from 'expo-router';
 import TabFocusFade from '@/components/ui/TabFocusFade';
+import TwoPane from '@/components/layout/TwoPane';
+import SettingsMenu from '@/components/settings/SettingsMenu';
+import { settingsSplit } from '@/components/settings/settingsSplit';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function SettingsLayout() {
+  const { kind } = useDeviceLayout();
+  const colors = useTheme();
+  // Open iPhone Duo: every Settings page opens on the left page (top half
+  // when turned a quarter) and the list stays on the right page (bottom
+  // half), under the thumb. Each page was a phone page stretched across both.
+  if (settingsSplit(kind)) {
+    return (
+      <TabFocusFade>
+        <SafeAreaView edges={['top', 'left']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+          <TwoPane left={<SettingsStack />} right={<SettingsMenu />} />
+        </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
   return (
     <TabFocusFade>
+      <SettingsStack />
+    </TabFocusFade>
+  );
+}
+
+function SettingsStack() {
+  return (
     <Stack
       screenOptions={{
         headerShown: false,
@@ -74,7 +101,6 @@ export default function SettingsLayout() {
         options={{ headerShown: false }}
       />
     </Stack>
-    </TabFocusFade>
   );
 }
 

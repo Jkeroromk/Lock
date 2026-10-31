@@ -9,8 +9,9 @@ import * as Device from 'expo-device';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/hooks/useTheme';
 import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
-import { TAB_BAR_HEIGHT } from '@/hooks/useTabBarInset';
-import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT } from '@/hooks/useDeviceLayout';
+import { TAB_BAR_HEIGHT, INNER_TAB_BAR_HEIGHT, tabBandHeight } from '@/hooks/useTabBarInset';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT, INNER_PAGE_TOP, INNER_PAGE_SIDE } from '@/hooks/useDeviceLayout';
 
 // Props expo-router passes to a custom tab bar (taken from Tabs itself, so it
 // follows whatever navigation library expo-router uses underneath).
@@ -315,7 +316,7 @@ function InnerTabBar(props: BottomTabBarProps) {
   const overGoal = isWarning(useCalorieStatus().level);
   const { width, fold, book } = useDeviceLayout();
 
-  const H = TAB_BAR_HEIGHT;
+  const H = INNER_TAB_BAR_HEIGHT;
   const center = width / 2;
   // The camera sits in the right-hand status-bar column (or 16pt in from the edge).
   const fabRight = Math.max(16, (insets.right - FAB_SIZE) / 2);
@@ -396,10 +397,29 @@ function InnerTabBar(props: BottomTabBarProps) {
   );
 }
 
+/** Pages scroll under a soft fade into the tab bar's band instead of being cut by a hard line. */
+function BandFade({ band }: { band: number }) {
+  const colors = useTheme();
+  const bg = colors.backgroundPrimary;
+  return (
+    <LinearGradient
+      pointerEvents="none"
+      colors={[`${bg}00`, bg]}
+      style={{ position: 'absolute', left: 0, right: 0, bottom: band, height: BAND_FADE }}
+    />
+  );
+}
+const BAND_FADE = 22;
+
 function AdaptiveTabBar(props: BottomTabBarProps) {
   const { kind } = useDeviceLayout();
+  const insets = useSafeAreaInsets();
+  const band = tabBandHeight(kind, insets.bottom);
   if (kind === 'outer') return <RailTabBar {...props} />;
-  if (kind === 'inner') return <InnerTabBar {...props} />;
+  if (kind === 'inner') return <><BandFade band={band} /><InnerTabBar {...props} /></>;
+  // Duo turned a quarter: the fold runs across the middle, so the usual bar at
+  // the bottom (camera in the middle) is clear of it.
+  if (kind === 'innerTall') return <><BandFade band={band} /><PhoneTabBar {...props} maxWidth={460} /></>;
   if (kind === 'wide') return <PhoneTabBar {...props} maxWidth={460} />;
   return <PhoneTabBar {...props} />;
 }
@@ -428,9 +448,16 @@ export default function TabLayout() {
         // Outer display: also keep content clear of the tab rail on the right.
         // Screens already pad for the right inset (status-bar column); add
         // only what the rail needs beyond it.
+        // Open Duo held side by side: the status bar is a column on the right,
+        // so the top inset is ~0 and page titles sat in the top-left corner.
+        // Give every tab page a page margin there.
         sceneStyle: kind === 'outer'
           ? { paddingRight: Math.max(0, railColumnWidth(insets.right) - insets.right), backgroundColor: colors.backgroundPrimary }
-          : { backgroundColor: colors.backgroundPrimary },
+          : kind === 'inner'
+            ? { paddingTop: Math.max(0, INNER_PAGE_TOP - insets.top), paddingHorizontal: INNER_PAGE_SIDE, paddingBottom: tabBandHeight(kind, insets.bottom), backgroundColor: colors.backgroundPrimary }
+            : kind === 'innerTall'
+              ? { paddingBottom: tabBandHeight(kind, insets.bottom), backgroundColor: colors.backgroundPrimary }
+              : { backgroundColor: colors.backgroundPrimary },
       }}
     >
       <Tabs.Screen
