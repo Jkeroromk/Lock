@@ -4,7 +4,7 @@ import TwoPane from '@/components/layout/TwoPane';
 import SettingsMenu from '@/components/settings/SettingsMenu';
 import { settingsSplit } from '@/components/settings/settingsSplit';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function SettingsLayout() {
@@ -16,9 +16,9 @@ export default function SettingsLayout() {
   if (settingsSplit(kind)) {
     return (
       <TabFocusFade>
-        <SafeAreaView edges={['top', 'left']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
-          <TwoPane left={<SettingsStack />} right={<SettingsMenu />} />
-        </SafeAreaView>
+        <View style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+          <TwoPane origin={{ top: 0, left: 0 }} ownSafeArea left={<SettingsStack />} right={<SettingsMenu />} />
+        </View>
       </TabFocusFade>
     );
   }

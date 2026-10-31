@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useDeviceLayout, INNER_PAGE_SIDE } from '@/hooks/useDeviceLayout';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,11 +19,27 @@ const FOLD_RADIUS = 28;
  *   edge — so cards aren't sliced off by the crease.
  * - Wide window without a fold: split in half with a small gap.
  */
-export default function TwoPane({ left: firstPane, right: secondPane, gap = 24 }: { left: ReactNode; right: ReactNode; gap?: number }) {
+export default function TwoPane({ left: firstLeft, right: secondRight, gap = 24, origin, ownSafeArea }: {
+  left: ReactNode;
+  right: ReactNode;
+  gap?: number;
+  /** Where this view starts in the window. Default: inside a SafeAreaView (the top-left insets). */
+  origin?: { top: number; left: number };
+  /**
+   * Give each pane its own safe area, so SafeAreaViews inside a pane only pad
+   * for the edges of the screen that pane actually touches (otherwise a page
+   * in the bottom half padded for the status bar at the top, and the left page
+   * for the status-bar column on the right).
+   */
+  ownSafeArea?: boolean;
+}) {
   const { width, fold } = useDeviceLayout();
   const colors = useTheme();
-  // Placed inside a SafeAreaView, so (0, 0) here is the top-left inset.
-  const insets = useSafeAreaInsets();
+  const safe = useSafeAreaInsets();
+  const insets = origin ? { ...safe, ...origin } : safe;
+  const wrap = (node: ReactNode) => (ownSafeArea ? <SafeAreaProvider style={{ flex: 1 }}>{node}</SafeAreaProvider> : node);
+  const firstPane = wrap(firstLeft);
+  const secondPane = wrap(secondRight);
 
   if (fold?.axis === 'horizontal') {
     const bg = colors.backgroundPrimary;
