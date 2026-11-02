@@ -1,0 +1,26 @@
+$ npx expo install expo-sensors
+› Installing 1 SDK 58.0.0 compatible native module using npm
+> npm install
+
+> lock@1.0.0 postinstall
+> node scripts/patch-native-libs.mjs
+
+[patch-native-libs] already patched: node_modules/react-native-health/RCTAppleHealthKit/RCTAppleHealthKit.m
+
+added 1 package, and audited 983 packages in 3s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+36 vulnerabilities (1 low, 19 moderate, 15 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
