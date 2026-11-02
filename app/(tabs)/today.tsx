@@ -8,7 +8,9 @@ import { useStore, localDateKey } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { loadWater, addWater, undoLastWater, loadWaterGoal, saveWaterGoal, onWaterChange, DEFAULT_WATER_GOAL_ML } from '@/services/waterTracker';
+import { loadWater, addWater, undoLastWater, loadWaterGoal, saveWaterGoal, onWaterChange, DEFAULT_WATER_GOAL_ML, type WaterState } from '@/services/waterTracker';
+import { drinkOf, drinkAmounts, type DrinkKind } from '@/constants/drinks';
+import { logMeal } from '@/services/api';
 import CaloriesCard from '@/components/today/CaloriesCard';
 import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
@@ -44,12 +46,14 @@ export default function TodayScreen() {
   const [healthConnected, setHealthConnected] = useState<boolean | null>(healthNeedsSetup ? null : true);
   const [connectingHealth, setConnectingHealth] = useState(false);
   const [waterMl, setWaterMl] = useState(0);
-  const [waterLogCount, setWaterLogCount] = useState(0);
+  const [waterLog, setWaterLog] = useState<number[]>([]);
+  const [waterKinds, setWaterKinds] = useState<string[]>([]);
   const [waterGoalMl, setWaterGoalMl] = useState(DEFAULT_WATER_GOAL_ML);
 
-  const applyWater = (state: { ml: number; log: number[] }) => {
+  const applyWater = (state: WaterState) => {
     setWaterMl(state.ml);
-    setWaterLogCount(state.log.length);
+    setWaterLog(state.log);
+    setWaterKinds(state.kinds);
   };
 
   const loadWaterData = async () => {
@@ -61,6 +65,24 @@ export default function TodayScreen() {
   const handleAddWater = async (ml: number) => {
     setWaterMl((current) => current + ml); // optimistic
     applyWater(await addWater(ml));
+  };
+
+  // A drink from the "+" sheet: its water counts toward the goal, and a drink
+  // with calories is also logged as food so today's calories stay honest.
+  const handleAddDrink = async (kind: DrinkKind, ml: number) => {
+    const drink = drinkOf(kind);
+    const a = drinkAmounts(drink, ml);
+    setWaterMl((current) => current + a.waterMl); // optimistic
+    applyWater(await addWater(a.waterMl, kind));
+    if (a.kcal > 0) {
+      try {
+        await logMeal({
+          food_name: `${t(`water.drinks.${kind}` as any)} ${ml} ml`,
+          calories: a.kcal, protein: a.protein, carbs: a.carbs, fat: a.fat, image_url: '',
+        });
+        refreshToday();
+      } catch {}
+    }
   };
 
   const handleUndoWater = async () => {
@@ -184,8 +206,11 @@ export default function TodayScreen() {
     <WaterCard
       waterMl={waterMl}
       goalMl={waterGoalMl}
-      canUndo={waterLogCount > 0 || waterMl > 0}
+      log={waterLog}
+      kinds={waterKinds}
+      canUndo={waterLog.length > 0 || waterMl > 0}
       onAdd={handleAddWater}
+      onAddDrink={handleAddDrink}
       onUndo={handleUndoWater}
       onSetGoal={handleSetWaterGoal}
     />

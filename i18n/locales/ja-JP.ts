@@ -319,6 +319,7 @@ const jaJP = {
     monthly: '月',
   },
   water: {
+    drinks: { water: '水', sparkling: '炭酸水', tea: 'お茶', coffee: 'ブラックコーヒー', latte: 'ラテ', milk: '牛乳', juice: 'ジュース', sports: 'スポーツドリンク', soda: 'ソーダ' }, todayDrank: '今日飲んだ量', left: 'あと {ml}', full: '満タン！', drinkSheetTitle: '一杯追加', factorHint: '％ = 水分として数える割合', size: '量', countsAs: '水分として', kcal: 'カロリー', kcalNote: '{drink}はカロリーがあるので、今日のドリンクにも記録されます。撮影は不要です。', addCta: '{drink} {ml} ml を追加', pickDrink: 'ドリンクを選ぶ', nothingYet: 'まだ飲んでいません', goalDone: '今日の水分達成！',
     title: '水分補給', goal: '目標',
     remaining: 'あと {ml} ml',
     achieved: '今日の水分目標達成！', autoAdded: 'ドリンクから +{ml}ml 追加', ml: 'ml', glasses: '杯',

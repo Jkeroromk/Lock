@@ -1,43 +1,76 @@
-import { View, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import { View, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, Pressable, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
-import { useEffect, useState } from 'react';
-import Animated, { ZoomIn } from 'react-native-reanimated';
+import { useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Card, Chip, HardShadow, RADIUS } from '@/components/ui/bxc';
+import { Card, Chip, HardShadow, PressScale, RADIUS, Sticker } from '@/components/ui/bxc';
 import {
-  QUICK_ADD_ML, MAX_SINGLE_ADD_ML, MIN_WATER_GOAL_ML, MAX_WATER_GOAL_ML,
+  QUICK_ADD_ML, MIN_WATER_GOAL_ML, MAX_WATER_GOAL_ML,
 } from '@/services/waterTracker';
-
-const CELLS = 8;
+import { drinkOf, type DrinkKind } from '@/constants/drinks';
+import WaterBottle from '@/components/today/WaterBottle';
+import DrinkSheet from '@/components/today/DrinkSheet';
 
 interface WaterCardProps {
   waterMl: number;
   goalMl: number;
+  /** Each addition today (ml counted as water) and its drink, oldest first. */
+  log: number[];
+  kinds: string[];
   canUndo: boolean;
   onAdd: (ml: number) => void;
+  onAddDrink: (kind: DrinkKind, ml: number) => void;
   onUndo: () => void;
   onSetGoal: (ml: number) => void;
 }
 
-type Editing = null | 'custom' | 'goal';
-
-export default function WaterCard({ waterMl, goalMl, canUndo, onAdd, onUndo, onSetGoal }: WaterCardProps) {
+/**
+ * Hydration: a bottle that fills up with the buddy floating on top (tilt the
+ * phone and the water sloshes), today's drinks beside it, one-tap glasses of
+ * water and "+" for any other drink.
+ */
+export default function WaterCard({ waterMl, goalMl, log, kinds, canUndo, onAdd, onAddDrink, onUndo, onSetGoal }: WaterCardProps) {
   const c = useTheme();
   const { t } = useTranslation();
-  const [editing, setEditing] = useState<Editing>(null);
-  const isLight = c.backgroundPrimary !== c.ink;
-  const filledCells = goalMl > 0 ? Math.min(CELLS, Math.floor((waterMl / goalMl) * CELLS + 1e-6)) : 0;
-  const isComplete = waterMl >= goalMl;
+  const { width: screenW } = useWindowDimensions();
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [sheet, setSheet] = useState(false);
+  const isComplete = goalMl > 0 && waterMl >= goalMl;
+  const left = Math.max(0, goalMl - waterMl);
+
+  // Goal reached just now (not on first load) → the buddy cheers.
+  const [celebrate, setCelebrate] = useState(0);
+  const wasComplete = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (wasComplete.current === false && isComplete) {
+      setCelebrate((n) => n + 1);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+    wasComplete.current = isComplete;
+  }, [isComplete]);
+
+  const glug = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+
+  // Today's drinks, grouped: "Water ×3 · 750".
+  const groups: { kind: string; n: number; ml: number }[] = [];
+  log.forEach((ml, i) => {
+    const kind = drinkOf(kinds[i]).kind;
+    const g = groups.find((x) => x.kind === kind);
+    if (g) { g.n += 1; g.ml += ml; } else groups.push({ kind, n: 1, ml });
+  });
+  groups.sort((a, b) => b.ml - a.ml);
+
+  const bottleW = Math.min(170, Math.max(130, Math.round(screenW * 0.38)));
 
   return (
     <Card padding={16} style={{ marginBottom: 14 }}>
       {/* Header */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <TouchableOpacity
-          onPress={() => setEditing('goal')}
+          onPress={() => setEditingGoal(true)}
           accessibilityRole="button"
           accessibilityLabel={t('water.goalTitle')}
           style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, minHeight: 44 }}
@@ -59,59 +92,69 @@ export default function WaterCard({ waterMl, goalMl, canUndo, onAdd, onUndo, onS
         </TouchableOpacity>
       </View>
 
-      {/* Cells */}
-      <View style={{ flexDirection: 'row', gap: 5, marginTop: 2 }} accessibilityLabel={`${waterMl} of ${goalMl} ml`}>
-        {Array.from({ length: CELLS }).map((_, i) => {
-          const filled = i < filledCells;
-          return (
-            <Animated.View
-              // New key when a cell fills → it remounts and pops in.
-              key={`${i}-${filled ? 'f' : 'e'}`}
-              entering={filled ? ZoomIn.springify().damping(13).stiffness(260) : undefined}
-              style={{
-                flex: 1, height: 24, borderRadius: RADIUS.cell,
-                backgroundColor: filled ? c.accent : 'transparent',
-                borderWidth: 1.5,
-                borderColor: isLight ? c.ink : filled ? c.accent : c.borderSecondary,
-              }}
-            />
-          );
-        })}
+      {/* Bottle + today's drinks */}
+      <View style={{ flexDirection: 'row', gap: 16, marginTop: 6 }} accessibilityLabel={`${waterMl} of ${goalMl} ml`}>
+        <View>
+          <WaterBottle level={goalMl > 0 ? waterMl / goalMl : 0} width={bottleW} height={Math.round(bottleW * 1.45)} celebrate={celebrate} />
+          {isComplete ? (
+            <Sticker style={{ position: 'absolute', top: 34, alignSelf: 'center' }} rotate={-5}>
+              <Text style={{ fontSize: 14, fontWeight: '800', color: c.onAccent }}>{t('water.goalDone')}</Text>
+            </Sticker>
+          ) : null}
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', gap: 4 }}>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{t('water.todayDrank')}</Text>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 42, fontWeight: '800', letterSpacing: -1.5, lineHeight: 46, color: c.textPrimary }}>
+            {waterMl.toLocaleString()}
+          </Text>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary }}>
+            {t('water.ml')} · {isComplete ? t('water.full') : t('water.left', { ml: left.toLocaleString() })}
+          </Text>
+          <View style={{ marginTop: 10, gap: 5 }}>
+            {groups.length === 0 ? (
+              <Text style={{ fontSize: 13, color: c.textTertiary }}>{t('water.nothingYet')}</Text>
+            ) : groups.slice(0, 4).map((g) => (
+              <View key={g.kind} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name={drinkOf(g.kind).icon as any} size={13} color={c.textPrimary} />
+                <Text numberOfLines={1} style={{ flex: 1, fontFamily: FONTS.mono, fontSize: 12, color: c.textPrimary }}>
+                  {t(`water.drinks.${g.kind}` as any)} ×{g.n} · {g.ml}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
       </View>
 
-      {isComplete ? (
-        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textPrimary, marginTop: 8 }}>{t('water.achieved')}</Text>
-      ) : null}
-
-      {/* Quick add */}
-      <View style={{ flexDirection: 'row', gap: 6, marginTop: 12 }}>
+      {/* Quick add: water; "+" for any drink */}
+      <View style={{ flexDirection: 'row', gap: 6, marginTop: 14 }}>
         {QUICK_ADD_ML.map((ml) => (
-          <Chip key={ml} label={`+${ml}`} onPress={() => onAdd(ml)} style={{ flex: 1, paddingHorizontal: 0 }} />
+          <Chip key={ml} label={`+${ml}`} onPress={() => { glug(); onAdd(ml); }} style={{ flex: 1, paddingHorizontal: 0 }} />
         ))}
-        <TouchableOpacity
-          onPress={() => setEditing('custom')}
+        <PressScale
+          onPress={() => setSheet(true)}
           accessibilityRole="button"
-          accessibilityLabel={t('water.custom')}
+          accessibilityLabel={t('water.pickDrink')}
           style={{
-            width: 44, height: 44, borderRadius: RADIUS.control, borderWidth: 2, borderColor: c.borderPrimary,
-            alignItems: 'center', justifyContent: 'center',
+            width: 52, height: 44, borderRadius: RADIUS.control, borderWidth: 2, borderColor: c.ink, backgroundColor: c.accent,
+            alignItems: 'center', justifyContent: 'center', shadowColor: c.ink, shadowOpacity: 1, shadowRadius: 0, shadowOffset: { width: 3, height: 3 },
           }}
         >
-          <Ionicons name="add" size={20} color={c.textPrimary} />
-        </TouchableOpacity>
+          <Ionicons name="add" size={22} color={c.onAccent} />
+        </PressScale>
       </View>
 
+      <DrinkSheet visible={sheet} onClose={() => setSheet(false)} onAdd={(kind, ml) => { glug(); onAddDrink(kind, ml); }} />
+
       <AmountModal
-        visible={editing !== null}
-        title={editing === 'goal' ? t('water.goalTitle') : t('water.customTitle')}
-        initial={editing === 'goal' ? goalMl : undefined}
-        min={editing === 'goal' ? MIN_WATER_GOAL_ML : 1}
-        max={editing === 'goal' ? MAX_WATER_GOAL_ML : MAX_SINGLE_ADD_ML}
-        onCancel={() => setEditing(null)}
+        visible={editingGoal}
+        title={t('water.goalTitle')}
+        initial={goalMl}
+        min={MIN_WATER_GOAL_ML}
+        max={MAX_WATER_GOAL_ML}
+        onCancel={() => setEditingGoal(false)}
         onSubmit={(ml) => {
-          if (editing === 'goal') onSetGoal(ml);
-          else onAdd(ml);
-          setEditing(null);
+          onSetGoal(ml);
+          setEditingGoal(false);
         }}
       />
     </Card>

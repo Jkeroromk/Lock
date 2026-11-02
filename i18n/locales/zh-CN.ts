@@ -443,6 +443,7 @@ const zhCN = {
     monthly: '月',
   },
   water: {
+    drinks: { water: '水', sparkling: '气泡水', tea: '茶', coffee: '黑咖啡', latte: '拿铁', milk: '牛奶', juice: '果汁', sports: '运动饮料', soda: '汽水' }, todayDrank: '今天喝了', left: '还差 {ml}', full: '喝满啦！', drinkSheetTitle: '加一杯', factorHint: '百分比 = 算进饮水的比例', size: '杯量', countsAs: '算进饮水', kcal: '热量', kcalNote: '{drink}有热量，会同时记进今天的饮品，不用再拍一次。', addCta: '加上 {ml} ml {drink}', pickDrink: '选饮品', nothingYet: '还没喝', goalDone: '今天喝够啦！',
     title: '今日饮水',
     goal: '目标',
     remaining: '还差 {ml} ml',

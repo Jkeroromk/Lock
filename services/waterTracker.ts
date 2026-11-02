@@ -14,6 +14,8 @@ export const MAX_SINGLE_ADD_ML = 2000;
 export interface WaterState {
   ml: number;
   log: number[];
+  /** Drink of each addition in `log` (constants/drinks), same order. */
+  kinds: string[];
 }
 
 const today = () => new Date().toDateString();
@@ -23,10 +25,13 @@ export async function loadWater(): Promise<WaterState> {
     const stored = await AsyncStorage.getItem(WATER_KEY);
     const parsed = stored ? JSON.parse(stored) : null;
     if (parsed?.date === today()) {
-      return { ml: Number(parsed.ml) || 0, log: Array.isArray(parsed.log) ? parsed.log : [] };
+      const log: number[] = Array.isArray(parsed.log) ? parsed.log : [];
+      const kinds: string[] = Array.isArray(parsed.kinds) ? parsed.kinds : [];
+      // Older saves had no kinds: those additions were water.
+      return { ml: Number(parsed.ml) || 0, log, kinds: log.map((_, i) => kinds[i - (log.length - kinds.length)] ?? 'water') };
     }
   } catch {}
-  const fresh = { ml: 0, log: [] };
+  const fresh: WaterState = { ml: 0, log: [], kinds: [] };
   await saveWater(fresh).catch(() => {});
   return fresh;
 }
@@ -42,16 +47,16 @@ export function onWaterChange(fn: () => void): () => void {
 async function saveWater(state: WaterState): Promise<void> {
   await AsyncStorage.setItem(
     WATER_KEY,
-    JSON.stringify({ date: today(), ml: Math.max(0, state.ml), log: state.log.slice(-50) })
+    JSON.stringify({ date: today(), ml: Math.max(0, state.ml), log: state.log.slice(-50), kinds: state.kinds.slice(-50) })
   );
   waterListeners.forEach((fn) => fn());
 }
 
 /** Adds an amount (e.g. a glass, or a drink detected from a logged meal). */
-export async function addWater(ml: number): Promise<WaterState> {
+export async function addWater(ml: number, kind = 'water'): Promise<WaterState> {
   const amount = Math.round(Math.min(Math.max(ml, 0), MAX_SINGLE_ADD_ML));
   const current = await loadWater();
-  const next = { ml: current.ml + amount, log: [...current.log, amount] };
+  const next = { ml: current.ml + amount, log: [...current.log, amount], kinds: [...current.kinds, kind] };
   await saveWater(next);
   return next;
 }
@@ -60,7 +65,7 @@ export async function addWater(ml: number): Promise<WaterState> {
 export async function undoLastWater(): Promise<WaterState> {
   const current = await loadWater();
   const last = current.log.length ? current.log[current.log.length - 1] : Math.min(250, current.ml);
-  const next = { ml: Math.max(0, current.ml - last), log: current.log.slice(0, -1) };
+  const next = { ml: Math.max(0, current.ml - last), log: current.log.slice(0, -1), kinds: current.kinds.slice(0, -1) };
   await saveWater(next);
   return next;
 }

@@ -328,6 +328,7 @@ const koKR = {
     monthly: '월',
   },
   water: {
+    drinks: { water: '물', sparkling: '탄산수', tea: '차', coffee: '블랙커피', latte: '라떼', milk: '우유', juice: '주스', sports: '스포츠음료', soda: '탄산음료' }, todayDrank: '오늘 마신 양', left: '{ml} 남음', full: '가득!', drinkSheetTitle: '한 잔 추가', factorHint: '% = 수분으로 계산되는 비율', size: '양', countsAs: '수분으로', kcal: '칼로리', kcalNote: '{drink}은(는) 칼로리가 있어 오늘의 음료로도 기록돼요. 사진은 필요 없어요.', addCta: '{drink} {ml} ml 추가', pickDrink: '음료 선택', nothingYet: '아직 없음', goalDone: '오늘 수분 달성!',
     title: '수분 섭취', goal: '목표',
     remaining: '{ml}ml 남음',
     achieved: '오늘 수분 목표 달성!', autoAdded: '음료에서 +{ml}ml 추가', ml: 'ml', glasses: '잔',

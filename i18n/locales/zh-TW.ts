@@ -313,6 +313,7 @@ const zhTW = {
     monthly: '月',
   },
   water: {
+    drinks: { water: '水', sparkling: '氣泡水', tea: '茶', coffee: '黑咖啡', latte: '拿鐵', milk: '牛奶', juice: '果汁', sports: '運動飲料', soda: '汽水' }, todayDrank: '今天喝了', left: '還差 {ml}', full: '喝滿啦！', drinkSheetTitle: '加一杯', factorHint: '百分比 = 算進飲水的比例', size: '杯量', countsAs: '算進飲水', kcal: '熱量', kcalNote: '{drink}有熱量，會同時記進今天的飲品，不用再拍一次。', addCta: '加上 {ml} ml {drink}', pickDrink: '選飲品', nothingYet: '還沒喝', goalDone: '今天喝夠啦！',
     title: '今日飲水', goal: '目標',
     remaining: '還差 {ml} ml',
     achieved: '今日飲水目標已達成！', autoAdded: '飲料已記錄 +{ml}ml', ml: 'ml', glasses: '杯',

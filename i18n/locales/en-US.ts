@@ -348,6 +348,7 @@ const enUS = {
     monthly: 'month',
   },
   water: {
+    drinks: { water: 'Water', sparkling: 'Sparkling', tea: 'Tea', coffee: 'Black coffee', latte: 'Latte', milk: 'Milk', juice: 'Juice', sports: 'Sports drink', soda: 'Soda' }, todayDrank: 'Today', left: '{ml} to go', full: 'Full!', drinkSheetTitle: 'Add a drink', factorHint: '% = how much counts as water', size: 'Size', countsAs: 'Counts as water', kcal: 'Calories', kcalNote: '{drink} has calories, so it is also logged as a drink for today. No photo needed.', addCta: 'Add {ml} ml {drink}', pickDrink: 'Choose a drink', nothingYet: 'Nothing yet', goalDone: 'Hydrated for today!',
     title: 'Hydration',
     goal: 'Goal',
     remaining: '{ml} ml to go',
