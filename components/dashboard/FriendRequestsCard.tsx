@@ -4,7 +4,8 @@ import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
-import { FriendRequest, respondFriendRequest } from '@/services/api';
+import { FriendRequest } from '@/services/api';
+import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
 import { useTranslation } from '@/i18n';
 import { useBlockUser } from '@/hooks/useBlockUser';
 
@@ -29,10 +30,8 @@ export default function FriendRequestsCard({ requests, onUpdate }: FriendRequest
   };
 
   const handleRespond = async (id: string, action: 'accept' | 'reject') => {
-    try {
-      await respondFriendRequest(id, action);
-      onUpdate();
-    } catch {}
+    // Through the shared store, so the Today banner and tab badge update too.
+    if (await useFriendRequestsStore.getState().respond(id, action)) onUpdate();
   };
 
   return (
@@ -77,11 +76,6 @@ export default function FriendRequestsCard({ requests, onUpdate }: FriendRequest
             <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
               {req.from.name}
             </Text>
-            {req.from.username && (
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary }}>
-                @{req.from.username}
-              </Text>
-            )}
           </View>
           <TouchableOpacity
             onPress={() => handleRespond(req.id, 'accept')}

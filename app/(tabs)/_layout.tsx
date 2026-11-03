@@ -11,6 +11,9 @@ import { useTheme } from '@/hooks/useTheme';
 import { useCalorieStatus, isWarning } from '@/lib/calorieStatus';
 import { TAB_BAR_HEIGHT, INNER_TAB_BAR_HEIGHT, tabBandHeight } from '@/hooks/useTabBarInset';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
+import { Text } from '@/components/ui/Text';
+import { FONTS } from '@/constants/fonts';
 import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT, INNER_PAGE_TOP, INNER_PAGE_SIDE } from '@/hooks/useDeviceLayout';
 
 // Props expo-router passes to a custom tab bar (taken from Tabs itself, so it
@@ -120,6 +123,7 @@ function TabIcon({
 }) {
   const colors = useTheme();
   const { t } = useTranslation();
+  const pending = useFriendRequestsStore((s) => (route.name === 'dashboard' ? s.requests.length : 0));
   const icons = TAB_ICONS[route.name];
   if (!icons) return null;
   return (
@@ -128,7 +132,7 @@ function TabIcon({
       scaleTo={0.86}
       accessibilityRole="tab"
       accessibilityState={{ selected: focused }}
-      accessibilityLabel={[label, route.name === 'today' && overGoal ? t('calorieWarn.tabBadge' as any) : ''].filter(Boolean).join(', ')}
+      accessibilityLabel={[label, route.name === 'today' && overGoal ? t('calorieWarn.tabBadge' as any) : '', pending > 0 ? t('dashboard.friendRequests' as any) : ''].filter(Boolean).join(', ')}
       style={[{ alignItems: 'center', justifyContent: 'center' }, style]}
     >
       <View>
@@ -145,6 +149,17 @@ function TabIcon({
               backgroundColor: colors.danger, borderWidth: 2, borderColor: colors.tabBar,
             }}
           />
+        ) : null}
+        {pending > 0 ? (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute', top: -6, right: -9, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 4,
+              backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.tabBar, alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontFamily: FONTS.mono, fontSize: 10, fontWeight: '700', color: colors.onAccent }}>{pending > 9 ? '9+' : pending}</Text>
+          </View>
         ) : null}
       </View>
       {focused && indicator ? (

@@ -14,9 +14,10 @@ import CreateChallengeModal from '@/components/dashboard/CreateChallengeModal';
 import PetHome from '@/components/pet/PetHome';
 import { usePetStore } from '@/store/usePetStore';
 import {
-  fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges,
-  LeaderboardEntry, FriendRequest, SentRequest, ChallengeData,
+  fetchLeaderboard, fetchSentRequests, fetchChallenges,
+  LeaderboardEntry, SentRequest, ChallengeData,
 } from '@/services/api';
+import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
@@ -29,7 +30,7 @@ export default function DashboardScreen() {
   const { twoPane, tabletop } = useDeviceLayout();
   const { t } = useTranslation();
   const colors = useTheme();
-  const { addFriend: deepLinkCode } = useLocalSearchParams<{ addFriend?: string }>();
+  const { addFriend: deepLinkCode, requests: showRequests } = useLocalSearchParams<{ addFriend?: string; requests?: string }>();
 
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   // Stood up like a laptop the buddy's room is the top half, so its tab comes first.
@@ -40,6 +41,15 @@ export default function DashboardScreen() {
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [pendingFriendId, setPendingFriendId] = useState<string | undefined>();
 
+  // From a friend-request notification or the Today banner: show the requests.
+  useEffect(() => {
+    if (showRequests) {
+      setActiveTab('friends');
+      setTableTab('friends');
+      refreshRequests();
+    }
+  }, [showRequests]);
+
   useEffect(() => {
     if (deepLinkCode) {
       setPendingFriendId(deepLinkCode);
@@ -48,22 +58,22 @@ export default function DashboardScreen() {
   }, [deepLinkCode]);
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const requests = useFriendRequestsStore((s) => s.requests);
+  const refreshRequests = useFriendRequestsStore((s) => s.refresh);
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const syncPet = usePetStore((s) => s.sync);
   const hasPet = usePetStore((s) => !!s.state?.profile);
 
   const loadAll = useCallback(async () => {
-    const [lb, reqs, sent, ch] = await Promise.allSettled([
+    const [lb, , sent, ch] = await Promise.allSettled([
       fetchLeaderboard(),
-      fetchFriendRequests(),
+      refreshRequests(),
       fetchSentRequests(),
       fetchChallenges(),
       syncPet(),
     ]);
     if (lb.status === 'fulfilled') setLeaderboard(lb.value);
-    if (reqs.status === 'fulfilled') setRequests(reqs.value);
     if (sent.status === 'fulfilled') setSentRequests(sent.value);
     if (ch.status === 'fulfilled') setChallenges(ch.value);
   }, []);

@@ -109,9 +109,6 @@ export default function BlockedUsersScreen() {
                   <UserAvatar image={u.avatarImage} initial={u.avatar} status={u.status} size={40} style={{ marginRight: DIMENSIONS.SPACING * 0.8 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '800', color: colors.textPrimary }}>{u.name}</Text>
-                    {u.username ? (
-                      <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary }}>@{u.username}</Text>
-                    ) : null}
                   </View>
                   <TouchableOpacity
                     onPress={() => handleUnblock(u)}

@@ -26,6 +26,7 @@ import { useAdaptiveStepGoal } from '@/hooks/useAdaptiveStepGoal';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
 import SnapMealCard from '@/components/today/SnapMealCard';
+import FriendRequestBanner from '@/components/today/FriendRequestBanner';
 import { useProteinTarget } from '@/hooks/useProteinTarget';
 
 export default function TodayScreen() {
@@ -258,6 +259,7 @@ export default function TodayScreen() {
               refreshControl={refreshControl}
             >
               <DateHeader language={language} streak={streak} />
+              <FriendRequestBanner />
               {loading ? skeleton : (
                 <View>
                   {calories}
@@ -301,6 +303,7 @@ export default function TodayScreen() {
               refreshControl={refreshControl}
             >
               <DateHeader language={language} streak={streak} />
+              <FriendRequestBanner />
               {loading ? skeleton : (
                 <View>
                   {calories}
@@ -340,6 +343,7 @@ export default function TodayScreen() {
         >
           <View style={{ paddingHorizontal: 18, paddingTop: 0, paddingBottom: 8 }}>
             <DateHeader language={language} streak={streak} />
+              <FriendRequestBanner />
             {loading ? skeleton : (
               <View>
                 {calories}
