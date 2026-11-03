@@ -157,7 +157,6 @@ export default function CoupleRoom(props: CoupleRoomProps) {
         style={StyleSheet.absoluteFill}
         flat
         shadows="percentage"
-        dpr={[1, 2]}
         frameloop={paused ? 'never' : 'always'}
         camera={{ fov: 32, near: 0.1, far: 100, position: [12.5, 10.5, 12.5] }}
       >

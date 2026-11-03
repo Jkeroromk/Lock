@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { View, Modal, Pressable, ScrollView, Alert, KeyboardAvoidingView, Platform, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,7 +33,7 @@ export default function AnniversarySheet({ visible, onClose, items, highlight, o
   const c = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const rows = useRef<Record<string, number>>({});
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
