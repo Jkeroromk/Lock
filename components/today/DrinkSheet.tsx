@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Modal, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TextInput } from '@/components/ui/Text';
 import { PressScale } from '@/components/ui/bxc';
@@ -22,6 +23,7 @@ export default function DrinkSheet({ visible, onClose, onAdd }: {
   const c = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { fold } = useDeviceLayout();
   const [kind, setKind] = useState<DrinkKind>('water');
   const [size, setSize] = useState<number>(250);
   const [custom, setCustom] = useState('');
@@ -36,16 +38,23 @@ export default function DrinkSheet({ visible, onClose, onAdd }: {
   const name = (k: DrinkKind) => t(`water.drinks.${k}` as any);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={fold ? 'fade' : 'slide'} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <Pressable onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }} accessibilityLabel={t('common.close')} />
-        <View style={{
-          backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 30, borderTopRightRadius: 30,
-          paddingTop: 10, paddingHorizontal: 20, paddingBottom: insets.bottom + 18, maxHeight: '88%',
-          alignSelf: 'center', width: '100%', maxWidth: 520,
-        }}>
-          <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.borderSecondary, marginBottom: 10 }} />
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 14 }}>
+        {/* Dim the whole screen; tap outside to close. */}
+        <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} accessibilityLabel={t('common.close')} />
+        {/* Open iPhone Duo: the sheet fills one half and never crosses the fold
+            (right page side by side, bottom half turned a quarter). Phones: a
+            bottom sheet. */}
+        <View style={[
+          { backgroundColor: c.backgroundPrimary, paddingTop: 10, paddingHorizontal: 20 },
+          fold?.axis === 'vertical'
+            ? { position: 'absolute', left: fold.start + fold.width, right: 0, top: 0, bottom: 0, borderTopLeftRadius: 30, borderBottomLeftRadius: 30, paddingTop: insets.top + 18, paddingRight: insets.right + 16, paddingBottom: insets.bottom + 16 }
+            : fold?.axis === 'horizontal'
+              ? { position: 'absolute', left: 0, right: 0, top: fold.start + fold.width, bottom: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingLeft: insets.left + 20, paddingRight: insets.right + 20, paddingBottom: insets.bottom + 16 }
+              : { marginTop: 'auto', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: insets.bottom + 18, maxHeight: '88%', alignSelf: 'center', width: '100%', maxWidth: 520 },
+        ]}>
+          {fold ? null : <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.borderSecondary, marginBottom: 10 }} />}
+          <ScrollView style={{ flexShrink: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 14, paddingBottom: 14 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={{ fontSize: 24, fontWeight: '800', color: c.textPrimary }}>{t('water.drinkSheetTitle')}</Text>
               <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{t('water.factorHint')}</Text>
@@ -119,6 +128,7 @@ export default function DrinkSheet({ visible, onClose, onAdd }: {
               ) : null}
             </View>
 
+          </ScrollView>
             <PressScale
               onPress={() => { if (ml > 0) { onAdd(kind, ml); onClose(); } }}
               disabled={ml <= 0}
@@ -132,7 +142,6 @@ export default function DrinkSheet({ visible, onClose, onAdd }: {
               <Ionicons name="water" size={20} color={c.onAccent} />
               <Text style={{ fontSize: 18, fontWeight: '800', color: c.onAccent }}>{t('water.addCta', { ml: String(ml), drink: name(kind) })}</Text>
             </PressScale>
-          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
