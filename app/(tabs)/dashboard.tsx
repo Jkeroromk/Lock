@@ -18,6 +18,7 @@ import {
   LeaderboardEntry, SentRequest, ChallengeData,
 } from '@/services/api';
 import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
+import CoupleEntryCard from '@/components/couple/CoupleEntryCard';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
@@ -165,7 +166,8 @@ export default function DashboardScreen() {
           <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
         </>
       )}
-      <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
+      <CoupleEntryCard />
+              <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
     </Appear>
   );
 
@@ -251,7 +253,8 @@ export default function DashboardScreen() {
                       <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
                     </>
                   )}
-                  <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
+                  <CoupleEntryCard />
+              <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
                 </Appear>
               ) : (
                 <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
@@ -336,6 +339,7 @@ export default function DashboardScreen() {
                   <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
                 </>
               )}
+              <CoupleEntryCard />
               <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
             </Appear>
           )}

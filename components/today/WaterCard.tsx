@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, Modal, KeyboardAvoidingView, Platform, Pressable, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/hooks/useTheme';
@@ -42,12 +42,12 @@ export default function WaterCard({ waterMl, goalMl, log, kinds, canUndo, onAdd,
   const [sheetKind, setSheetKind] = useState<DrinkKind>('water');
   const [wheel, setWheel] = useState(false);
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
-  const plusRef = useRef<View>(null);
+  const plusRef = useRef<ComponentRef<typeof View>>(null);
   // Each drink added → the buddy hops and the water splashes.
   const [splash, setSplash] = useState(0);
   const openWheel = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    plusRef.current?.measureInWindow((x, y, w, h) => {
+    plusRef.current?.measureInWindow((x: number, y: number, w: number, h: number) => {
       setAnchor({ x: x + w / 2, y: y + h / 2 });
       setWheel(true);
     });

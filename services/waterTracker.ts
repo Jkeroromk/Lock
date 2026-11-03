@@ -50,6 +50,27 @@ async function saveWater(state: WaterState): Promise<void> {
     JSON.stringify({ date: today(), ml: Math.max(0, state.ml), log: state.log.slice(-50), kinds: state.kinds.slice(-50) })
   );
   waterListeners.forEach((fn) => fn());
+  scheduleWaterSync();
+}
+
+// Today's water also goes to the server (debounced), so a linked partner can
+// see it in the couple space. Best effort: never throws, skipped when signed out.
+let syncTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleWaterSync() {
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    syncTimer = null;
+    (async () => {
+      // Loaded lazily: keeps this module free of store/API imports at start-up.
+      const [{ useStore, localDateKey }, { syncWater }] = await Promise.all([
+        import('@/store/useStore'),
+        import('@/services/couple'),
+      ]);
+      if (!useStore.getState().user) return;
+      const [state, goal] = await Promise.all([loadWater(), loadWaterGoal()]);
+      await syncWater(localDateKey(), state.ml, goal);
+    })().catch(() => {});
+  }, 1500);
 }
 
 /** Adds an amount (e.g. a glass, or a drink detected from a logged meal). */
@@ -81,6 +102,7 @@ export async function loadWaterGoal(): Promise<number> {
 export async function saveWaterGoal(ml: number): Promise<number> {
   const goal = Math.round(Math.min(Math.max(ml, MIN_WATER_GOAL_ML), MAX_WATER_GOAL_ML));
   await AsyncStorage.setItem(WATER_GOAL_KEY, String(goal));
+  scheduleWaterSync();
   return goal;
 }
 

@@ -5,6 +5,8 @@ import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { useStore } from '@/store/useStore';
 import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
+import { useCoupleStore } from '@/store/useCoupleStore';
+import { respondCouple } from '@/services/couple';
 import { translations, type LanguageCode } from '@/i18n/locales';
 import { showToast } from '@/components/ui/Toast';
 
@@ -24,7 +26,16 @@ function words(language: LanguageCode): Record<string, string> {
 }
 
 async function handleResponse(response: Notifications.NotificationResponse) {
-  const data = (response.notification.request.content.data ?? {}) as { type?: string; friendshipId?: string; fromName?: string };
+  const data = (response.notification.request.content.data ?? {}) as { type?: string; friendshipId?: string; fromName?: string; coupleId?: string };
+  if (data.type?.startsWith('COUPLE_')) {
+    // A couple invite's "Accept" button accepts it; anything else opens the couple space.
+    if (data.type === 'COUPLE_INVITE' && response.actionIdentifier === 'accept' && data.coupleId) {
+      try { await respondCouple(data.coupleId, 'accept'); } catch {}
+    }
+    useCoupleStore.getState().refresh();
+    router.navigate('/couple' as any);
+    return;
+  }
   if (data.type === 'FRIEND_REQUEST') {
     if (response.actionIdentifier === 'accept' && data.friendshipId) {
       const ok = await useFriendRequestsStore.getState().respond(data.friendshipId, 'accept');
@@ -52,6 +63,11 @@ export default function SocialBridge() {
       { identifier: 'accept', buttonTitle: w.accept ?? 'Accept', options: { opensAppToForeground: true } },
       { identifier: 'view', buttonTitle: w.view ?? 'View', options: { opensAppToForeground: true } },
     ]).catch(() => {});
+    const cw = ((translations[language] ?? translations['en-US']) as any).couple ?? {};
+    Notifications.setNotificationCategoryAsync('couple_invite', [
+      { identifier: 'accept', buttonTitle: cw.accept ?? 'Accept', options: { opensAppToForeground: true } },
+      { identifier: 'view', buttonTitle: w.view ?? 'View', options: { opensAppToForeground: true } },
+    ]).catch(() => {});
   }, [language]);
 
   useEffect(() => {
@@ -62,6 +78,7 @@ export default function SocialBridge() {
     const received = Notifications.addNotificationReceivedListener((n) => {
       const type = (n.request.content.data as { type?: string } | undefined)?.type;
       if (type === 'FRIEND_REQUEST' || type === 'FRIEND_ACCEPTED') refresh();
+      if (type?.startsWith('COUPLE_')) useCoupleStore.getState().refresh();
     });
     const tapped = Notifications.addNotificationResponseReceivedListener((r) => { handleResponse(r); });
     // Opened from a notification while the app wasn't running.

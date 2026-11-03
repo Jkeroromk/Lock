@@ -354,3 +354,62 @@ model TrialClaim {
 
   @@map("trial_claims")
 }
+
+// ── Couple space: two friends linked as a couple (the other must accept).
+// A user is in at most one PENDING or ACCEPTED link (enforced in lib/couple.ts).
+// User relations are kept as plain ids here; the foreign keys (cascade on user
+// delete) live in prisma/sql/ensure-schema.sql.
+model CoupleLink {
+  id          String    @id @default(uuid()) @db.Uuid
+  requesterId String    @map("requester_id")
+  addresseeId String    @map("addressee_id")
+  status      String    @default("PENDING") // PENDING | ACCEPTED
+  since       DateTime  @db.Date                // the day they got together
+  petOwnerId  String    @map("pet_owner_id")    // whose buddy they raise together
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  acceptedAt  DateTime? @map("accepted_at") @db.Timestamptz(6)
+
+  anniversaries CoupleAnniversary[]
+
+  @@index([requesterId])
+  @@index([addresseeId])
+  @@map("couple_links")
+}
+
+model CoupleAnniversary {
+  id        String   @id @default(uuid()) @db.Uuid
+  coupleId  String   @map("couple_id") @db.Uuid
+  title     String
+  date      DateTime @db.Date
+  yearly    Boolean  @default(false)
+  emoji     String   @default("💕")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  couple CoupleLink @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+
+  @@index([coupleId])
+  @@map("couple_anniversaries")
+}
+
+/// Last nudge per sender and kind, for the 10-minute limit.
+model CoupleNudge {
+  senderId String   @map("sender_id")
+  kind     String
+  sentAt   DateTime @default(now()) @map("sent_at") @db.Timestamptz(6)
+
+  @@id([senderId, kind])
+  @@map("couple_nudges")
+}
+
+/// Today's water, synced from the phone so a partner can see it.
+model DailyWater {
+  userId    String   @map("user_id")
+  dayKey    String   @map("day_key") // local YYYY-MM-DD
+  ml        Int      @default(0)
+  goalMl    Int      @default(2000) @map("goal_ml")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@id([userId, dayKey])
+  @@map("daily_water")
+}
