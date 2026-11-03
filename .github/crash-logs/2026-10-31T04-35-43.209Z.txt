@@ -1,0 +1,385 @@
+{
+  "id": "AFp1G8PEzslzJ1zHx5-LCi4",
+  "createdDate": "2026-10-31T04:35:43.209Z",
+  "comment": "crash",
+  "deviceModel": "iPhone19_4",
+  "osVersion": "27.2",
+  "appPlatform": "IOS",
+  "buildBundleId": "com.jkeroro.lockin"
+}
+
+Incident Identifier: AF1FE1EE-A56D-4F46-A624-926F47F95594
+Distributor ID:      com.apple.TestFlight
+Hardware Model:      iPhone19,4
+Process:             Lock [4846]
+Path:                /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Lock
+Identifier:          com.jkeroro.lockin
+Version:             1.1.0 (54)
+AppStoreTools:       27B52
+AppVariant:          1:iPhone19,4:27
+Beta:                YES
+Code Type:           ARM-64 (Native)
+Role:                Foreground
+Parent Process:      launchd [1]
+Coalition:           com.jkeroro.lockin [1549]
+
+Date/Time:           2026-10-31 00:31:09.9691 -0400
+Launch Time:         2026-10-31 00:30:36.1311 -0400
+OS Version:          iPhone OS 27.2 (24B91020)
+Release Type:        User
+Baseband Version:    1.02.05
+Report Version:      104
+
+Exception Type:  EXC_BAD_ACCESS (SIGSEGV)
+Exception Subtype: KERN_INVALID_ADDRESS at 0x0000000000000118
+Exception Codes: 0x0000000000000001, 0x0000000000000118
+VM Region Info: 0x118 is not in any region.  Bytes before following region: 4369137384
+      REGION TYPE                   START - END        [ VSIZE] PRT/MAX SHRMOD  REGION DETAIL
+      UNUSED SPACE AT START
+--->  
+      __TEXT                     1046bc000-1046c0000   [   16K] r-x/r-x SM=COW  /var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Lock
+Termination Reason: SIGNAL 11 Segmentation fault: 11
+Terminating Process: exc handler [4846]
+
+Triggered by Thread:  0
+
+
+Thread 0 name:
+Thread 0 Crashed:
+0   Lock                          	0x00000001049485f0 std::__1::shared_ptr<facebook::react::Props const>::shared_ptr[abi:nqe220106](std::__1::shared_ptr<facebook::react::Props const> const&) + 0 (shared_ptr.h:447)
+1   Lock                          	0x00000001049485f0 std::__1::shared_ptr<facebook::react::Props const>::shared_ptr[abi:nqe220106](std::__1::shared_ptr<facebook::react::Props const> const&) + 0 (shared_ptr.h:447)
+2   Lock                          	0x00000001049485f0 reanimated::LayoutAnimationsProxy::updateLightNodeProps(std::__1::shared_ptr<reanimated::LightNode> const&, facebook::react::ShadowView const&, facebook::react::ShadowView const&) const + 36 (LayoutAnimationsProxy.cpp:575)
+3   Lock                          	0x0000000104942cec reanimated::LayoutAnimationsProxy::updateLightTree(facebook::react::PropsParserContext const&, std::__1::vector<facebook::react::ShadowViewMutation, std::__1::allocator<facebook::react::ShadowViewM... + 512 (LayoutAnimationsProxy.cpp:369)
+4   Lock                          	0x0000000104942528 reanimated::LayoutAnimationsProxy::pullTransaction(int, long long, facebook::react::TransactionTelemetry const&, std::__1::vector<facebook::react::ShadowViewMutation, std::__1::allocator<facebook::... + 732 (LayoutAnimationsProxy.cpp:164)
+5   React                         	0x0000000106272470 facebook::react::MountingCoordinator::pullTransaction(bool) const + 1336 (MountingCoordinator.cpp:124)
+6   React                         	0x000000010627c0c4 facebook::react::TelemetryController::pullTransaction(std::__1::function<void (facebook::react::MountingTransaction const&, facebook::react::SurfaceTelemetry const&)> const&, std::__1::function<voi... + 80 (TelemetryController.cpp:22)
+7   React                         	0x0000000106316924 -[RCTMountingManager performTransaction:] + 208 (RCTMountingManager.mm:259)
+8   React                         	0x00000001063166a8 -[RCTMountingManager initiateTransaction:] + 148 (RCTMountingManager.mm:247)
+9   libdispatch.dylib             	0x00000001bc023c74 0x1bc022000 + 7284
+10  libdispatch.dylib             	0x00000001bc03cfb0 blk(unsigned int*, int) + 8 (SHA1.cpp:37)
+11  libdispatch.dylib             	0x00000001bc03cfb0 r3(unsigned int&, unsigned int&, unsigned int&, unsigned int&, unsigned int&, int, unsigned int*) + 8 (SHA1.cpp:63)
+12  libdispatch.dylib             	0x00000001bc03cfb0 llvh::SHA1::hashBlock() + 2956 (SHA1.cpp:160)
+13  libdispatch.dylib             	0x00000001bc032820 llvh::cl::Option::Option(llvh::cl::NumOccurrencesFlag, llvh::cl::OptionHidden) + 44 (CommandLine.h:270)
+14  libdispatch.dylib             	0x00000001bc032820 llvh::cl::opt<(anonymous namespace)::HelpPrinterWrapper, true, llvh::cl::parser<bool>>::opt<char [12], llvh::cl::desc, llvh::cl::LocationClass<(anonymous namespace)::HelpPrinterWrapper>, llvh::cl::... + 44 (CommandLine.h:1363)
+15  libdispatch.dylib             	0x00000001bc032820 llvh::cl::opt<(anonymous namespace)::HelpPrinterWrapper, true, llvh::cl::parser<bool>>::opt<char [12], llvh::cl::desc, llvh::cl::LocationClass<(anonymous namespace)::HelpPrinterWrapper>, llvh::cl::... + 44 (CommandLine.h:1363)
+16  libdispatch.dylib             	0x00000001bc032820 (anonymous namespace)::CommandLineCommonOptions::CommandLineCommonOptions() + 972 (CommandLine.cpp:2116)
+17  libdispatch.dylib             	0x00000001bc032820 (anonymous namespace)::CommandLineCommonOptions::CommandLineCommonOptions() + 972 (CommandLine.cpp:2067)
+18  libdispatch.dylib             	0x00000001bc032820 llvh::object_creator<(anonymous namespace)::CommandLineCommonOptions>::call() + 1028 (ManagedStatic.h:24)
+19  libdispatch.dylib             	0x00000001bc032508 llvh::ManagedStatic<llvh::cl::SubCommand, llvh::object_creator<llvh::cl::SubCommand>, llvh::object_deleter<llvh::cl::SubCommand>>::operator*() + 28 (ManagedStatic.h:90)
+20  libdispatch.dylib             	0x00000001bc032508 (anonymous namespace)::CommandLineCommonOptions::CommandLineCommonOptions() + 180 (CommandLine.cpp:2094)
+21  libdispatch.dylib             	0x00000001bc032508 (anonymous namespace)::CommandLineCommonOptions::CommandLineCommonOptions() + 180 (CommandLine.cpp:2067)
+22  libdispatch.dylib             	0x00000001bc032508 llvh::object_creator<(anonymous namespace)::CommandLineCommonOptions>::call() + 236 (ManagedStatic.h:24)
+23  CoreFoundation                	0x000000018ddca1b4 llvh::ilist_node_base<false>::getPrev() const + 4 (ilist_node_base.h:29)
+24  CoreFoundation                	0x000000018ddca1b4 llvh::ilist_base<false>::transferBeforeImpl(llvh::ilist_node_base<false>&, llvh::ilist_node_base<false>&, llvh::ilist_node_base<false>&) + 32 (ilist_base.h:77)
+25  CoreFoundation                	0x000000018ddca1b4 void llvh::ilist_base<false>::transferBefore<llvh::ilist_node_impl<llvh::ilist_detail::node_options<hermes::ESTree::Node, false, false, void>>>(llvh::ilist_node_impl<llvh::ilist_detail::node_option... + 32 (ilist_base.h:97)
+26  CoreFoundation                	0x000000018ddca1b4 llvh::simple_ilist<hermes::ESTree::Node>::splice(llvh::ilist_iterator<llvh::ilist_detail::node_options<hermes::ESTree::Node, false, false, void>, false, false>, llvh::simple_ilist<hermes::ESTree::N... + 32 (simple_ilist.h:286)
+27  CoreFoundation                	0x000000018ddca1b4 llvh::simple_ilist<hermes::ESTree::Node>::splice(llvh::ilist_iterator<llvh::ilist_detail::node_options<hermes::ESTree::Node, false, false, void>, false, false>, llvh::simple_ilist<hermes::ESTree::N... + 44 (simple_ilist.h:276)
+28  CoreFoundation                	0x000000018ddca1b4 llvh::simple_ilist<hermes::ESTree::Node>::simple_ilist(llvh::simple_ilist<hermes::ESTree::Node>&&) + 48 (simple_ilist.h:114)
+29  CoreFoundation                	0x000000018ddca1b4 llvh::simple_ilist<hermes::ESTree::Node>::simple_ilist(llvh::simple_ilist<hermes::ESTree::Node>&&) + 48 (simple_ilist.h:114)
+30  CoreFoundation                	0x000000018ddca1b4 hermes::ESTree::OptionalCallExpressionNode::OptionalCallExpressionNode(hermes::ESTree::Node*, hermes::ESTree::Node*, llvh::simple_ilist<hermes::ESTree::Node>&&, bool) + 84 (ESTree.def:312)
+31  CoreFoundation                	0x000000018ddbb760 std::__1::shared_ptr<facebook::jsi::HostObject>::reset[abi:ne190102]() + 52 (shared_ptr.h:720)
+32  CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateCommon<facebook::jsi::Value, void>::begin() + 4 (SmallVector.h:129)
+33  CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateBase<facebook::jsi::Value, false>::grow(unsigned long) + 136 (SmallVector.h:254)
+34  GraphicsServices              	0x0000000238aa8f24 0x238aa8000 + 3876
+35  UIKitCore                     	0x0000000191f1f5bc (anonymous namespace)::StringPacker<unsigned char>::planLayout(std::__1::vector<std::__1::vector<(anonymous namespace)::StringPacker<unsigned char>::Overlap, std::__1::allocator<(anonymous namespac... + 8 (ConsecutiveStringStorage.cpp:414)
+36  UIKitCore                     	0x0000000191f1f5bc (anonymous namespace)::StringPacker<unsigned char>::optimizingPackStrings(llvh::MutableArrayRef<(anonymous namespace)::StringPacker<unsigned char>::StringEntry>) + 2588 (ConsecutiveStringStorage.cpp:507)
+37  UIKitCore                     	0x0000000191f1f5bc (anonymous namespace)::StringTableBuilder::packIntoStorage(std::__1::vector<unsigned char, std::__1::allocator<unsigned char>>*, std::__1::vector<char16_t, std::__1::allocator<char16_t>>*, bool) + 3188 (ConsecutiveStringStorage.cpp:634)
+38  UIKitCore                     	0x00000001921b49bc 0x191e69000 + 3455420
+39  Lock                          	0x00000001046c0c14 specialized static UIApplicationDelegate.main() + 28 (/<compiler-generated>:5)
+40  Lock                          	0x00000001046c0c14 static AppDelegate.$main() + 28 (AppDelegate.swift:0)
+41  Lock                          	0x00000001046c0c14 main + 116
+42  dyld                          	0x000000018dc164d0 0x18dc11000 + 21712
+
+Thread 1 name:
+Thread 1:
+0   libsystem_kernel.dylib        	0x0000000245707cb0 0x245707000 + 3248
+1   libsystem_kernel.dylib        	0x000000024570b288 0x245707000 + 17032
+2   libsystem_kernel.dylib        	0x000000024570b1bc 0x245707000 + 16828
+3   libsystem_kernel.dylib        	0x000000024570b008 0x245707000 + 16392
+4   CoreFoundation                	0x000000018ddbc320 facebook::hermes::(anonymous namespace)::HermesRuntimeImpl::HFContext::func(void*, hermes::vm::Runtime&) + 204 (hermes.cpp:1103)
+5   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(llvh::StringRef) + 32 (TwineChar16.h:0)
+6   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(llvh::StringRef) + 32 (TwineChar16.h:125)
+7   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(char const*) + 32 (TwineChar16.h:121)
+8   CoreFoundation                	0x000000018ddbb30c facebook::hermes::(anonymous namespace)::HermesRuntimeImpl::JsiProxy::set(hermes::vm::SymbolID, hermes::vm::HermesValue) + 692 (hermes.cpp:1027)
+9   CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateCommon<facebook::jsi::Value, void>::begin() + 4 (SmallVector.h:129)
+10  CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateBase<facebook::jsi::Value, false>::grow(unsigned long) + 136 (SmallVector.h:254)
+11  React                         	0x00000001063c9a40 +[RCTJSThreadManager runRunLoop] + 252 (RCTJSThreadManager.mm:102)
+12  Foundation                    	0x000000018e462220 std::__1::__split_buffer<hermes::vm::FixedSizeHeapSegment*, std::__1::allocator<hermes::vm::FixedSizeHeapSegment*>&>::push_front(hermes::vm::FixedSizeHeapSegment* const&) + 244 (__split_buffer:482)
+13  libsystem_pthread.dylib       	0x000000018dcc7ef0 0x18dcc4000 + 16112
+14  libsystem_pthread.dylib       	0x000000018dcc491c 0x18dcc4000 + 2332
+
+Thread 2 name:
+Thread 2:
+0   libsystem_kernel.dylib        	0x000000024570d508 0x245707000 + 25864
+1   libsystem_pthread.dylib       	0x000000018dcc5cc0 0x18dcc4000 + 7360
+2   libc++.1.dylib                	0x00000001a4a5684c llvh::cl::basic_parser_impl::getOptionWidth(llvh::cl::Option const&) const + 84 (CommandLine.cpp:1507)
+3   hermesvm                      	0x0000000107292580 void std::__1::condition_variable::wait<hermes::vm::HadesGC::Executor::worker()::'lambda'()>(std::__1::unique_lock<std::__1::mutex>&, hermes::vm::HadesGC::Executor::worker()::'lambda'()) + 28 (condition_variable.h:147)
+4   hermesvm                      	0x0000000107292580 hermes::vm::HadesGC::Executor::worker() + 104 (HadesGC.cpp:1045)
+5   hermesvm                      	0x00000001072924f4 hermes::vm::HadesGC::Executor::Executor()::'lambda'()::operator()() const + 4 (HadesGC.cpp:1016)
+6   hermesvm                      	0x00000001072924f4 decltype(std::declval<hermes::vm::HadesGC::Executor::Executor()::'lambda'()>()()) std::__1::__invoke[abi:nn190102]<hermes::vm::HadesGC::Executor::Executor()::'lambda'()>(hermes::vm::HadesGC::Execut... + 4 (invoke.h:149)
+7   hermesvm                      	0x00000001072924f4 void std::__1::__thread_execute[abi:nn190102]<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, hermes::vm::HadesGC::Executor::Executor()::'lambd... + 4 (thread.h:198)
+8   hermesvm                      	0x00000001072924f4 void* std::__1::__thread_proxy[abi:nn190102]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, hermes::vm::HadesGC::Executor::Exe... + 44 (thread.h:207)
+9   libsystem_pthread.dylib       	0x000000018dcc7ef0 0x18dcc4000 + 16112
+10  libsystem_pthread.dylib       	0x000000018dcc491c 0x18dcc4000 + 2332
+
+Thread 3 name:
+Thread 3:
+0   libsystem_kernel.dylib        	0x000000024570d508 0x245707000 + 25864
+1   libsystem_pthread.dylib       	0x000000018dcc5cc0 0x18dcc4000 + 7360
+2   libc++.1.dylib                	0x00000001a4a5684c llvh::cl::basic_parser_impl::getOptionWidth(llvh::cl::Option const&) const + 84 (CommandLine.cpp:1507)
+3   hermesvm                      	0x0000000107292580 void std::__1::condition_variable::wait<hermes::vm::HadesGC::Executor::worker()::'lambda'()>(std::__1::unique_lock<std::__1::mutex>&, hermes::vm::HadesGC::Executor::worker()::'lambda'()) + 28 (condition_variable.h:147)
+4   hermesvm                      	0x0000000107292580 hermes::vm::HadesGC::Executor::worker() + 104 (HadesGC.cpp:1045)
+5   hermesvm                      	0x00000001072924f4 hermes::vm::HadesGC::Executor::Executor()::'lambda'()::operator()() const + 4 (HadesGC.cpp:1016)
+6   hermesvm                      	0x00000001072924f4 decltype(std::declval<hermes::vm::HadesGC::Executor::Executor()::'lambda'()>()()) std::__1::__invoke[abi:nn190102]<hermes::vm::HadesGC::Executor::Executor()::'lambda'()>(hermes::vm::HadesGC::Execut... + 4 (invoke.h:149)
+7   hermesvm                      	0x00000001072924f4 void std::__1::__thread_execute[abi:nn190102]<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, hermes::vm::HadesGC::Executor::Executor()::'lambd... + 4 (thread.h:198)
+8   hermesvm                      	0x00000001072924f4 void* std::__1::__thread_proxy[abi:nn190102]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, hermes::vm::HadesGC::Executor::Exe... + 44 (thread.h:207)
+9   libsystem_pthread.dylib       	0x000000018dcc7ef0 0x18dcc4000 + 16112
+10  libsystem_pthread.dylib       	0x000000018dcc491c 0x18dcc4000 + 2332
+
+Thread 4:
+0   libsystem_kernel.dylib        	0x000000024570d508 0x245707000 + 25864
+1   libsystem_pthread.dylib       	0x000000018dcc5cc0 0x18dcc4000 + 7360
+2   libc++.1.dylib                	0x00000001a4a568e0 getValueStr(llvh::cl::Option const&, llvh::StringRef) + 8 (CommandLine.cpp:1461)
+3   libc++.1.dylib                	0x00000001a4a568e0 llvh::cl::basic_parser_impl::printOptionInfo(llvh::cl::Option const&, unsigned long) const + 124 (CommandLine.cpp:1522)
+4   hermesvm                      	0x00000001071f8008 std::__1::cv_status std::__1::condition_variable::wait_for<long long, std::__1::ratio<1l, 1000000000l>>(std::__1::unique_lock<std::__1::mutex>&, std::__1::chrono::duration<long long, std::__1::rati... + 124 (condition_variable.h:0)
+5   hermesvm                      	0x00000001071f8008 hermes::SerialExecutor::run() + 384 (SerialExecutor.cpp:126)
+6   hermesvm                      	0x00000001071f7db0 hermes::SerialExecutor::threadMain(void*) + 112 (SerialExecutor.cpp:142)
+7   libsystem_pthread.dylib       	0x000000018dcc7ef0 0x18dcc4000 + 16112
+8   libsystem_pthread.dylib       	0x000000018dcc491c 0x18dcc4000 + 2332
+
+Thread 5 name:
+Thread 5:
+0   libsystem_kernel.dylib        	0x0000000245707cb0 0x245707000 + 3248
+1   libsystem_kernel.dylib        	0x000000024570b288 0x245707000 + 17032
+2   libsystem_kernel.dylib        	0x000000024570b1bc 0x245707000 + 16828
+3   libsystem_kernel.dylib        	0x000000024570b008 0x245707000 + 16392
+4   CoreFoundation                	0x000000018ddbc320 facebook::hermes::(anonymous namespace)::HermesRuntimeImpl::HFContext::func(void*, hermes::vm::Runtime&) + 204 (hermes.cpp:1103)
+5   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(llvh::StringRef) + 32 (TwineChar16.h:0)
+6   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(llvh::StringRef) + 32 (TwineChar16.h:125)
+7   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(char const*) + 32 (TwineChar16.h:121)
+8   CoreFoundation                	0x000000018ddbb30c facebook::hermes::(anonymous namespace)::HermesRuntimeImpl::JsiProxy::set(hermes::vm::SymbolID, hermes::vm::HermesValue) + 692 (hermes.cpp:1027)
+9   CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateCommon<facebook::jsi::Value, void>::begin() + 4 (SmallVector.h:129)
+10  CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateBase<facebook::jsi::Value, false>::grow(unsigned long) + 136 (SmallVector.h:254)
+11  CFNetwork                     	0x000000019a435ab4 hermes::parser::detail::JSParserImpl::checkAndEat(hermes::parser::TokenKind, hermes::parser::JSLexer::GrammarContext) + 20 (JSParserImpl.cpp:249)
+12  Foundation                    	0x000000018e462220 std::__1::__split_buffer<hermes::vm::FixedSizeHeapSegment*, std::__1::allocator<hermes::vm::FixedSizeHeapSegment*>&>::push_front(hermes::vm::FixedSizeHeapSegment* const&) + 244 (__split_buffer:482)
+13  libsystem_pthread.dylib       	0x000000018dcc7ef0 0x18dcc4000 + 16112
+14  libsystem_pthread.dylib       	0x000000018dcc491c 0x18dcc4000 + 2332
+
+Thread 6:
+0   libsystem_kernel.dylib        	0x000000024570d508 0x245707000 + 25864
+1   libsystem_pthread.dylib       	0x000000018dcc5cc0 0x18dcc4000 + 7360
+2   libc++.1.dylib                	0x00000001a4a568e0 getValueStr(llvh::cl::Option const&, llvh::StringRef) + 8 (CommandLine.cpp:1461)
+3   libc++.1.dylib                	0x00000001a4a568e0 llvh::cl::basic_parser_impl::printOptionInfo(llvh::cl::Option const&, unsigned long) const + 124 (CommandLine.cpp:1522)
+4   hermesvm                      	0x00000001071f8008 std::__1::cv_status std::__1::condition_variable::wait_for<long long, std::__1::ratio<1l, 1000000000l>>(std::__1::unique_lock<std::__1::mutex>&, std::__1::chrono::duration<long long, std::__1::rati... + 124 (condition_variable.h:0)
+5   hermesvm                      	0x00000001071f8008 hermes::SerialExecutor::run() + 384 (SerialExecutor.cpp:126)
+6   hermesvm                      	0x00000001071f7db0 hermes::SerialExecutor::threadMain(void*) + 112 (SerialExecutor.cpp:142)
+7   libsystem_pthread.dylib       	0x000000018dcc7ef0 0x18dcc4000 + 16112
+8   libsystem_pthread.dylib       	0x000000018dcc491c 0x18dcc4000 + 2332
+
+Thread 7 name:
+Thread 7:
+0   libsystem_kernel.dylib        	0x0000000245707cb0 0x245707000 + 3248
+1   libsystem_kernel.dylib        	0x000000024570b288 0x245707000 + 17032
+2   libsystem_kernel.dylib        	0x000000024570b1bc 0x245707000 + 16828
+3   libsystem_kernel.dylib        	0x000000024570b008 0x245707000 + 16392
+4   CoreFoundation                	0x000000018ddbc320 facebook::hermes::(anonymous namespace)::HermesRuntimeImpl::HFContext::func(void*, hermes::vm::Runtime&) + 204 (hermes.cpp:1103)
+5   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(llvh::StringRef) + 32 (TwineChar16.h:0)
+6   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(llvh::StringRef) + 32 (TwineChar16.h:125)
+7   CoreFoundation                	0x000000018ddbb30c hermes::vm::TwineChar16::TwineChar16(char const*) + 32 (TwineChar16.h:121)
+8   CoreFoundation                	0x000000018ddbb30c facebook::hermes::(anonymous namespace)::HermesRuntimeImpl::JsiProxy::set(hermes::vm::SymbolID, hermes::vm::HermesValue) + 692 (hermes.cpp:1027)
+9   CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateCommon<facebook::jsi::Value, void>::begin() + 4 (SmallVector.h:129)
+10  CoreFoundation                	0x000000018ddbc69c llvh::SmallVectorTemplateBase<facebook::jsi::Value, false>::grow(unsigned long) + 136 (SmallVector.h:254)
+11  CoreFoundation                	0x000000018de5b958 llvh::DenseMapBase<llvh::DenseMap<llvh::StringRef, unsigned int, llvh::DenseMapInfo<llvh::StringRef>, llvh::detail::DenseMapPair<llvh::StringRef, unsigned int>>, llvh::StringRef, unsigned int, llvh... + 4 (DenseMap.h:214)
+12  CoreFoundation                	0x000000018de5b958 hermes::parser::initializeHTMLEntities() + 9752 (HTMLEntities.def:253)
+13  CoreMotion                    	0x00000001b4ed6660 llvh::sys::SmartScopedLock<true>::~SmartScopedLock() + 12 (Mutex.h:151)
+14  CoreMotion                    	0x00000001b4ed6660 llvh::sys::SmartScopedLock<true>::~SmartScopedLock() + 12 (Mutex.h:150)
+15  CoreMotion                    	0x00000001b4ed6660 llvh::TimerGroup::addTimer(llvh::Timer&) + 124 (Timer.cpp:310)
+16  libsystem_pthread.dylib       	0x000000018dcc7ef0 0x18dcc4000 + 16112
+17  libsystem_pthread.dylib       	0x000000018dcc491c 0x18dcc4000 + 2332
+
+Thread 8 name:
+Thread 8:
+0   libsystem_kernel.dylib        	0x0000000245707cb0 0x245707000 + 3248
+1   libsystem_kernel.dylib        	0x000000024570b288 0x245707000 + 17032
+2   libsystem_kernel.dylib        	0x000000024570b1bc 0x245707000 + 16828
+3   libsystem_kernel.dylib        	0x000000024570b008 0x245707000 + 16392
+4   libdispatch.dylib             	0x00000001bc03e778 llvh::SmallPtrSetImplBase::MoveHelper(unsigned int, llvh::SmallPtrSetImplBase&&) + 12 (SmallPtrSet.cpp:190)
+5   libdispatch.dylib             	0x00000001bc03ebc4 std::__1::__wrap_iter<unsigned int*> std::__1::__lower_bound_bisecting[abi:nn190102]<std::__1::_ClassicAlgPolicy, std::__1::__wrap_iter<unsigned int*>, unsigned int, std::__1::__identity, std::__1:... + 4 (lower_bound.h:37)
+6   libdispatch.dylib             	0x00000001bc03ebc4 std::__1::__wrap_iter<unsigned int*> std::__1::__lower_bound[abi:nn190102]<std::__1::_ClassicAlgPolicy, std::__1::__wrap_iter<unsigned int*>, std::__1::__wrap_iter<unsigned int*>, unsigned int, std... + 4 (lower_bound.h:90)
+7   libdispatch.dylib             	0x00000001bc03ebc4 std::__1::__wrap_iter<unsigned int*> std::__1::lower_bound[abi:nn190102]<std::__1::__wrap_iter<unsigned int*>, unsigned int, std::__1::__less<void, void>>(std::__1::__wrap_iter<unsigned int*>, std:... + 4 (lower_bound.h:98)
+8   libdispatch.dylib             	0x00000001bc03ebc4 std::__1::__wrap_iter<unsigned int*> std::__1::lower_bound[abi:nn190102]<std::__1::__wrap_iter<unsigned int*>, unsigned int>(std::__1::__wrap_iter<unsigned int*>, std::__1::__wrap_iter<unsigned int... + 4 (lower_bound.h:104)
+9   libdispatch.dylib             	0x00000001bc03ebc4 std::__1::pair<llvh::StringRef, unsigned int> llvh::SourceMgr::SrcBuffer::getLineNumber<unsigned int>(char const*) const + 48 (SourceMgr.cpp:118)
+10  libxpc.dylib                  	0x000000018dd3a304 llvh::raw_ostream::operator<<(llvh::format_object_base const&) + 40 (raw_ostream.cpp:292)
+11  Security                      	0x0000000196c6f6fc 0x196c6d000 + 9980
+12  Security                      	0x0000000196c6f7b8 0x196c6d000 + 10168
+13  Security                      	0x0000000196c743b4 0x196c6d000 + 29620
+14  Security                      	0x0000000196c72b28 0x196c6d000 + 23336
+15  Security                      	0x0000000196c73578 0x196c6d000 + 25976
+16  Security                      	0x0000000196c73bf8 0x196c6d000 + 27640
+17  Security                      	0x0000000196c72c00 0x196c6d000 + 23552
+18  Security                      	0x0000000196c704c0 0x196c6d000 + 13504
+19  Security                      	0x0000000196c72530 0x196c6d000 + 21808
+20  Lock                          	0x00000001048505b8 specialized SecureStoreModule.searchKeyChain(with:options:requireAuthentication:) + 580 (SecureStoreModule.swift:171)
+21  Lock                          	0x00000001048507d0 SecureStoreModule.searchKeyChain(with:options:requireAuthentication:) + 24 (/<compiler-generated>:0)
+22  Lock                          	0x00000001048507d0 specialized SecureStoreModule.get(with:options:) + 148 (SecureStoreModule.swift:82)
+23  Lock                          	0x000000010484f454 closure #8 in SecureStoreModule.definition() + 48
+24  Lock                          	0x000000010484f3dc partial apply for closure #8 in SecureStoreModule.definition() + 16 (/<compiler-generated>:0)
+25  ExpoModulesCore               	0x0000000105b8d8ec thunk for @escaping @callee_guaranteed (@in_guaranteed B, @pack_guaranteed @indirect Pack{repeat C}) -> (@out A, @error @owned Error) + 608 (/<compiler-generated>:0)
+26  ExpoModulesCore               	0x0000000105b8d954 <deduplicated_symbol> + 36
+27  ExpoModulesCore               	0x0000000105bf3740 specialized closure #3 in AsyncFunctionDefinition.call(_:this:arguments:callback:) + 1548 (AsyncFunctionDefinition.swift:125)
+28  ExpoModulesCore               	0x0000000105bf4258 closure #1 in AsyncFunctionDefinition.dispatchOnQueueUntilViewRegisters(appContext:arguments:queue:retryCount:_:) + 352 (AsyncFunctionDefinition.swift:178)
+29  ExpoModulesCore               	0x0000000105b915bc <deduplicated_symbol> + 28
+30  libdispatch.dylib             	0x00000001bc023c74 0x1bc022000 + 7284
+31  libdispatch.dylib             	0x00000001bc03cfb0 blk(unsigned int*, int) + 8 (SHA1.cpp:37)
+32  libdispatch.dylib             	0x00000001bc03cfb0 r3(unsigned int&, unsigned int&, unsigned int&, unsigned int&, unsigned int&, int, unsigned int*) + 8 (SHA1.cpp:63)
+33  libdispatch.dylib             	0x00000001bc03cfb0 llvh::SHA1::hashBlock() + 2956 (SHA1.cpp:160)
+34  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::getZExtValue() const + 8 (APInt.h:0)
+35  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::operator==(unsigned long long) const + 28 (APInt.h:1138)
+36  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::udivrem(llvh::APInt const&, unsigned long long, llvh::APInt&, unsigned long long&) + 372 (APInt.cpp:1811)
+37  libdispatch.dylib             	0x00000001bc02cd28 llvh::cl::parser<bool>::parse(llvh::cl::Option&, llvh::StringRef, llvh::StringRef, bool&) + 148 (CommandLine.cpp:0)
+38  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator<llvh::ReplacementItem>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&>(llvh::ReplacementItem*, llvh::ReplacementItem const&) + 8 (allocator.h:165)
+39  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator_traits<std::__1::allocator<llvh::ReplacementItem>>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&, 0>(std::__1::allocator<llvh::ReplacementIte... + 8 (allocator_traits.h:319)
+40  libdispatch.dylib             	0x00000001bc036f60 void std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::__construct_one_at_end[abi:nn190102]<llvh::ReplacementItem const&>(llvh::ReplacementItem const&) + 8 (vector:961)
+41  libdispatch.dylib             	0x00000001bc036f60 std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::push_back[abi:nn190102](llvh::ReplacementItem const&) + 20 (vector:1511)
+42  libdispatch.dylib             	0x00000001bc036f60 llvh::formatv_object_base::parseFormatString(llvh::StringRef) + 172 (FormatVariadic.cpp:151)
+43  libdispatch.dylib             	0x00000001bc0369b0 std::__1::enable_if<!std::numeric_limits<unsigned long>::is_signed, bool>::type llvh::StringRef::consumeInteger<unsigned long>(unsigned int, unsigned long&) + 8 (StringRef.h:544)
+44  libdispatch.dylib             	0x00000001bc0369b0 llvh::formatv_object_base::consumeFieldLayout(llvh::StringRef&, llvh::AlignStyle&, unsigned long&, char&) + 164 (FormatVariadic.cpp:53)
+45  libsystem_pthread.dylib       	0x000000018dcc51b4 0x18dcc4000 + 4532
+46  libsystem_pthread.dylib       	0x000000018dcc4910 0x18dcc4000 + 2320
+
+Thread 9:
+0   libsystem_kernel.dylib        	0x000000024570e008 0x245707000 + 28680
+1   libdispatch.dylib             	0x00000001bc025acc 0x1bc022000 + 15052
+2   libdispatch.dylib             	0x00000001bc025908 0x1bc022000 + 14600
+3   libdispatch.dylib             	0x00000001bc0338d8 llvh::cl::opt<(anonymous namespace)::HelpPrinterWrapper, true, llvh::cl::parser<bool>>::printOptionValue(unsigned long, bool) const + 8 (CommandLine.h:1320)
+4   libdispatch.dylib             	0x00000001bc033420 std::__1::__tree<std::__1::__value_type<llvh::cl::OptionCategory*, std::__1::vector<llvh::cl::Option*, std::__1::allocator<llvh::cl::Option*>>>, std::__1::__map_value_compare<llvh::cl::OptionCatego... + 28 (__tree:1538)
+5   CallKit                       	0x00000001ce7d82f0 0x1ce7d6000 + 8944
+6   UIKitCore                     	0x00000001926007c4 0x191e69000 + 7960516
+7   UIKitCore                     	0x000000019210a7c4 0x191e69000 + 2758596
+8   libdispatch.dylib             	0x00000001bc023c74 0x1bc022000 + 7284
+9   libdispatch.dylib             	0x00000001bc03cfb0 blk(unsigned int*, int) + 8 (SHA1.cpp:37)
+10  libdispatch.dylib             	0x00000001bc03cfb0 r3(unsigned int&, unsigned int&, unsigned int&, unsigned int&, unsigned int&, int, unsigned int*) + 8 (SHA1.cpp:63)
+11  libdispatch.dylib             	0x00000001bc03cfb0 llvh::SHA1::hashBlock() + 2956 (SHA1.cpp:160)
+12  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::getZExtValue() const + 8 (APInt.h:0)
+13  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::operator==(unsigned long long) const + 28 (APInt.h:1138)
+14  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::udivrem(llvh::APInt const&, unsigned long long, llvh::APInt&, unsigned long long&) + 372 (APInt.cpp:1811)
+15  libdispatch.dylib             	0x00000001bc02cd28 llvh::cl::parser<bool>::parse(llvh::cl::Option&, llvh::StringRef, llvh::StringRef, bool&) + 148 (CommandLine.cpp:0)
+16  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator<llvh::ReplacementItem>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&>(llvh::ReplacementItem*, llvh::ReplacementItem const&) + 8 (allocator.h:165)
+17  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator_traits<std::__1::allocator<llvh::ReplacementItem>>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&, 0>(std::__1::allocator<llvh::ReplacementIte... + 8 (allocator_traits.h:319)
+18  libdispatch.dylib             	0x00000001bc036f60 void std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::__construct_one_at_end[abi:nn190102]<llvh::ReplacementItem const&>(llvh::ReplacementItem const&) + 8 (vector:961)
+19  libdispatch.dylib             	0x00000001bc036f60 std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::push_back[abi:nn190102](llvh::ReplacementItem const&) + 20 (vector:1511)
+20  libdispatch.dylib             	0x00000001bc036f60 llvh::formatv_object_base::parseFormatString(llvh::StringRef) + 172 (FormatVariadic.cpp:151)
+21  libdispatch.dylib             	0x00000001bc0369b0 std::__1::enable_if<!std::numeric_limits<unsigned long>::is_signed, bool>::type llvh::StringRef::consumeInteger<unsigned long>(unsigned int, unsigned long&) + 8 (StringRef.h:544)
+22  libdispatch.dylib             	0x00000001bc0369b0 llvh::formatv_object_base::consumeFieldLayout(llvh::StringRef&, llvh::AlignStyle&, unsigned long&, char&) + 164 (FormatVariadic.cpp:53)
+23  libsystem_pthread.dylib       	0x000000018dcc51b4 0x18dcc4000 + 4532
+24  libsystem_pthread.dylib       	0x000000018dcc4910 0x18dcc4000 + 2320
+
+Thread 10 name:
+Thread 10:
+0   CoreFoundation                	0x000000018de14e08 llvh::raw_ostream::operator<<(char const*) + 8 (raw_ostream.h:187)
+1   CoreFoundation                	0x000000018de14e08 hermes::irdumper::IRPrinter::printSourceLocation(llvh::SMLoc) + 88 (Dumper.cpp:357)
+2   CoreFoundation                	0x000000018de15730 hermes::irdumper::ValueNamer::clear() + 4 (Dumper.cpp:97)
+3   CoreFoundation                	0x000000018de15730 hermes::irdumper::Namer::PerFunction::clear() + 20 (Dumper.h:119)
+4   CoreFoundation                	0x000000018de15730 hermes::irdumper::Namer::newFunction(hermes::Function const*) + 204 (Dumper.h:168)
+5   CoreFoundation                	0x000000018ddfd5a4 (anonymous namespace)::SurroundingTryBlockIterator::SurroundingTryBlockIterator(hermes::Function*) + 136 (Analysis.cpp:273)
+6   React                         	0x0000000106420f80 invocation function for block in facebook::react::ObjCTurboModule::performVoidMethodInvocation(facebook::jsi::Runtime&, char const*, NSInvocation*, NSMutableArray*) + 72 (RCTTurboModule.mm:540)
+7   React                         	0x000000010642775c facebook::react::ObjCTurboModule::performVoidMethodInvocation(facebook::jsi::Runtime&, char const*, NSInvocation*, NSMutableArray*)::$_0::operator()() const + 36 (RCTTurboModule.mm:559)
+8   React                         	0x000000010642775c decltype(std::declval<facebook::react::ObjCTurboModule::performVoidMethodInvocation(facebook::jsi::Runtime&, char const*, NSInvocation*, NSMutableArray*)::$_0&>()()) std::__1::__invoke[abi:ne190102... + 36 (invoke.h:149)
+9   React                         	0x000000010642775c void std::__1::__invoke_void_return_wrapper<void, true>::__call[abi:ne190102]<facebook::react::ObjCTurboModule::performVoidMethodInvocation(facebook::jsi::Runtime&, char const*, NSInvocation*, NSMu... + 36 (invoke.h:224)
+10  React                         	0x000000010642775c std::__1::__function::__alloc_func<facebook::react::ObjCTurboModule::performVoidMethodInvocation(facebook::jsi::Runtime&, char const*, NSInvocation*, NSMutableArray*)::$_0, std::__1::allocator<face... + 36 (function.h:171)
+11  React                         	0x000000010642775c std::__1::__function::__func<facebook::react::ObjCTurboModule::performVoidMethodInvocation(facebook::jsi::Runtime&, char const*, NSInvocation*, NSMutableArray*)::$_0, std::__1::allocator<facebook::... + 104 (function.h:313)
+12  libdispatch.dylib             	0x00000001bc023c74 0x1bc022000 + 7284
+13  libdispatch.dylib             	0x00000001bc03cfb0 blk(unsigned int*, int) + 8 (SHA1.cpp:37)
+14  libdispatch.dylib             	0x00000001bc03cfb0 r3(unsigned int&, unsigned int&, unsigned int&, unsigned int&, unsigned int&, int, unsigned int*) + 8 (SHA1.cpp:63)
+15  libdispatch.dylib             	0x00000001bc03cfb0 llvh::SHA1::hashBlock() + 2956 (SHA1.cpp:160)
+16  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::getZExtValue() const + 8 (APInt.h:0)
+17  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::operator==(unsigned long long) const + 28 (APInt.h:1138)
+18  libdispatch.dylib             	0x00000001bc02c1a8 llvh::APInt::udivrem(llvh::APInt const&, unsigned long long, llvh::APInt&, unsigned long long&) + 372 (APInt.cpp:1811)
+19  libdispatch.dylib             	0x00000001bc02cd28 llvh::cl::parser<bool>::parse(llvh::cl::Option&, llvh::StringRef, llvh::StringRef, bool&) + 148 (CommandLine.cpp:0)
+20  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator<llvh::ReplacementItem>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&>(llvh::ReplacementItem*, llvh::ReplacementItem const&) + 8 (allocator.h:165)
+21  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator_traits<std::__1::allocator<llvh::ReplacementItem>>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&, 0>(std::__1::allocator<llvh::ReplacementIte... + 8 (allocator_traits.h:319)
+22  libdispatch.dylib             	0x00000001bc036f60 void std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::__construct_one_at_end[abi:nn190102]<llvh::ReplacementItem const&>(llvh::ReplacementItem const&) + 8 (vector:961)
+23  libdispatch.dylib             	0x00000001bc036f60 std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::push_back[abi:nn190102](llvh::ReplacementItem const&) + 20 (vector:1511)
+24  libdispatch.dylib             	0x00000001bc036f60 llvh::formatv_object_base::parseFormatString(llvh::StringRef) + 172 (FormatVariadic.cpp:151)
+25  libdispatch.dylib             	0x00000001bc0369b0 std::__1::enable_if<!std::numeric_limits<unsigned long>::is_signed, bool>::type llvh::StringRef::consumeInteger<unsigned long>(unsigned int, unsigned long&) + 8 (StringRef.h:544)
+26  libdispatch.dylib             	0x00000001bc0369b0 llvh::formatv_object_base::consumeFieldLayout(llvh::StringRef&, llvh::AlignStyle&, unsigned long&, char&) + 164 (FormatVariadic.cpp:53)
+27  libsystem_pthread.dylib       	0x000000018dcc51b4 0x18dcc4000 + 4532
+28  libsystem_pthread.dylib       	0x000000018dcc4910 0x18dcc4000 + 2320
+
+Thread 11:
+
+Thread 12 name:
+Thread 12:
+0   libsystem_kernel.dylib        	0x000000024570cabc 0x245707000 + 23228
+1   libsystem_pthread.dylib       	0x000000018dcc588c 0x18dcc4000 + 6284
+2   libdispatch.dylib             	0x00000001bc027628 0x1bc022000 + 22056
+3   libdispatch.dylib             	0x00000001bc027814 0x1bc022000 + 22548
+4   libdispatch.dylib             	0x00000001bc02c2f4 llvh::APInt::tcAddPart(unsigned long long*, unsigned long long, unsigned int) + 4 (APInt.cpp:2311)
+5   libdispatch.dylib             	0x00000001bc02c2f4 llvh::APInt::tcIncrement(unsigned long long*, unsigned int) + 4 (APInt.h:1931)
+6   libdispatch.dylib             	0x00000001bc02c2f4 llvh::APInt::tcNegate(unsigned long long*, unsigned int) + 44 (APInt.cpp:2362)
+7   libdispatch.dylib             	0x00000001bc02cd28 llvh::cl::parser<bool>::parse(llvh::cl::Option&, llvh::StringRef, llvh::StringRef, bool&) + 148 (CommandLine.cpp:0)
+8   libdispatch.dylib             	0x00000001bc02dc70 llvh::SmallString<128u>::append(unsigned long, char) + 4 (SmallString.h:80)
+9   libdispatch.dylib             	0x00000001bc02dc70 ExpandResponseFile(llvh::StringRef, llvh::StringSaver&, void (*)(llvh::StringRef, llvh::StringSaver&, llvh::SmallVectorImpl<char const*>&, bool), llvh::SmallVectorImpl<char const*>&, bool, bool) + 444 (CommandLine.cpp:972)
+10  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator<llvh::ReplacementItem>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&>(llvh::ReplacementItem*, llvh::ReplacementItem const&) + 8 (allocator.h:165)
+11  libdispatch.dylib             	0x00000001bc036f60 void std::__1::allocator_traits<std::__1::allocator<llvh::ReplacementItem>>::construct[abi:nn190102]<llvh::ReplacementItem, llvh::ReplacementItem const&, 0>(std::__1::allocator<llvh::ReplacementIte... + 8 (allocator_traits.h:319)
+12  libdispatch.dylib             	0x00000001bc036f60 void std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::__construct_one_at_end[abi:nn190102]<llvh::ReplacementItem const&>(llvh::ReplacementItem const&) + 8 (vector:961)
+13  libdispatch.dylib             	0x00000001bc036f60 std::__1::vector<llvh::ReplacementItem, std::__1::allocator<llvh::ReplacementItem>>::push_back[abi:nn190102](llvh::ReplacementItem const&) + 20 (vector:1511)
+14  libdispatch.dylib             	0x00000001bc036f60 llvh::formatv_object_base::parseFormatString(llvh::StringRef) + 172 (FormatVariadic.cpp:151)
+15  libdispatch.dylib             	0x00000001bc0369b0 std::__1::enable_if<!std::numeric_limits<unsigned long>::is_signed, bool>::type llvh::StringRef::consumeInteger<unsigned long>(unsigned int, unsigned long&) + 8 (StringRef.h:544)
+16  libdispatch.dylib             	0x00000001bc0369b0 llvh::formatv_object_base::consumeFieldLayout(llvh::StringRef&, llvh::AlignStyle&, unsigned long&, char&) + 164 (FormatVariadic.cpp:53)
+17  libsystem_pthread.dylib       	0x000000018dcc51b4 0x18dcc4000 + 4532
+18  libsystem_pthread.dylib       	0x000000018dcc4910 0x18dcc4000 + 2320
+
+Thread 13:
+
+
+Thread 0 crashed with ARM Thread State (64-bit):
+    x0: 0x0000000000000000   x1: 0x0000000131969b18   x2: 0x00000001323bc9b8   x3: 0x00000001323bcaa8
+    x4: 0x0000000000000000   x5: 0x0000000000000052   x6: 0x0000000130f94780   x7: 0x0000000000000000
+    x8: 0x000000000000019e   x9: 0x000000000000025b  x10: 0x0000000000000003  x11: 0x0000000000000024
+   x12: 0x036e50acd34020f9  x13: 0x00000000000664c3  x14: 0x00000000000664c3  x15: 0x0000000000000000
+   x16: 0x000000000000eafc  x17: 0x0000000000000a3e  x18: 0x0000000000000000  x19: 0x00000001323c28a0
+   x20: 0x0000000131969b18  x21: 0x00000001323bcaa8  x22: 0x00000001323bc9b0  x23: 0x000000010f9e0680
+   x24: 0x0000000105035c28  x25: 0x0000000131969b00  x26: 0x0000000000000001  x27: 0x000000016b741a38
+   x28: 0x000000016b741ae0   fp: 0x000000016b7408d0   lr: 0x0000000104942cec
+    sp: 0x000000016b740890   pc: 0x00000001049485f0 cpsr: 0x20000000
+   esr: 0x92000006 (Data Abort) byte read Translation fault
+
+
+Binary Images:
+        0x1046bc000 -         0x105253fff Lock arm64  <1feea17a8d3a39bd879180abc1a0894c> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Lock
+        0x105688000 -         0x1056d7fff ExpoCamera arm64  <ff6c8b9084183a5e9474ff4188f88238> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoCamera.framework/ExpoCamera
+        0x105788000 -         0x10578ffff ExpoCameraBarcodeScanning arm64  <70d5e3a8c4863185993a9551cf3ea6a9> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoCameraBarcodeScanning.framework/ExpoCameraBarcodeScanning
+        0x1057a8000 -         0x105813fff ExpoFileSystem arm64  <6df8e212ff36326aad440230f5b026b6> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoFileSystem.framework/ExpoFileSystem
+        0x105904000 -         0x10591bfff ExpoFont arm64  <2ae2b1daf8f23b12acd3dd1e81d17640> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoFont.framework/ExpoFont
+        0x105950000 -         0x10595bfff ExpoModulesWorklets arm64  <57be161216e33582b17623b60084543d> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoModulesWorklets.framework/ExpoModulesWorklets
+        0x105b08000 -         0x105b1ffff ExpoImageManipulator arm64  <5ddb4f62504d37878ce9d0495a5071ee> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoImageManipulator.framework/ExpoImageManipulator
+        0x105b68000 -         0x105cbbfff ExpoModulesCore arm64  <262cf0f2a41135d3b1ed2b86f8cc166d> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoModulesCore.framework/ExpoModulesCore
+        0x105f60000 -         0x105fe3fff ExpoModulesJSI arm64  <ffbf02cc1db5361ba5651d1c6dd5c951> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ExpoModulesJSI.framework/ExpoModulesJSI
+        0x106088000 -         0x106573fff React arm64  <afca3b1576c23d0cb1215b68a29606d6> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/React.framework/React
+        0x106c34000 -         0x106cc7fff ReactNativeDependencies arm64  <76ebc8b2984d359db460618ac9bc41c0> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ReactNativeDependencies.framework/ReactNativeDependencies
+        0x106d8c000 -         0x106ddffff SDWebImage arm64  <b34e0dd6ce463a6db7250ad14859ce75> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/SDWebImage.framework/SDWebImage
+        0x106e68000 -         0x106eb3fff SDWebImageWebPCoder arm64  <9072310a3c3b3b7192417c942c36f7cf> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/SDWebImageWebPCoder.framework/SDWebImageWebPCoder
+        0x106ef0000 -         0x106f9bfff ZXingObjC arm64  <4e9b3b7c69613be78afd8c71210a55a3> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/ZXingObjC.framework/ZXingObjC
+        0x107094000 -         0x10734bfff hermesvm arm64  <4fff22fd64c13133af6afb74c1dfff6f> /private/var/containers/Bundle/Application/53F34FCB-D265-44A0-B8F2-5FF666406CEA/Lock.app/Frameworks/hermesvm.framework/hermesvm
+        0x10bfcc000 -         0x10bfd7fff libobjc-trampolines.dylib arm64e.x1  <b4892ee422a635e186af8bd79bad373c> /private/preboot/Cryptexes/OS/usr/lib/libobjc-trampolines.dylib
+        0x10c4b8000 -         0x10c4bbfff UIKitPopAccessibility arm64e.x1  <52b8a521bfd5364d817c393ef6ee5e88> /System/Library/AccessibilityBundles/UIKitPopAccessibility.axbundle/UIKitPopAccessibility
+        0x111cf8000 -         0x111cfffff SpringBoardHomePopAccessibility arm64e.x1  <04f1b75ac08537b295fbee7b9dc82c6e> /System/Library/AccessibilityBundles/SpringBoardHomePopAccessibility.axbundle/SpringBoardHomePopAccessibility
+        0x18db98000 -         0x18dbe0b0f libobjc.A.dylib arm64e.x1  <98012c7d24be3625bb9b6a4cb209f7d4> /usr/lib/libobjc.A.dylib
+        0x18dc11000 -         0x18dcc3fbb dyld arm64e.x1  <38859e89f66c3fe6bcfcac1d8e11cc64> /usr/lib/dyld
+        0x18dcc4000 -         0x18dccff1f libsystem_pthread.dylib arm64e.x1  <2b5e53c4d860328b866a2d2f26d08fd1> /usr/lib/system/libsystem_pthread.dylib
+        0x18dd21000 -         0x18dd8160f libxpc.dylib arm64e.x1  <05b787d96d9a3c4d9e35719ad5ced041> /usr/lib/system/libxpc.dylib
+        0x18dd82000 -         0x18e26092f CoreFoundation arm64e.x1  <7ccd01933af334b0895838792a8e79c6> /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation
+        0x18e261000 -         0x18f3697b3 Foundation arm64e.x1  <f15f25fd604e34f0a0534db103af7a08> /System/Library/Frameworks/Foundation.framework/Foundation
+        0x191e69000 -         0x193e9d203 UIKitCore arm64e.x1  <77ec0921e13f360698848c27e9de1c43> /System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore
+        0x195794000 -         0x195795097 libobjcMsgSend.dylib arm64e.x1  <c125f0d0b11e3ba8b9130d2ecc551660> /usr/lib/objc/libobjcMsgSend.dylib
+        0x196c6d000 -         0x196e4955b Security arm64e.x1  <4df5e4aebce63cae8a021df1ed468799> /System/Library/Frameworks/Security.framework/Security
+        0x19a357000 -         0x19a6c5f8f CFNetwork arm64e.x1  <e79ec41493a8319fba916d5afc747cb7> /System/Library/Frameworks/CFNetwork.framework/CFNetwork
+        0x1a4a4c000 -         0x1a4ae03d7 libc++.1.dylib arm64e.x1  <e70253c50c6f307ba82e4ebbe091ec89> /usr/lib/libc++.1.dylib
+        0x1b4eb4000 -         0x1b533088f CoreMotion arm64e.x1  <ff4d3fcd1e18384d977001e965dd6f05> /System/Library/Frameworks/CoreMotion.framework/CoreMotion
+        0x1bc022000 -         0x1bc06774f libdispatch.dylib arm64e.x1  <6180df9e78333ee7a91a5dff765527df> /usr/lib/system/libdispatch.dylib
+        0x1ce7d6000 -         0x1ce854373 CallKit arm64e.x1  <dde96e4b8419343ab981b7fd06927c60> /System/Library/Frameworks/CallKit.framework/CallKit
+        0x238aa8000 -         0x238aafe13 GraphicsServices arm64e.x1  <abdcfcc1e68d3b8ca6a50df555904ac1> /System/Library/PrivateFrameworks/GraphicsServices.framework/GraphicsServices
+        0x245707000 -         0x245743deb libsystem_kernel.dylib arm64e.x1  <eeed535bb84e35f5a1e6487ba4dcd95f> /usr/lib/system/libsystem_kernel.dylib
+
+EOF
