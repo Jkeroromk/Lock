@@ -47,13 +47,15 @@ function useTilt(enabled: boolean) {
  * buddy floats on top, and tilting the phone sloshes the water (it stays level
  * while the bottle tilts).
  */
-export default function WaterBottle({ level, width, height, celebrate }: {
+export default function WaterBottle({ level, width, height, celebrate, splash = 0 }: {
   /** 0…1 of today's goal. */
   level: number;
   width: number;
   height: number;
   /** Changes each time the goal is reached → the buddy cheers. */
   celebrate: number;
+  /** Changes each time a drink is added → the buddy hops and the water splashes. */
+  splash?: number;
 }) {
   const c = useTheme();
   const reduce = useReducedMotion();
@@ -75,11 +77,25 @@ export default function WaterBottle({ level, width, height, celebrate }: {
 
   const wave = useSharedValue(0);
   const bob = useSharedValue(0);
+  const swim = useSharedValue(0.5);
+  const bubbles = useSharedValue(0);
   useEffect(() => {
     if (reduce) return;
     wave.value = withRepeat(withTiming(1, { duration: 3200, easing: Easing.linear }), -1, false);
     bob.value = withRepeat(withTiming(1, { duration: 1300, easing: Easing.inOut(Easing.sin) }), -1, true);
+    // Paddles slowly from side to side.
+    swim.value = withRepeat(withTiming(1, { duration: 3800, easing: Easing.inOut(Easing.sin) }), -1, true);
+    bubbles.value = withRepeat(withTiming(1, { duration: 2600, easing: Easing.linear }), -1, false);
   }, [reduce]);
+
+  // A drink went in: splash + the buddy hops.
+  const splashP = useSharedValue(1);
+  useEffect(() => {
+    if (splash <= 0) return;
+    ref.current?.hop();
+    splashP.value = 0;
+    splashP.value = withTiming(1, { duration: 750, easing: Easing.out(Easing.quad) });
+  }, [splash]);
   const tilt = useTilt(!reduce);
 
   const W2 = width * 2;
@@ -89,16 +105,50 @@ export default function WaterBottle({ level, width, height, celebrate }: {
   }));
   const waveFront = useAnimatedStyle(() => ({ transform: [{ translateX: -wave.value * 100 }] }));
   const waveBack = useAnimatedStyle(() => ({ transform: [{ translateX: -100 + wave.value * 100 }] }));
+  const sway = width * 0.14;
   const buddyStyle = useAnimatedStyle(() => {
     const surface = CAP_H + 4 + (1 - fill.value) * bodyH;
     return {
       top: Math.max(0, Math.min(height - BUDDY + 6, surface - BUDDY + 22)) + bob.value * -5,
-      transform: [{ translateX: tilt.value * 18 }, { rotate: `${-tilt.value * 14 + (bob.value - 0.5) * 6}deg` }],
+      transform: [
+        { translateX: tilt.value * 18 + (swim.value - 0.5) * 2 * sway * Math.min(1, fill.value * 4) },
+        { rotate: `${-tilt.value * 14 + (bob.value - 0.5) * 6 + (swim.value - 0.5) * 8}deg` },
+      ],
     };
   });
+  // Splash at the surface where the buddy is: a ripple and four drops.
+  const surfaceStyle = useAnimatedStyle(() => ({
+    top: CAP_H + 4 + (1 - fill.value) * bodyH - 4,
+    transform: [{ translateX: tilt.value * 18 + (swim.value - 0.5) * 2 * sway * Math.min(1, fill.value * 4) }],
+  }));
+  const ripple = useAnimatedStyle(() => ({
+    opacity: splashP.value < 1 ? 1 - splashP.value : 0,
+    transform: [{ scaleX: 0.4 + splashP.value * 1.4 }, { scaleY: 0.4 + splashP.value * 0.6 }],
+  }));
+  const drop = (dx: number, up: number) =>
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useAnimatedStyle(() => ({
+      opacity: splashP.value < 1 ? 1 - splashP.value : 0,
+      transform: [{ translateX: dx * splashP.value }, { translateY: -up * Math.sin(Math.PI * splashP.value) }],
+    }));
+  const drops = [drop(-34, 26), drop(-14, 40), drop(14, 38), drop(34, 24)];
+  // Little bubbles rising through the water.
+  const bubble = (x: number, phase: number, size: number) =>
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useAnimatedStyle(() => {
+      const t = (bubbles.value + phase) % 1;
+      const depth = fill.value * bodyH;
+      return {
+        left: x + Math.sin(t * Math.PI * 4) * 4,
+        bottom: t * Math.max(0, depth - 14),
+        opacity: depth > 24 ? (t < 0.85 ? 0.9 : (1 - t) * 6) : 0,
+        width: size, height: size,
+      };
+    });
+  const bubbleStyles = [bubble(width * 0.22, 0, 8), bubble(width * 0.6, 0.35, 6), bubble(width * 0.4, 0.7, 10)];
 
   return (
-    <View style={{ width, height }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View style={{ width, height }}>
       {/* Cap */}
       <View style={{ position: 'absolute', left: width / 2 - 28, top: 0, width: 56, height: CAP_H, borderRadius: 8, borderWidth: 3, borderColor: c.ink, backgroundColor: c.accent }} />
       {/* Body */}
@@ -116,13 +166,23 @@ export default function WaterBottle({ level, width, height, celebrate }: {
           </Animated.View>
           <View style={{ position: 'absolute', left: 0, right: 0, top: 6, bottom: 0, backgroundColor: WATER }} />
         </Animated.View>
+        {bubbleStyles.map((st, i) => (
+          <Animated.View key={i} style={[{ position: 'absolute', borderRadius: 6, borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)' }, st]} />
+        ))}
         {[0.25, 0.5, 0.75].map((p) => (
           <View key={p} style={{ position: 'absolute', right: 10, bottom: bodyH * p, width: 14, borderTopWidth: 2, borderColor: c.ink }} />
         ))}
       </View>
-      {/* Buddy floating on the surface */}
+      {/* Splash where a drink lands */}
+      <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: width / 2 - 40, width: 80, height: 10, alignItems: 'center' }, surfaceStyle]}>
+        <Animated.View style={[{ width: 80, height: 14, borderRadius: 40, borderWidth: 2, borderColor: WATER_LIGHT }, ripple]} />
+        {drops.map((st, i) => (
+          <Animated.View key={i} style={[{ position: 'absolute', left: 36, top: -2, width: 8, height: 10, borderRadius: 5, backgroundColor: WATER }, st]} />
+        ))}
+      </Animated.View>
+      {/* Buddy floating on the surface (sleeps while the bottle is empty; tap it) */}
       <Animated.View pointerEvents="box-none" style={[{ position: 'absolute', left: width / 2 - BUDDY / 2, width: BUDDY, height: BUDDY }, buddyStyle]}>
-        <PetSprite ref={ref} source={buddy} size={BUDDY} shadow={false} />
+        <PetSprite ref={ref} source={buddy} size={BUDDY} shadow={false} sleeping={level <= 0} onPress={() => {}} accessibilityLabel="buddy" />
       </Animated.View>
     </View>
   );

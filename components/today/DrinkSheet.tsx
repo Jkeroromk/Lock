@@ -15,8 +15,10 @@ import { QUICK_ADD_ML, MAX_SINGLE_ADD_ML } from '@/services/waterTracker';
  * "Add a drink": pick what you drank and how much. Shows how much counts as
  * water and, for drinks with calories, what gets added to today's food.
  */
-export default function DrinkSheet({ visible, onClose, onAdd }: {
+export default function DrinkSheet({ visible, onClose, onAdd, initialKind = 'water' }: {
   visible: boolean;
+  /** Drink selected when it opens (from the wheel's "custom"). */
+  initialKind?: DrinkKind;
   onClose: () => void;
   onAdd: (kind: DrinkKind, ml: number) => void;
 }) {
@@ -29,7 +31,7 @@ export default function DrinkSheet({ visible, onClose, onAdd }: {
   const [custom, setCustom] = useState('');
 
   useEffect(() => {
-    if (visible) { setKind('water'); setSize(250); setCustom(''); }
+    if (visible) { setKind(initialKind); setSize(250); setCustom(''); }
   }, [visible]);
 
   const ml = custom ? Math.min(MAX_SINGLE_ADD_ML, Number(custom) || 0) : size;

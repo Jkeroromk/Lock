@@ -13,6 +13,7 @@ import {
 import { drinkOf, type DrinkKind } from '@/constants/drinks';
 import WaterBottle from '@/components/today/WaterBottle';
 import DrinkSheet from '@/components/today/DrinkSheet';
+import DrinkWheel from '@/components/today/DrinkWheel';
 
 interface WaterCardProps {
   waterMl: number;
@@ -38,6 +39,19 @@ export default function WaterCard({ waterMl, goalMl, log, kinds, canUndo, onAdd,
   const { width: screenW } = useWindowDimensions();
   const [editingGoal, setEditingGoal] = useState(false);
   const [sheet, setSheet] = useState(false);
+  const [sheetKind, setSheetKind] = useState<DrinkKind>('water');
+  const [wheel, setWheel] = useState(false);
+  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const plusRef = useRef<View>(null);
+  // Each drink added → the buddy hops and the water splashes.
+  const [splash, setSplash] = useState(0);
+  const openWheel = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    plusRef.current?.measureInWindow((x, y, w, h) => {
+      setAnchor({ x: x + w / 2, y: y + h / 2 });
+      setWheel(true);
+    });
+  };
   const isComplete = goalMl > 0 && waterMl >= goalMl;
   const left = Math.max(0, goalMl - waterMl);
 
@@ -52,7 +66,10 @@ export default function WaterCard({ waterMl, goalMl, log, kinds, canUndo, onAdd,
     wasComplete.current = isComplete;
   }, [isComplete]);
 
-  const glug = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  const glug = () => {
+    setSplash((n) => n + 1);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  };
 
   // Today's drinks, grouped: "Water ×3 · 750".
   const groups: { kind: string; n: number; ml: number }[] = [];
@@ -95,7 +112,7 @@ export default function WaterCard({ waterMl, goalMl, log, kinds, canUndo, onAdd,
       {/* Bottle + today's drinks */}
       <View style={{ flexDirection: 'row', gap: 16, marginTop: 6 }} accessibilityLabel={`${waterMl} of ${goalMl} ml`}>
         <View>
-          <WaterBottle level={goalMl > 0 ? waterMl / goalMl : 0} width={bottleW} height={Math.round(bottleW * 1.45)} celebrate={celebrate} />
+          <WaterBottle level={goalMl > 0 ? waterMl / goalMl : 0} width={bottleW} height={Math.round(bottleW * 1.45)} celebrate={celebrate} splash={splash} />
           {isComplete ? (
             <Sticker style={{ position: 'absolute', top: 34, alignSelf: 'center' }} rotate={-5}>
               <Text style={{ fontSize: 14, fontWeight: '800', color: c.onAccent }}>{t('water.goalDone')}</Text>
@@ -130,8 +147,9 @@ export default function WaterCard({ waterMl, goalMl, log, kinds, canUndo, onAdd,
         {QUICK_ADD_ML.map((ml) => (
           <Chip key={ml} label={`+${ml}`} onPress={() => { glug(); onAdd(ml); }} style={{ flex: 1, paddingHorizontal: 0 }} />
         ))}
+        <View ref={plusRef} collapsable={false}>
         <PressScale
-          onPress={() => setSheet(true)}
+          onPress={openWheel}
           accessibilityRole="button"
           accessibilityLabel={t('water.pickDrink')}
           style={{
@@ -141,9 +159,18 @@ export default function WaterCard({ waterMl, goalMl, log, kinds, canUndo, onAdd,
         >
           <Ionicons name="add" size={22} color={c.onAccent} />
         </PressScale>
+        </View>
       </View>
 
-      <DrinkSheet visible={sheet} onClose={() => setSheet(false)} onAdd={(kind, ml) => { glug(); onAddDrink(kind, ml); }} />
+      <DrinkWheel
+        visible={wheel}
+        anchor={anchor}
+        onClose={() => setWheel(false)}
+        onAdd={(kind, ml) => { glug(); onAddDrink(kind, ml); }}
+        // After the wheel's modal has gone (iOS won't present one while another is closing).
+        onCustom={(kind) => { setSheetKind(kind); setTimeout(() => setSheet(true), 350); }}
+      />
+      <DrinkSheet visible={sheet} initialKind={sheetKind} onClose={() => setSheet(false)} onAdd={(kind, ml) => { glug(); onAddDrink(kind, ml); }} />
 
       <AmountModal
         visible={editingGoal}
