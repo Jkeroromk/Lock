@@ -1,3 +1,5 @@
 # One command per line, run in order by .github/workflows/expo-upgrade.yml
-# Batch 5: motion sensors for the hydration card (water tilts with the phone).
-npx expo install expo-sensors
+# Batch 6: 3D couple room (three.js through react-three-fiber on expo-gl).
+npx expo install expo-gl expo-asset expo-file-system
+npm install three@0.170.0 @react-three/fiber@9.1.2
+npm install --save-dev @types/three@0.170.0
