@@ -1,0 +1,9 @@
+components/today/WaterCard.tsx(50,22): error TS2339: Property 'measureInWindow' does not exist on type '(props: Omit<ViewProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode'.
+components/today/WaterCard.tsx(50,39): error TS7006: Parameter 'x' implicitly has an 'any' type.
+components/today/WaterCard.tsx(50,42): error TS7006: Parameter 'y' implicitly has an 'any' type.
+components/today/WaterCard.tsx(50,45): error TS7006: Parameter 'w' implicitly has an 'any' type.
+components/today/WaterCard.tsx(50,48): error TS7006: Parameter 'h' implicitly has an 'any' type.
+components/today/WaterCard.tsx(150,15): error TS2322: Type 'RefObject<((props: Omit<ViewProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode) | null>' is not assignable to type 'Ref<ReactNativeElement> | undefined'.
+  Type 'RefObject<((props: Omit<ViewProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode) | null>' is not assignable to type 'RefObject<ReactNativeElement | null>'.
+    Type '((props: Omit<ViewProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode) | null' is not assignable to type 'ReactNativeElement | null'.
+      Type '(props: Omit<ViewProps, "ref"> & { ref?: Ref<ReactNativeElement> | undefined; }) => ReactNode' is not assignable to type 'ReactNativeElement'.

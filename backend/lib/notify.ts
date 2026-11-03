@@ -15,7 +15,9 @@ export async function sendPushToUser(
   userId: string,
   title: string,
   body: string,
-  data?: Record<string, unknown>
+  data?: Record<string, unknown>,
+  /** iOS notification category: the app registers action buttons for it (e.g. "Accept"). */
+  categoryId?: string
 ): Promise<void> {
   try {
     const user = await prisma.user.findUnique({
@@ -36,6 +38,7 @@ export async function sendPushToUser(
         title,
         body,
         data: data ?? {},
+        ...(categoryId && { categoryId }),
         sound: 'default',
         priority: 'high',
       }),

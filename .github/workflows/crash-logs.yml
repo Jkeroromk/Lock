@@ -1,0 +1,36 @@
+name: TestFlight crash logs
+
+# Fetches the latest TestFlight crash reports (the ones testers chose to
+# "Share" after a crash) from App Store Connect and commits them to
+# .github/crash-logs/ on the branch. Trigger: change .github/crash-logs.txt
+# on a branch and push.
+on:
+  push:
+    branches-ignore: [main]
+    paths: ['.github/crash-logs.txt']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - run: pip install --quiet pyjwt cryptography requests
+      - run: python3 .github/scripts/fetch_crash_logs.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/crash-logs
+          git commit -m "TestFlight crash logs" || echo "nothing new"
+          git push

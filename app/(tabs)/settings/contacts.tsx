@@ -75,11 +75,6 @@ function MyCard({ user, todayCalories, colors, t }: {
           <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
             {user?.name || '—'}
           </Text>
-          {user?.username && (
-            <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textSecondary, marginTop: 1 }}>
-              @{user.username}
-            </Text>
-          )}
         </View>
       </View>
 

@@ -81,8 +81,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
 
   useEffect(() => {
     if (visible && user) {
-      const rawName = user.username || user.name || '';
-      setUsername(rawName.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+      setUsername(user.name || user.username || '');
       setBio(user.bio || '');
       setAvatarEmoji(user.avatarEmoji || '');
       setAvatarImage(user.avatarImage);
@@ -120,15 +119,16 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
     setSaving(true);
     const uname = username.trim();
     try {
+      // Only the name changes. It can be anything (中文, emoji) and needn't be
+      // unique: friends are added by Friend ID, and see the name + photo first.
       await updateProfile({
         name: uname,
-        username: uname,
         bio: bio.trim() || undefined,
         avatarEmoji: avatarEmoji || null,
         avatarImage: avatarImage || null,
         showGender,
       } as any);
-      onSave({ name: uname, username: uname, bio: bio.trim() || undefined, avatarEmoji: avatarEmoji || undefined, avatarImage: avatarImage || undefined, showGender });
+      onSave({ name: uname, bio: bio.trim() || undefined, avatarEmoji: avatarEmoji || undefined, avatarImage: avatarImage || undefined, showGender });
     } catch (err: any) {
       const msg = err?.response?.data?.error || err?.message || t('common.retry');
       Alert.alert(t('weightTracker.saveFailed'), msg);
@@ -249,7 +249,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
               {/* Username */}
               <View style={{ marginBottom: DIMENSIONS.SPACING * 1 }} onLayout={(e) => { fieldY.current.username = e.nativeEvent.layout.y; }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1, marginBottom: DIMENSIONS.SPACING * 0.4 }}>
-                  {t('settings.userName')}
+                  {t('settings.displayName' as any)}
                 </Text>
                 <View style={{
                   flexDirection: 'row', alignItems: 'center',
@@ -257,24 +257,23 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
                   borderWidth: 2, borderColor: colors.borderPrimary,
                   paddingHorizontal: DIMENSIONS.SPACING * 0.9,
                 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyM, color: colors.textSecondary, fontWeight: '600' }}>@</Text>
                   <TextInput
                     style={{
                       flex: 1, padding: DIMENSIONS.SPACING * 0.9,
                       color: colors.textPrimary, fontSize: TYPOGRAPHY.bodyM, fontWeight: '600',
                     }}
-                    placeholder="username"
+                    placeholder={t('settings.displayNamePlaceholder' as any)}
                     placeholderTextColor={colors.textSecondary}
                     value={username}
-                    onChangeText={(v) => setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    onChangeText={(v) => setUsername(v.replace(/[\r\n]/g, '').slice(0, 20))}
                     onFocus={() => scrollToField('username')}
-                    autoCapitalize="none"
+                    maxLength={20}
                     autoCorrect={false}
                     returnKeyType="done"
                   />
                 </View>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, marginTop: 4, marginLeft: 2 }}>
-                  {t('settings.usernameHint' as any)}
+                  {t('settings.displayNameHint' as any)}
                 </Text>
               </View>
 

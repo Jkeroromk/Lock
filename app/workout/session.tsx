@@ -1,5 +1,5 @@
 import { View, ScrollView, TextInput, Alert, Vibration, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentRef } from 'react';
 import { useRouter } from 'expo-router';
@@ -10,11 +10,12 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useWorkoutStore, num, boxKg, type ActiveSet } from '@/store/useWorkoutStore';
-import { fmtWeight, fmtWeightUnit } from '@/lib/units';
+import { fmtWeight, fmtWeightUnit, kgTo } from '@/lib/units';
 import { exerciseName, getExercise } from '@/constants/exercises';
 import ExerciseThumb from '@/components/train/ExerciseThumb';
 import ExercisePicker from '@/components/train/ExercisePicker';
 import { showToast } from '@/components/ui/Toast';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 
 const mmss = (sec: number) => {
   const s = Math.max(0, Math.round(sec));
@@ -39,6 +40,8 @@ export default function WorkoutSessionScreen() {
   const [saving, setSaving] = useState(false);
   const restAlerted = useRef<number | null>(null);
   const tabsRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const layout = useDeviceLayout();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -163,6 +166,330 @@ export default function WorkoutSessionScreen() {
 
   const next = exercises[ei + 1];
   const currentDone = ex ? ex.sets.length > 0 && ex.sets.every((s) => s.done) : false;
+
+  // iPhone Duo open: a layout made for the gym.
+  // - Turned a quarter and stood on a bench (tabletop): the top half is read from
+  //   two metres away (big numbers, no scrolling), the bottom half has big buttons.
+  // - Side by side (flat or half folded like a book): left thumb runs the clock,
+  //   right thumb runs the set.
+  // Open Duo, workout with no exercises yet (free workout): the same two halves,
+  // with one big "add exercise" button where the set controls will be.
+  if (layout.fold && !ex && (layout.tabletop || layout.kind === 'inner')) {
+    const fold = layout.fold;
+    const side = fold.axis === 'vertical';
+    const R = 28;
+    const first = side
+      ? { left: 0, top: 0, bottom: 0, width: fold.start, borderTopRightRadius: R, borderBottomRightRadius: R, paddingTop: insets.top + 22, paddingLeft: insets.left + 26, paddingRight: 24, paddingBottom: insets.bottom + 20 }
+      : { left: 0, right: 0, top: 0, height: fold.start, borderBottomLeftRadius: R, borderBottomRightRadius: R, paddingTop: Math.max(insets.top, 24) + 12, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: 18 };
+    const second = side
+      ? { left: fold.start + fold.width, right: 0, top: 0, bottom: 0, borderTopLeftRadius: R, borderBottomLeftRadius: R, paddingTop: insets.top + 22, paddingLeft: 24, paddingRight: insets.right + 20, paddingBottom: insets.bottom + 20 }
+      : { left: 0, right: 0, top: fold.start + fold.width, bottom: 0, borderTopLeftRadius: R, borderTopRightRadius: R, paddingTop: 22, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: insets.bottom + 18 };
+    return (
+      <View style={{ flex: 1, backgroundColor: c.track }}>
+        <View style={[{ position: 'absolute', backgroundColor: c.surfaceInverse, gap: 14 }, first]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <PressScale onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t('common.close')}
+              style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: 'rgba(127,127,127,0.55)', alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="chevron-down" size={20} color={c.textInverse} />
+            </PressScale>
+            <Text style={{ flex: 1, fontFamily: FONTS.mono, fontSize: 13, color: c.textInverse, opacity: 0.7 }}>{t('train.elapsedLabel')} {mmss(elapsed)}</Text>
+          </View>
+          <Text numberOfLines={2} style={{ fontSize: 38, fontWeight: '800', letterSpacing: -1, color: c.textInverse }}>{active.title ?? t('train.freeTitle')}</Text>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Text style={{ fontSize: 18, lineHeight: 26, color: c.textInverse, opacity: 0.75 }}>{t('train.emptyWorkout')}</Text>
+          </View>
+        </View>
+        <View style={[{ position: 'absolute', backgroundColor: c.backgroundPrimary, gap: 14 }, second]}>
+          <PressScale onPress={() => setPicker(true)} scaleTo={0.97} accessibilityRole="button"
+            style={{ flex: 1, minHeight: 72, borderRadius: 28, borderWidth: 3, borderColor: c.ink, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', gap: 10, shadowColor: c.ink, shadowOpacity: 1, shadowRadius: 0, shadowOffset: { width: 5, height: 5 } }}>
+            <Ionicons name="add" size={44} color={c.onAccent} />
+            <Text style={{ fontSize: 30, fontWeight: '800', color: c.onAccent }}>{t('train.addExercise')}</Text>
+          </PressScale>
+          <PressScale onPress={onEnd} accessibilityRole="button"
+            style={{ height: 56, borderRadius: 28, borderWidth: 2, borderColor: c.borderPrimary, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 16, fontWeight: '800', color: c.textPrimary }}>{t('train.end')}</Text>
+          </PressScale>
+        </View>
+        <ExercisePicker visible={picker} onClose={() => setPicker(false)} exclude={ids}
+          onAdd={(picked) => { addExercises(picked); loadHistory(picked); }} />
+      </View>
+    );
+  }
+
+  const posture = layout.fold && ex ? (layout.tabletop ? 'table' : layout.kind === 'inner' ? 'book' : null) : null;
+  if (posture && layout.fold && ex) {
+    const fold = layout.fold;
+    const cur = ex.sets.findIndex((s) => !s.done);
+    const curSet = cur >= 0 ? ex.sets[cur] : null;
+    const ph = cur >= 0 ? last[cur] ?? last[last.length - 1] ?? null : null;
+    const shownWeight = curSet ? (curSet.weight.trim() ? curSet.weight : ph && ph.weight > 0 ? fmtWeight(ph.weight, unit) : '0') : '';
+    const shownReps = curSet ? (curSet.reps.trim() ? curSet.reps : ph ? String(ph.reps) : '0') : '';
+    const step = unit === 'lb' ? 5 : 2.5;
+    const nudgeWeight = (d: number) => {
+      if (cur < 0) return;
+      const v = Math.max(0, Math.round((num(shownWeight) + d) * 100) / 100);
+      updateSet(ei, cur, { weight: String(v) });
+    };
+    const nudgeReps = (d: number) => {
+      if (cur < 0) return;
+      updateSet(ei, cur, { reps: String(Math.max(1, Math.round(num(shownReps)) + d)) });
+    };
+    const resting = restLeft !== null && restLeft > 0;
+    const best = todayPr ?? prior ?? null;
+    const lastHere = cur >= 0 ? last[cur] ?? null : last[last.length - 1] ?? null;
+    const fmtSet = (w: number, r: number) => (w > 0 ? `${fmtWeight(w, unit)}×${r}` : `${r}`);
+    const volumeKg = exercises.reduce((n, e) => n + e.sets.filter((x) => x.done).reduce((m, x) => m + boxKg(x.weight, unit) * Math.round(num(x.reps)), 0), 0);
+    const volumeText = `${Math.round(kgTo(volumeKg, unit)).toLocaleString()} ${unit}`;
+
+    // The one big button: finish this set → go to the next exercise → finish the workout.
+    const main = curSet
+      ? { label: t('train.completeSet'), onPress: () => onToggle(cur) }
+      : next
+        ? { label: `${t('train.next')} · ${exerciseName(next.id, language)}`, onPress: () => setCurrent(ei + 1) }
+        : { label: t('train.finishWorkout'), onPress: save };
+
+    const side = fold.axis === 'vertical';
+    const R = 28;
+    const ink = c.surfaceInverse;
+    const onInk = c.textInverse;
+    const dim = 'rgba(127,127,127,0.55)';
+
+    const header = (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <PressScale onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t('common.close')}
+          style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: dim, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="chevron-down" size={20} color={onInk} />
+        </PressScale>
+        <Text numberOfLines={1} style={{ flex: 1, fontFamily: FONTS.mono, fontSize: 13, letterSpacing: 0.5, color: onInk, opacity: 0.7 }}>
+          {t('train.elapsedLabel')} {mmss(elapsed)} · {t('train.exerciseOf', { i: String(ei + 1), n: String(exercises.length) })}{side ? '' : ` · ${t('train.volume')} ${volumeText}`}
+        </Text>
+        {curSet ? (
+          <Sticker rotate={3}>
+            <Text style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 12, color: c.onAccent }}>
+              {t('train.setOf', { i: String(cur + 1), n: String(ex.sets.length) })}
+            </Text>
+          </Sticker>
+        ) : null}
+      </View>
+    );
+
+    const title = (
+      <Text numberOfLines={1} style={{ fontSize: side ? 34 : 40, fontWeight: '800', letterSpacing: -1, color: onInk }}>
+        {exerciseName(ex.id, language)}
+      </Text>
+    );
+
+    // Giant number: the rest clock while resting, otherwise this set's target.
+    const bigNumber = (timerSize: number, targetSize: number) => (
+      <View style={{ gap: 4 }}>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 13, color: onInk, opacity: 0.7 }}>
+          {resting ? t('train.rest') : curSet ? t('train.nextUp') : t('train.exerciseDone')}
+        </Text>
+        {resting ? (
+          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: timerSize, fontWeight: '800', letterSpacing: -timerSize * 0.045, lineHeight: Math.round(timerSize * 1.04), color: onInk, fontVariant: ['tabular-nums'] }}>
+            {mmss(restLeft ?? 0)}
+          </Text>
+        ) : curSet ? (
+          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: targetSize, fontWeight: '800', letterSpacing: -targetSize * 0.035, lineHeight: Math.round(targetSize * 1.1), color: c.accent }}>
+            {bodyweight && num(shownWeight) === 0 ? `${shownReps} ${t('train.repsShort')}` : `${shownWeight} × ${shownReps}`}
+          </Text>
+        ) : (
+          <Ionicons name="checkmark-circle" size={Math.min(96, targetSize)} color={c.accent} />
+        )}
+        {resting ? <Bar progress={active.restTotal ? (restLeft ?? 0) / active.restTotal : 0} height={10} color={c.accent} style={{ marginTop: 8 }} /> : null}
+      </View>
+    );
+
+    const infoCard = (label: string, value: string, accent?: boolean) => (
+      <View style={{ borderRadius: 16, paddingVertical: 10, paddingHorizontal: 14, backgroundColor: 'rgba(127,127,127,0.18)', gap: 2 }}>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: onInk, opacity: 0.7 }}>{label}</Text>
+        <Text numberOfLines={1} style={{ fontSize: 20, fontWeight: '800', color: accent ? c.accent : onInk }}>{value}</Text>
+      </View>
+    );
+    const infoCards = (
+      <>
+        {infoCard(t('train.colLast'), lastHere ? fmtSet(lastHere.weight, lastHere.reps) : '—')}
+        {infoCard(t('train.bestLabel'), best ? fmtSet(best.weight, best.reps) : '—', !!todayPr)}
+      </>
+    );
+
+    // One chip per set of this exercise: done (with numbers), now, still to do.
+    const setChips = (onDark: boolean) => (
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        {ex.sets.map((x, si) => {
+          const now_ = si === cur;
+          return (
+            <View key={si} style={{
+              flex: 1, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
+              backgroundColor: x.done ? (onDark ? 'rgba(127,127,127,0.3)' : c.surfaceInverse) : now_ ? c.accent : 'transparent',
+              borderWidth: x.done ? 0 : 2, borderStyle: now_ ? 'solid' : 'dashed', borderColor: now_ ? c.ink : onDark ? dim : c.borderSecondary,
+            }}>
+              <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontSize: 13, fontWeight: '700', color: x.done ? (onDark ? onInk : c.textInverse) : now_ ? c.onAccent : c.textSecondary }}>
+                {x.done ? fmtSet(boxKg(x.weight, unit), Math.round(num(x.reps))) : now_ ? '●' : si + 1}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    );
+
+    // Progress through the exercises: tap one to jump to it.
+    const exerciseStrip = (h = 44) => (
+      <View style={{ flexDirection: 'row', gap: 6 }}>
+        {exercises.map((e, i) => {
+          const finished = e.sets.length > 0 && e.sets.every((x) => x.done);
+          return (
+            <PressScale key={`${e.id}-${i}`} onPress={() => setCurrent(i)} accessibilityRole="tab" accessibilityState={{ selected: i === ei }}
+              accessibilityLabel={exerciseName(e.id, language)} hitSlop={{ top: (44 - h) / 2, bottom: (44 - h) / 2 }} style={{ flex: 1, height: h, justifyContent: 'center' }}>
+              <View style={{ height: i === ei ? 12 : 8, borderRadius: 6, backgroundColor: finished ? c.accent : i === ei ? onInk : 'rgba(127,127,127,0.35)' }} />
+            </PressScale>
+          );
+        })}
+      </View>
+    );
+
+    // Side by side the two steppers are stacked: they must keep their own
+    // height (flex: 1 in a column squashed them to nothing).
+    const stepper = (value: string, unitLabel: string, onMinus: () => void, onPlus: () => void, a11y: string, grow: boolean) => (
+      <View style={{ ...(grow ? { flex: 1 } : null), minHeight: 76, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10, borderRadius: 22, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, opacity: curSet ? 1 : 0.4 }}>
+        <PressScale onPress={onMinus} disabled={!curSet} scaleTo={0.88} accessibilityRole="button" accessibilityLabel={`${a11y} −`}
+          style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.backgroundPrimary, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="remove" size={24} color={c.textPrimary} />
+        </PressScale>
+        <View style={{ alignItems: 'center', minWidth: 60 }}>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontSize: 30, fontWeight: '800', color: c.textPrimary }}>{value || '—'}</Text>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{unitLabel}</Text>
+        </View>
+        <PressScale onPress={onPlus} disabled={!curSet} scaleTo={0.88} accessibilityRole="button" accessibilityLabel={`${a11y} +`}
+          style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.backgroundPrimary, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="add" size={24} color={c.textPrimary} />
+        </PressScale>
+      </View>
+    );
+    const steppers = (vertical: boolean) => (
+      <View style={{ flexDirection: vertical ? 'column' : 'row', gap: 12 }}>
+        {stepper(shownWeight, bodyweight ? `+${unit}` : unit, () => nudgeWeight(-step), () => nudgeWeight(step), t('train.wtStep'), !vertical)}
+        {stepper(shownReps, t('train.repsShort'), () => nudgeReps(-1), () => nudgeReps(1), t('train.repStep'), !vertical)}
+      </View>
+    );
+
+    const mainButton = (
+      <PressScale onPress={main.onPress} disabled={saving} scaleTo={0.97} accessibilityRole="button"
+        style={{ flex: 1, minHeight: 72, borderRadius: 28, borderWidth: 3, borderColor: c.ink, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, shadowColor: c.ink, shadowOpacity: 1, shadowRadius: 0, shadowOffset: { width: 5, height: 5 } }}>
+        <Text numberOfLines={2} adjustsFontSizeToFit style={{ fontSize: 32, fontWeight: '800', letterSpacing: -0.8, textAlign: 'center', color: c.onAccent }}>{main.label}</Text>
+      </PressScale>
+    );
+
+    const pill = (label: string, onPress: () => void, opts: { accent?: boolean; onDark?: boolean; mono?: boolean } = {}) => (
+      <PressScale key={label} onPress={onPress} scaleTo={0.92} accessibilityRole="button"
+        style={{
+          flex: 1, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', borderWidth: 2,
+          borderColor: opts.accent ? c.accent : opts.onDark ? onInk : c.borderPrimary,
+          backgroundColor: opts.accent ? c.accent : 'transparent',
+        }}>
+        <Text numberOfLines={1} style={{ fontFamily: opts.mono ? FONTS.mono : undefined, fontSize: opts.mono ? 15 : 16, fontWeight: '800', color: opts.accent ? c.onAccent : opts.onDark ? onInk : c.textPrimary }}>{label}</Text>
+      </PressScale>
+    );
+    const restRow = (onDark: boolean) => (
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        {pill('−15s', () => adjustRest(-15), { onDark, mono: true })}
+        {pill(t('train.skip'), skipRest, { accent: true })}
+        {pill('+15s', () => adjustRest(15), { onDark, mono: true })}
+      </View>
+    );
+    const otherRow = (onDark: boolean) => (
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        {pill(t('train.addSet'), () => addSet(ei), { onDark })}
+        {pill(t('train.addExercise'), () => setPicker(true), { onDark })}
+        {pill(t('train.end'), onEnd, { onDark })}
+      </View>
+    );
+
+    const picker_ = (
+      <ExercisePicker visible={picker} onClose={() => setPicker(false)} exclude={ids}
+        onAdd={(picked) => { addExercises(picked); loadHistory(picked); }} />
+    );
+
+    if (!side) {
+      // Tabletop: display on top, controls below. The top half is short
+      // (status bar above, hinge below), so the big numbers are sized to the
+      // room that is left instead of overflowing up into the status bar.
+      const topPad = Math.max(insets.top, 24) + 12;
+      const STRIP = 32;
+      const middle = fold.start - topPad - 16 - 44 - 46 - STRIP - 30;
+      const timerSize = Math.max(56, Math.min(136, middle - 44));
+      const targetSize = Math.max(44, Math.min(88, Math.round((middle - 24) * 0.62)));
+      return (
+        <View style={{ flex: 1, backgroundColor: c.track }}>
+          <View style={{
+            position: 'absolute', left: 0, right: 0, top: 0, height: fold.start, overflow: 'hidden', backgroundColor: ink, borderBottomLeftRadius: R, borderBottomRightRadius: R,
+            paddingTop: topPad, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: 16, gap: 10,
+          }}>
+            {header}
+            {title}
+            <View style={{ flex: 1, minHeight: 0, overflow: 'hidden', flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+              <View style={{ flex: 1 }}>{bigNumber(timerSize, targetSize)}</View>
+              {middle >= 140 ? <View style={{ width: 168, gap: 10 }}>{infoCards}</View> : null}
+            </View>
+            {exerciseStrip(STRIP)}
+          </View>
+          <View style={{
+            position: 'absolute', left: 0, right: 0, top: fold.start + fold.width, bottom: 0, backgroundColor: c.backgroundPrimary, borderTopLeftRadius: R, borderTopRightRadius: R,
+            paddingTop: 20, paddingLeft: insets.left + 28, paddingRight: insets.right + 28, paddingBottom: insets.bottom + 18, gap: 12,
+          }}>
+            {setChips(false)}
+            {steppers(false)}
+            {mainButton}
+            {resting ? restRow(false) : otherRow(false)}
+          </View>
+          {picker_}
+        </View>
+      );
+    }
+
+    // Side by side: clock and progress on the left page, the set on the right page.
+    return (
+      <View style={{ flex: 1, backgroundColor: c.track }}>
+        <View style={{
+          position: 'absolute', left: 0, top: 0, bottom: 0, width: fold.start, backgroundColor: ink, borderTopRightRadius: R, borderBottomRightRadius: R,
+          paddingTop: insets.top + 22, paddingLeft: insets.left + 26, paddingRight: 24, paddingBottom: insets.bottom + 20, gap: 12,
+        }}>
+          {header}
+          {title}
+          {exerciseStrip()}
+          <View style={{ flex: 1, minHeight: 0, justifyContent: 'center', overflow: 'hidden' }}>{bigNumber(128, 76)}</View>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flex: 1 }}>{infoCard(t('train.colLast'), lastHere ? fmtSet(lastHere.weight, lastHere.reps) : '—')}</View>
+            <View style={{ flex: 1 }}>{infoCard(t('train.bestLabel'), best ? fmtSet(best.weight, best.reps) : '—', !!todayPr)}</View>
+            <View style={{ flex: 1 }}>{infoCard(t('train.volume'), volumeText)}</View>
+          </View>
+          {resting ? restRow(true) : (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {pill(t('train.addExercise'), () => setPicker(true), { onDark: true })}
+              {pill(t('train.end'), onEnd, { onDark: true })}
+            </View>
+          )}
+        </View>
+        <View style={{
+          position: 'absolute', left: fold.start + fold.width, right: 0, top: 0, bottom: 0, backgroundColor: c.backgroundPrimary, borderTopLeftRadius: R, borderBottomLeftRadius: R,
+          paddingTop: insets.top + 22, paddingLeft: 24, paddingRight: insets.right + 20, paddingBottom: insets.bottom + 20, gap: 12,
+        }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Label>{curSet ? t('train.setOf', { i: String(cur + 1), n: String(ex.sets.length) }) : t('train.exerciseDone')}</Label>
+            <Label>{t('train.setsDone', { done: String(doneSets), total: String(totalSets) })}</Label>
+          </View>
+          {setChips(false)}
+          {steppers(true)}
+          {mainButton}
+          <PressScale onPress={() => addSet(ei)} accessibilityRole="button"
+            style={{ height: 44, borderRadius: 12, borderWidth: 2, borderStyle: 'dashed', borderColor: c.borderSecondary, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontWeight: '700', fontSize: 14, color: c.textPrimary }}>{t('train.addSet')}</Text>
+          </PressScale>
+        </View>
+        {picker_}
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right', 'bottom']}>

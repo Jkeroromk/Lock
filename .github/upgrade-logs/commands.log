@@ -1,0 +1,65 @@
+$ npx expo install expo-gl expo-asset expo-file-system
+› Installing 3 SDK 58.0.0 compatible native modules using npm
+> npm install
+
+> lock@1.0.0 postinstall
+> node scripts/patch-native-libs.mjs
+
+[patch-native-libs] already patched: node_modules/react-native-health/RCTAppleHealthKit/RCTAppleHealthKit.m
+
+added 1 package, and audited 984 packages in 3s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+37 vulnerabilities (1 low, 20 moderate, 15 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+› Added config plugin: expo-asset
+$ npm install three@0.170.0 @react-three/fiber@9.1.2
+
+added 12 packages, and audited 996 packages in 4s
+
+123 packages are looking for funding
+  run `npm fund` for details
+
+37 vulnerabilities (1 low, 20 moderate, 15 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+$ npm install --save-dev @types/three@0.170.0
+
+added 6 packages, and audited 1002 packages in 3s
+
+123 packages are looking for funding
+  run `npm fund` for details
+
+37 vulnerabilities (1 low, 20 moderate, 15 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.

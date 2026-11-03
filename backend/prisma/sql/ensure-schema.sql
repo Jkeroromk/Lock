@@ -213,6 +213,72 @@ CREATE TABLE IF NOT EXISTS "trial_claims" (
 );
 ALTER TABLE "trial_claims" ENABLE ROW LEVEL SECURITY;
 
+-- 2026-11-03: couple space (lib/couple.ts) and synced water.
+CREATE TABLE IF NOT EXISTS "couple_links" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "requester_id" TEXT NOT NULL,
+  "addressee_id" TEXT NOT NULL,
+  "status" TEXT NOT NULL DEFAULT 'PENDING',
+  "since" DATE NOT NULL,
+  "pet_owner_id" TEXT NOT NULL,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  "accepted_at" TIMESTAMPTZ(6)
+);
+CREATE INDEX IF NOT EXISTS "couple_links_requester_id_idx" ON "couple_links"("requester_id");
+CREATE INDEX IF NOT EXISTS "couple_links_addressee_id_idx" ON "couple_links"("addressee_id");
+CREATE TABLE IF NOT EXISTS "couple_anniversaries" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "couple_id" UUID NOT NULL,
+  "title" TEXT NOT NULL,
+  "date" DATE NOT NULL,
+  "yearly" BOOLEAN NOT NULL DEFAULT false,
+  "emoji" TEXT NOT NULL DEFAULT '💕',
+  "created_by" TEXT NOT NULL,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS "couple_anniversaries_couple_id_idx" ON "couple_anniversaries"("couple_id");
+CREATE TABLE IF NOT EXISTS "couple_nudges" (
+  "sender_id" TEXT NOT NULL,
+  "kind" TEXT NOT NULL,
+  "sent_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  CONSTRAINT "couple_nudges_pkey" PRIMARY KEY ("sender_id", "kind")
+);
+CREATE TABLE IF NOT EXISTS "daily_water" (
+  "user_id" TEXT NOT NULL,
+  "day_key" TEXT NOT NULL,
+  "ml" INTEGER NOT NULL DEFAULT 0,
+  "goal_ml" INTEGER NOT NULL DEFAULT 2000,
+  "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  CONSTRAINT "daily_water_pkey" PRIMARY KEY ("user_id", "day_key")
+);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'couple_links_requester_id_fkey') THEN
+    ALTER TABLE "couple_links" ADD CONSTRAINT "couple_links_requester_id_fkey"
+      FOREIGN KEY ("requester_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'couple_links_addressee_id_fkey') THEN
+    ALTER TABLE "couple_links" ADD CONSTRAINT "couple_links_addressee_id_fkey"
+      FOREIGN KEY ("addressee_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'couple_anniversaries_couple_id_fkey') THEN
+    ALTER TABLE "couple_anniversaries" ADD CONSTRAINT "couple_anniversaries_couple_id_fkey"
+      FOREIGN KEY ("couple_id") REFERENCES "couple_links"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'couple_nudges_sender_id_fkey') THEN
+    ALTER TABLE "couple_nudges" ADD CONSTRAINT "couple_nudges_sender_id_fkey"
+      FOREIGN KEY ("sender_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'daily_water_user_id_fkey') THEN
+    ALTER TABLE "daily_water" ADD CONSTRAINT "daily_water_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
+ALTER TABLE "couple_links" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "couple_anniversaries" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "couple_nudges" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "daily_water" ENABLE ROW LEVEL SECURITY;
+
 -- The automatic-RLS event trigger function doesn't need to be callable over
 -- the REST API (event triggers run regardless of EXECUTE).
 DO $$

@@ -25,7 +25,7 @@ try {
   mod = null;
 }
 
-/** Below this angle the open Duo counts as folded like a book. */
+/** Below this angle the open Duo counts as folded part-way (book or laptop pose). */
 export const BOOK_ANGLE = 160;
 
 export type HingeSummary = {
@@ -33,7 +33,7 @@ export type HingeSummary = {
   foldable: boolean;
   /** Closed: the app is on the outer display. */
   closed: boolean;
-  /** Open but folded part-way, held like a book. */
+  /** Open but folded part-way (held like a book, or stood like a laptop). */
   book: boolean;
 };
 

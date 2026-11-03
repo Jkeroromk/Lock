@@ -27,6 +27,8 @@ import { useMealCartStore } from '@/store/useMealCartStore';
 import { useMealLogging } from '@/hooks/useMealLogging';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import TwoPane from '@/components/layout/TwoPane';
 import { calorieGoalNow } from '@/hooks/useDailyGoals';
 
 type LogMode = 'photo' | 'label' | 'barcode';
@@ -35,6 +37,7 @@ const MODES: LogMode[] = ['photo', 'label', 'barcode'];
 
 export default function LogScreen() {
   const tabInset = useTabBarInset();
+  const { twoPane, kind } = useDeviceLayout();
   const { t, language } = useTranslation();
   const c = useTheme();
   const router = useRouter();
@@ -249,38 +252,130 @@ export default function LogScreen() {
 
   const modeCaption = mode === 'barcode' ? t('log.barcodeScanDesc' as any) : mode === 'label' ? t('log.labelScanDesc' as any) : t('log.takeOrSelect');
 
+  const resultCard = result ? (
+    <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} /></Appear>
+  ) : null;
+
+  const header = (
+    <>
+      <ScreenHeader title={t('tabs.log')} />
+      <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: -8, marginBottom: 14 }}>{modeCaption}</Text>
+      <Segmented
+        value={mode}
+        onChange={handleModeChange}
+        options={MODES.map((key) => ({ key, label: t(`log.${key}Short` as any) }))}
+        style={{ marginBottom: 14 }}
+      />
+      <CartBar onOpen={() => setListOpen(true)} />
+    </>
+  );
+
+  const barcodeMedia = lookingUp ? (
+    <View style={{ height: 300, borderRadius: RADIUS.card, borderWidth: STROKE.card, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, alignItems: 'center', justifyContent: 'center' }}>
+      <ActivityIndicator size="large" color={c.textPrimary} />
+      <Label style={{ marginTop: 14 }}>{t('log.lookingUp' as any)}</Label>
+    </View>
+  ) : result ? null : (
+    <BarcodeScanner onScanned={handleBarcodeScan} />
+  );
+  const rescan = result && !isEditing ? (
+    <Button label={t('log.rescan' as any)} icon="barcode-outline" variant="outline" onPress={() => { setResult(null); setLookingUp(false); }} />
+  ) : null;
+
+  // On the big Duo screens a 4:3 photo across the whole width is taller than
+  // the screen; give it a fixed height there.
+  const photoStyle = kind === 'innerTall' ? { width: '100%' as const, height: 340 } : { width: '100%' as const, aspectRatio: 4 / 3 };
+  const photo = image ? (
+    <View style={{ borderRadius: RADIUS.card, overflow: 'hidden', borderWidth: STROKE.card, borderColor: c.borderPrimary }}>
+      <Image source={{ uri: image }} style={photoStyle} resizeMode="cover" accessibilityIgnoresInvertColors />
+      <Corners />
+      {analyzing ? (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(10,10,10,0.55)', alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={c.accent} />
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.accent, marginTop: 12, textTransform: 'uppercase' }}>{t('log.analyzing')}</Text>
+        </View>
+      ) : result ? (
+        <Sticker style={{ position: 'absolute', left: 16, bottom: 16 }}>{t('log.aiAnalyzed' as any)}</Sticker>
+      ) : null}
+    </View>
+  ) : null;
+  const analyzeControls = image && !result ? (
+    <>
+      {aiQuota !== -1 && (
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/settings/pricing')}
+          accessibilityRole="button"
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'center', minHeight: 44, paddingHorizontal: 12, marginTop: 6 }}
+        >
+          <Ionicons name="flash" size={13} color={c.textSecondary} />
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{quotaBadge}</Text>
+        </TouchableOpacity>
+      )}
+      <Button
+        label={mode === 'label' ? t('log.extractNutrition' as any) : t('log.analyzeFood')}
+        icon={mode === 'label' ? 'scan' : 'sparkles'}
+        loading={analyzing}
+        onPress={() => analyzeImage(mode === 'label' ? 'label' : 'food')}
+        style={{ marginTop: aiQuota !== -1 ? 0 : 14 }}
+      />
+    </>
+  ) : null;
+  const pickers = !image ? <ImagePickerButtons mode={mode as 'photo' | 'label'} onTakePhoto={takePhoto} onPickImage={pickImage} /> : null;
+  const otherPhoto = image && !isEditing && !analyzing ? (
+    <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} style={{ marginTop: 14 }} />
+  ) : null;
+
+  const cartSheet = <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={listLogging.logging} />;
+
+  // Open iPhone Duo (or a wide window): the photo / scanner on the left page,
+  // the analysis and its buttons on the right page, so the result is never
+  // pushed below a full-width photo.
+  if (twoPane) {
+    return (
+      <TabFocusFade>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
+        <TwoPane
+          left={
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {header}
+              {mode === 'barcode' ? barcodeMedia : (photo ?? pickers)}
+            </ScrollView>
+          }
+          right={
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
+              {mode === 'barcode' ? (
+                <>
+                  {resultCard}
+                  {rescan}
+                </>
+              ) : (
+                <>
+                  {analyzeControls}
+                  {resultCard}
+                  {otherPhoto}
+                </>
+              )}
+            </ScrollView>
+          }
+        />
+        {cartSheet}
+      </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
+
   return (
     <TabFocusFade>
     <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-
-        <ScreenHeader title={t('tabs.log')} />
-        <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: -8, marginBottom: 14 }}>{modeCaption}</Text>
-
-        <Segmented
-          value={mode}
-          onChange={handleModeChange}
-          options={MODES.map((key) => ({ key, label: t(`log.${key}Short` as any) }))}
-          style={{ marginBottom: 14 }}
-        />
-
-        <CartBar onOpen={() => setListOpen(true)} />
+        {header}
 
         {/* Barcode mode */}
         {mode === 'barcode' && (
           <>
-            {lookingUp ? (
-              <View style={{ height: 300, borderRadius: RADIUS.card, borderWidth: STROKE.card, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, alignItems: 'center', justifyContent: 'center' }}>
-                <ActivityIndicator size="large" color={c.textPrimary} />
-                <Label style={{ marginTop: 14 }}>{t('log.lookingUp' as any)}</Label>
-              </View>
-            ) : result ? null : (
-              <BarcodeScanner onScanned={handleBarcodeScan} />
-            )}
-            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} /></Appear>}
-            {result && !isEditing && (
-              <Button label={t('log.rescan' as any)} icon="barcode-outline" variant="outline" onPress={() => { setResult(null); setLookingUp(false); }} />
-            )}
+            {barcodeMedia}
+            {resultCard}
+            {rescan}
           </>
         )}
 
@@ -289,50 +384,19 @@ export default function LogScreen() {
           <>
             {image && (
               <View style={{ marginBottom: 14 }}>
-                <View style={{ borderRadius: RADIUS.card, overflow: 'hidden', borderWidth: STROKE.card, borderColor: c.borderPrimary }}>
-                  <Image source={{ uri: image }} style={{ width: '100%', aspectRatio: 4 / 3 }} resizeMode="cover" accessibilityIgnoresInvertColors />
-                  <Corners />
-                  {analyzing ? (
-                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(10,10,10,0.55)', alignItems: 'center', justifyContent: 'center' }}>
-                      <ActivityIndicator size="large" color={c.accent} />
-                      <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.accent, marginTop: 12, textTransform: 'uppercase' }}>{t('log.analyzing')}</Text>
-                    </View>
-                  ) : result ? (
-                    <Sticker style={{ position: 'absolute', left: 16, bottom: 16 }}>{t('log.aiAnalyzed' as any)}</Sticker>
-                  ) : null}
-                </View>
-                {!result && (
-                  <>
-                    {aiQuota !== -1 && (
-                      <TouchableOpacity
-                        onPress={() => router.push('/(tabs)/settings/pricing')}
-                        accessibilityRole="button"
-                        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'center', minHeight: 44, paddingHorizontal: 12, marginTop: 6 }}
-                      >
-                        <Ionicons name="flash" size={13} color={c.textSecondary} />
-                        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{quotaBadge}</Text>
-                      </TouchableOpacity>
-                    )}
-                    <Button
-                      label={mode === 'label' ? t('log.extractNutrition' as any) : t('log.analyzeFood')}
-                      icon={mode === 'label' ? 'scan' : 'sparkles'}
-                      loading={analyzing}
-                      onPress={() => analyzeImage(mode === 'label' ? 'label' : 'food')}
-                      style={{ marginTop: aiQuota !== -1 ? 0 : 14 }}
-                    />
-                  </>
-                )}
+                {photo}
+                {analyzeControls}
               </View>
             )}
-            {result && <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} /></Appear>}
-            {!image && <ImagePickerButtons mode={mode as 'photo' | 'label'} onTakePhoto={takePhoto} onPickImage={pickImage} />}
+            {resultCard}
+            {pickers}
             {image && !isEditing && !analyzing && (
               <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} />
             )}
           </>
         )}
       </ScrollView>
-      <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={listLogging.logging} />
+      {cartSheet}
     </SafeAreaView>
     </TabFocusFade>
   );

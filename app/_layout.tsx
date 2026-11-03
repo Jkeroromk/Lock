@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ToastHost } from '@/components/ui/Toast';
 import UpdateNotifier from '@/components/UpdateNotifier';
 import WorkoutBridge from '@/components/WorkoutBridge';
+import SocialBridge from '@/components/SocialBridge';
 import { enableScreens } from 'react-native-screens';
 import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
@@ -114,11 +115,13 @@ export default function RootLayout() {
           <Stack.Screen name="workout/done" options={{ animation: 'fade', gestureEnabled: false }} />
           <Stack.Screen name="pet/setup" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="pet/collection" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="couple/index" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="camera" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
         </Stack>
         <ToastHost />
         <UpdateNotifier />
         <WorkoutBridge />
+        <SocialBridge />
         <StatusBar style={colors.backgroundPrimary === '#0A0A0A' ? 'light' : 'dark'} />
       </ClerkProvider>
     </GestureHandlerRootView>

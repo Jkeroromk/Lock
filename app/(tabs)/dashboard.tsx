@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect, useCallback } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@/i18n';
-import { Appear, IconButton, Label, ScreenHeader, Segmented } from '@/components/ui/bxc';
+import { Appear, IconButton, ScreenHeader, Segmented } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard';
 import ChallengesList from '@/components/dashboard/ChallengesList';
@@ -14,9 +14,11 @@ import CreateChallengeModal from '@/components/dashboard/CreateChallengeModal';
 import PetHome from '@/components/pet/PetHome';
 import { usePetStore } from '@/store/usePetStore';
 import {
-  fetchLeaderboard, fetchFriendRequests, fetchSentRequests, fetchChallenges,
-  LeaderboardEntry, FriendRequest, SentRequest, ChallengeData,
+  fetchLeaderboard, fetchSentRequests, fetchChallenges,
+  LeaderboardEntry, SentRequest, ChallengeData,
 } from '@/services/api';
+import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
+import CoupleEntryCard from '@/components/couple/CoupleEntryCard';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
@@ -26,17 +28,28 @@ type Tab = 'friends' | 'challenges' | 'pet';
 
 export default function DashboardScreen() {
   const tabInset = useTabBarInset();
-  const { twoPane } = useDeviceLayout();
+  const { twoPane, tabletop } = useDeviceLayout();
   const { t } = useTranslation();
   const colors = useTheme();
-  const { addFriend: deepLinkCode } = useLocalSearchParams<{ addFriend?: string }>();
+  const { addFriend: deepLinkCode, requests: showRequests } = useLocalSearchParams<{ addFriend?: string; requests?: string }>();
 
   const [activeTab, setActiveTab] = useState<Tab>('friends');
+  // Stood up like a laptop the buddy's room is the top half, so its tab comes first.
+  const [tableTab, setTableTab] = useState<Tab>('pet');
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [pendingFriendId, setPendingFriendId] = useState<string | undefined>();
+
+  // From a friend-request notification or the Today banner: show the requests.
+  useEffect(() => {
+    if (showRequests) {
+      setActiveTab('friends');
+      setTableTab('friends');
+      refreshRequests();
+    }
+  }, [showRequests]);
 
   useEffect(() => {
     if (deepLinkCode) {
@@ -46,22 +59,22 @@ export default function DashboardScreen() {
   }, [deepLinkCode]);
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const requests = useFriendRequestsStore((s) => s.requests);
+  const refreshRequests = useFriendRequestsStore((s) => s.refresh);
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const syncPet = usePetStore((s) => s.sync);
   const hasPet = usePetStore((s) => !!s.state?.profile);
 
   const loadAll = useCallback(async () => {
-    const [lb, reqs, sent, ch] = await Promise.allSettled([
+    const [lb, , sent, ch] = await Promise.allSettled([
       fetchLeaderboard(),
-      fetchFriendRequests(),
+      refreshRequests(),
       fetchSentRequests(),
       fetchChallenges(),
       syncPet(),
     ]);
     if (lb.status === 'fulfilled') setLeaderboard(lb.value);
-    if (reqs.status === 'fulfilled') setRequests(reqs.value);
     if (sent.status === 'fulfilled') setSentRequests(sent.value);
     if (ch.status === 'fulfilled') setChallenges(ch.value);
   }, []);
@@ -139,6 +152,63 @@ export default function DashboardScreen() {
     </>
   );
 
+  const spinner = (
+    <View style={{ paddingVertical: 64, alignItems: 'center' }}>
+      <ActivityIndicator size="large" color={colors.textPrimary} />
+    </View>
+  );
+
+  const friendsContent = (
+    <Appear key="friends">
+      {requests.length > 0 && (
+        <>
+          <FriendRequestsCard requests={requests} onUpdate={loadAll} />
+          <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
+        </>
+      )}
+      <CoupleEntryCard />
+              <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
+    </Appear>
+  );
+
+  // Open iPhone Duo turned a quarter and stood up like a laptop: the buddy's
+  // room fills the top half (nothing scrolls there); tabs and the list for the
+  // chosen tab are on the bottom half.
+  if (tabletop) {
+    const tab = tableTab;
+    return (
+      <TabFocusFade>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundPrimary }} edges={['top', 'left', 'right']}>
+        <PetHome
+          layout="tabletop"
+          friends={leaderboard}
+          onFriendsChanged={setLeaderboard}
+          bottomInset={tabInset}
+          refreshControl={refreshControl}
+          toolbar={
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 14 }}>
+              <Segmented
+                value={tab}
+                onChange={(k) => { setTableTab(k); if (k === 'pet') syncPet(); }}
+                options={[TAB_CONFIG[2], TAB_CONFIG[0], TAB_CONFIG[1]].map(({ key, label }) => ({ key, label, badge: key === 'friends' && requests.length > 0 }))}
+                style={{ flex: 1 }}
+              />
+              <IconButton icon={FAB_CONFIG[tab].icon} filled onPress={FAB_CONFIG[tab].onPress} accessibilityLabel={FAB_CONFIG[tab].label} />
+            </View>
+          }
+          details={
+            tab === 'pet' ? undefined
+              : initialLoading ? spinner
+              : tab === 'friends' ? friendsContent
+              : <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
+          }
+        />
+        {modals}
+      </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
+
   // Open iPhone Duo (or any wide window): leaderboard / challenges on the
   // left, the buddy always on the right.
   if (twoPane) {
@@ -183,7 +253,8 @@ export default function DashboardScreen() {
                       <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
                     </>
                   )}
-                  <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
+                  <CoupleEntryCard />
+              <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
                 </Appear>
               ) : (
                 <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
@@ -191,25 +262,23 @@ export default function DashboardScreen() {
             </ScrollView>
           }
           right={
-            <ScrollView
-              style={{ flex: 1 }}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, minHeight: 44 }}>
-                <Label>{t('pet.tab')}</Label>
-                <IconButton
-                  icon={FAB_CONFIG.pet.icon}
-                  onPress={FAB_CONFIG.pet.onPress}
-                  accessibilityLabel={FAB_CONFIG.pet.label}
-                />
-              </View>
-              {initialLoading ? null : (
-                <Appear key="pet">
-                  <PetHome friends={leaderboard} onFriendsChanged={setLeaderboard} />
-                </Appear>
-              )}
-            </ScrollView>
+            // The buddy's scene stays in place on this page; growth and friends scroll under it.
+            initialLoading ? spinner : (
+              <PetHome
+                layout="panel"
+                friends={leaderboard}
+                onFriendsChanged={setLeaderboard}
+                bottomInset={tabInset}
+                corner={
+                  <IconButton
+                    icon={FAB_CONFIG.pet.icon}
+                    onPress={FAB_CONFIG.pet.onPress}
+                    accessibilityLabel={FAB_CONFIG.pet.label}
+                    style={{ backgroundColor: colors.cardBackground }}
+                  />
+                }
+              />
+            )
           }
         />
         {modals}
@@ -270,6 +339,7 @@ export default function DashboardScreen() {
                   <PendingSentRequestsCard requests={sentRequests} onUpdate={loadAll} />
                 </>
               )}
+              <CoupleEntryCard />
               <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
             </Appear>
           )}

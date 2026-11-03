@@ -144,7 +144,13 @@ export async function POST(request: NextRequest) {
       select: { name: true, username: true },
     }));
     const displayName = pushName(senderName, '有人');
-    await sendPushToUser(target.id, '新好友请求 👋', `${displayName} 想添加你为好友`, { type: 'FRIEND_REQUEST' })
+    // friendshipId lets the notification's "Accept" button accept it directly;
+    // tapping the notification opens the requests in the app.
+    await sendPushToUser(
+      target.id, '新好友请求 👋', `${displayName} 想添加你为好友`,
+      { type: 'FRIEND_REQUEST', friendshipId: friendship.id, fromName: displayName },
+      'friend_request',
+    )
       .catch(() => {});
 
     return NextResponse.json(friendship, { status: 201 });

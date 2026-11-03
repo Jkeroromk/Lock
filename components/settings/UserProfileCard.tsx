@@ -36,7 +36,7 @@ export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) 
   const { t } = useTranslation();
   const c = useTheme();
 
-  const displayName = user?.username ? `@${user.username}` : user?.name || t('settings.userName');
+  const displayName = user?.name || user?.username || t('settings.userName');
   const bonus = user?.bonusAiCalls ?? 0;
 
   return (
@@ -45,7 +45,7 @@ export default function UserProfileCard({ user, onEdit }: UserProfileCardProps) 
         <PressScale onPress={onEdit} accessibilityRole="button" accessibilityLabel={t('settings.editProfile' as any)} style={{ transform: [{ rotate: '-3deg' }] }}>
           <UserAvatar
             image={user?.avatarImage}
-            name={user?.username || user?.name}
+            name={user?.name || user?.username}
             status={user?.avatarEmoji}
             size={72}
             radius={22}

@@ -95,9 +95,11 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   };
 
   const handleChangeText = (v: string) => {
-    const cleaned = v.toLowerCase().replace(/[^a-z0-9_]/g, '');
+    // Friend ID only: names aren't unique, the ID is.
+    const cleaned = v.replace(/[^0-9]/g, '').slice(0, 8);
     setQuery(cleaned);
-    doSearch(cleaned);
+    if (cleaned.length === 8) doSearch(cleaned);
+    else { setFoundUser(null); setNotFound(false); }
   };
 
   const handleSend = async () => {
@@ -105,7 +107,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
     setSending(true); setError(''); setIsLimitError(false);
     try {
       // Username when they have one, otherwise the Friend ID that found them.
-      await sendFriendRequest(foundUser.username ?? query.trim());
+      await sendFriendRequest(query.trim());
       setSent(true); setRelationStatus('pending_sent'); onSuccess();
     } catch (e: any) {
       const errCode = e.response?.data?.error;
@@ -162,7 +164,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
                 backgroundColor: colors.cardBackground, paddingHorizontal: DIMENSIONS.SPACING,
                 marginBottom: DIMENSIONS.SPACING * 1.2,
               }}>
-                <Text style={{ fontSize: TYPOGRAPHY.bodyM, color: colors.textSecondary, fontWeight: '700' }}>@</Text>
+                <Text style={{ fontSize: TYPOGRAPHY.bodyM, color: colors.textSecondary, fontWeight: '700' }}>#</Text>
                 <TextInput
                   value={query}
                   onChangeText={handleChangeText}
@@ -170,6 +172,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
                   placeholderTextColor={colors.textSecondary}
                   style={{ flex: 1, paddingVertical: DIMENSIONS.SPACING * 0.9, paddingHorizontal: DIMENSIONS.SPACING * 0.5, fontSize: TYPOGRAPHY.bodyM, color: colors.textPrimary }}
                   autoCapitalize="none" autoCorrect={false}
+                  keyboardType="number-pad" maxLength={8}
                 />
                 {searching && <ActivityIndicator size="small" color={colors.textSecondary} />}
                 {!searching && query.length > 0 && (
@@ -190,7 +193,6 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
                   <UserAvatar image={foundUser.avatarImage} name={foundUser.name} status={foundUser.avatarEmoji} size={48} radius={14} ring={colors.borderPrimary} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>{foundUser.name}</Text>
-                    {foundUser.username ? <Text style={{ fontSize: TYPOGRAPHY.bodyXS, fontWeight: '600', color: colors.textSecondary }}>@{foundUser.username}</Text> : null}
                     {foundUser.bio ? <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, color: colors.textSecondary, marginTop: 2 }} numberOfLines={1}>{foundUser.bio}</Text> : null}
                   </View>
                   {(() => {

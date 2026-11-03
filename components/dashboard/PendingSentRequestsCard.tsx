@@ -82,11 +82,6 @@ export default function PendingSentRequestsCard({ requests, onUpdate }: Props) {
             <Text style={{ fontSize: TYPOGRAPHY.bodyM, fontWeight: '900', color: colors.textPrimary }}>
               {req.to.name}
             </Text>
-            {req.to.username && (
-              <Text style={{ fontSize: TYPOGRAPHY.bodyXS, color: colors.textSecondary }}>
-                @{req.to.username}
-              </Text>
-            )}
           </View>
 
           {/* Pending badge */}

@@ -1,4 +1,5 @@
 # One command per line, run in order by .github/workflows/expo-upgrade.yml
-# Batch 4: RevenueCat 10.x (iOS SDK 5.99, builds with Xcode 27). Expo apps stay on 10.x until the v11 pod ships.
-npm install react-native-purchases@^10.16.0
-npx expo install --check
+# Batch 6: 3D couple room (three.js through react-three-fiber on expo-gl).
+npx expo install expo-gl expo-asset expo-file-system
+npm install three@0.170.0 @react-three/fiber@9.1.2
+npm install --save-dev @types/three@0.170.0

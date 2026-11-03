@@ -8,7 +8,9 @@ import { useStore, localDateKey } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
-import { loadWater, addWater, undoLastWater, loadWaterGoal, saveWaterGoal, onWaterChange, DEFAULT_WATER_GOAL_ML } from '@/services/waterTracker';
+import { loadWater, addWater, undoLastWater, loadWaterGoal, saveWaterGoal, onWaterChange, DEFAULT_WATER_GOAL_ML, type WaterState } from '@/services/waterTracker';
+import { drinkOf, drinkAmounts, type DrinkKind } from '@/constants/drinks';
+import { logMeal } from '@/services/api';
 import CaloriesCard from '@/components/today/CaloriesCard';
 import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
@@ -23,10 +25,14 @@ import { useStepGoal } from '@/hooks/useDailyGoals';
 import { useAdaptiveStepGoal } from '@/hooks/useAdaptiveStepGoal';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
+import SnapMealCard from '@/components/today/SnapMealCard';
+import FriendRequestBanner from '@/components/today/FriendRequestBanner';
+import { useProteinTarget } from '@/hooks/useProteinTarget';
 
 export default function TodayScreen() {
   const tabInset = useTabBarInset();
-  const { twoPane } = useDeviceLayout();
+  const { twoPane, tabletop } = useDeviceLayout();
+  const proteinTarget = useProteinTarget().target;
   const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
   // Today's numbers from the last session are shown instantly; fresh data replaces them.
   const hasFreshCache = todayDate === localDateKey();
@@ -41,12 +47,14 @@ export default function TodayScreen() {
   const [healthConnected, setHealthConnected] = useState<boolean | null>(healthNeedsSetup ? null : true);
   const [connectingHealth, setConnectingHealth] = useState(false);
   const [waterMl, setWaterMl] = useState(0);
-  const [waterLogCount, setWaterLogCount] = useState(0);
+  const [waterLog, setWaterLog] = useState<number[]>([]);
+  const [waterKinds, setWaterKinds] = useState<string[]>([]);
   const [waterGoalMl, setWaterGoalMl] = useState(DEFAULT_WATER_GOAL_ML);
 
-  const applyWater = (state: { ml: number; log: number[] }) => {
+  const applyWater = (state: WaterState) => {
     setWaterMl(state.ml);
-    setWaterLogCount(state.log.length);
+    setWaterLog(state.log);
+    setWaterKinds(state.kinds);
   };
 
   const loadWaterData = async () => {
@@ -58,6 +66,24 @@ export default function TodayScreen() {
   const handleAddWater = async (ml: number) => {
     setWaterMl((current) => current + ml); // optimistic
     applyWater(await addWater(ml));
+  };
+
+  // A drink from the "+" sheet: its water counts toward the goal, and a drink
+  // with calories is also logged as food so today's calories stay honest.
+  const handleAddDrink = async (kind: DrinkKind, ml: number) => {
+    const drink = drinkOf(kind);
+    const a = drinkAmounts(drink, ml);
+    setWaterMl((current) => current + a.waterMl); // optimistic
+    applyWater(await addWater(a.waterMl, kind));
+    if (a.kcal > 0) {
+      try {
+        await logMeal({
+          food_name: `${t(`water.drinks.${kind}` as any)} ${ml} ml`,
+          calories: a.kcal, protein: a.protein, carbs: a.carbs, fat: a.fat, image_url: '',
+        });
+        refreshToday();
+      } catch {}
+    }
   };
 
   const handleUndoWater = async () => {
@@ -181,8 +207,11 @@ export default function TodayScreen() {
     <WaterCard
       waterMl={waterMl}
       goalMl={waterGoalMl}
-      canUndo={waterLogCount > 0 || waterMl > 0}
+      log={waterLog}
+      kinds={waterKinds}
+      canUndo={waterLog.length > 0 || waterMl > 0}
       onAdd={handleAddWater}
+      onAddDrink={handleAddDrink}
       onUndo={handleUndoWater}
       onSetGoal={handleSetWaterGoal}
     />
@@ -209,8 +238,59 @@ export default function TodayScreen() {
     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textPrimary} />
   );
 
-  // Open iPhone Duo (or any wide window): the day's numbers on the left, the
-  // workout and meals on the right, each side scrolling on its own.
+  const snap = (
+    <Appear index={0}>
+      <SnapMealCard proteinLeft={proteinTarget - macros.protein} />
+    </Appear>
+  );
+
+  // Open iPhone Duo turned a quarter and stood up like a laptop: the day's
+  // numbers on the top half (read at a glance), and a deck of things to tap on
+  // the bottom half — snap / workout / water in one column, meals in the other.
+  if (twoPane && tabletop) {
+    return (
+      <TabFocusFade>
+      <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <TwoPane
+          left={
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 22, paddingBottom: 24 }}
+              refreshControl={refreshControl}
+            >
+              <DateHeader language={language} streak={streak} />
+              <FriendRequestBanner />
+              {loading ? skeleton : (
+                <View>
+                  {calories}
+                  {health}
+                </View>
+              )}
+            </ScrollView>
+          }
+          right={
+            loading ? null : (
+              <View style={{ flex: 1, flexDirection: 'row', gap: 14, paddingHorizontal: 18 }}>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 22, paddingBottom: tabInset }}>
+                  {snap}
+                  {training}
+                  {water}
+                </ScrollView>
+                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 22, paddingBottom: tabInset }}>
+                  {meals}
+                </ScrollView>
+              </View>
+            )
+          }
+        />
+      </SafeAreaView>
+      </TabFocusFade>
+    );
+  }
+
+  // Open iPhone Duo side by side (flat or half folded like a book), or any
+  // wide window: the day's numbers on the left page, snap / workout / meals on
+  // the right page, each side scrolling on its own.
   if (twoPane) {
     return (
       <TabFocusFade>
@@ -223,6 +303,7 @@ export default function TodayScreen() {
               refreshControl={refreshControl}
             >
               <DateHeader language={language} streak={streak} />
+              <FriendRequestBanner />
               {loading ? skeleton : (
                 <View>
                   {calories}
@@ -239,6 +320,7 @@ export default function TodayScreen() {
             >
               {loading ? null : (
                 <View>
+                  {snap}
                   {training}
                   {meals}
                 </View>
@@ -261,6 +343,7 @@ export default function TodayScreen() {
         >
           <View style={{ paddingHorizontal: 18, paddingTop: 0, paddingBottom: 8 }}>
             <DateHeader language={language} streak={streak} />
+              <FriendRequestBanner />
             {loading ? skeleton : (
               <View>
                 {calories}

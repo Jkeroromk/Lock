@@ -111,7 +111,14 @@
           }
         ]
       ],
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Lock uses motion to make the water in your hydration bottle move as you tilt the phone."
+        }
+      ],
+      "expo-asset"
     ],
     "scheme": "lock",
     "extra": {
