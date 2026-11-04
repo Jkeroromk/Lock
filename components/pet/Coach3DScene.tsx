@@ -83,8 +83,10 @@ async function loadTexture(mod: number, srgb: boolean, size: number) {
   t.image = { data: { localUri: uri }, width: size, height: size } as any;
   (t as any).isDataTexture = true; // force EXGL's non-DOM upload path
   t.flipY = false; // glTF UV convention
-  // Colours stay as authored: the canvas renders `linear` (no sRGB decode or
-  // encode), which also avoids sRGB internal formats expo-gl may not take.
+  // Colour textures are stored already linear-encoded (converted at build
+  // time), so no sRGB texture format is needed from expo-gl; the renderer
+  // still encodes its output to sRGB, which keeps lighting correct and the
+  // fur white instead of muddy grey.
   t.colorSpace = THREE.NoColorSpace;
   void srgb;
   t.generateMipmaps = true;
@@ -394,7 +396,6 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
       >
         <Canvas
           style={{ flex: 1 }}
-          linear
           flat
           gl={{ alpha: true, antialias: true }}
           camera={{ fov: 30, near: 0.05, far: 20, position: [0, 0.62, 2.55] }}
@@ -410,9 +411,9 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
           }}
           frameloop="never"
         >
-          <hemisphereLight args={[0xffffff, 0xe8d9a8, 1.1]} />
-          <directionalLight position={[-1.5, 2.5, 2.2]} intensity={1.6} />
-          <directionalLight position={[1.8, 1.4, -1.6]} intensity={0.9} />
+          <hemisphereLight args={[0xffffff, 0xf3e6c2, 1.0]} />
+          <directionalLight position={[-1.5, 2.5, 2.2]} intensity={1.2} />
+          <directionalLight position={[1.8, 1.4, -1.6]} intensity={0.5} />
           <Suspense fallback={null}>
             <Coach data={data} pose={pose} animate={animate} ctl={ctl} />
           </Suspense>
