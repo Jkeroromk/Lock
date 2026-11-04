@@ -6,16 +6,14 @@ import { useTranslation } from '@/i18n';
 import { Appear, IconButton, ScreenHeader, Segmented } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import LeaderboardCard from '@/components/dashboard/LeaderboardCard';
-import ChallengesList from '@/components/dashboard/ChallengesList';
 import AddFriendModal from '@/components/dashboard/AddFriendModal';
 import FriendRequestsCard from '@/components/dashboard/FriendRequestsCard';
 import PendingSentRequestsCard from '@/components/dashboard/PendingSentRequestsCard';
-import CreateChallengeModal from '@/components/dashboard/CreateChallengeModal';
 import PetHome from '@/components/pet/PetHome';
 import { usePetStore } from '@/store/usePetStore';
 import {
-  fetchLeaderboard, fetchSentRequests, fetchChallenges,
-  LeaderboardEntry, SentRequest, ChallengeData,
+  fetchLeaderboard, fetchSentRequests,
+  LeaderboardEntry, SentRequest,
 } from '@/services/api';
 import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
 import CoupleEntryCard from '@/components/couple/CoupleEntryCard';
@@ -24,7 +22,7 @@ import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
 
-type Tab = 'friends' | 'challenges' | 'pet';
+type Tab = 'friends' | 'couple' | 'pet';
 
 export default function DashboardScreen() {
   const tabInset = useTabBarInset();
@@ -39,7 +37,6 @@ export default function DashboardScreen() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
-  const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [pendingFriendId, setPendingFriendId] = useState<string | undefined>();
 
   // From a friend-request notification or the Today banner: show the requests.
@@ -62,21 +59,18 @@ export default function DashboardScreen() {
   const requests = useFriendRequestsStore((s) => s.requests);
   const refreshRequests = useFriendRequestsStore((s) => s.refresh);
   const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
-  const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const syncPet = usePetStore((s) => s.sync);
   const hasPet = usePetStore((s) => !!s.state?.profile);
 
   const loadAll = useCallback(async () => {
-    const [lb, , sent, ch] = await Promise.allSettled([
+    const [lb, , sent] = await Promise.allSettled([
       fetchLeaderboard(),
       refreshRequests(),
       fetchSentRequests(),
-      fetchChallenges(),
       syncPet(),
     ]);
     if (lb.status === 'fulfilled') setLeaderboard(lb.value);
     if (sent.status === 'fulfilled') setSentRequests(sent.value);
-    if (ch.status === 'fulfilled') setChallenges(ch.value);
   }, []);
 
   useEffect(() => {
@@ -103,24 +97,15 @@ export default function DashboardScreen() {
     friendshipId: e.friendshipId,
   }));
 
-  const challengesForList = challenges.map((c) => ({
-    id: c.id,
-    title: c.title,
-    description: c.description || '',
-    progress: c.progress,
-    total: c.goalValue,
-    participants: c.participants,
-  }));
-
   const TAB_CONFIG: { key: Tab; label: string }[] = [
     { key: 'friends', label: t('dashboard.leaderboard') },
-    { key: 'challenges', label: t('dashboard.challenges') },
+    { key: 'couple', label: t('couple.title') },
     { key: 'pet', label: t('pet.tab') },
   ];
 
   const FAB_CONFIG: Record<Tab, { label: string; icon: string; onPress: () => void }> = {
     friends: { label: t('dashboard.addFriend'), icon: 'person-add-outline', onPress: () => setShowAddFriend(true) },
-    challenges: { label: t('dashboard.createChallenge'), icon: 'add', onPress: () => setShowCreateChallenge(true) },
+    couple: { label: t('couple.title'), icon: 'heart-outline', onPress: () => router.push('/couple' as any) },
     pet: hasPet
       ? { label: t('pet.collection'), icon: 'grid-outline', onPress: () => router.push('/pet/collection') }
       : { label: t('pet.setupTitle'), icon: 'paw-outline', onPress: () => router.push('/pet/setup') },
@@ -143,11 +128,6 @@ export default function DashboardScreen() {
         onClose={() => { setShowAddFriend(false); setPendingFriendId(undefined); }}
         onSuccess={loadAll}
         initialValue={pendingFriendId}
-      />
-      <CreateChallengeModal
-        visible={showCreateChallenge}
-        onClose={() => setShowCreateChallenge(false)}
-        onSuccess={() => { loadAll(); }}
       />
     </>
   );
@@ -189,7 +169,7 @@ export default function DashboardScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 14 }}>
               <Segmented
                 value={tab}
-                onChange={(k) => { setTableTab(k); if (k === 'pet') syncPet(); }}
+                onChange={(k) => { if (k === 'couple') { router.push('/couple' as any); return; } setTableTab(k); if (k === 'pet') syncPet(); }}
                 options={[TAB_CONFIG[2], TAB_CONFIG[0], TAB_CONFIG[1]].map(({ key, label }) => ({ key, label, badge: key === 'friends' && requests.length > 0 }))}
                 style={{ flex: 1 }}
               />
@@ -199,8 +179,7 @@ export default function DashboardScreen() {
           details={
             tab === 'pet' ? undefined
               : initialLoading ? spinner
-              : tab === 'friends' ? friendsContent
-              : <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
+              : friendsContent
           }
         />
         {modals}
@@ -209,7 +188,7 @@ export default function DashboardScreen() {
     );
   }
 
-  // Open iPhone Duo (or any wide window): leaderboard / challenges on the
+  // Open iPhone Duo (or any wide window): the leaderboard on the
   // left, the buddy always on the right.
   if (twoPane) {
     const leftTab: Tab = activeTab === 'pet' ? 'friends' : activeTab;
@@ -237,7 +216,7 @@ export default function DashboardScreen() {
               />
               <Segmented
                 value={leftTab}
-                onChange={(k) => setActiveTab(k)}
+                onChange={(k) => { if (k === 'couple') { router.push('/couple' as any); return; } setActiveTab(k); }}
                 options={TAB_CONFIG.filter(({ key }) => key !== 'pet').map(({ key, label }) => ({ key, label, badge: key === 'friends' && requests.length > 0 }))}
                 style={{ marginBottom: 16 }}
               />
@@ -245,7 +224,7 @@ export default function DashboardScreen() {
                 <View style={{ paddingVertical: 64, alignItems: 'center' }}>
                   <ActivityIndicator size="large" color={colors.textPrimary} />
                 </View>
-              ) : leftTab === 'friends' ? (
+              ) : (
                 <Appear key="friends">
                   {requests.length > 0 && (
                     <>
@@ -256,8 +235,6 @@ export default function DashboardScreen() {
                   <CoupleEntryCard />
               <LeaderboardCard entries={leaderboardEntries} onFriendRemoved={loadAll} />
                 </Appear>
-              ) : (
-                <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
               )}
             </ScrollView>
           }
@@ -318,7 +295,7 @@ export default function DashboardScreen() {
           />
           <Segmented
             value={activeTab}
-            onChange={(k) => { setActiveTab(k); if (k === 'pet') syncPet(); }}
+            onChange={(k) => { if (k === 'couple') { router.push('/couple' as any); return; } setActiveTab(k); if (k === 'pet') syncPet(); }}
             options={TAB_CONFIG.map(({ key, label }) => ({ key, label, badge: key === 'friends' && requests.length > 0 }))}
             style={{ marginBottom: 16 }}
           />
@@ -344,11 +321,6 @@ export default function DashboardScreen() {
             </Appear>
           )}
 
-          {/* ── Challenges Tab ── */}
-          {!initialLoading && activeTab === 'challenges' && (
-            <Appear key="challenges"><ChallengesList challenges={challengesForList} /></Appear>
-          )}
-
           {/* ── 伙伴 Tab ── */}
           {!initialLoading && activeTab === 'pet' && (
             <Appear key="pet">
@@ -363,12 +335,6 @@ export default function DashboardScreen() {
         onClose={() => { setShowAddFriend(false); setPendingFriendId(undefined); }}
         onSuccess={loadAll}
         initialValue={pendingFriendId}
-      />
-
-      <CreateChallengeModal
-        visible={showCreateChallenge}
-        onClose={() => setShowCreateChallenge(false)}
-        onSuccess={() => { loadAll(); }}
       />
     </SafeAreaView>
     </TabFocusFade>
