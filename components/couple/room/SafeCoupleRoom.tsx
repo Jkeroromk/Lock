@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type ComponentType, type ReactNode } from 'react';
-import { InteractionManager, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import type { CoupleRoomProps } from './CoupleRoom';
 
 /**
@@ -52,17 +52,20 @@ export default function SafeCoupleRoom(props: CoupleRoomProps) {
   useEffect(() => {
     if (Room || failed) return;
     let alive = true;
-    // Let the screen paint first, then pull in three.js.
-    const task = InteractionManager.runAfterInteractions(() => {
-      if (!alive || disabled) return;
-      try {
-        const R = loadRoom();
-        if (alive) setRoom(() => R);
-      } catch (e) {
-        if (alive) fail('import', e);
-      }
+    // Let the screen paint first (two frames), then pull in three.js.
+    // (InteractionManager is gone in RN 0.88.)
+    let raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => {
+        if (!alive || disabled) return;
+        try {
+          const R = loadRoom();
+          if (alive) setRoom(() => R);
+        } catch (e) {
+          if (alive) fail('import', e);
+        }
+      });
     });
-    return () => { alive = false; task.cancel(); };
+    return () => { alive = false; cancelAnimationFrame(raf); };
   }, [Room, failed]);
 
   const fallback = <Fallback style={props.style} />;
