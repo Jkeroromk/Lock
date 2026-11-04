@@ -442,7 +442,8 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
       if (!alive) return;
       try {
         const st = ctl.current?.state();
-        if (st) advance(t, true, st);
+        // frameloop="never": r3f takes the timestamp in seconds (rAF gives milliseconds)
+        if (st) advance(t / 1000, true, st);
       } catch (e) {
         if (!crashed.current) {
           crashed.current = true;
