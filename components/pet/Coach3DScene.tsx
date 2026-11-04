@@ -392,7 +392,8 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
   }, [pose, reduce, data, addFx]);
 
   const pan = useMemo(() => PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 6,
+    // capture: the tap layer above is the responder on touch-down, so take over only once it is a horizontal drag
+    onMoveShouldSetPanResponderCapture: (_, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
     onPanResponderGrant: () => { dragStart.current = ctl.current?.yaw.current ?? 0.35; moved.current = true; },
     onPanResponderMove: (_, g) => { if (ctl.current) ctl.current.yaw.current = dragStart.current + g.dx / (size * 0.4); },
     onPanResponderRelease: () => {
@@ -406,12 +407,10 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
   // The canvas is taller than the slot so ears and hops never clip.
   return (
     <View style={[{ width: size, height: size }, style]} {...pan.panHandlers}>
-      <Pressable
-        onPress={() => { hop(); hearts(3); onPress?.(); }}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel}
-        style={{ position: 'absolute', left: -size * 0.1, right: -size * 0.1, bottom: 0, height: size * 1.25 }}
-      >
+      {/* r3f's native Canvas puts its own PanResponder on the view that claims
+          every touch, so taps never reached a Pressable around it. The canvas
+          takes no touches; a transparent layer on top handles tap and drag. */}
+      <View pointerEvents="none" style={{ position: 'absolute', left: -size * 0.1, right: -size * 0.1, bottom: 0, height: size * 1.25 }}>
         <Canvas
           style={{ flex: 1 }}
           flat
@@ -436,7 +435,13 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
             <Coach data={data} pose={pose} animate={animate} ctl={ctl} />
           </Suspense>
         </Canvas>
-      </Pressable>
+      </View>
+      <Pressable
+        onPress={() => { hop(); hearts(3); onPress?.(); }}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        style={{ position: 'absolute', left: 0, right: 0, top: -size * 0.15, bottom: 0 }}
+      />
       {fx.map((f) => <FloatFx key={f.id} fx={f} size={size} />)}
     </View>
   );
