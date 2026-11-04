@@ -10,13 +10,14 @@ import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useCoupleStore } from '@/store/useCoupleStore';
 import { daysSince } from '@/services/couple';
+import { useShallow } from 'zustand/react/shallow';
 
 /** Way into the couple space from Social: invite, a pending invite, or the two of you. */
 export default function CoupleEntryCard() {
   const c = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const { couple, loaded, refresh } = useCoupleStore();
+  const { couple, loaded, refresh } = useCoupleStore(useShallow((st) => ({ couple: st.couple, loaded: st.loaded, refresh: st.refresh })));
   useEffect(() => { if (!loaded) refresh(); }, [loaded]);
 
   const accepted = couple?.status === 'ACCEPTED';

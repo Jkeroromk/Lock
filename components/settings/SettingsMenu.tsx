@@ -16,12 +16,13 @@ import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import { View } from 'react-native';
 import { SETTINGS_TOP_ROW } from '@/components/settings/settingsSplit';
+import { useShallow } from 'zustand/react/shallow';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
 /** The Settings categories, each with the pages it leads to (for highlighting). */
 export function useSettingsGroups() {
-  const { language, dailyCalorieGoal } = useStore();
+  const { language, dailyCalorieGoal } = useStore(useShallow((st) => ({ language: st.language, dailyCalorieGoal: st.dailyCalorieGoal })));
   const { t } = useTranslation();
   return [
     { key: 'goals', pages: ['weight-tracker'], icon: 'flag-outline', title: t('settings.groupGoals' as any), description: `${dailyCalorieGoal.toLocaleString()} kcal · ${t('settings.weightTracker' as any)}`, route: '/(tabs)/settings/goals' },

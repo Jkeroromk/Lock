@@ -6,6 +6,7 @@ import { useStore, useStoreHydrated } from '@/store/useStore';
 import { fetchProfile, updateProfile } from '@/services/api';
 import LoadingScreen from '@/components/auth/LoadingScreen';
 import { useTranslation } from '@/i18n';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * Startup router.
@@ -17,7 +18,7 @@ import { useTranslation } from '@/i18n';
 export default function Index() {
   const { isSignedIn, isLoaded, userId } = useAuth();
   const hydrated = useStoreHydrated();
-  const { user, setUser } = useStore();
+  const { user, setUser } = useStore(useShallow((st) => ({ user: st.user, setUser: st.setUser })));
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
   const { t } = useTranslation();

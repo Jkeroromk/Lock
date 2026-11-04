@@ -5,6 +5,7 @@ import { useStore } from '@/store/useStore';
 import { useTheme } from '@/hooks/useTheme';
 import { FONTS } from '@/constants/fonts';
 import { Card, Label } from '@/components/ui/bxc';
+import { useShallow } from 'zustand/react/shallow';
 
 interface WeeklyCaloriesChartProps {
   chartData: Array<{ day: string; calories: number }>;
@@ -16,7 +17,7 @@ const BAR_HEIGHT = 120;
 export default function WeeklyCaloriesChart({ chartData }: WeeklyCaloriesChartProps) {
   const { t } = useTranslation();
   const c = useTheme();
-  const { dailyCalorieGoal } = useStore();
+  const { dailyCalorieGoal } = useStore(useShallow((st) => ({ dailyCalorieGoal: st.dailyCalorieGoal })));
   const goal = dailyCalorieGoal || 2000;
   const isLight = c.backgroundPrimary !== c.ink;
 

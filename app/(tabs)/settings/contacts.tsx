@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchLeaderboard, LeaderboardEntry } from '@/services/api';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useShallow } from 'zustand/react/shallow';
 
 // ── Shared Avatar ──────────────────────────────────────────────────────────────
 function Avatar({ emoji, image, name, size = 48 }: {
@@ -226,7 +227,7 @@ function FriendCardModal({ entry, visible, onClose, colors, t }: {
 export default function ContactsScreen() {
   const tabInset = useTabBarInset();
   const router = useRouter();
-  const { user, todayCalories } = useStore();
+  const { user, todayCalories } = useStore(useShallow((st) => ({ user: st.user, todayCalories: st.todayCalories })));
   const { t } = useTranslation();
   const colors = useTheme();
 

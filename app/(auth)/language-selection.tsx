@@ -12,10 +12,11 @@ import { FONTS } from '@/constants/fonts';
 import { Button, HardShadow } from '@/components/ui/bxc';
 import LanguageWheelPicker from '@/components/onboarding/LanguageWheelPicker';
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function LanguageSelectionScreen() {
   const router = useRouter();
-  const { language, setLanguage, setHasSelectedLanguage } = useStore();
+  const { language, setLanguage, setHasSelectedLanguage } = useStore(useShallow((st) => ({ language: st.language, setLanguage: st.setLanguage, setHasSelectedLanguage: st.setHasSelectedLanguage })));
   const { t } = useTranslation();
   const colors = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>(language);
