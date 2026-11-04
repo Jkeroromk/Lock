@@ -1,4 +1,4 @@
-import { View, Modal, Alert, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import { View, Alert } from 'react-native';
 import { useEffect, useMemo, useState } from 'react';
 import Svg, { Path, Circle, Line } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { FONTS } from '@/constants/fonts';
 import { fetchWeightRecords, logWeight, type WeightRecord } from '@/services/weight';
 import { fmtWeight, kgTo, toKg, useWeightUnit } from '@/lib/units';
 import { useStore } from '@/store/useStore';
+import SheetModal from '@/components/ui/SheetModal';
 
 const RANGES = [30, 90] as const;
 const CHART_H = 110;
@@ -171,9 +172,7 @@ export default function WeightCard({ refreshKey = 0 }: { refreshKey?: number }) 
         </>
       )}
 
-      <Modal visible={logging} transparent animationType="slide" onRequestClose={() => setLogging(false)}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={() => setLogging(false)} />
+      <SheetModal visible={logging} onClose={() => setLogging(false)} keyboard closeLabel={t('common.close')}>
           <View style={{ backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 36, gap: 14 }}>
             <Text style={{ fontSize: 22, fontWeight: '800', color: c.textPrimary }}>{t('weightTracker.logWeight')}</Text>
             <TextField
@@ -186,8 +185,7 @@ export default function WeightCard({ refreshKey = 0 }: { refreshKey?: number }) 
             />
             <Button label={t('common.save')} onPress={save} loading={saving} />
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      </SheetModal>
     </Card>
   );
 }
