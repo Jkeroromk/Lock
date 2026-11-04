@@ -101,6 +101,55 @@ export default function SettingsMenu() {
     router.push(g.route as any);
   };
 
+  // Turned a quarter: the bottom half is a control panel, not a second list.
+  // A grid of big category tiles (the open one yellow) reads as "pick here,
+  // it opens above", where a second stack of list rows looked like the page.
+  if (!side) {
+    const tiles = [
+      { key: 'settings', icon: 'person-outline', title: t('tabs.user'), route: '/(tabs)/settings' },
+      ...groups,
+    ];
+    const current = page === 'settings' ? 'settings' : active;
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 18, paddingBottom: tabInset + 8 }}>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, letterSpacing: 1, color: colors.textSecondary, marginBottom: 10, marginLeft: 2 }}>
+            {t('settings.title' as any).toUpperCase()}
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            {tiles.map((g, i) => {
+              const on = current === g.key;
+              return (
+                <Appear key={g.key} index={i} style={{ width: '31.6%' }}>
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: on }}
+                    accessibilityLabel={g.title}
+                    onPress={() => {
+                      if (g.key === 'settings') { if (page !== 'settings' && router.canDismiss()) router.dismissAll(); return; }
+                      open(g as (typeof groups)[number]);
+                    }}
+                    style={{
+                      minHeight: 96, borderRadius: 20, borderWidth: 2, padding: 12, justifyContent: 'space-between',
+                      borderColor: on ? colors.ink : colors.borderPrimary,
+                      backgroundColor: on ? colors.accent : colors.cardBackground,
+                      shadowColor: colors.ink, shadowOpacity: on ? 1 : 0, shadowRadius: 0, shadowOffset: { width: 3, height: 3 },
+                    }}
+                  >
+                    <Ionicons name={g.icon as any} size={24} color={on ? colors.onAccent : colors.textPrimary} />
+                    <Text numberOfLines={2} style={{ fontSize: 14, fontWeight: '800', color: on ? colors.onAccent : colors.textPrimary, marginTop: 10 }}>{g.title}</Text>
+                  </TouchableOpacity>
+                </Appear>
+              );
+            })}
+          </View>
+          <SettingsFooter />
+        </ScrollView>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView edges={['top', 'right']} style={{ flex: 1, backgroundColor: colors.backgroundPrimary }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 18, paddingTop: side ? 0 : 22, paddingBottom: tabInset }}>
