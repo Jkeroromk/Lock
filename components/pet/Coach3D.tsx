@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ReactNode } from 'react';
-import { AppState, InteractionManager, type StyleProp, type ViewStyle } from 'react-native';
+import { AppState, type StyleProp, type ViewStyle } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
 import type { CoachPose } from '@/constants/pets';
@@ -108,7 +108,8 @@ export const Coach3D = forwardRef<PetSpriteHandle, Props>(function Coach3D(props
     if (Scene || failed) return;
     let alive = true;
     // Let the tab finish its first paint with the 2D sprite before pulling in three.js.
-    const task = InteractionManager.runAfterInteractions(async () => {
+    // (InteractionManager is gone in RN 0.88; two frames does the same job.)
+    const run = async () => {
       await checkTripwire();
       if (!alive) return;
       if (disabled) { setFailed(true); return; }
@@ -118,8 +119,9 @@ export const Coach3D = forwardRef<PetSpriteHandle, Props>(function Coach3D(props
       } catch (e) {
         if (alive) fail('coach3d:import', e);
       }
-    });
-    return () => { alive = false; task.cancel(); };
+    };
+    let raf = requestAnimationFrame(() => { raf = requestAnimationFrame(() => { void run(); }); });
+    return () => { alive = false; cancelAnimationFrame(raf); };
   }, [Scene, failed]);
 
   const use3d = !!Scene && !failed;
