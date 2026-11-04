@@ -132,6 +132,39 @@ function loadCoach(): Promise<Loaded> {
   return cache;
 }
 
+/**
+ * Diagnostics (temporary): the first on-device crash was a TypeError inside
+ * three's WebGLState.drawBuffers ("WeakMap key must be an Object"), which only
+ * runs when a render target is set — and this scene sets none. Record what
+ * three was given so the recorded error says which render target / framebuffer
+ * it was.
+ */
+function instrument(gl: THREE.WebGLRenderer) {
+  const describe = (v: any) => {
+    if (v == null) return String(v);
+    if (typeof v !== 'object') return `${typeof v}:${String(v)}`;
+    return `${v.constructor?.name ?? 'object'}{${Object.keys(v).slice(0, 8).join(',')}}`;
+  };
+  let lastSet = 'none';
+  const origSet = gl.setRenderTarget.bind(gl);
+  gl.setRenderTarget = (rt: any, ...rest: any[]) => {
+    if (rt) lastSet = `${describe(rt)} isRT=${!!rt.isRenderTarget} tex=${rt.texture?.name ?? '-'} samples=${rt.samples} @ ${(new Error().stack || '').split('\n').slice(2, 6).join(' | ')}`;
+    return origSet(rt, ...rest);
+  };
+  const state: any = (gl as any).state;
+  if (state?.drawBuffers) {
+    const od = state.drawBuffers;
+    state.drawBuffers = (rt: any, fb: any) => {
+      try {
+        return od(rt, fb);
+      } catch (e: any) {
+        e.message = `${e.message} [drawBuffers rt=${describe(rt)} fb=${describe(fb)} lastSetRenderTarget=${lastSet} shadow=${gl.shadowMap.enabled} caps=${JSON.stringify({ ms: (gl.capabilities as any).maxSamples, v2: (gl.capabilities as any).isWebGL2 })}]`;
+        throw e;
+      }
+    };
+  }
+}
+
 /* --------------------------------- scene --------------------------------- */
 type Mode = 'idle' | 'cheer' | 'sit' | 'sleep';
 const modeOf = (p: CoachPose): Mode => (p === 'cheer' ? 'cheer' : p === 'sleep' ? 'sleep' : p === 'sad' ? 'sit' : 'idle');
@@ -369,6 +402,7 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
             try {
               gl.setClearColor(0xfff3c4, 0);
               camera.lookAt(0, 0.5, 0);
+              instrument(gl);
             } catch (e) {
               recordJsError('coach3d:created', e);
               onCrash?.('coach3d:created', e);
