@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { isAdmin } from '@/lib/admin';
 import { getUniqueFriendCode, getUniqueInviteCode } from '@/lib/invite-code';
+import { liveStreaks } from '@/lib/local-day';
 import { USERNAME_RE, cleanMultiline, cleanText, isReservedUsername } from '@/lib/sanitize';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,9 @@ export async function GET(request: NextRequest) {
   try {
     // isAdmin lets the app show "unlimited" instead of the free scan counter.
     const admin = isAdmin(userId);
-    const existing = await prisma.user.findUnique({ where: { id: userId } });
+    const found = await prisma.user.findUnique({ where: { id: userId } });
+    // The stored streak only changes when a meal is logged; show 0 once it has lapsed.
+    const existing = found && { ...found, streak: (await liveStreaks([found])).get(found.id) ?? 0 };
     if (existing) {
       // Older rows may lack an invite code or Friend ID: give them one.
       if (!existing.inviteCode || !existing.friendCode) {

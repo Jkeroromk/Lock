@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { syncChallengeProgress } from '@/lib/challenge-progress';
+import { trustedTimeZone } from '@/lib/timezone';
+import { localDayKey } from '@/lib/pet';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,10 +22,10 @@ export async function POST(request: NextRequest) {
       update: {},
     });
 
-    // 获取今天的日期（只保存日期部分，不包含时间）
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dateOnly = today.toISOString().split('T')[0];
+    // Today on the user's own clock. This was the UTC date, so evening steps
+    // (after 7–8 pm in New York) went into tomorrow's row and were overwritten
+    // the next morning; the couple space reads the local day's row.
+    const dateOnly = localDayKey(new Date(), await trustedTimeZone(userId, request));
 
     // 使用 upsert 来更新或插入健康数据
     const data = await prisma.healthSync.upsert({

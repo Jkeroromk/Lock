@@ -5,6 +5,9 @@ import { syncChallengeProgress } from '@/lib/challenge-progress';
 import { uploadMealPhoto, MAX_THUMBNAIL_BASE64 } from '@/lib/meal-photos';
 import { parseNutrition } from '@/lib/nutrition';
 import { cleanText } from '@/lib/sanitize';
+import { trustedTimeZone } from '@/lib/timezone';
+import { startOfLocalDay } from '@/lib/local-day';
+import { localDayKey, shiftDay } from '@/lib/pet';
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── 自动更新 Streak ──────────────────────────────────────────────────────
-    await updateStreak(userId);
+    await updateStreak(userId, await trustedTimeZone(userId, request));
     // ────────────────────────────────────────────────────────────────────────
 
     // ── 同步挑战进度（fire-and-forget，不阻塞响应）──────────────────────────
@@ -95,12 +98,13 @@ export async function POST(request: NextRequest) {
  *   - 昨天没有 → streak 重置为 1
  * - 今日非首次记餐 → 不改变 streak
  */
-async function updateStreak(userId: string): Promise<void> {
-  const now = new Date();
-  // 使用 UTC 日期边界，避免时区问题
-  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const todayEnd = new Date(todayStart.getTime() + 86400_000);
-  const yesterdayStart = new Date(todayStart.getTime() - 86400_000);
+async function updateStreak(userId: string, tz: string): Promise<void> {
+  // Days on the user's own clock (these were UTC days, so a dinner logged after
+  // 7–8 pm in New York counted for the next day).
+  const today = localDayKey(new Date(), tz);
+  const todayStart = startOfLocalDay(today, tz);
+  const todayEnd = startOfLocalDay(shiftDay(today, 1), tz);
+  const yesterdayStart = startOfLocalDay(shiftDay(today, -1), tz);
 
   // 用可序列化事务防止并发竞态：多个请求同时到达时，只有一个能成功更新 streak
   await prisma.$transaction(async (tx) => {
