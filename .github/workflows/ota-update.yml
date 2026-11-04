@@ -21,6 +21,14 @@ on:
       message:
         description: Update message (shown on expo.dev)
         required: false
+      runner:
+        description: Runner (use ubuntu-latest when macOS runners are stuck in the queue)
+        type: choice
+        options: [macos-15, ubuntu-latest]
+        default: macos-15
+      expect_runtime:
+        description: Abort unless the iOS runtime version starts with this (e.g. the TestFlight build's)
+        required: false
 
 concurrency:
   group: ota-${{ github.event.pull_request.number || github.ref }}
@@ -36,7 +44,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (contains(github.event.pull_request.labels.*.name, 'ota') &&
        (github.event.action != 'labeled' || github.event.label.name == 'ota'))
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner || 'macos-15' }}
     timeout-minutes: 30
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -68,6 +76,11 @@ jobs:
         run: |
           rt=$( (npx expo-updates runtimeversion:resolve --platform ios 2>/dev/null || echo '{}') | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).runtimeVersion)}catch{console.log("?")}})')
           echo "iOS runtime version: \`$rt\`" >> "$GITHUB_STEP_SUMMARY"
+          want="${{ inputs.expect_runtime }}"
+          if [ -n "$want" ] && [ "${rt#"$want"}" = "$rt" ]; then
+            echo "::error::Runtime $rt doesn't match $want - not publishing (installed builds wouldn't get it)."
+            exit 1
+          fi
 
       - name: Publish
         env:
