@@ -1,6 +1,6 @@
 import { forwardRef, Suspense, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode } from 'react';
 import { PanResponder, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
-import { Canvas, useFrame } from '@react-three/fiber/native';
+import { Canvas, advance, useFrame, useStore, type RootState } from '@react-three/fiber/native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
@@ -136,7 +136,7 @@ function loadCoach(): Promise<Loaded> {
 type Mode = 'idle' | 'cheer' | 'sit' | 'sleep';
 const modeOf = (p: CoachPose): Mode => (p === 'cheer' ? 'cheer' : p === 'sleep' ? 'sleep' : p === 'sad' ? 'sit' : 'idle');
 
-interface Ctl { hop: () => void; yaw: { current: number } }
+interface Ctl { hop: () => void; yaw: { current: number }; state: () => RootState }
 
 function Coach({ data, pose, animate, ctl }: { data: Loaded; pose: CoachPose; animate: boolean; ctl: { current: Ctl | null } }) {
   const root = useMemo(() => {
@@ -159,6 +159,7 @@ function Coach({ data, pose, animate, ctl }: { data: Loaded; pose: CoachPose; an
   const clock = useRef(0);
   const yaw = useRef(0.35);
   const mode = modeOf(pose);
+  const store = useStore();
 
   const play = useCallback((name: string, opts: { once?: boolean; holdAt?: number } = {}) => {
     const a = actions[name];
@@ -203,8 +204,9 @@ function Coach({ data, pose, animate, ctl }: { data: Loaded; pose: CoachPose; an
         play('hop', { once: true });
       },
       yaw,
+      state: () => store.getState(),
     };
-  }, [animate, mode, play, ctl]);
+  }, [animate, mode, play, ctl, store]);
 
   useEffect(() => () => { mixer.stopAllAction(); }, [mixer]);
 
@@ -251,12 +253,14 @@ interface Props {
   onPress?: () => void;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Called when the render loop throws; the parent then switches to the 2D sprite. */
+  onCrash?: (where: string, e: unknown) => void;
 }
 
 let fxId = 1;
 
 export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DScene(
-  { pose, size, fallback, fallbackRef, onPress, accessibilityLabel, style },
+  { pose, size, fallback, fallbackRef, onPress, accessibilityLabel, style, onCrash },
   ref,
 ) {
   const reduce = useReducedMotion();
@@ -290,6 +294,35 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
   }, [size]);
 
   const ready = !!data && !failed;
+
+  // Drive react-three-fiber's frame loop ourselves (frameloop="never"): an
+  // error thrown while rendering — in three, in a useFrame callback — would
+  // otherwise escape requestAnimationFrame and take the whole app down.
+  const crashed = useRef(false);
+  useEffect(() => {
+    if (!ready) return;
+    let raf = 0;
+    let alive = true;
+    const tick = (t: number) => {
+      if (!alive) return;
+      try {
+        const st = ctl.current?.state();
+        if (st) advance(t, true, st);
+      } catch (e) {
+        if (!crashed.current) {
+          crashed.current = true;
+          recordJsError('coach3d:frame', e);
+          onCrash?.('coach3d:frame', e);
+          setFailed(true);
+        }
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { alive = false; cancelAnimationFrame(raf); };
+  }, [ready, onCrash]);
+
   const hop = useCallback(() => (ready ? ctl.current?.hop() : fallbackRef?.current?.hop()), [ready, fallbackRef]);
   const hearts = useCallback((n = 3) => {
     if (!ready) return fallbackRef?.current?.hearts(n);
@@ -333,10 +366,15 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
           gl={{ alpha: true, antialias: true }}
           camera={{ fov: 30, near: 0.05, far: 20, position: [0, 0.62, 2.55] }}
           onCreated={({ gl, camera }) => {
-            gl.setClearColor(0xfff3c4, 0);
-            camera.lookAt(0, 0.5, 0);
+            try {
+              gl.setClearColor(0xfff3c4, 0);
+              camera.lookAt(0, 0.5, 0);
+            } catch (e) {
+              recordJsError('coach3d:created', e);
+              onCrash?.('coach3d:created', e);
+            }
           }}
-          frameloop={animate ? 'always' : 'demand'}
+          frameloop="never"
         >
           <hemisphereLight args={[0xffffff, 0xe8d9a8, 1.1]} />
           <directionalLight position={[-1.5, 2.5, 2.2]} intensity={1.6} />

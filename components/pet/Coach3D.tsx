@@ -31,7 +31,8 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-type SceneComponent = React.ForwardRefExoticComponent<Props & React.RefAttributes<PetSpriteHandle>>;
+type SceneProps = Props & { onCrash?: (where: string, e: unknown) => void };
+type SceneComponent = React.ForwardRefExoticComponent<SceneProps & React.RefAttributes<PetSpriteHandle>>;
 
 const ARMED_KEY = 'lock.coach3d.armed';
 const DISABLED_KEY = 'lock.coach3d.disabledFor';
@@ -137,7 +138,7 @@ export const Coach3D = forwardRef<PetSpriteHandle, Props>(function Coach3D(props
   if (!use3d || !Scene) return <>{props.fallback}</>;
   return (
     <Guard fallback={props.fallback} onError={(e) => fail('coach3d:render', e)}>
-      <Scene ref={inner} {...props} />
+      <Scene ref={inner} {...props} onCrash={fail} />
     </Guard>
   );
 });

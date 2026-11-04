@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { File, Paths } from 'expo-file-system';
 
 /**
  * Keeps the last JS error that took the app down (or that a feature caught and
@@ -7,9 +7,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * In release builds an uncaught JS error closes the app with no message; the
  * TestFlight crash report only shows a native stack. Recording the error text
  * ourselves is the only way to see what actually threw.
+ *
+ * Written with the synchronous File API: the app is usually aborted a few
+ * milliseconds after a fatal error, so an async store (AsyncStorage) may never
+ * get to flush.
  */
-
-const KEY = 'lock.lastJsError';
 
 export interface JsErrorRecord {
   at: string;        // ISO time
@@ -18,29 +20,35 @@ export interface JsErrorRecord {
   stack?: string;
 }
 
+function file() {
+  return new File(Paths.document, 'last-js-error.json');
+}
+
 export function recordJsError(where: string, e: unknown) {
-  const err = e instanceof Error ? e : new Error(String(e));
-  const rec: JsErrorRecord = {
-    at: new Date().toISOString(),
-    where,
-    message: err.message || String(e),
-    stack: (err.stack || '').split('\n').slice(0, 25).join('\n'),
-  };
-  // Fire and forget; storage may not be ready while the app is dying.
-  AsyncStorage.setItem(KEY, JSON.stringify(rec)).catch(() => {});
+  try {
+    const err = e instanceof Error ? e : new Error(String(e));
+    const rec: JsErrorRecord = {
+      at: new Date().toISOString(),
+      where,
+      message: err.message || String(e),
+      stack: (err.stack || '').split('\n').slice(0, 25).join('\n'),
+    };
+    file().write(JSON.stringify(rec));
+  } catch {}
 }
 
 export async function getLastJsError(): Promise<JsErrorRecord | null> {
   try {
-    const raw = await AsyncStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as JsErrorRecord) : null;
+    const f = file();
+    if (!f.exists) return null;
+    return JSON.parse(f.textSync()) as JsErrorRecord;
   } catch {
     return null;
   }
 }
 
-export function clearLastJsError() {
-  return AsyncStorage.removeItem(KEY).catch(() => {});
+export async function clearLastJsError() {
+  try { const f = file(); if (f.exists) f.delete(); } catch {}
 }
 
 let installed = false;
@@ -52,7 +60,7 @@ export function installCrashLog() {
   if (!utils?.setGlobalHandler) return;
   const prev = utils.getGlobalHandler?.();
   utils.setGlobalHandler((e: unknown, isFatal?: boolean) => {
-    try { recordJsError(isFatal ? 'fatal' : 'non-fatal', e); } catch {}
+    recordJsError(isFatal ? 'fatal' : 'non-fatal', e);
     if (prev) prev(e, isFatal);
   });
 }
