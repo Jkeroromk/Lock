@@ -17,6 +17,7 @@ import {
   recommendCalories, trainingBonusKcal, type GoalSettings,
 } from '@/lib/goals';
 import { stepHistory, weekKey } from '@/hooks/useAdaptiveStepGoal';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface GoalsModalProps {
   visible: boolean;
@@ -45,6 +46,7 @@ const intOr = (s: string, fallback: number) => {
 export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
   const { t } = useTranslation();
   const c = useTheme();
+  const sides = useSheetSides();
   const unit = useWeightUnit();
   const { user, setUser, goalSettings, setGoalSettings } = useStore();
   const plan = useWorkoutStore((s) => s.plan);
@@ -127,7 +129,7 @@ export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)', ...sides }}>
           <View style={{
             backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '94%',
             borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 2, borderColor: c.borderPrimary,

@@ -9,6 +9,7 @@ import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchDayMeals, MealRecord } from '@/services/api';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface DayMealsModalProps {
   date: string | null; // YYYY-MM-DD, null = closed
@@ -17,6 +18,7 @@ interface DayMealsModalProps {
 
 export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
   const colors = useTheme();
+  const sides = useSheetSides();
   const { t } = useTranslation();
   const { language, dailyCalorieGoal } = useStore();
   const [loading, setLoading] = useState(false);
@@ -75,7 +77,7 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
       animationType="none"
       onRequestClose={onClose}
     >
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+      <View style={{ flex: 1, justifyContent: 'flex-end', ...sides }}>
         <Animated.View
           style={{ ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.5)', opacity: fadeAnim }}
         >

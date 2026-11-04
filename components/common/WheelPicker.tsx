@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
 import WheelPickerExpo from 'react-native-wheel-picker-expo';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface WheelPickerProps {
   items: Array<{ label: string; value: string | number }>;
@@ -20,6 +21,7 @@ export default function CustomWheelPicker({
   itemHeight = 40,
 }: WheelPickerProps) {
   const { t } = useTranslation();
+  const sides = useSheetSides();
   const [modalVisible, setModalVisible] = React.useState(false);
   const [tempSelectedValue, setTempSelectedValue] = React.useState(selectedValue);
 
@@ -95,7 +97,7 @@ export default function CustomWheelPicker({
         onRequestClose={handleCancel}
       >
         <TouchableWithoutFeedback onPress={handleCancel}>
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, sides]}>
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>

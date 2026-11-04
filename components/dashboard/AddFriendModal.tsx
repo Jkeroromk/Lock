@@ -12,6 +12,7 @@ import { searchUser, sendFriendRequest } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { getQuota } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface AddFriendModalProps {
   visible: boolean;
@@ -33,6 +34,7 @@ interface FoundUser {
 
 export default function AddFriendModal({ visible, onClose, onSuccess, initialValue }: AddFriendModalProps) {
   const colors = useTheme();
+  const sides = useSheetSides();
   const router = useRouter();
   const { user } = useStore();
   const { t } = useTranslation();
@@ -132,7 +134,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   return (
     <Modal visible={mounted} transparent animationType="none" onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Animated.View style={{ flex: 1, justifyContent: 'flex-end', opacity: fadeAnim }}>
+        <Animated.View style={{ flex: 1, justifyContent: 'flex-end', opacity: fadeAnim, ...sides }}>
           <TouchableOpacity
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' }}
             activeOpacity={1} onPress={onClose}

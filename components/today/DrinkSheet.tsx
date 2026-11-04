@@ -41,7 +41,7 @@ export default function DrinkSheet({ visible, onClose, onAdd, initialKind = 'wat
 
   return (
     <Modal visible={visible} transparent animationType={fold ? 'fade' : 'slide'} onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, ...(fold ? null : { paddingLeft: insets.left, paddingRight: insets.right }) }}>
         {/* Dim the whole screen; tap outside to close. */}
         <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} accessibilityLabel={t('common.close')} />
         {/* Open iPhone Duo: the sheet fills one half and never crosses the fold

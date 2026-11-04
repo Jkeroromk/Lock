@@ -13,6 +13,7 @@ import {
 } from '@/i18n/languagePacks';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 const ALL_LANGUAGES: LanguageCode[] = ['en-US', 'zh-CN', 'zh-TW', 'ja-JP', 'ko-KR'];
 
@@ -32,6 +33,7 @@ export default function LanguageModal({
 }: LanguageModalProps) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const sides = useSheetSides();
 
   const [installed, setInstalled] = useState<LanguageCode[]>([ALWAYS_INSTALLED]);
   const [busy, setBusy] = useState<LanguageCode | null>(null);
@@ -86,7 +88,7 @@ export default function LanguageModal({
       onRequestClose={onClose}
     >
       <TouchableOpacity
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end', ...sides }}
         activeOpacity={1}
         onPress={onClose}
       >

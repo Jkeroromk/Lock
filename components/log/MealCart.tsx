@@ -101,7 +101,7 @@ export function CartSheet({ visible, onClose, onLogAll, logging }: {
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['bottom']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['bottom', 'left', 'right']}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 12 }}>
           <Text style={{ flex: 1, fontSize: 26, fontWeight: '800', letterSpacing: -0.7, color: c.textPrimary }}>{t('log.listTitle')}</Text>
           {items.length > 0 ? (

@@ -13,6 +13,7 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchWeightRecords, logWeight, deleteWeight } from '@/services/api';
 import { kgTo, toKg, fmtWeight, useWeightUnit } from '@/lib/units';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface WeightRecord {
   id: string;
@@ -25,6 +26,7 @@ export default function WeightTrackerScreen() {
   const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
+  const sides = useSheetSides();
   const { t } = useTranslation();
   const { language } = useStore();
   const unit = useWeightUnit();
@@ -250,7 +252,7 @@ export default function WeightTrackerScreen() {
       <Modal visible={showModal} transparent animationType="slide" onRequestClose={() => setShowModal(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end', ...sides }}
             activeOpacity={1}
             onPress={() => setShowModal(false)}
           >

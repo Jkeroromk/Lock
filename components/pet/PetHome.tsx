@@ -19,6 +19,7 @@ import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { isHealthConnected } from '@/services/health';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import { patFriendPet, type LeaderboardEntry, type PetState } from '@/services/api';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 const SCENE_BG = '#FFF3C4';
 const SCENE_GROUND = '#F7E39A';
@@ -174,6 +175,7 @@ function RenameSheet({ visible, onClose, coachName, buddyName }: {
   visible: boolean; onClose: () => void; coachName: string; buddyName: string;
 }) {
   const c = useTheme();
+  const sides = useSheetSides();
   const { t } = useTranslation();
   const rename = usePetStore((s) => s.rename);
   const [coach, setCoach] = useState(coachName);
@@ -206,7 +208,7 @@ function RenameSheet({ visible, onClose, coachName, buddyName }: {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <Pressable onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', padding: 22 }}>
+        <Pressable onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', padding: 22, paddingLeft: 22 + sides.paddingLeft, paddingRight: 22 + sides.paddingRight }}>
           <Pressable onPress={() => {}} style={{ backgroundColor: c.backgroundPrimary, borderRadius: RADIUS.hero, borderWidth: 2, borderColor: c.borderPrimary, padding: 18, gap: 10 }}>
             <Text style={{ fontSize: 22, fontWeight: '800', color: c.textPrimary }}>{t('pet.rename')}</Text>
             <Label>{t('pet.coachNameLabel')}</Label>
@@ -224,6 +226,7 @@ function RenameSheet({ visible, onClose, coachName, buddyName }: {
 /** Full-screen celebration when the buddy reaches a new stage. */
 function GrowModal({ visible, onClose, s }: { visible: boolean; onClose: () => void; s: PetState }) {
   const { t } = useTranslation();
+  const sides = useSheetSides();
   const ref = useRef<PetSpriteHandle>(null);
   const stage = s.stage ?? 1;
   useEffect(() => {
@@ -236,7 +239,7 @@ function GrowModal({ visible, onClose, s }: { visible: boolean; onClose: () => v
   const tt = t as T;
   return (
     <Modal visible={visible} animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: '#FFD43B', alignItems: 'center', paddingTop: 90, paddingHorizontal: 22, paddingBottom: 40 }}>
+      <View style={{ flex: 1, backgroundColor: '#FFD43B', alignItems: 'center', paddingTop: 90, paddingHorizontal: 22, paddingLeft: 22 + sides.paddingLeft, paddingRight: 22 + sides.paddingRight, paddingBottom: 40 }}>
         <Sticker background={INK} color="#FFD43B">{`${stageLabel(tt, stage - 1)} → ${stageLabel(tt, stage)}`}</Sticker>
         <View style={{
           marginTop: 26, width: 260, height: 260, borderRadius: 130, backgroundColor: '#FFFFFF',
