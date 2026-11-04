@@ -19,17 +19,31 @@ Resolve your dependency issues and deduplicate your dependencies. Learn more: ht
 
 ✖ Check that packages match versions required by installed Expo SDK
 
+⚠️ Minor version mismatches
+package                         expected  found    
+react-native-safe-area-context  ~5.11.1   5.10.1   
+
 🔧 Patch version mismatches
-package       expected  found    
-expo          ~58.0.22  58.0.21  
-expo-router   ~58.0.29  58.0.28  
-expo-updates  ~58.0.20  58.0.19  
+package                         expected  found    
+expo                            ~58.0.23  58.0.21  
+expo-asset                      ~58.0.20  58.0.19  
+expo-auth-session               ~58.0.17  58.0.16  
+expo-constants                  ~58.0.15  58.0.14  
+expo-linking                    ~58.0.16  58.0.15  
+expo-notifications              ~58.1.8   58.1.7   
+expo-router                     ~58.0.30  58.0.28  
+expo-updates                    ~58.0.21  58.0.19  
 
 Changelogs:
+- expo-asset → https://github.com/expo/expo/blob/sdk-58/packages/expo-asset/CHANGELOG.md
+- expo-auth-session → https://github.com/expo/expo/blob/sdk-58/packages/expo-auth-session/CHANGELOG.md
+- expo-constants → https://github.com/expo/expo/blob/sdk-58/packages/expo-constants/CHANGELOG.md
+- expo-linking → https://github.com/expo/expo/blob/sdk-58/packages/expo-linking/CHANGELOG.md
+- expo-notifications → https://github.com/expo/expo/blob/sdk-58/packages/expo-notifications/CHANGELOG.md
 - expo-router → https://github.com/expo/expo/blob/sdk-58/packages/expo-router/CHANGELOG.md
 - expo-updates → https://github.com/expo/expo/blob/sdk-58/packages/expo-updates/CHANGELOG.md
 
-3 packages out of date.
+9 packages out of date.
 Advice:
 Use 'npx expo install --check' to review and upgrade your dependencies.
 To ignore specific packages, add them to "expo.install.exclude" in package.json. Learn more: https://expo.fyi/dependency-validation

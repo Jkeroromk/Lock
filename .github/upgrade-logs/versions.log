@@ -5,7 +5,7 @@ lock@1.0.0 /home/runner/work/Lock/Lock
 ├── @expo/vector-icons@15.0.3
 ├── @quidone/react-native-wheel-picker@1.6.1
 ├── @react-native-async-storage/async-storage@2.2.0
-├── @react-three/fiber@9.1.2
+├── @react-three/fiber@9.8.2
 ├── @rozhkov/react-useful-hooks@1.0.10
 ├── @types/react@19.3.0
 ├── @types/three@0.170.0
