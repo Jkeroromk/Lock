@@ -1,4 +1,4 @@
-import { View, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
@@ -17,6 +17,7 @@ import {
   recommendCalories, trainingBonusKcal, type GoalSettings,
 } from '@/lib/goals';
 import { stepHistory, weekKey } from '@/hooks/useAdaptiveStepGoal';
+import SheetModal from '@/components/ui/SheetModal';
 
 interface GoalsModalProps {
   visible: boolean;
@@ -125,11 +126,9 @@ export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
   const section = (text: string) => <Label style={{ marginTop: 22, marginBottom: 8 }}>{text}</Label>;
 
   return (
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+    <SheetModal visible={visible} onClose={onClose} keyboard closeLabel={t('common.close')} style={{ maxHeight: '94%' }}>
           <View style={{
-            backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '94%',
+            flexShrink: 1, backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '94%',
             borderTopWidth: 2, borderLeftWidth: 2, borderRightWidth: 2, borderColor: c.borderPrimary,
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 16, paddingBottom: 6 }}>
@@ -326,9 +325,7 @@ export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
               </View>
             </ScrollView>
           </View>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+    </SheetModal>
   );
 }
 

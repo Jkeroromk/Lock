@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, COLORS, TYPOGRAPHY } from '@/constants';
 import WheelPickerExpo from 'react-native-wheel-picker-expo';
+import SheetModal from '@/components/ui/SheetModal';
 
 interface WheelPickerProps {
   items: Array<{ label: string; value: string | number }>;
@@ -88,15 +89,7 @@ export default function CustomWheelPicker({
         <Ionicons name="chevron-down" size={TYPOGRAPHY.iconXS} color={COLORS.textPrimary} />
       </TouchableOpacity>
 
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleCancel}
-      >
-        <TouchableWithoutFeedback onPress={handleCancel}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
+      <SheetModal visible={modalVisible} onClose={handleCancel} closeLabel={t('common.cancel')}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                   <TouchableOpacity onPress={handleCancel}>
@@ -130,10 +123,7 @@ export default function CustomWheelPicker({
                   />
                 </View>
               </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      </SheetModal>
     </>
   );
 }
@@ -153,11 +143,6 @@ const styles = {
     fontSize: TYPOGRAPHY.bodyS,
     fontWeight: '700' as const,
     color: COLORS.textPrimary,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end' as const,
   },
   modalContent: {
     backgroundColor: COLORS.cardBackground,
