@@ -20,7 +20,11 @@ import { setTokenGetter } from '@/services/tokenStore';
 import { initRevenueCat, identifyUser, resetUser } from '@/lib/revenuecat';
 import { registerAndSavePushToken } from '@/services/notifications';
 import BootSplash from '@/components/ui/BootSplash';
+import { installCrashLog } from '@/lib/crashlog';
 import '../global.css';
+
+// 记录让 app 闪退的 JS 错误（设置 → 关于 里可以看到）
+installCrashLog();
 
 // 启用原生屏幕管理，减少内存占用并提升导航性能
 enableScreens(true);

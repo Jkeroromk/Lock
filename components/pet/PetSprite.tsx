@@ -36,10 +36,10 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-type Fx = { id: number; kind: 'heart' | 'z'; dx: number; rot: number };
+export type Fx = { id: number; kind: 'heart' | 'z'; dx: number; rot: number };
 let fxId = 1;
 
-function FloatFx({ fx, size }: { fx: Fx; size: number }) {
+export function FloatFx({ fx, size }: { fx: Fx; size: number }) {
   const p = useSharedValue(0);
   const dur = fx.kind === 'heart' ? 1500 : 2500;
   useEffect(() => {

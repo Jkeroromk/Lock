@@ -9,6 +9,7 @@ import { Bar, Button, Card, HardShadow, Label, PressScale, RADIUS, STROKE, Stick
 import UserAvatar from '@/components/ui/UserAvatar';
 import { showToast } from '@/components/ui/Toast';
 import { PetSprite, type PetSpriteHandle } from '@/components/pet/PetSprite';
+import { Coach3D } from '@/components/pet/Coach3D';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
@@ -300,6 +301,7 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
   const { fold } = useDeviceLayout();
   const insets = useSafeAreaInsets();
   const coachRef = useRef<PetSpriteHandle>(null);
+  const coachFallbackRef = useRef<PetSpriteHandle>(null);
   const buddyRef = useRef<PetSpriteHandle>(null);
   const [healthOn, setHealthOn] = useState(false);
   const [poke, setPoke] = useState<string | null>(null);
@@ -534,16 +536,27 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
     </View>
   );
 
+  // The coach is 3D; the 2D sprite shows while the model loads or if 3D fails.
   const coachSprite = (size: number) => (
-    <PetSprite
+    <Coach3D
       ref={coachRef}
-      source={COACH_IMAGES[shownPose]}
-      blinkSource={shownPose === 'idle' ? COACH_IMAGES.blink : undefined}
-      sleeping={shownPose === 'sleep'}
-      sad={shownPose === 'sad'}
+      pose={shownPose}
       size={size}
       onPress={pokeCoach}
       accessibilityLabel={t('pet.coachTag', { name: p.coachName })}
+      fallbackRef={coachFallbackRef}
+      fallback={
+        <PetSprite
+          ref={coachFallbackRef}
+          source={COACH_IMAGES[shownPose]}
+          blinkSource={shownPose === 'idle' ? COACH_IMAGES.blink : undefined}
+          sleeping={shownPose === 'sleep'}
+          sad={shownPose === 'sad'}
+          size={size}
+          onPress={pokeCoach}
+          accessibilityLabel={t('pet.coachTag', { name: p.coachName })}
+        />
+      }
     />
   );
 
