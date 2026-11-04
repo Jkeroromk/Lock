@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { View, Modal, Pressable, ScrollView, Alert, KeyboardAvoidingView, Platform, Switch } from 'react-native';
+import { View, ScrollView, Alert, Switch } from 'react-native';
+import SheetModal from '@/components/ui/SheetModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
@@ -77,11 +78,9 @@ export default function AnniversarySheet({ visible, onClose, items, highlight, o
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.18)' }} accessibilityLabel={t('common.close')} />
+    <SheetModal visible={visible} onClose={onClose} closeLabel={t('common.close')} keyboard style={{ maxHeight: '82%', width: '100%', maxWidth: 560, alignSelf: 'center' }}>
         <View style={{
-          marginTop: 'auto', maxHeight: '82%', width: '100%', maxWidth: 560, alignSelf: 'center',
+          width: '100%', flexShrink: 1,
           backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 2, borderColor: c.ink,
           paddingTop: 10, paddingHorizontal: 18, paddingBottom: insets.bottom + 16,
         }}>
@@ -149,7 +148,6 @@ export default function AnniversarySheet({ visible, onClose, items, highlight, o
             </View>
           ) : null}
         </View>
-      </KeyboardAvoidingView>
-    </Modal>
+    </SheetModal>
   );
 }

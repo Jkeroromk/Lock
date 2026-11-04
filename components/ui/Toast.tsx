@@ -26,6 +26,19 @@ type Listener = (t: (ToastOptions & { id: number }) | null) => void;
 const listeners = new Set<Listener>();
 let nextId = 1;
 
+/** Distance from the bottom safe area (default: above the tab bar). */
+const DEFAULT_LIFT = 96;
+let lift = DEFAULT_LIFT;
+const liftListeners = new Set<(n: number) => void>();
+/**
+ * A screen with its own bottom panel (no tab bar) lifts toasts above it so
+ * they don't cover its controls; pass null to go back to the default.
+ */
+export function setToastLift(n: number | null) {
+  lift = n ?? DEFAULT_LIFT;
+  liftListeners.forEach((l) => l(lift));
+}
+
 export function showToast(options: ToastOptions) {
   const toast = { ...options, id: nextId++ };
   listeners.forEach((l) => l(toast));
@@ -36,7 +49,12 @@ export function ToastHost() {
   const c = useTheme();
   const insets = useSafeAreaInsets();
   const [toast, setToast] = useState<(ToastOptions & { id: number }) | null>(null);
+  const [bottomLift, setBottomLift] = useState(lift);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    liftListeners.add(setBottomLift);
+    return () => { liftListeners.delete(setBottomLift); };
+  }, []);
 
   useEffect(() => {
     const listener: Listener = (next) => {
@@ -57,7 +75,7 @@ export function ToastHost() {
   if (!toast) return null;
 
   return (
-    <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom + 96, alignItems: 'center', paddingHorizontal: 16 }}>
+    <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom + bottomLift, alignItems: 'center', paddingHorizontal: 16 }}>
       <Animated.View
         key={toast.id}
         entering={FadeInDown.duration(260)}

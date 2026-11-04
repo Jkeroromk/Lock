@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Modal, Pressable, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert } from 'react-native';
+import SheetModal from '@/components/ui/SheetModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Text } from '@/components/ui/Text';
@@ -69,10 +70,9 @@ export default function HomeShopSheet({ visible, onClose, home, onChanged }: {
   const items = HOME_ITEMS.filter((i) => i.slot === slot);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.18)' }} accessibilityLabel={t('common.close')} />
+    <SheetModal visible={visible} onClose={onClose} closeLabel={t('common.close')} style={{ maxHeight: '78%', width: '100%', maxWidth: 560, alignSelf: 'center' }}>
       <View style={{
-        marginTop: 'auto', maxHeight: '78%', width: '100%', maxWidth: 560, alignSelf: 'center',
+        width: '100%', flexShrink: 1,
         backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 2, borderColor: c.ink,
         paddingTop: 10, paddingHorizontal: 18, paddingBottom: insets.bottom + 16,
       }}>
@@ -126,6 +126,6 @@ export default function HomeShopSheet({ visible, onClose, home, onChanged }: {
         </ScrollView>
         <Button label={t('common.close')} variant="outline" onPress={onClose} />
       </View>
-    </Modal>
+    </SheetModal>
   );
 }

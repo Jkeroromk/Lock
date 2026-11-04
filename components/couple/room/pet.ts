@@ -9,7 +9,7 @@ import type { CoachInstance } from '@/components/pet/coachModel';
  * idling, napping in its bed and hopping when tapped. Until that model has
  * loaded — or if it can't — a round toon cat stands in.
  */
-const COACH_SCALE = 0.62; // the bichon is ~1 unit tall; people are ~1.6
+const COACH_SCALE = 1.0; // the bichon is ~1 unit tall, people ~1.6 (Jason: 0.62 was far too small)
 const AWAKE_LOOK = { face: 'open', tongue: 'auto', blink: true } as const;
 const NAP_LOOK = { face: 'closed', tongue: 'in', blink: false } as const;
 
@@ -99,8 +99,9 @@ export class Pet extends Actor {
     this.coach = inst;
     this.rig.group.visible = false;
     inst.root.scale.setScalar(COACH_SCALE);
-    inst.walkSpeed = 1.35; // small dog, short legs: quicker steps at the room's walking speed
+    inst.walkSpeed = 1.1; // steps that roughly match the room's walking speed
     this.root.scale.setScalar(1);
+    this.radius = 0.5;
     this.root.add(inst.root);
   }
 
@@ -135,6 +136,9 @@ export class Pet extends Actor {
       this.coach = null;
     }
   }
+
+  /** Where the pet's speech bubble starts (world units above the floor). */
+  get bubbleY() { return this.coach ? COACH_SCALE * 1.15 : 1.1 * this.root.scale.y; }
 
   /** Heart eyes for a moment (the dog only). */
   love() { this.coach?.love(); }

@@ -409,9 +409,10 @@ export class World {
     // pet bed + bowl
     fx.bedRing = k.toonWith({ color: '#FF8FA3' });
     fx.bedInside = k.toonWith({ color: '#FFE0E6' });
-    const bed = k.mesh(new THREE.TorusGeometry(0.42, 0.14, 10, 24), '', { mat: fx.bedRing }); bed.rotation.x = Math.PI / 2; bed.position.set(-1.6, 0.12, -2.6);
-    const bedIn = k.mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 20), '', { outline: 0, mat: fx.bedInside }); bedIn.position.set(-1.6, 0.05, -2.6);
-    const bowl = k.mesh(new THREE.CylinderGeometry(0.2, 0.14, 0.12, 16), '#FFFFFF'); bowl.position.set(-0.6, 0.06, -2.9);
+    // sized for 豆豆 (about 1 × 0.9 units)
+    const bed = k.mesh(new THREE.TorusGeometry(0.62, 0.18, 10, 28), '', { mat: fx.bedRing }); bed.rotation.x = Math.PI / 2; bed.position.set(-1.6, 0.16, -2.6);
+    const bedIn = k.mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.06, 24), '', { outline: 0, mat: fx.bedInside }); bedIn.position.set(-1.6, 0.05, -2.6);
+    const bowl = k.mesh(new THREE.CylinderGeometry(0.24, 0.17, 0.14, 16), '#FFFFFF'); bowl.position.set(-0.4, 0.07, -3.0);
     this.root.add(this.tappable(bed, 'bed'), bedIn, bowl);
 
     // floor lamp
@@ -654,12 +655,11 @@ export class World {
    * slot: x, y, alpha, scale, squash). Nothing is allocated.
    */
   project(camera: THREE.PerspectiveCamera, w: number, h: number, out: Float32Array) {
-    const ps = this.pet.root.scale.y;
     this.put(out, SLOT.tagMe, camera, w, h, tmp.copy(this.me.position).setY(this.me.position.y + 1.75), 1, 1, 1);
     this.put(out, SLOT.tagPartner, camera, w, h, tmp.copy(this.partner.position).setY(this.partner.position.y + 1.75), 1, 1, 1);
     this.put(out, SLOT.bubbleMe, camera, w, h, tmp.copy(this.me.position).setY(this.me.position.y + 1.95), 1, 1, 1);
     this.put(out, SLOT.bubblePartner, camera, w, h, tmp.copy(this.partner.position).setY(this.partner.position.y + 1.95), 1, 1, 1);
-    this.put(out, SLOT.bubblePet, camera, w, h, tmp.copy(this.pet.position).setY(1.1 * ps), 1, 1, 1);
+    this.put(out, SLOT.bubblePet, camera, w, h, tmp.copy(this.pet.position).setY(this.pet.bubbleY), 1, 1, 1);
     this.put(out, SLOT.bubbleObject, camera, w, h, tmp.copy(this.objectAnchor).setY(this.objectAnchor.y + 0.15), 1, 1, 1);
 
     // wall overlays: size follows the distance, squashed sideways as the wall turns away

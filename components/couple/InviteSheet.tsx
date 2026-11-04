@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Modal, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, ScrollView, ActivityIndicator } from 'react-native';
+import SheetModal from '@/components/ui/SheetModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
@@ -59,10 +60,9 @@ export default function InviteSheet({ visible, onClose, onSent }: { visible: boo
 
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} accessibilityLabel={t('common.close')} />
+    <SheetModal visible={visible} onClose={onClose} closeLabel={t('common.close')} keyboard style={{ maxHeight: '88%', width: '100%', maxWidth: 560, alignSelf: 'center' }}>
       <View style={{
-        marginTop: 'auto', maxHeight: '90%', width: '100%', maxWidth: 560, alignSelf: 'center',
+        width: '100%', flexShrink: 1,
         backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 30, borderTopRightRadius: 30,
         paddingTop: 10, paddingHorizontal: 20, paddingBottom: insets.bottom + 18,
       }}>
@@ -105,6 +105,6 @@ export default function InviteSheet({ visible, onClose, onSent }: { visible: boo
         </ScrollView>
         {friend ? <Button label={t('couple.sendInvite')} onPress={send} loading={sending} /> : null}
       </View>
-    </Modal>
+    </SheetModal>
   );
 }

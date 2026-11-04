@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { Text } from '@/components/ui/Text';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { Button, PressScale, Sticker } from '@/components/ui/bxc';
-import { showToast } from '@/components/ui/Toast';
+import { showToast, setToastLift } from '@/components/ui/Toast';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
@@ -22,6 +22,8 @@ import AnniversarySheet from '@/components/couple/AnniversarySheet';
 import InviteSheet from '@/components/couple/InviteSheet';
 import HomeShopSheet from '@/components/couple/HomeShopSheet';
 
+/** Height of the phone layout's bottom panel (day cards + nudges). */
+const SHEET_H = 186;
 const L = (ml: number) => (Math.round(ml / 100) / 10).toFixed(1);
 
 /**
@@ -51,6 +53,11 @@ export default function CoupleScreen() {
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Fresh numbers whenever the screen is open (and every minute while it is).
+  // Toasts float above the bottom panel here instead of covering the day cards.
+  useFocusEffect(useCallback(() => {
+    setToastLift(SHEET_H + 10);
+    return () => setToastLift(null);
+  }, []));
   useFocusEffect(useCallback(() => {
     setFocused(true);
     refresh();
@@ -249,7 +256,6 @@ export default function CoupleScreen() {
 
   const fold = layout.fold;
   const side = fold?.axis === 'vertical';
-  const SHEET_H = 186;
 
   const room = (bottomInset: number) => (
     <CoupleRoom
