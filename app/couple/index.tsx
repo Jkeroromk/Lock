@@ -20,7 +20,7 @@ import {
   daysSince, endCouple, nextMilestone, nextOccurrence, nudgePartner, respondCouple,
   type CoupleDay, type NudgeKind,
 } from '@/services/couple';
-import CoupleRoom from '@/components/couple/room/CoupleRoom';
+import CoupleRoom from '@/components/couple/room/SafeCoupleRoom';
 import AnniversarySheet from '@/components/couple/AnniversarySheet';
 import InviteSheet from '@/components/couple/InviteSheet';
 
