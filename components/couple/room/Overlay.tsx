@@ -137,7 +137,7 @@ function WallItem({ pos, slot, w, h, children }: { pos: SharedValue<number[]>; s
     const i = slot * STRIDE;
     const s = v[i + 3] ?? 1;
     // seen very obliquely the words would overhang the board, so fade them out instead
-    const oblique = Math.min(1, Math.max(0, ((v[i + 4] ?? 1) - 0.3) / 0.3));
+    const oblique = Math.min(1, Math.max(0, ((v[i + 4] ?? 1) - 0.2) / 0.15));
     return {
       opacity: (v[i + 2] ?? 0) * oblique,
       transform: [

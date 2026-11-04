@@ -13,8 +13,8 @@ export const OBSTACLES: Obstacle[] = [
   { x0: 2.85, x1: 3.75, z0: -3.75, z1: -2.85, name: 'plant' },
   { x0: -3.6, x1: -3.0, z0: -3.5, z1: -2.9, name: 'lamp' },
   // the pet bed: people walk round it, the pet walks in
-  { x0: -2.15, x1: -1.05, z0: -3.15, z1: -2.05, name: 'bed', soft: true },
-  { x0: -0.85, x1: -0.35, z0: -3.15, z1: -2.65, name: 'bowl' },
+  { x0: -2.4, x1: -0.8, z0: -3.4, z1: -1.8, name: 'bed', soft: true },
+  { x0: -0.7, x1: -0.1, z0: -3.3, z1: -2.7, name: 'bowl' },
   { x0: -1.8, x1: 0.6, z0: 3.3, z1: 3.75, name: 'bookcase' },
 ];
 
