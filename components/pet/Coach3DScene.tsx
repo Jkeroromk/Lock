@@ -95,6 +95,20 @@ async function loadTexture(mod: number, srgb: boolean, size: number) {
   return t;
 }
 
+/** Scale the head/neck rotation of a clip towards its first pose (1 = unchanged). */
+function soften(clip: THREE.AnimationClip, factor: number) {
+  const q0 = new THREE.Quaternion(), q = new THREE.Quaternion();
+  for (const track of clip.tracks) {
+    if (!/(Head|Neck)/i.test(track.name) || !track.name.endsWith('.quaternion')) continue;
+    const v = track.values;
+    q0.set(v[0], v[1], v[2], v[3]);
+    for (let i = 0; i < v.length; i += 4) {
+      q.set(v[i], v[i + 1], v[i + 2], v[i + 3]).slerp(q0, 1 - factor);
+      v[i] = q.x; v[i + 1] = q.y; v[i + 2] = q.z; v[i + 3] = q.w;
+    }
+  }
+}
+
 interface Loaded {
   scene: THREE.Group;
   clips: THREE.AnimationClip[];
@@ -121,6 +135,9 @@ function loadCoach(): Promise<Loaded> {
       head: new THREE.MeshStandardMaterial({ map: tex.head, normalMap: tex.headN, roughness: 0.8, metalness: 0 }),
       gear: new THREE.MeshStandardMaterial({ map: tex.gear, normalMap: tex.gearN, roughness: 0.55, metalness: 0 }),
     };
+    // The idle clip's head turns read as constant head-shaking on the phone:
+    // halve the head/neck rotation and let it play slower.
+    for (const clip of gltf.animations as THREE.AnimationClip[]) if (clip.name === 'idle') soften(clip, 0.45);
     const scene: THREE.Group = gltf.scene;
     scene.traverse((o: any) => {
       if (!o.isMesh) return;
@@ -202,6 +219,7 @@ function Coach({ data, pose, animate, ctl }: { data: Loaded; pose: CoachPose; an
     const prev = current.current;
     a.reset();
     a.setLoop(opts.once || opts.holdAt != null ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
+    a.timeScale = name === 'idle' ? 0.7 : 1;
     a.clampWhenFinished = true;
     a.paused = false;
     holdAt.current = opts.holdAt ?? null;
