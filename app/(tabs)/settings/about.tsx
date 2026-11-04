@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
-import { View, Image, Linking } from 'react-native';
+import { View, Image, Linking, TouchableOpacity } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import { getLastJsError, clearLastJsError, type JsErrorRecord } from '@/lib/crashlog';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
@@ -29,8 +31,10 @@ export default function AboutScreen() {
   const c = useTheme();
   const { t } = useTranslation();
   const [appIcon, setAppIcon] = useState(() => getAppIconOption(getCurrentAppIcon()));
+  const [lastError, setLastError] = useState<JsErrorRecord | null>(null);
   useFocusEffect(useCallback(() => {
     setAppIcon(getAppIconOption(getCurrentAppIcon()));
+    getLastJsError().then(setLastError);
   }, []));
 
   return (
@@ -58,6 +62,26 @@ export default function AboutScreen() {
       <SettingItem icon="document-text-outline" title={t('about.termsOfService')} onPress={() => router.push('/(tabs)/settings/terms-of-service')} />
       <SettingItem icon="mail-outline" title={t('about.contact')} value={t('about.contactEmail')} onPress={() => Linking.openURL(`mailto:${t('about.contactEmail')}`)} />
 
+      {lastError ? (
+        // Diagnostics for testers: the last JS error that crashed the app (or that a feature recovered from).
+        <Card padding={14} style={{ marginTop: 16 }}>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, textTransform: 'uppercase' }}>
+            Last error · {lastError.where} · {lastError.at.replace('T', ' ').slice(0, 19)}
+          </Text>
+          <Text selectable style={{ fontFamily: FONTS.mono, fontSize: 11, lineHeight: 16, color: c.textPrimary, marginTop: 6 }}>
+            {lastError.message}
+            {lastError.stack ? `\n\n${lastError.stack}` : ''}
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 18, marginTop: 10 }}>
+            <TouchableOpacity accessibilityRole="button" onPress={() => Clipboard.setStringAsync(`${lastError.where} ${lastError.at}\n${lastError.message}\n${lastError.stack ?? ''}`)}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: c.textPrimary }}>Copy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" onPress={() => { clearLastJsError(); setLastError(null); }}>
+              <Text style={{ fontSize: 13, fontWeight: '800', color: c.textSecondary }}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+        </Card>
+      ) : null}
       <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, textAlign: 'center', marginTop: 20 }}>
         {t('about.madeWith')}
       </Text>
