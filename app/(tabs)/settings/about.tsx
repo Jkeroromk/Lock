@@ -32,9 +32,20 @@ export default function AboutScreen() {
   const { t } = useTranslation();
   const [appIcon, setAppIcon] = useState(() => getAppIconOption(getCurrentAppIcon()));
   const [lastError, setLastError] = useState<JsErrorRecord | null>(null);
+  // expo-updates keeps its own log of fatal JS errors (what crashed the app),
+  // written natively, so it survives even when our JS handler never ran.
+  const [updateErrors, setUpdateErrors] = useState<string[]>([]);
   useFocusEffect(useCallback(() => {
     setAppIcon(getAppIconOption(getCurrentAppIcon()));
     getLastJsError().then(setLastError);
+    if (Updates.isEnabled) {
+      Updates.readLogEntriesAsync(7 * 24 * 3600 * 1000)
+        .then((entries) => {
+          const bad = entries.filter((e) => e.level === 'error' || e.level === 'fatal');
+          setUpdateErrors(bad.slice(-5).map((e) => `${new Date(e.timestamp).toISOString().replace('T', ' ').slice(0, 19)} [${e.code}] ${e.message}${e.stacktrace?.length ? '\n' + e.stacktrace.slice(0, 12).join('\n') : ''}`));
+        })
+        .catch(() => {});
+    }
   }, []));
 
   return (
@@ -80,6 +91,17 @@ export default function AboutScreen() {
               <Text style={{ fontSize: 13, fontWeight: '800', color: c.textSecondary }}>Clear</Text>
             </TouchableOpacity>
           </View>
+        </Card>
+      ) : null}
+      {updateErrors.length ? (
+        <Card padding={14} style={{ marginTop: 16 }}>
+          <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, textTransform: 'uppercase' }}>Update log · errors</Text>
+          <Text selectable style={{ fontFamily: FONTS.mono, fontSize: 10, lineHeight: 14, color: c.textPrimary, marginTop: 6 }}>
+            {updateErrors.join('\n\n')}
+          </Text>
+          <TouchableOpacity accessibilityRole="button" style={{ marginTop: 10 }} onPress={() => Clipboard.setStringAsync(updateErrors.join('\n\n'))}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: c.textPrimary }}>Copy</Text>
+          </TouchableOpacity>
         </Card>
       ) : null}
       <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, textAlign: 'center', marginTop: 20 }}>

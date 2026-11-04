@@ -1,1 +1,0 @@
-components/couple/room/SafeCoupleRoom.tsx(2,10): error TS2305: Module '"react-native"' has no exported member 'InteractionManager'.

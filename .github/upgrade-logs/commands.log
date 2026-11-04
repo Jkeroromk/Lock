@@ -12,7 +12,7 @@ peerDependencies = {
 }
 $ npm install @react-three/fiber@^9.8.2
 
-removed 3 packages, changed 1 package, and audited 999 packages in 3s
+up to date, audited 999 packages in 2s
 
 123 packages are looking for funding
   run `npm fund` for details
