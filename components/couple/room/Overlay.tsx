@@ -126,19 +126,24 @@ function Bubble({ pos, slot, text }: { pos: SharedValue<number[]>; slot: number;
   );
 }
 
-/** Content pinned to the anniversary wall: centred on the slot, scaled with distance, squashed as the wall turns. */
+/**
+ * Content pinned to the anniversary wall: centred on the slot and scaled with
+ * distance, but never squashed or tilted — words stay upright and readable
+ * from any angle (the squash made them look like they turned with the room).
+ */
 function WallItem({ pos, slot, w, h, children }: { pos: SharedValue<number[]>; slot: number; w: number; h: number; children: ReactNode }) {
   const st = useAnimatedStyle(() => {
     const v = pos.value;
     const i = slot * STRIDE;
     const s = v[i + 3] ?? 1;
+    // seen very obliquely the words would overhang the board, so fade them out instead
+    const oblique = Math.min(1, Math.max(0, ((v[i + 4] ?? 1) - 0.3) / 0.3));
     return {
-      opacity: v[i + 2] ?? 0,
+      opacity: (v[i + 2] ?? 0) * oblique,
       transform: [
         { translateX: (v[i] ?? -999) - w / 2 },
         { translateY: (v[i + 1] ?? -999) - h / 2 },
-        { scaleX: s * (v[i + 4] ?? 1) },
-        { scaleY: s },
+        { scale: s },
       ],
     };
   });

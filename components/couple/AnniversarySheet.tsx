@@ -79,7 +79,7 @@ export default function AnniversarySheet({ visible, onClose, items, highlight, o
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.42)' }} accessibilityLabel={t('common.close')} />
+        <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.18)' }} accessibilityLabel={t('common.close')} />
         <View style={{
           marginTop: 'auto', maxHeight: '82%', width: '100%', maxWidth: 560, alignSelf: 'center',
           backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 2, borderColor: c.ink,
@@ -88,7 +88,7 @@ export default function AnniversarySheet({ visible, onClose, items, highlight, o
           <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.borderSecondary, marginBottom: 10 }} />
           <Text style={{ fontSize: 24, fontWeight: '800', color: c.textPrimary }}>{t('couple.annTitle')}</Text>
           <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, marginTop: 2, marginBottom: 12 }}>{t('couple.annSub')}</Text>
-          <ScrollView ref={scroll} style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 8, paddingBottom: 10 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <ScrollView ref={scroll} style={{ flexShrink: 1, marginHorizontal: -8 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 8, paddingTop: 2, paddingBottom: 14 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             {items.map((a) => {
               const hl = a.id === highlight;
               const k = count(a);
