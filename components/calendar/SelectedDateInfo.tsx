@@ -5,6 +5,7 @@ import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface SelectedDateInfoProps {
   selectedDate: string;
@@ -17,7 +18,7 @@ interface SelectedDateInfoProps {
 
 export default function SelectedDateInfo({ selectedDate, selectedDateData, getProgressColor }: SelectedDateInfoProps) {
   const { t } = useTranslation();
-  const { language } = useStore();
+  const { language } = useStore(useShallow((st) => ({ language: st.language })));
   const colors = useTheme();
 
   return (

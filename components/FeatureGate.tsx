@@ -8,6 +8,7 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { hasFeature, Feature } from '@/lib/plans';
 import type { PlanTier } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
+import { useShallow } from 'zustand/react/shallow';
 
 interface FeatureGateProps {
   feature: Feature;
@@ -16,7 +17,7 @@ interface FeatureGateProps {
 }
 
 export default function FeatureGate({ feature, children, fallback }: FeatureGateProps) {
-  const { user } = useStore();
+  const { user } = useStore(useShallow((st) => ({ user: st.user })));
   const colors = useTheme();
   const { t } = useTranslation();
   const plan: PlanTier = user?.plan ?? 'FREE';

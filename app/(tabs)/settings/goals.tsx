@@ -5,10 +5,11 @@ import { useTranslation } from '@/i18n';
 import SettingItem from '@/components/settings/SettingItem';
 import SettingsPage from '@/components/settings/SettingsPage';
 import GoalsModal from '@/components/settings/GoalsModal';
+import { useShallow } from 'zustand/react/shallow';
 
 /** Daily targets and body tracking. */
 export default function GoalsScreen() {
-  const { dailyCalorieGoal, dailyStepGoal, goalSettings } = useStore();
+  const { dailyCalorieGoal, dailyStepGoal, goalSettings } = useStore(useShallow((st) => ({ dailyCalorieGoal: st.dailyCalorieGoal, dailyStepGoal: st.dailyStepGoal, goalSettings: st.goalSettings })));
   const { t } = useTranslation();
   const router = useRouter();
   const [showGoalsModal, setShowGoalsModal] = useState(false);

@@ -14,6 +14,7 @@ import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import { SettingsFooter, useSettingsGroups } from '@/components/settings/SettingsMenu';
 import { settingsSplit, SETTINGS_TOP_ROW } from '@/components/settings/settingsSplit';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * Settings home: profile card plus one row per category. Each category opens
@@ -22,7 +23,7 @@ import { settingsSplit, SETTINGS_TOP_ROW } from '@/components/settings/settingsS
 export default function SettingsScreen() {
   const tabInset = useTabBarInset();
   const { kind } = useDeviceLayout();
-  const { user, setUser } = useStore();
+  const { user, setUser } = useStore(useShallow((st) => ({ user: st.user, setUser: st.setUser })));
   const { t } = useTranslation();
   const colors = useTheme();
   const router = useRouter();

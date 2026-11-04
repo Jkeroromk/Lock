@@ -10,6 +10,7 @@ import { Card, Ring, Bar, Label } from '@/components/ui/bxc';
 import { Ionicons } from '@expo/vector-icons';
 import { calorieLevel } from '@/lib/calorieStatus';
 import { useCalorieGoal } from '@/hooks/useDailyGoals';
+import { useShallow } from 'zustand/react/shallow';
 
 interface CaloriesCardProps {
   todayCalories: number;
@@ -45,7 +46,7 @@ function MacroRow({ label, value, target, badge }: { label: string; value: numbe
 export default function CaloriesCard({ todayCalories, protein, carbs, fat }: CaloriesCardProps) {
   const { t } = useTranslation();
   const c = useTheme();
-  const { calorieWarnings, user } = useStore();
+  const { calorieWarnings, user } = useStore(useShallow((st) => ({ calorieWarnings: st.calorieWarnings, user: st.user })));
   // Base goal plus the training-day bonus (when that's on in the goal settings).
   const { goal, bonus } = useCalorieGoal();
   const eaten = Math.round(todayCalories);

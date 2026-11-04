@@ -16,13 +16,14 @@ import { restorePurchases, planFromCustomerInfo } from '@/lib/revenuecat';
 import { useProPlans, ProPlanPicker } from '@/components/pricing/ProPlanPicker';
 import { syncSubscriptionPlan } from '@/services/api';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function PricingScreen() {
   const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
-  const { user, setPlan } = useStore();
+  const { user, setPlan } = useStore(useShallow((st) => ({ user: st.user, setPlan: st.setPlan })));
 
   const plans = useProPlans();
   const [restoring, setRestoring] = useState(false);

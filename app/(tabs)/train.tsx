@@ -24,6 +24,7 @@ import { useTabBarInset } from '@/hooks/useTabBarInset';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function TrainScreen() {
   const tabInset = useTabBarInset();
@@ -32,7 +33,7 @@ export default function TrainScreen() {
   const { t, language } = useTranslation();
   const router = useRouter();
   const user = useStore((s) => s.user);
-  const { plan, sessions, loaded, active, ensureUser, load, start, removeSession } = useWorkoutStore();
+  const { plan, sessions, loaded, active, ensureUser, load, start, removeSession } = useWorkoutStore(useShallow((st) => ({ plan: st.plan, sessions: st.sessions, loaded: st.loaded, active: st.active, ensureUser: st.ensureUser, load: st.load, start: st.start, removeSession: st.removeSession })));
   const [loading, setLoading] = useState(!loaded);
   const [refreshing, setRefreshing] = useState(false);
   const [failed, setFailed] = useState(false);

@@ -9,6 +9,7 @@ import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { getPrivacyContent, getTermsContent } from '@/i18n/legal';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useShallow } from 'zustand/react/shallow';
 
 /** Privacy policy or terms of service page. Shared by Settings and the pre-login /legal route. */
 export default function LegalDocument({ kind }: { kind: 'privacy' | 'terms' }) {
@@ -16,7 +17,7 @@ export default function LegalDocument({ kind }: { kind: 'privacy' | 'terms' }) {
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
-  const { language } = useStore();
+  const { language } = useStore(useShallow((st) => ({ language: st.language })));
   const content = kind === 'privacy' ? getPrivacyContent(language) : getTermsContent(language);
 
   return (

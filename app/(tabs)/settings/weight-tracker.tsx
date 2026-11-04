@@ -14,6 +14,7 @@ import { fetchWeightRecords, logWeight, deleteWeight } from '@/services/api';
 import { kgTo, toKg, fmtWeight, useWeightUnit } from '@/lib/units';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import SheetModal from '@/components/ui/SheetModal';
+import { useShallow } from 'zustand/react/shallow';
 
 interface WeightRecord {
   id: string;
@@ -27,7 +28,7 @@ export default function WeightTrackerScreen() {
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
-  const { language } = useStore();
+  const { language } = useStore(useShallow((st) => ({ language: st.language })));
   const unit = useWeightUnit();
   const show = (kg: number) => kgTo(kg, unit).toFixed(1);
 

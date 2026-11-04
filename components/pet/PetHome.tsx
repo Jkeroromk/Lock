@@ -19,6 +19,7 @@ import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { isHealthConnected } from '@/services/health';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import { patFriendPet, type LeaderboardEntry, type PetState } from '@/services/api';
+import { useShallow } from 'zustand/react/shallow';
 
 const SCENE_BG = '#FFF3C4';
 const SCENE_GROUND = '#F7E39A';
@@ -296,7 +297,7 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
   const c = useTheme();
   const { t } = useTranslation();
   const tt = t as T;
-  const { state: s, loading, error, sync } = usePetStore();
+  const { state: s, loading, error, sync } = usePetStore(useShallow((st) => ({ state: st.state, loading: st.loading, error: st.error, sync: st.sync })));
   const plan = useWorkoutStore((st) => st.plan);
   const { fold } = useDeviceLayout();
   const insets = useSafeAreaInsets();

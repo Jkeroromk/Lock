@@ -12,6 +12,7 @@ import CompletionAnimation from '@/components/onboarding/CompletionAnimation';
 import OnboardingSteps from '@/components/onboarding/OnboardingSteps';
 import { useOnboardingData } from '@/hooks/useOnboardingData';
 import { useOnboardingAnimation } from '@/hooks/useOnboardingAnimation';
+import { useShallow } from 'zustand/react/shallow';
 
 const STEPS = [
   'theme',
@@ -28,7 +29,7 @@ const STEPS = [
 export default function OnboardingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { user, setUser, setThemeMode } = useStore();
+  const { user, setUser, setThemeMode } = useStore(useShallow((st) => ({ user: st.user, setUser: st.setUser, setThemeMode: st.setThemeMode })));
   const colors = useTheme();
   const isLight = colors.backgroundPrimary !== colors.ink;
   

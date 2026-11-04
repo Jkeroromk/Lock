@@ -14,6 +14,7 @@ import { fmtWeight, fmtWeightUnit, kgTo, useWeightUnit } from '@/lib/units';
 import { useProteinTarget } from '@/hooks/useProteinTarget';
 import { exerciseName } from '@/constants/exercises';
 import ExerciseThumb from '@/components/train/ExerciseThumb';
+import { useShallow } from 'zustand/react/shallow';
 
 /** Strength training ≈ 5 MET: kcal ≈ 5 × kg × hours. */
 const estimateKcal = (bodyKg: number, sec: number) => Math.round(5 * bodyKg * (sec / 3600));
@@ -25,7 +26,7 @@ export default function WorkoutDoneScreen() {
   const last = useWorkoutStore((s) => s.lastResult);
   const unit = useWeightUnit();
   const proteinTarget = useProteinTarget();
-  const { user, todayMeals, refreshToday } = useStore();
+  const { user, todayMeals, refreshToday } = useStore(useShallow((st) => ({ user: st.user, todayMeals: st.todayMeals, refreshToday: st.refreshToday })));
 
   useEffect(() => {
     if (!last) router.replace('/(tabs)/train');
