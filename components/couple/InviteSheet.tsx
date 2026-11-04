@@ -5,16 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { Button, PressScale } from '@/components/ui/bxc';
-import { PetSprite } from '@/components/pet/PetSprite';
 import { showToast } from '@/components/ui/Toast';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { buddyImage } from '@/constants/pets';
 import { fetchLeaderboard, type LeaderboardEntry } from '@/services/api';
 import { inviteCouple } from '@/services/couple';
 import { useStore } from '@/store/useStore';
-import { usePetStore } from '@/store/usePetStore';
 import DateField from '@/components/couple/DateField';
 
 const todayYmd = () => {
@@ -31,27 +28,24 @@ export default function InviteSheet({ visible, onClose, onSent }: { visible: boo
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const meId = useStore((s) => s.user?.id);
-  const myPet = usePetStore((s) => s.state);
   const [friends, setFriends] = useState<LeaderboardEntry[] | null>(null);
   const [friend, setFriend] = useState<LeaderboardEntry | null>(null);
   const [since, setSince] = useState(todayYmd());
-  const [petOwner, setPetOwner] = useState<'me' | 'them'>('me');
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
-    setFriend(null); setSince(todayYmd()); setPetOwner('me');
+    setFriend(null); setSince(todayYmd());
     fetchLeaderboard().then((l) => setFriends(l.filter((e) => !e.isMe))).catch(() => setFriends([]));
   }, [visible]);
 
-  const myPetInfo = myPet?.profile ? { kind: myPet.profile.buddyKind, name: myPet.profile.buddyName, stage: myPet.stage ?? 1 } : null;
-  const theirPet = friend?.pet ?? null;
 
   const send = async () => {
     if (!friend || !meId || sending) return;
     setSending(true);
     try {
-      await inviteCouple(friend.id, since, petOwner === 'me' ? meId : friend.id);
+      // each of you keeps your own buddy; the room's dog is 豆豆
+      await inviteCouple(friend.id, since, meId);
       showToast({ icon: 'heart', message: t('couple.inviteSent') });
       onSent();
       onClose();
@@ -62,26 +56,7 @@ export default function InviteSheet({ visible, onClose, onSent }: { visible: boo
     }
   };
 
-  const petTile = (key: 'me' | 'them', label: string, pet: { kind: string; stage: number } | null) => {
-    const on = petOwner === key;
-    return (
-      <PressScale
-        key={key}
-        onPress={() => pet && setPetOwner(key)}
-        disabled={!pet}
-        accessibilityRole="radio"
-        accessibilityState={{ selected: on, disabled: !pet }}
-        style={{
-          flex: 1, minHeight: 112, borderRadius: 18, borderWidth: 2, borderColor: c.ink, backgroundColor: on ? c.accent : c.cardBackground,
-          alignItems: 'center', justifyContent: 'center', gap: 4, padding: 8, opacity: pet ? 1 : 0.45,
-          shadowColor: c.ink, shadowOpacity: on ? 1 : 0, shadowRadius: 0, shadowOffset: { width: 3, height: 3 },
-        }}
-      >
-        {pet ? <PetSprite source={buddyImage(pet.kind, pet.stage)} size={58} shadow={false} still /> : <Ionicons name="paw-outline" size={30} color={c.textTertiary} />}
-        <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: '800', color: on ? c.onAccent : c.textPrimary }}>{pet ? label : t('couple.petNone')}</Text>
-      </PressScale>
-    );
-  };
+
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -102,7 +77,7 @@ export default function InviteSheet({ visible, onClose, onSent }: { visible: boo
               {friends === null ? <ActivityIndicator color={c.textPrimary} style={{ marginVertical: 30 }} /> : friends.length === 0 ? (
                 <Text style={{ fontSize: 15, color: c.textSecondary, paddingVertical: 24, textAlign: 'center' }}>{t('couple.noFriends')}</Text>
               ) : friends.map((f) => (
-                <PressScale key={f.id} onPress={() => { setFriend(f); setPetOwner(myPetInfo ? 'me' : f.pet ? 'them' : 'me'); }} accessibilityRole="button"
+                <PressScale key={f.id} onPress={() => setFriend(f)} accessibilityRole="button"
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.cardBackground }}>
                   <UserAvatar image={f.avatarImage} initial={f.avatar} status={f.status} size={44} radius={14} />
                   <Text numberOfLines={1} style={{ flex: 1, fontSize: 16, fontWeight: '800', color: c.textPrimary }}>{f.name}</Text>
@@ -122,11 +97,6 @@ export default function InviteSheet({ visible, onClose, onSent }: { visible: boo
               </View>
               <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{t('couple.since')}</Text>
               <DateField value={since} onChange={setSince} pastOnly />
-              <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{t('couple.petPick')}</Text>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                {petTile('me', myPetInfo ? `${myPetInfo.name}` : t('couple.petMine'), myPetInfo)}
-                {petTile('them', theirPet ? theirPet.name : t('couple.petTheirs', { name: friend.name }), theirPet)}
-              </View>
               <View style={{ borderRadius: 16, borderWidth: 2, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, padding: 12 }}>
                 <Text style={{ fontSize: 13, lineHeight: 19, color: c.textSecondary }}>{t('couple.inviteNote')}</Text>
               </View>

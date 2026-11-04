@@ -290,3 +290,23 @@ BEGIN
     REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
   END IF;
 END $$;
+
+-- 2026-11-04: couple home — shared points buy furniture styles (lib/coupleHome.ts).
+ALTER TABLE "couple_links" ADD COLUMN IF NOT EXISTS "room" JSONB NOT NULL DEFAULT '{}';
+CREATE TABLE IF NOT EXISTS "couple_purchases" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "couple_id" UUID NOT NULL,
+  "item_id" TEXT NOT NULL,
+  "price" INTEGER NOT NULL,
+  "buyer_id" TEXT NOT NULL,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "couple_purchases_couple_id_item_id_key" ON "couple_purchases"("couple_id", "item_id");
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'couple_purchases_couple_id_fkey') THEN
+    ALTER TABLE "couple_purchases" ADD CONSTRAINT "couple_purchases_couple_id_fkey"
+      FOREIGN KEY ("couple_id") REFERENCES "couple_links"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
+ALTER TABLE "couple_purchases" ENABLE ROW LEVEL SECURITY;

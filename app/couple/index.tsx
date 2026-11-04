@@ -12,24 +12,23 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
-import { useStore } from '@/store/useStore';
-import { usePetStore } from '@/store/usePetStore';
 import { useCoupleStore } from '@/store/useCoupleStore';
-import { fetchLeaderboard } from '@/services/api';
 import {
   daysSince, endCouple, nextMilestone, nextOccurrence, nudgePartner, respondCouple,
-  type CoupleDay, type NudgeKind,
+  type CoupleDay, type CoupleHome, type NudgeKind,
 } from '@/services/couple';
 import CoupleRoom from '@/components/couple/room/SafeCoupleRoom';
 import AnniversarySheet from '@/components/couple/AnniversarySheet';
 import InviteSheet from '@/components/couple/InviteSheet';
+import HomeShopSheet from '@/components/couple/HomeShopSheet';
 
 const L = (ml: number) => (Math.round(ml / 100) / 10).toFixed(1);
 
 /**
- * The couple space: a 3D room the two share (rotate it, tap the anniversary
- * wall, the people, the buddy and the furniture), each other's day, and
- * nudges. Before linking: invite a friend, or answer an invite.
+ * The couple space: a 3D room the two share with 豆豆 (rotate it, tap the
+ * anniversary wall, the people, the dog and the furniture), each other's day,
+ * nudges, and the shop where your pooled growth points buy furniture styles.
+ * Before linking: invite a friend, or answer an invite.
  */
 export default function CoupleScreen() {
   const c = useTheme();
@@ -38,8 +37,6 @@ export default function CoupleScreen() {
   const insets = useSafeAreaInsets();
   const layout = useDeviceLayout();
   const { couple, loaded, error, refresh } = useCoupleStore();
-  const myPet = usePetStore((s) => s.state);
-  const meId = useStore((s) => s.user?.id);
 
   const [focused, setFocused] = useState(true);
   const [annOpen, setAnnOpen] = useState(false);
@@ -48,7 +45,8 @@ export default function CoupleScreen() {
   const [event, setEvent] = useState<{ id: number; kind: NudgeKind } | null>(null);
   const [bubbles, setBubbles] = useState<{ me?: string | null; partner?: string | null; pet?: string | null; object?: string | null }>({});
   const [night, setNight] = useState(false);
-  const [partnerPet, setPartnerPet] = useState<{ kind: string; stage: number } | null>(null);
+  const [homeOpen, setHomeOpen] = useState(false);
+  const [homeNow, setHomeNow] = useState<CoupleHome | null>(null);
   const [busy, setBusy] = useState(false);
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -64,18 +62,11 @@ export default function CoupleScreen() {
   const accepted = couple?.status === 'ACCEPTED';
   const partner = couple?.partner;
 
-  // The shared buddy: mine, or my partner's (from the friends list).
-  useEffect(() => {
-    if (!accepted || !couple || couple.petOwnerId === meId) return;
-    fetchLeaderboard().then((l) => {
-      const p = l.find((e) => e.id === couple.petOwnerId)?.pet;
-      if (p) setPartnerPet({ kind: p.kind, stage: p.stage });
-    }).catch(() => {});
-  }, [accepted, couple?.petOwnerId, meId]);
-
-  const pet = couple?.petOwnerId === meId
-    ? (myPet?.profile ? { kind: myPet.profile.buddyKind, stage: myPet.stage ?? 1 } : { kind: 'cat', stage: 1 })
-    : (partnerPet ?? { kind: 'cat', stage: 1 });
+  // the room's furniture: what the shop just changed, else what the server last said
+  useEffect(() => { setHomeNow(null); }, [couple?.home]);
+  const home = homeNow ?? couple?.home ?? null;
+  // 豆豆 lives in the room; this tint only colours the stand-in cat while the model loads
+  const pet = { kind: 'cat', stage: 1 };
 
   const say = (key: 'me' | 'partner' | 'pet' | 'object', text: string, ms = 2800) => {
     setBubbles((b) => ({ ...b, [key]: text }));
@@ -238,10 +229,17 @@ export default function CoupleScreen() {
         </Text>
       </View>
       <View style={{ alignItems: 'flex-end', gap: 6 }}>
-        <PressScale onPress={unlink} accessibilityRole="button" accessibilityLabel={t('couple.menuUnlink')}
-          style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: c.ink, backgroundColor: c.cardBackground, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="ellipsis-horizontal" size={20} color={c.textPrimary} />
-        </PressScale>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <PressScale onPress={() => setHomeOpen(true)} accessibilityRole="button" accessibilityLabel={`${t('couple.homeTitle')} 🪙 ${home?.balance ?? 0}`}
+            style={{ height: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 2, borderColor: c.ink, backgroundColor: c.accent, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="home" size={16} color={c.onAccent} />
+            <Text style={{ fontFamily: FONTS.mono, fontWeight: '800', fontSize: 13, color: c.onAccent }}>🪙 {(home?.balance ?? 0).toLocaleString()}</Text>
+          </PressScale>
+          <PressScale onPress={unlink} accessibilityRole="button" accessibilityLabel={t('couple.menuUnlink')}
+            style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: c.ink, backgroundColor: c.cardBackground, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="ellipsis-horizontal" size={20} color={c.textPrimary} />
+          </PressScale>
+        </View>
         {couple!.streak > 0 ? (
           <Sticker rotate={3}><Text style={{ fontFamily: FONTS.mono, fontWeight: '700', fontSize: 11, color: c.onAccent }}>{t('couple.streak', { n: String(couple!.streak) })}</Text></Sticker>
         ) : null}
@@ -258,6 +256,7 @@ export default function CoupleScreen() {
       me={{ name: couple!.me.name, gender: couple!.me.gender }}
       partner={{ name: partner!.name, gender: partner!.gender }}
       pet={pet}
+      furniture={home?.equipped}
       daysTogether={days}
       nextLabel={nextLabel}
       frames={frames}
@@ -277,7 +276,10 @@ export default function CoupleScreen() {
   );
 
   const sheets = (
-    <AnniversarySheet visible={annOpen} onClose={() => setAnnOpen(false)} items={couple!.anniversaries} highlight={annHighlight} onChanged={refresh} />
+    <>
+      <AnniversarySheet visible={annOpen} onClose={() => setAnnOpen(false)} items={couple!.anniversaries} highlight={annHighlight} onChanged={refresh} />
+      <HomeShopSheet visible={homeOpen} onClose={() => setHomeOpen(false)} home={home} onChanged={(h) => setHomeNow(h)} />
+    </>
   );
 
   // Open iPhone Duo side by side: the room on the left page, the day and the nudges on the right.

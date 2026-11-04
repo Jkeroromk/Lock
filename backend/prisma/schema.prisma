@@ -365,11 +365,13 @@ model CoupleLink {
   addresseeId String    @map("addressee_id")
   status      String    @default("PENDING") // PENDING | ACCEPTED
   since       DateTime  @db.Date                // the day they got together
-  petOwnerId  String    @map("pet_owner_id")    // whose buddy they raise together
+  petOwnerId  String    @map("pet_owner_id")    // legacy: whose buddy they used to raise together
+  room        Json      @default("{}")          // equipped furniture style per slot (lib/coupleHome.ts)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   acceptedAt  DateTime? @map("accepted_at") @db.Timestamptz(6)
 
   anniversaries CoupleAnniversary[]
+  purchases     CouplePurchase[]
 
   @@index([requesterId])
   @@index([addresseeId])
@@ -390,6 +392,21 @@ model CoupleAnniversary {
 
   @@index([coupleId])
   @@map("couple_anniversaries")
+}
+
+/// Furniture styles a couple has bought with their shared growth points.
+model CouplePurchase {
+  id        String   @id @default(uuid()) @db.Uuid
+  coupleId  String   @map("couple_id") @db.Uuid
+  itemId    String   @map("item_id")
+  price     Int
+  buyerId   String   @map("buyer_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  couple CoupleLink @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+
+  @@unique([coupleId, itemId])
+  @@map("couple_purchases")
 }
 
 /// Last nudge per sender and kind, for the 10-minute limit.

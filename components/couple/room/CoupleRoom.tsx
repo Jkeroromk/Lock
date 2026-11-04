@@ -10,10 +10,11 @@ import { useTranslation } from '@/i18n';
 import Overlay from './Overlay';
 import { Orbit } from './orbit';
 import { SLOT_COUNT, STRIDE, World, type TapHit } from './world';
+import { CoachInstance, loadCoachAssets } from '@/components/pet/coachModel';
 
 /**
  * The couple's 3D room (ported from the approved web prototype): two
- * Animal-Crossing-style villagers and the shared buddy wander a toon-shaded
+ * Animal-Crossing-style villagers and 豆豆 (the 3D bichon) wander a toon-shaded
  * room with ink outlines; the walls between you and the room sink away as you
  * turn it. Words (names, bubbles, the anniversary board, frame captions) are
  * React Native views over the 3D view — see Overlay.tsx.
@@ -26,7 +27,10 @@ import { SLOT_COUNT, STRIDE, World, type TapHit } from './world';
 export interface CoupleRoomProps {
   me: { name: string; gender: Gender };
   partner: { name: string; gender: Gender };
-  pet: { kind: string; stage: number }; // only a cat; tint by kind (cat orange, corgi tan, penguin dark grey)
+  /** Stand-in tint while 豆豆 loads (cat orange, corgi tan, penguin dark grey). */
+  pet: { kind: string; stage: number };
+  /** Furniture style per slot (constants/coupleHome.ts); missing slots use the free default. */
+  furniture?: Record<string, string> | null;
   daysTogether: number;
   nextLabel: string; // e.g. "200 天纪念 · 还有 72 天"
   frames: { id: string; title: string; sub: string; emoji: string }[]; // up to 3
@@ -70,6 +74,14 @@ export default function CoupleRoom(props: CoupleRoomProps) {
   const link = useRef<Link>({ camera: null, w: 1, h: 1 }).current;
   const overlay = useSharedValue<number[]>(new Array(SLOT_COUNT * STRIDE).fill(0));
   useEffect(() => () => world.dispose(), [world]);
+  // 豆豆 moves in once the model has loaded (the toon cat stands in until then, or if it fails)
+  useEffect(() => {
+    let alive = true;
+    loadCoachAssets()
+      .then((a) => { if (alive) world.pet.useCoach(new CoachInstance(a, { shadows: true })); })
+      .catch((e) => { if (__DEV__) console.warn('[CoupleRoom] 豆豆 failed to load, keeping the cat:', e); });
+    return () => { alive = false; };
+  }, [world]);
 
   // latest callbacks for the gesture handlers
   const propsRef = useRef(props);
@@ -89,6 +101,8 @@ export default function CoupleRoom(props: CoupleRoomProps) {
   useEffect(() => { world.setWater(waterLevels.me, waterLevels.partner); }, [waterLevels.me, waterLevels.partner]);
   useEffect(() => { world.setFrameCount(frames.length); }, [frames.length]);
   useEffect(() => { world.setNight(night); }, [night]);
+  const furnitureKey = JSON.stringify(props.furniture ?? {});
+  useEffect(() => { world.setFurniture(props.furniture); }, [furnitureKey]);
 
   // a new event id plays the nudge (the one present at mount is old news)
   const lastEvent = useRef(event?.id ?? null);
