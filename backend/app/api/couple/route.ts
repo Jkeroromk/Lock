@@ -6,6 +6,7 @@ import { sendPushToUser } from '@/lib/notify';
 import { pushName } from '@/lib/sanitize';
 import { trustedTimeZone } from '@/lib/timezone';
 import { localDayKey, safeTimeZone } from '@/lib/pet';
+import { homeOf } from '@/lib/coupleHome';
 import {
   PERSON_SELECT, activeLinkFor, anniversaryOrder, coupleStreak, dayFor, isDayKey, keyOf, toPerson,
 } from '@/lib/couple';
@@ -34,10 +35,11 @@ export async function GET(request: NextRequest) {
     let today: { me: Day; partner: Day } | null = null;
     let streak = 0;
     let stored: { id: string; title: string; date: Date; yearly: boolean; emoji: string }[] = [];
+    let home: Awaited<ReturnType<typeof homeOf>> | null = null;
 
     if (link.status === 'ACCEPTED') {
       const partnerZone = safeTimeZone(partnerRow.timeZone);
-      const [me, partner, s, rows] = await Promise.all([
+      const [me, partner, s, rows, h] = await Promise.all([
         dayFor(userId, myZone, meRow.goalSettings),
         dayFor(partnerId, partnerZone, partnerRow.goalSettings),
         coupleStreak(userId, myZone, partnerId, partnerZone, todayKey),
@@ -45,10 +47,12 @@ export async function GET(request: NextRequest) {
           where: { coupleId: link.id },
           select: { id: true, title: true, date: true, yearly: true, emoji: true },
         }),
+        homeOf(link),
       ]);
       today = { me, partner };
       streak = s;
       stored = rows;
+      home = h;
     }
 
     const anniversaries = [
@@ -70,6 +74,7 @@ export async function GET(request: NextRequest) {
         streak,
         today,
         anniversaries,
+        home,
       },
     });
   } catch (error) {

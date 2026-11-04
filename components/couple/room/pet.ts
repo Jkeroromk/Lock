@@ -2,11 +2,16 @@ import * as THREE from 'three';
 import { Actor } from './actor';
 import { Kit, castShadows, disposeTree, flat } from './kit';
 import { pickTarget } from './physics';
+import type { CoachInstance } from '@/components/pet/coachModel';
 
 /**
- * The shared buddy: always a round cat model for now, tinted by the buddy's
- * kind (cat orange, corgi tan, penguin dark grey) and a little bigger each stage.
+ * The room's dog: 豆豆, the same 3D bichon as the buddy tab (useCoach), walking,
+ * idling, napping in its bed and hopping when tapped. Until that model has
+ * loaded — or if it can't — a round toon cat stands in.
  */
+const COACH_SCALE = 0.62; // the bichon is ~1 unit tall; people are ~1.6
+const AWAKE_LOOK = { face: 'open', tongue: 'auto', blink: true } as const;
+const NAP_LOOK = { face: 'closed', tongue: 'in', blink: false } as const;
 
 interface Tint { fur: string; stripe: string; belly: string }
 const TINTS: Record<string, Tint> = {
@@ -83,8 +88,21 @@ function buildRig(kit: Kit, c: Tint): Rig {
 export class Pet extends Actor {
   private rig: Rig;
   private kind: string;
+  private coach: CoachInstance | null = null;
+  private hopFired = false;
   hop = 0;
   napping = false;
+
+  /** Swap the stand-in cat for 豆豆. */
+  useCoach(inst: CoachInstance) {
+    if (this.coach) return;
+    this.coach = inst;
+    this.rig.group.visible = false;
+    inst.root.scale.setScalar(COACH_SCALE);
+    inst.walkSpeed = 1.35; // small dog, short legs: quicker steps at the room's walking speed
+    this.root.scale.setScalar(1);
+    this.root.add(inst.root);
+  }
 
   constructor(private kit: Kit, kind: string, stage: number) {
     super();
@@ -106,9 +124,20 @@ export class Pet extends Actor {
     this.root.add(this.rig.group);
   }
 
-  setStage(stage: number) { this.root.scale.setScalar(scaleOf(stage)); }
+  setStage(stage: number) { if (!this.coach) this.root.scale.setScalar(scaleOf(stage)); }
 
-  dispose() { disposeTree(this.rig.group); }
+  dispose() {
+    disposeTree(this.rig.group);
+    if (this.coach) {
+      // the dog's geometry is shared with the buddy tab: take it out before the room frees its tree
+      this.root.remove(this.coach.root);
+      this.coach.dispose();
+      this.coach = null;
+    }
+  }
+
+  /** Heart eyes for a moment (the dog only). */
+  love() { this.coach?.love(); }
 
   /** Go and nap in the bed. */
   nap(bedX: number, bedZ: number, onArrive: () => void) {
@@ -129,6 +158,25 @@ export class Pet extends Actor {
       } else {
         pickTarget(this.target, this.radius);
         this.goTo(this.target.x, this.target.z);
+      }
+    }
+    const c = this.coach;
+    if (c) {
+      const resting = this.napping && !this.hasTarget && t < this.idleUntil;
+      if (this.hop > 0 && !this.hopFired && !resting) { this.hopFired = true; c.hop(); }
+      if (this.hop <= 0) this.hopFired = false;
+      this.hop = Math.max(0, this.hop - dt * 1.6);
+      c.setBase(moving ? 'walk' : resting ? 'sit' : 'idle');
+      c.look = resting ? NAP_LOOK : AWAKE_LOOK;
+      try {
+        c.update(dt, !reduced);
+        return;
+      } catch (e) {
+        // never let the dog take the room (or the app) down: fall back to the cat
+        if (__DEV__) console.warn('[room] 豆豆 update failed, back to the cat:', e);
+        this.root.remove(c.root);
+        this.coach = null;
+        this.rig.group.visible = true;
       }
     }
     const r = this.rig;

@@ -2,201 +2,20 @@ import { forwardRef, Suspense, useCallback, useEffect, useImperativeHandle, useM
 import { PanResponder, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Canvas, advance, useFrame, useStore, type RootState } from '@react-three/fiber/native';
 import { useReducedMotion } from 'react-native-reanimated';
-import { Asset } from 'expo-asset';
-import { File } from 'expo-file-system';
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { CoachPose } from '@/constants/pets';
+import { CoachInstance, loadCoachAssets, type CoachAssets, type CoachClip, type CoachLook } from './coachModel';
 import { FloatFx, type Fx, type PetSpriteHandle } from './PetSprite';
 import { recordJsError } from '@/lib/crashlog';
 
 /**
- * The bichon coach in real-time 3D (Tripo model v3, animated in Blender).
- *
- * coach_v3.glb: meshes body / eye_L / eye_R / nose / tongue / headband /
- * whistle / collar on one rig, clips idle, walk, sit (sits down, holds, stands
- * up), hop. The body has a "mouth_closed" morph target.
- *
- * Faces never deform: blinking and expressions are texture swaps on the two
- * eye meshes (open, closed, happy, sad, sleepy, determined, love, star). When
- * the tongue goes in, the tongue bone shrinks to nothing, the mouth_closed
- * morph seals the mouth and the body switches to a texture with the inside of
- * the mouth painted as fur — so a closed mouth has no seam at all.
- *
- * Loading avoids the parts of react-three-fiber's native polyfill that use the
- * old expo-file-system API (see couple/room/textures.ts): the GLB has no
- * embedded images and is read with the new File API; textures are separate
- * bundled JPEGs (stored linear-encoded) that expo-gl uploads straight from
- * their local file.
+ * The bichon coach in real-time 3D on the buddy tab. The model, textures and
+ * expression / mouth logic live in coachModel.ts (shared with the couple room).
  *
  * Until the model is ready — or if anything fails — `fallback` (the 2D
  * PetSprite) is shown, so the tab never looks empty. This module is only
  * required at runtime by Coach3D.tsx, which guards it.
  */
-
-const MODEL = require('@/assets/pet/3d/coach_v3.glb');
-const EYE_FACES = ['open', 'closed', 'happy', 'sad', 'sleepy', 'determined', 'love', 'star'] as const;
-type Face = (typeof EYE_FACES)[number];
-const EYE_TEX: Record<'L' | 'R', Record<Face, number>> = {
-  L: {
-    open: require('@/assets/pet/3d/eyeL_open.jpg'), closed: require('@/assets/pet/3d/eyeL_closed.jpg'),
-    happy: require('@/assets/pet/3d/eyeL_happy.jpg'), sad: require('@/assets/pet/3d/eyeL_sad.jpg'),
-    sleepy: require('@/assets/pet/3d/eyeL_sleepy.jpg'), determined: require('@/assets/pet/3d/eyeL_determined.jpg'),
-    love: require('@/assets/pet/3d/eyeL_love.jpg'), star: require('@/assets/pet/3d/eyeL_star.jpg'),
-  },
-  R: {
-    open: require('@/assets/pet/3d/eyeR_open.jpg'), closed: require('@/assets/pet/3d/eyeR_closed.jpg'),
-    happy: require('@/assets/pet/3d/eyeR_happy.jpg'), sad: require('@/assets/pet/3d/eyeR_sad.jpg'),
-    sleepy: require('@/assets/pet/3d/eyeR_sleepy.jpg'), determined: require('@/assets/pet/3d/eyeR_determined.jpg'),
-    love: require('@/assets/pet/3d/eyeR_love.jpg'), star: require('@/assets/pet/3d/eyeR_star.jpg'),
-  },
-};
-const PART_TEX = {
-  body: require('@/assets/pet/3d/body_base.jpg'),
-  bodyClosed: require('@/assets/pet/3d/body_closed.jpg'),
-  tongue: require('@/assets/pet/3d/tongue.jpg'),
-  headband: require('@/assets/pet/3d/headband.jpg'),
-  whistle: require('@/assets/pet/3d/whistle.jpg'),
-  collar: require('@/assets/pet/3d/collar.jpg'),
-};
-type PartKey = keyof typeof PART_TEX;
-
-/* ---------- small runtime shims for three's GLTFLoader on Hermes ---------- */
-function shims() {
-  const g = globalThis as any;
-  if (typeof g.navigator !== 'undefined' && typeof g.navigator.userAgent !== 'string') {
-    try { g.navigator.userAgent = 'ReactNative'; } catch {}
-  }
-  if (typeof g.TextDecoder === 'undefined') {
-    g.TextDecoder = class {
-      decode(input?: ArrayBuffer | ArrayBufferView) {
-        if (!input) return '';
-        const b = input instanceof ArrayBuffer ? new Uint8Array(input) : new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
-        let out = '';
-        for (let i = 0; i < b.length;) {
-          const c = b[i++];
-          if (c < 0x80) out += String.fromCharCode(c);
-          else if (c < 0xe0) out += String.fromCharCode(((c & 0x1f) << 6) | (b[i++] & 0x3f));
-          else if (c < 0xf0) out += String.fromCharCode(((c & 0x0f) << 12) | ((b[i++] & 0x3f) << 6) | (b[i++] & 0x3f));
-          else {
-            const cp = (((c & 0x07) << 18) | ((b[i++] & 0x3f) << 12) | ((b[i++] & 0x3f) << 6) | (b[i++] & 0x3f)) - 0x10000;
-            out += String.fromCharCode(0xd800 + (cp >> 10), 0xdc00 + (cp & 0x3ff));
-          }
-        }
-        return out;
-      }
-    };
-  }
-}
-
-async function localUri(mod: number) {
-  const a = await Asset.fromModule(mod).downloadAsync();
-  const uri = a.localUri || a.uri;
-  if (!uri) throw new Error('asset has no uri');
-  return uri;
-}
-
-/** A texture expo-gl uploads from a local file (no DOM image needed). */
-async function loadTexture(mod: number, srgb: boolean, size: number) {
-  const uri = await localUri(mod);
-  const t = new THREE.Texture();
-  t.image = { data: { localUri: uri }, width: size, height: size } as any;
-  (t as any).isDataTexture = true; // force EXGL's non-DOM upload path
-  t.flipY = false; // glTF UV convention
-  // Colour textures are stored already linear-encoded (converted at build
-  // time), so no sRGB texture format is needed from expo-gl; the renderer
-  // still encodes its output to sRGB, which keeps lighting correct and the
-  // fur white instead of muddy grey.
-  t.colorSpace = THREE.NoColorSpace;
-  void srgb;
-  t.generateMipmaps = true;
-  t.minFilter = THREE.LinearMipmapLinearFilter;
-  t.needsUpdate = true;
-  return t;
-}
-
-/** Scale the head/neck rotation of a clip towards its first pose (1 = unchanged). */
-function soften(clip: THREE.AnimationClip, factor: number) {
-  const q0 = new THREE.Quaternion(), q = new THREE.Quaternion();
-  for (const track of clip.tracks) {
-    if (!/(Head|Neck)/i.test(track.name) || !track.name.endsWith('.quaternion')) continue;
-    const v = track.values;
-    q0.set(v[0], v[1], v[2], v[3]);
-    for (let i = 0; i < v.length; i += 4) {
-      q.set(v[i], v[i + 1], v[i + 2], v[i + 3]).slerp(q0, 1 - factor);
-      v[i] = q.x; v[i + 1] = q.y; v[i + 2] = q.z; v[i + 3] = q.w;
-    }
-  }
-}
-
-interface Loaded {
-  scene: THREE.Group;
-  clips: THREE.AnimationClip[];
-  eyes: { L: THREE.MeshStandardMaterial; R: THREE.MeshStandardMaterial };
-  eyeTex: Record<'L' | 'R', Record<Face, THREE.Texture>>;
-  bodyMat: THREE.MeshStandardMaterial;
-  bodyTex: { open: THREE.Texture; closed: THREE.Texture };
-  body: THREE.SkinnedMesh | null;
-  mouthMorph: number; // index of mouth_closed, -1 if missing
-  tongueBone: THREE.Object3D | null;
-}
-
-let cache: Promise<Loaded> | null = null;
-function loadCoach(): Promise<Loaded> {
-  if (cache) return cache;
-  cache = (async () => {
-    shims();
-    const uri = await localUri(MODEL);
-    const bytes = await new File(uri).bytes();
-    const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
-    const gltf = await new Promise<any>((res, rej) => new GLTFLoader().parse(buf, '', res, rej));
-
-    const part = Object.fromEntries(await Promise.all((Object.keys(PART_TEX) as PartKey[]).map(async (k) =>
-      [k, await loadTexture(PART_TEX[k], true, k === 'body' || k === 'bodyClosed' ? 2048 : 512)] as const))) as Record<PartKey, THREE.Texture>;
-    const eyeTex = { L: {}, R: {} } as Record<'L' | 'R', Record<Face, THREE.Texture>>;
-    await Promise.all((['L', 'R'] as const).flatMap((side) => EYE_FACES.map(async (f) => {
-      eyeTex[side][f] = await loadTexture(EYE_TEX[side][f], true, 512);
-    })));
-
-    const std = (map: THREE.Texture | null, roughness: number, extra: Partial<THREE.MeshStandardMaterialParameters> = {}) =>
-      new THREE.MeshStandardMaterial({ map, roughness, metalness: 0, ...extra });
-    const bodyMat = std(part.body, 0.9);
-    const eyes = { L: std(eyeTex.L.open, 0.35), R: std(eyeTex.R.open, 0.35) };
-    const mats: Record<string, THREE.Material> = {
-      body: bodyMat,
-      eye_L: eyes.L,
-      eye_R: eyes.R,
-      // glossy black button nose (linear colour from the Blender material)
-      nose: std(null, 0.3, { color: new THREE.Color().setRGB(0.018, 0.014, 0.013, THREE.LinearSRGBColorSpace) }),
-      tongue: std(part.tongue, 0.55),
-      headband: std(part.headband, 0.8),
-      whistle: std(part.whistle, 0.45),
-      collar: std(part.collar, 0.7),
-    };
-
-    // The idle clip's head turns read as head-shaking on a phone-sized view:
-    // tone the head/neck rotation down and let it play a little slower.
-    for (const clip of gltf.animations as THREE.AnimationClip[]) if (clip.name === 'idle') soften(clip, 0.55);
-
-    const scene: THREE.Group = gltf.scene;
-    let body: THREE.SkinnedMesh | null = null;
-    scene.traverse((o: any) => {
-      if (!o.isMesh) return;
-      const m = mats[o.name];
-      if (m) o.material = m;
-      if (o.name === 'body') body = o;
-      o.frustumCulled = false; // skinned bounds don't follow the pose
-    });
-    const b = body as THREE.SkinnedMesh | null;
-    const mouthMorph = b?.morphTargetDictionary?.mouth_closed ?? -1;
-    return {
-      scene, clips: gltf.animations, eyes, eyeTex, bodyMat, bodyTex: { open: part.body, closed: part.bodyClosed },
-      body: b, mouthMorph, tongueBone: scene.getObjectByName('tongue01') ?? null,
-    };
-  })();
-  cache.catch(() => { cache = null; });
-  return cache;
-}
 
 /**
  * Diagnostics (temporary): the first on-device crash was a TypeError inside
@@ -233,8 +52,7 @@ function instrument(gl: THREE.WebGLRenderer) {
 
 /* --------------------------------- scene --------------------------------- */
 /** What each app pose looks like: body clip, eyes, and whether the tongue is out. */
-interface Look { clip: 'idle' | 'sit'; face: Face; tongue: 'out' | 'in' | 'auto'; blink: boolean }
-const LOOKS: Record<CoachPose, Look> = {
+const LOOKS: Record<CoachPose, CoachLook & { clip: CoachClip }> = {
   idle: { clip: 'idle', face: 'open', tongue: 'auto', blink: true },
   blink: { clip: 'idle', face: 'open', tongue: 'auto', blink: true },
   cheer: { clip: 'idle', face: 'happy', tongue: 'out', blink: false },
@@ -243,135 +61,40 @@ const LOOKS: Record<CoachPose, Look> = {
   sad: { clip: 'sit', face: 'sad', tongue: 'in', blink: true },
   sleep: { clip: 'sit', face: 'closed', tongue: 'in', blink: false },
 };
-const SIT_HOLD = 1.2; // seconds into "sit" where the dog is fully seated
 
 interface Ctl { hop: () => void; love: () => void; yaw: { current: number }; state: () => RootState }
 
-function Coach({ data, pose, animate, ctl }: { data: Loaded; pose: CoachPose; animate: boolean; ctl: { current: Ctl | null } }) {
+function Coach({ data, pose, animate, ctl }: { data: CoachAssets; pose: CoachPose; animate: boolean; ctl: { current: Ctl | null } }) {
+  const inst = useMemo(() => new CoachInstance(data), [data]);
   const root = useMemo(() => {
     const g = new THREE.Group();
-    g.add(data.scene);
+    g.add(inst.root);
     return g;
-  }, [data]);
-  const mixer = useMemo(() => new THREE.AnimationMixer(data.scene), [data]);
-  const actions = useMemo(() => {
-    const m: Record<string, THREE.AnimationAction> = {};
-    for (const c of data.clips) m[c.name] = mixer.clipAction(c);
-    return m;
-  }, [data, mixer]);
-  const look = LOOKS[pose] ?? LOOKS.idle;
-  const current = useRef<THREE.AnimationAction | null>(null);
-  const holdAt = useRef<number | null>(null);
-  const hopping = useRef(false);
-  const face = useRef<Face>('open');
-  const loveUntil = useRef(0);
-  const blinkUntil = useRef(0);
-  const nextBlink = useRef(2 + Math.random() * 2);
-  const tongueOut = useRef(true);
-  const nextTongue = useRef(6 + Math.random() * 5);
-  const mouth = useRef(0); // 0 = open (tongue out) … 1 = closed
-  const clock = useRef(0);
+  }, [inst]);
   const yaw = useRef(0.35);
   const store = useStore();
-
-  const play = useCallback((name: string, opts: { once?: boolean; holdAt?: number } = {}) => {
-    const a = actions[name];
-    if (!a) return;
-    const prev = current.current;
-    a.reset();
-    a.setLoop(opts.once || opts.holdAt != null ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
-    a.timeScale = name === 'idle' ? 0.8 : 1;
-    a.clampWhenFinished = true;
-    a.paused = false;
-    holdAt.current = opts.holdAt ?? null;
-    a.enabled = true;
-    a.play();
-    if (prev && prev !== a) a.crossFadeFrom(prev, 0.3, false);
-    current.current = a;
-  }, [actions]);
-
-  const base = useCallback(() => {
-    if (look.clip === 'sit') play('sit', { holdAt: SIT_HOLD });
-    else play('idle'); // cheer = idle with a ^ ^ face; PetHome adds the celebration hop
-  }, [look.clip, play]);
+  const look = LOOKS[pose] ?? LOOKS.idle;
 
   useEffect(() => {
-    if (!hopping.current) base();
-  }, [base]);
-
-  useEffect(() => {
-    const onFinished = (e: any) => {
-      if (e.action === actions.hop && hopping.current) {
-        hopping.current = false;
-        base();
-      }
-    };
-    mixer.addEventListener('finished', onFinished);
-    return () => mixer.removeEventListener('finished', onFinished);
-  }, [mixer, actions, base]);
+    inst.look = { face: look.face, tongue: look.tongue, blink: look.blink };
+    inst.setBase(look.clip);
+  }, [inst, look]);
 
   useEffect(() => {
     ctl.current = {
-      hop: () => {
-        if (!animate || pose === 'sleep') return;
-        hopping.current = true;
-        play('hop', { once: true });
-      },
-      love: () => { if (pose !== 'sleep') loveUntil.current = clock.current + 1.6; },
+      hop: () => { if (animate && pose !== 'sleep') inst.hop(); },
+      love: () => { if (pose !== 'sleep') inst.love(); },
       yaw,
       state: () => store.getState(),
     };
-  }, [animate, pose, play, ctl, store]);
+  }, [animate, pose, inst, ctl, store]);
 
-  useEffect(() => () => { mixer.stopAllAction(); }, [mixer]);
+  useEffect(() => () => inst.dispose(), [inst]);
 
   useFrame((_, dt) => {
-    const d = Math.min(dt, 0.05);
-    const t = (clock.current += d);
-    mixer.update(animate ? d : 0);
-    const a = current.current;
-    if (a && holdAt.current != null && a.time >= holdAt.current) a.paused = true;
-
-    // ---- eyes: pose face, ^ ^ while hopping, ♥ after a pat, blinks now and then
-    let want: Face = look.face;
-    if (t < loveUntil.current) want = 'love';
-    else if (hopping.current && pose !== 'sleep') want = 'happy';
-    else if (look.blink && animate) {
-      if (t >= nextBlink.current) {
-        blinkUntil.current = t + 0.13;
-        nextBlink.current = t + 2.2 + Math.random() * 2.6;
-        if (Math.random() < 0.25) nextBlink.current = t + 0.32; // double blink
-      }
-      if (t < blinkUntil.current) want = 'closed';
-    }
-    if (want !== face.current) {
-      face.current = want;
-      for (const side of ['L', 'R'] as const) {
-        data.eyes[side].map = data.eyeTex[side][want];
-        data.eyes[side].needsUpdate = true;
-      }
-    }
-
-    // ---- mouth: tongue out (panting) or in with the mouth sealed
-    let out: boolean;
-    if (look.tongue === 'auto') {
-      if (animate && t >= nextTongue.current) {
-        tongueOut.current = !tongueOut.current;
-        nextTongue.current = t + (tongueOut.current ? 5 + Math.random() * 6 : 3 + Math.random() * 4);
-      }
-      out = tongueOut.current;
-    } else out = look.tongue === 'out';
-    if (hopping.current || t < loveUntil.current) out = true;
-    const target = out ? 0 : 1;
-    mouth.current += (target - mouth.current) * Math.min(1, d * (animate ? 12 : 1000));
-    const k = mouth.current;
-    if (data.body && data.mouthMorph >= 0 && data.body.morphTargetInfluences) data.body.morphTargetInfluences[data.mouthMorph] = k;
-    if (data.tongueBone) data.tongueBone.scale.multiplyScalar(Math.max(0.01, 1 - k));
-    const bodyMap = k > 0.5 ? data.bodyTex.closed : data.bodyTex.open;
-    if (data.bodyMat.map !== bodyMap) { data.bodyMat.map = bodyMap; data.bodyMat.needsUpdate = true; }
-
+    inst.update(dt, animate);
     // drag-to-turn eases back to a slight three-quarter view
-    root.rotation.y += (yaw.current - root.rotation.y) * Math.min(1, d * 10);
+    root.rotation.y += (yaw.current - root.rotation.y) * Math.min(1, Math.min(dt, 0.05) * 10);
   });
 
   return <primitive object={root} />;
@@ -400,7 +123,7 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
 ) {
   const reduce = useReducedMotion();
   const animate = !reduce;
-  const [data, setData] = useState<Loaded | null>(null);
+  const [data, setData] = useState<CoachAssets | null>(null);
   const [failed, setFailed] = useState(false);
   const [fx, setFx] = useState<Fx[]>([]);
   const ctl = useRef<Ctl | null>(null);
@@ -409,7 +132,7 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
 
   useEffect(() => {
     let alive = true;
-    loadCoach().then((d) => alive && setData(d)).catch((e) => {
+    loadCoachAssets().then((d) => alive && setData(d)).catch((e) => {
       recordJsError('coach3d:load', e);
       if (__DEV__) console.warn('[Coach3D] falling back to 2D:', e);
       if (alive) setFailed(true);

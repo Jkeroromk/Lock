@@ -6,6 +6,7 @@ import { Villager, colorOf } from './villager';
 import { Pet } from './pet';
 import { smooth } from './physics';
 import { makeTextures, disposeTextures, type RoomTextures } from './textures';
+import { HOME_ITEM, HOME_SLOTS, equippedLooks, type LookBySlot, type HomeSlot } from '@/constants/coupleHome';
 
 /**
  * The whole 3D room as plain three.js objects: floor, four cutaway walls,
@@ -89,6 +90,18 @@ export class World {
   private nightWant = 0;
 
   private bottleWater: THREE.Mesh[] = [];
+
+  /** Materials and parts the furniture styles change (setFurniture). */
+  private fx = {} as {
+    floor: THREE.MeshToonMaterial; walls: THREE.MeshToonMaterial[];
+    rugOuter: THREE.MeshToonMaterial; rugInner: THREE.MeshToonMaterial;
+    sofaSeat: THREE.MeshToonMaterial; sofaBack: THREE.MeshToonMaterial; sofaPillow: THREE.MeshToonMaterial;
+    tableTop: THREE.MeshToonMaterial; tableLeg: THREE.MeshToonMaterial;
+    leaves: THREE.MeshToonMaterial; flowers: THREE.Group; oranges: THREE.Group;
+    bedRing: THREE.MeshToonMaterial; bedInside: THREE.MeshToonMaterial;
+  };
+  private lampColors = { on: '#FFF1BF', light: '#FFD98A' };
+  private furniture: Record<HomeSlot, string> = equippedLooks(null);
   private frames: THREE.Group[] = [];
   private frameCount = 0;
   private leftWall!: Wall;
@@ -165,13 +178,16 @@ export class World {
 
   private buildFloor() {
     const k = this.kit;
+    this.fx.floor = k.toonWith({ color: '#FFFFFF', map: this.tex.planks });
     const floor = k.mesh(new THREE.BoxGeometry(ROOM * 2, 0.2, ROOM * 2), '#E8CF9C', {
-      outline: 0.01, receive: true, mat: k.toonWith({ color: '#FFFFFF', map: this.tex.planks }),
+      outline: 0.01, receive: true, mat: this.fx.floor,
     });
     floor.position.y = -0.1;
-    const rug = k.mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.04, 48), '#FFD43B', { outline: 0.02, receive: true });
+    this.fx.rugOuter = k.toonWith({ color: '#FFD43B' });
+    this.fx.rugInner = k.toonWith({ color: '#FFE58A' });
+    const rug = k.mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.04, 48), '#FFD43B', { outline: 0.02, receive: true, mat: this.fx.rugOuter });
     rug.position.set(0.3, 0.02, 0.4);
-    const rug2 = k.mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.05, 48), '#FFE58A', { outline: 0, receive: true });
+    const rug2 = k.mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.05, 48), '#FFE58A', { outline: 0, receive: true, mat: this.fx.rugInner });
     rug2.position.set(0.3, 0.03, 0.4);
     this.root.add(floor, rug, rug2);
   }
@@ -196,8 +212,10 @@ export class World {
 
     const g = new THREE.Group();
     const lift = new THREE.Group(); // scaled from the floor up
+    const paperMat = sk.toonWith({ color: '#FFFFFF', map: paper });
+    (this.fx.walls ??= []).push(paperMat);
     const body = sk.mesh(new THREE.BoxGeometry(ROOM * 2 + 0.2, WALL_H, 0.2), '#FFF1BF', {
-      outline: 0.008, receive: true, mat: sk.toonWith({ color: '#FFFFFF', map: paper }),
+      outline: 0.008, receive: true, mat: paperMat,
     });
     body.position.y = WALL_H / 2;
     const cap = sk.mesh(new THREE.BoxGeometry(ROOM * 2 + 0.24, 0.08, 0.26), '#C77B4A', { outline: 0 });
@@ -336,11 +354,15 @@ export class World {
     const k = this.kit;
     // sofa against the left wall
     const sofa = new THREE.Group();
-    const seat = k.mesh(rbox(1.1, 0.45, 2.6), '#7FB8E8'); seat.position.y = 0.3;
-    const back = k.mesh(rbox(0.35, 0.8, 2.6), '#5E9AD0'); back.position.set(-0.45, 0.65, 0);
-    const armL = k.mesh(rbox(1.1, 0.55, 0.3), '#5E9AD0'); armL.position.set(0, 0.45, -1.3);
-    const armR = k.mesh(rbox(1.1, 0.55, 0.3), '#5E9AD0'); armR.position.set(0, 0.45, 1.3);
-    const pillow = k.mesh(rbox(0.25, 0.42, 0.5), '#FFD43B'); pillow.position.set(-0.2, 0.75, 0.6); pillow.rotation.x = 0.2;
+    const fx = this.fx;
+    fx.sofaSeat = k.toonWith({ color: '#7FB8E8' });
+    fx.sofaBack = k.toonWith({ color: '#5E9AD0' });
+    fx.sofaPillow = k.toonWith({ color: '#FFD43B' });
+    const seat = k.mesh(rbox(1.1, 0.45, 2.6), '', { mat: fx.sofaSeat }); seat.position.y = 0.3;
+    const back = k.mesh(rbox(0.35, 0.8, 2.6), '', { mat: fx.sofaBack }); back.position.set(-0.45, 0.65, 0);
+    const armL = k.mesh(rbox(1.1, 0.55, 0.3), '', { mat: fx.sofaBack }); armL.position.set(0, 0.45, -1.3);
+    const armR = k.mesh(rbox(1.1, 0.55, 0.3), '', { mat: fx.sofaBack }); armR.position.set(0, 0.45, 1.3);
+    const pillow = k.mesh(rbox(0.25, 0.42, 0.5), '', { mat: fx.sofaPillow }); pillow.position.set(-0.2, 0.75, 0.6); pillow.rotation.x = 0.2;
     sofa.add(seat, back, armL, armR, pillow);
     castShadows(sofa);
     sofa.position.set(-3.1, 0, 0.6);
@@ -348,8 +370,10 @@ export class World {
 
     // round table with two mugs
     const table = new THREE.Group();
-    const top = k.mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 28), '#FFFFFF'); top.position.y = 0.62;
-    const leg = k.mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.6, 12), '#C77B4A'); leg.position.y = 0.3;
+    fx.tableTop = k.toonWith({ color: '#FFFFFF' });
+    fx.tableLeg = k.toonWith({ color: '#C77B4A' });
+    const top = k.mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 28), '', { mat: fx.tableTop }); top.position.y = 0.62;
+    const leg = k.mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.6, 12), '', { mat: fx.tableLeg }); leg.position.y = 0.3;
     const mugGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.18, 14);
     const mug1 = k.mesh(mugGeo, '#FF8FA3'); mug1.position.set(-0.2, 0.76, 0.1);
     const mug2 = k.mesh(mugGeo, '#4DB6FF'); mug2.position.set(0.18, 0.76, -0.12);
@@ -362,16 +386,31 @@ export class World {
     // plant in the corner
     const pot = k.mesh(new THREE.CylinderGeometry(0.32, 0.24, 0.55, 18), '#C77B4A'); pot.position.set(3.25, 0.28, -3.25);
     const leaves = new THREE.Group();
+    fx.leaves = k.toonWith({ color: '#6CC27A' });
     ([[0, 0.95, 0, 0.42], [-0.22, 1.2, 0.1, 0.32], [0.2, 1.3, -0.1, 0.34], [0, 1.5, 0.05, 0.26]] as const).forEach(([x, y, z, r]) => {
-      const l = k.mesh(new THREE.SphereGeometry(r, 16, 12), '#6CC27A'); l.position.set(x, y, z); leaves.add(l);
+      const l = k.mesh(new THREE.SphereGeometry(r, 16, 12), '', { mat: fx.leaves }); l.position.set(x, y, z); leaves.add(l);
     });
+    // styles that grow something on the plant
+    const dot = new THREE.SphereGeometry(0.075, 10, 8);
+    const spots: [number, number, number][] = [[0.32, 1.05, 0.22], [-0.38, 1.25, 0.2], [0.05, 1.42, 0.3], [0.36, 1.4, -0.05], [-0.15, 0.9, 0.38], [-0.3, 1.55, -0.05]];
+    fx.flowers = new THREE.Group();
+    fx.oranges = new THREE.Group();
+    spots.forEach(([x, y, z], i) => {
+      const f = k.mesh(dot, i % 2 ? '#FFD43B' : '#FF8FA3', { outline: 0.12 }); f.position.set(x, y, z); fx.flowers.add(f);
+      const o = k.mesh(dot, '#FFA53B', { outline: 0.12 }); o.position.set(x, y - 0.04, z); o.scale.setScalar(1.25); fx.oranges.add(o);
+    });
+    fx.flowers.visible = false;
+    fx.oranges.visible = false;
+    leaves.add(fx.flowers, fx.oranges);
     leaves.position.set(3.25, 0, -3.25);
     castShadows(pot); castShadows(leaves);
     this.root.add(pot, leaves);
 
     // pet bed + bowl
-    const bed = k.mesh(new THREE.TorusGeometry(0.42, 0.14, 10, 24), '#FF8FA3'); bed.rotation.x = Math.PI / 2; bed.position.set(-1.6, 0.12, -2.6);
-    const bedIn = k.mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 20), '#FFE0E6', { outline: 0 }); bedIn.position.set(-1.6, 0.05, -2.6);
+    fx.bedRing = k.toonWith({ color: '#FF8FA3' });
+    fx.bedInside = k.toonWith({ color: '#FFE0E6' });
+    const bed = k.mesh(new THREE.TorusGeometry(0.42, 0.14, 10, 24), '', { mat: fx.bedRing }); bed.rotation.x = Math.PI / 2; bed.position.set(-1.6, 0.12, -2.6);
+    const bedIn = k.mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 20), '', { outline: 0, mat: fx.bedInside }); bedIn.position.set(-1.6, 0.05, -2.6);
     const bowl = k.mesh(new THREE.CylinderGeometry(0.2, 0.14, 0.12, 16), '#FFFFFF'); bowl.position.set(-0.6, 0.06, -2.9);
     this.root.add(this.tappable(bed, 'bed'), bedIn, bowl);
 
@@ -414,7 +453,33 @@ export class World {
   toggleLamp() {
     this.lampOn = !this.lampOn;
     this.lampLight.intensity = this.lampOn ? 1.1 : 0;
-    this.lampShade.color.set(this.lampOn ? '#FFF1BF' : '#B9B7AE');
+    this.lampShade.color.set(this.lampOn ? this.lampColors.on : '#B9B7AE');
+  }
+
+  /** Show the couple's furniture styles (slot → item id; missing slots use the free default). */
+  setFurniture(equipped: Record<string, string> | null | undefined) {
+    this.furniture = equippedLooks(equipped);
+    const fx = this.fx;
+    for (const slot of HOME_SLOTS) {
+      const it = HOME_ITEM[this.furniture[slot]];
+      if (!it) continue;
+      switch (slot) {
+        case 'sofa': { const l = it.look as LookBySlot['sofa']; fx.sofaSeat.color.set(l.seat); fx.sofaBack.color.set(l.back); fx.sofaPillow.color.set(l.pillow); break; }
+        case 'rug': { const l = it.look as LookBySlot['rug']; fx.rugOuter.color.set(l.outer); fx.rugInner.color.set(l.inner); break; }
+        case 'wall': { const l = it.look as LookBySlot['wall']; fx.walls.forEach((m) => m.color.set(l.tint)); break; }
+        case 'floor': { const l = it.look as LookBySlot['floor']; fx.floor.color.set(l.tint); break; }
+        case 'lamp': {
+          const l = it.look as LookBySlot['lamp'];
+          this.lampColors = { on: l.shade, light: l.light };
+          this.lampLight.color.set(l.light);
+          if (this.lampOn) this.lampShade.color.set(l.shade);
+          break;
+        }
+        case 'plant': { const l = it.look as LookBySlot['plant']; fx.leaves.color.set(l.leaves); fx.flowers.visible = l.extra === 'flowers'; fx.oranges.visible = l.extra === 'oranges'; break; }
+        case 'bed': { const l = it.look as LookBySlot['bed']; fx.bedRing.color.set(l.ring); fx.bedInside.color.set(l.inside); break; }
+        case 'table': { const l = it.look as LookBySlot['table']; fx.tableTop.color.set(l.top); fx.tableLeg.color.set(l.leg); break; }
+      }
+    }
   }
 
   // ── things that happen ──
@@ -484,6 +549,7 @@ export class World {
     const hit = (o: THREE.Object3D) => this.ray.intersectObject(o, true).length > 0;
     if (hit(this.pet.root)) {
       this.pet.hop = 1;
+      this.pet.love();
       this.burst(this.pet.position.x, 1, this.pet.position.z, this.tex.heart, 5);
       return { kind: 'pet' };
     }

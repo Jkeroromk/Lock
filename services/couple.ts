@@ -2,7 +2,8 @@ import { api } from './client';
 
 /**
  * Couple space: two friends link as a couple (the other must accept), see each
- * other's day, nudge each other, keep anniversaries and share one buddy.
+ * other's day, nudge each other, keep anniversaries, and pool their daily
+ * growth into points that buy furniture styles for their room.
  * Backend: backend/app/api/couple/*.
  */
 
@@ -57,6 +58,16 @@ export interface Couple {
   streak: number;
   today: { me: CoupleDay; partner: CoupleDay } | null;
   anniversaries: Anniversary[];
+  home?: CoupleHome | null;
+}
+
+/** The shared wallet and the room's furniture (see constants/coupleHome.ts). */
+export interface CoupleHome {
+  earned: number;
+  spent: number;
+  balance: number;
+  owned: string[];
+  equipped: Record<string, string>; // slot → item id
 }
 
 export type NudgeKind = 'water' | 'eat' | 'train' | 'love';
@@ -82,6 +93,12 @@ export const endCouple = async (id: string): Promise<void> => {
 };
 
 /** Push a little nudge to my partner. */
+/** Buy a furniture style with the shared points (it goes straight into the room), or show one already owned. */
+export const updateHome = async (action: 'buy' | 'equip', itemId: string): Promise<CoupleHome> => {
+  const res = await api.post<{ home: CoupleHome }>('/api/couple/home', { action, itemId });
+  return res.data.home;
+};
+
 export const nudgePartner = async (kind: NudgeKind): Promise<void> => {
   await api.post('/api/couple/nudge', { kind });
 };
