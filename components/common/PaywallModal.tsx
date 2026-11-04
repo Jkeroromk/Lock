@@ -25,6 +25,7 @@ import { useProPlans, ProPlanPicker } from '@/components/pricing/ProPlanPicker';
 import { syncSubscriptionPlan } from '@/services/api';
 import type { Feature } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 // One icon per paywall.featureN string. Only list what Pro actually adds over Free.
 const PRO_HIGHLIGHT_ICONS = ['camera', 'analytics', 'barbell'];
@@ -45,6 +46,7 @@ export default function PaywallModal({
 }: PaywallModalProps) {
   const router = useRouter();
   const colors = useTheme();
+  const sides = useSheetSides();
   const { setPlan } = useStore();
   const { t } = useTranslation();
   const defaultTitle = t('paywall.upgradeTitle' as any);
@@ -75,7 +77,7 @@ export default function PaywallModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}>
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end', ...sides }}>
         <View style={{
           backgroundColor: colors.backgroundPrimary,
           borderTopLeftRadius: 30, borderTopRightRadius: 30,

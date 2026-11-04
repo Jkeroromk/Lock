@@ -112,7 +112,7 @@ export default function AiPlanSheet({ visible, onClose }: { visible: boolean; on
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : undefined} onRequestClose={onClose}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={Platform.OS === 'ios' ? ['bottom'] : ['top', 'bottom']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={Platform.OS === 'ios' ? ['bottom', 'left', 'right'] : ['top', 'bottom', 'left', 'right']}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 18 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Ionicons name="sparkles" size={20} color={c.textPrimary} />

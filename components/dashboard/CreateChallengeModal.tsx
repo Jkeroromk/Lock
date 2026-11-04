@@ -8,6 +8,7 @@ import { createChallenge } from '@/services/api';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { Button } from '@/components/ui/bxc';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface CreateChallengeModalProps {
   visible: boolean;
@@ -21,6 +22,7 @@ const DURATION_DAYS = [7, 14, 30];
 
 export default function CreateChallengeModal({ visible, onClose, onSuccess }: CreateChallengeModalProps) {
   const colors = useTheme();
+  const sides = useSheetSides();
   const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -67,7 +69,7 @@ export default function CreateChallengeModal({ visible, onClose, onSuccess }: Cr
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <TouchableOpacity
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end', ...sides }}
           activeOpacity={1}
           onPress={onClose}
         >

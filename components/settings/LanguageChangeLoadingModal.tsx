@@ -3,6 +3,7 @@ import { Text } from '@/components/ui/Text';
 import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface LanguageChangeLoadingModalProps {
   visible: boolean;
@@ -11,10 +12,11 @@ interface LanguageChangeLoadingModalProps {
 export default function LanguageChangeLoadingModal({ visible }: LanguageChangeLoadingModalProps) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const sides = useSheetSides();
 
   return (
     <Modal animationType="fade" transparent={true} visible={visible} statusBarTranslucent={true}>
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', ...sides }}>
         <View style={{
           backgroundColor: colors.backgroundPrimary,
           borderRadius: 24, padding: DIMENSIONS.SPACING * 2,

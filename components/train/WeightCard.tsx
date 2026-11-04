@@ -10,6 +10,7 @@ import { FONTS } from '@/constants/fonts';
 import { fetchWeightRecords, logWeight, type WeightRecord } from '@/services/weight';
 import { fmtWeight, kgTo, toKg, useWeightUnit } from '@/lib/units';
 import { useStore } from '@/store/useStore';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 const RANGES = [30, 90] as const;
 const CHART_H = 110;
@@ -17,6 +18,7 @@ const CHART_H = 110;
 /** Body weight on the training tab: latest, change, a curve, and quick logging. */
 export default function WeightCard({ refreshKey = 0 }: { refreshKey?: number }) {
   const c = useTheme();
+  const sides = useSheetSides();
   const { t, language } = useTranslation();
   const unit = useWeightUnit();
   const [records, setRecords] = useState<WeightRecord[] | null>(null);
@@ -172,7 +174,7 @@ export default function WeightCard({ refreshKey = 0 }: { refreshKey?: number }) 
       )}
 
       <Modal visible={logging} transparent animationType="slide" onRequestClose={() => setLogging(false)}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1, ...sides }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={() => setLogging(false)} />
           <View style={{ backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 36, gap: 14 }}>
             <Text style={{ fontSize: 22, fontWeight: '800', color: c.textPrimary }}>{t('weightTracker.logWeight')}</Text>
