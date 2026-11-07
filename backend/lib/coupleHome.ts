@@ -42,9 +42,9 @@ export const ITEMS: Record<string, Item> = {
   bed_pink: { slot: 'bed', price: 0, name: '粉色狗窝' },
   bed_blue: { slot: 'bed', price: 120, name: '蓝色狗窝' },
   bed_yellow: { slot: 'bed', price: 120, name: '黄色狗窝' },
-  table_white: { slot: 'table', price: 0, name: '白色圆桌' },
-  table_wood: { slot: 'table', price: 150, name: '原木圆桌' },
-  table_black: { slot: 'table', price: 150, name: '黑色圆桌' },
+  table_white: { slot: 'table', price: 0, name: '原木圆桌' },
+  table_wood: { slot: 'table', price: 150, name: '胡桃木圆桌' },
+  table_black: { slot: 'table', price: 150, name: '乌木圆桌' },
 };
 
 export const DEFAULTS: Record<Slot, string> = {

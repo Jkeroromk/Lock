@@ -3,6 +3,7 @@ import type { Gender } from '@/services/couple';
 import { Actor } from './actor';
 import { Kit, castShadows, disposeTree, flat } from './kit';
 import { angleDiff, pickTarget } from './physics';
+import { PlushPerson, type PlushAssets, type Pose } from './plush';
 
 /**
  * A villager: big round head, short body (Animal Crossing proportions).
@@ -179,25 +180,59 @@ export class Villager extends Actor {
   private sitPending = false;
   private seatVec = new THREE.Vector3();
   private lookAtPet = false;
+  private gender: Gender;
+  /** The plush (Tripo) body, once loaded; the toon rig is hidden then. */
+  private plush: PlushPerson | null = null;
+  private plushAssets: PlushAssets | null = null;
+  private sitK = 0;
+  private pose: Pose = { swing: 0, bob: 0, roll: 0, sit: 0, wave: false, t: 0, headYaw: 0, headRoll: 0 };
+  /** Where people sit on the sofa (x, cushion height) and stand up to (x); the room sets these for its sofa. */
+  seatX = -2.85;
+  seatY = 0.18;
+  standX = -2.15;
 
   constructor(private kit: Kit, gender: Gender, phase: number) {
     super();
     this.radius = 0.32;
     this.speed = 0.9;
     this.phase = phase;
+    this.gender = gender;
     this.rig = buildRig(kit.scope(), lookOf(gender));
     this.root.add(this.rig.group);
   }
 
+  /** Swap the toon body for the plush one: the girl for female, the boy otherwise. */
+  usePlush(assets: PlushAssets) {
+    this.plushAssets = assets;
+    this.dropPlush();
+    const model = this.gender === 'female' ? assets.people.girl : assets.people.boy;
+    this.plush = new PlushPerson(model);
+    this.root.add(this.plush.root);
+    this.rig.group.visible = false;
+  }
+
+  private dropPlush() {
+    if (!this.plush) return;
+    this.root.remove(this.plush.root);
+    this.plush.dispose();
+    this.plush = null;
+    this.rig.group.visible = true;
+  }
+
   /** Swap the look (gender changed); keeps position and state. */
   setGender(gender: Gender) {
+    this.gender = gender;
     this.root.remove(this.rig.group);
     disposeTree(this.rig.group);
     this.rig = buildRig(this.kit.scope(), lookOf(gender));
     this.root.add(this.rig.group);
+    if (this.plushAssets) this.usePlush(this.plushAssets);
   }
 
-  dispose() { disposeTree(this.rig.group); }
+  dispose() { disposeTree(this.rig.group); this.dropPlush(); }
+
+  /** Seated height of the body's origin: the plush hips rest on the cushion. */
+  private get seatHeight() { return this.plush ? this.seatY - this.plush.hipY + 0.12 : this.seatY; }
 
   get pinned() { return this.seat !== null; }
   get sitting() { return this.seat !== null; }
@@ -208,13 +243,13 @@ export class Villager extends Actor {
     this.seatZ = z;
     if (reduced) { this.sitPending = true; return; }
     this.busy = true;
-    this.goTo(-2.05, z, () => { this.sitPending = true; });
+    this.goTo(this.standX + 0.1, z, () => { this.sitPending = true; });
   }
 
   /** Stand up if sitting. */
   standUp() {
     if (!this.seat) return;
-    this.root.position.set(-2.15, 0, this.seat.z);
+    this.root.position.set(this.standX, 0, this.seat.z);
     this.seat = null;
     this.rig.head.rotation.y = 0;
   }
@@ -227,7 +262,7 @@ export class Villager extends Actor {
       this.sitPending = false;
       this.busy = false;
       this.stop();
-      this.seat = this.seatVec.set(-2.85, 0.18, this.seatZ);
+      this.seat = this.seatVec.set(this.seatX, this.seatHeight, this.seatZ);
       this.seatUntil = t + 9;
     }
 
@@ -240,8 +275,17 @@ export class Villager extends Actor {
       r.head.rotation.y = Math.sin(t * 0.8 + this.phase) * 0.35 + (this.phase ? -0.3 : 0.3);
       if (t > this.seatUntil) { this.standUp(); this.idleUntil = t + 1; }
       this.blink(t);
+      if (this.plush) {
+        this.sitK = Math.min(1, this.sitK + dt * 4);
+        const p = this.pose;
+        p.swing = 0; p.bob = 0; p.roll = 0; p.sit = this.sitK; p.wave = this.wave > 0; p.t = t;
+        if (this.wave > 0) this.wave -= dt;
+        p.headYaw = r.head.rotation.y; p.headRoll = 0;
+        this.plush.pose(p);
+      }
       return;
     }
+    this.sitK = 0;
 
     let moving = false;
     if (!reduced && this.hasTarget) {
@@ -277,6 +321,12 @@ export class Villager extends Actor {
     }
     r.head.rotation.z = Math.sin(t * 0.9 + this.phase * 2) * 0.06;
     this.blink(t);
+    if (this.plush) {
+      const p = this.pose;
+      p.swing = swing; p.bob = r.body.position.y; p.roll = r.body.rotation.z; p.sit = 0;
+      p.wave = r.arms[1].rotation.z < -1; p.t = t; p.headYaw = 0; p.headRoll = r.head.rotation.z;
+      this.plush.pose(p);
+    }
   }
 
   private blink(t: number) {

@@ -4,7 +4,8 @@ import { Kit, castShadows, disposeTree, flat, rbox } from './kit';
 import { separate } from './actor';
 import { Villager, colorOf } from './villager';
 import { Pet } from './pet';
-import { smooth } from './physics';
+import { OBSTACLES, smooth } from './physics';
+import { plushMesh, type PlushAssets } from './plush';
 import { makeTextures, disposeTextures, type RoomTextures } from './textures';
 import { HOME_ITEM, HOME_SLOTS, equippedLooks, type LookBySlot, type HomeSlot } from '@/constants/coupleHome';
 
@@ -57,6 +58,10 @@ interface Wall {
   lastAlpha: number;
   /** Decor materials and their full opacity, faded together. */
   mats: { m: THREE.Material; base: number }[];
+  /** The toon wall itself (paper, cap, skirt): hidden once the plush room is in. */
+  toon: THREE.Object3D[];
+  /** The plush wall: slides down into the floor (cut off there) instead of squashing. */
+  plush?: THREE.Mesh;
 }
 
 interface Tappable { obj: THREE.Object3D; hit: TapHit; wall: Wall | null }
@@ -84,7 +89,7 @@ export class World {
   private hemi: THREE.HemisphereLight;
   private sun: THREE.DirectionalLight;
   private lampLight!: THREE.PointLight;
-  private lampShade!: THREE.MeshToonMaterial;
+  private lampShade!: THREE.MeshToonMaterial | THREE.MeshStandardMaterial;
   private lampOn = true;
   private nightK = 0;
   private nightWant = 0;
@@ -102,7 +107,14 @@ export class World {
   };
   private lampColors = { on: '#FFF1BF', light: '#FFD98A' };
   private furniture: Record<HomeSlot, string> = equippedLooks(null);
+  private equipped: Record<string, string> | null | undefined = null;
   private frames: THREE.Group[] = [];
+  /** Toon pieces the plush room replaces (hidden by usePlush). */
+  private toonOnly: THREE.Object3D[] = [];
+  private doorAt = new THREE.Vector3();
+  /** Plush materials per style slot (set by usePlush); null while the room is toon. */
+  private plush: Partial<Record<HomeSlot, THREE.MeshStandardMaterial[]>> | null = null;
+  private plushExtras: { flowers: THREE.Group; oranges: THREE.Group } | null = null;
   private frameCount = 0;
   private leftWall!: Wall;
 
@@ -190,6 +202,7 @@ export class World {
     const rug2 = k.mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.05, 48), '#FFE58A', { outline: 0, receive: true, mat: this.fx.rugInner });
     rug2.position.set(0.3, 0.03, 0.4);
     this.root.add(floor, rug, rug2);
+    this.toonOnly.push(floor, rug, rug2);
   }
 
   private tappable(obj: THREE.Object3D, kind: TapKind, wall: Wall | null = null, index = 0) {
@@ -228,7 +241,7 @@ export class World {
     if (axis === 'x') { g.rotation.y = (Math.PI / 2) * -sign; g.position.x = sign * ROOM; }
     else { g.rotation.y = sign > 0 ? Math.PI : 0; g.position.z = sign * ROOM; }
 
-    const wall: Wall = { group: g, lift, decor, ink, axis, sign, shown: 1, alpha: 1, lastAlpha: -1, mats: [] };
+    const wall: Wall = { group: g, lift, decor, ink, axis, sign, shown: 1, alpha: 1, lastAlpha: -1, mats: [], toon: [body, cap, skirt] };
     decorate(decor, dk, wall);
     const seen = new Set<THREE.Material>();
     decor.traverse((o) => {
@@ -248,6 +261,8 @@ export class World {
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, h), pic);
     plane.position.z = 0.045;
     f.add(back, plane);
+    f.userData.toonBorder = back;
+    f.userData.size = [w, h];
     return f;
   }
 
@@ -291,7 +306,9 @@ export class World {
       const bar = k.mesh(rbox(0.06, 1.4, 0.04), '#FFFFFF', { outline: 0.2 });
       bar.position.set(-1.6, 2.1, 0.22);
       g.add(bar);
+      this.toonOnly.push(win, bar);
       const shelf = k.mesh(rbox(1.8, 0.1, 0.45), '#FFFFFF', { outline: 0.04 });
+      this.toonOnly.push(shelf);
       shelf.position.set(1.4, 1.75, 0.3);
       g.add(shelf);
 
@@ -311,6 +328,9 @@ export class World {
         bottles.add(bottle, water, cap);
         this.bottleWater.push(water);
       });
+      // the shelf rides with the bottles (usePlush moves both clear of the round window)
+      g.remove(shelf);
+      bottles.add(shelf);
       g.add(this.tappable(bottles, 'bottles', wall));
       this.bottles = bottles;
     });
@@ -328,6 +348,8 @@ export class World {
       panel.position.set(0, 0, 0.05);
       sign.add(panel);
       g.add(door, knob, sign);
+      this.toonOnly.push(door, knob, sign);
+      this.doorAt.copy(door.position);
     });
 
     // Front wall: bookcase.
@@ -335,10 +357,12 @@ export class World {
       const shelf = k.mesh(rbox(2.2, 2.2, 0.5), '#FFFFFF', { outline: 0.02 });
       shelf.position.set(0.6, 1.1, 0.35);
       g.add(shelf);
+      this.toonOnly.push(shelf);
       ['#FF8FA3', '#4DB6FF', '#FFD43B', '#0A0A0A', '#6CC27A'].forEach((col, i) => {
         const b = k.mesh(rbox(0.22, 0.6 - (i % 2) * 0.12, 0.35), col, { outline: 0.04 });
         b.position.set(-0.2 + i * 0.32, 1.55, 0.62);
         g.add(b);
+        this.toonOnly.push(b);
       });
     });
 
@@ -367,6 +391,7 @@ export class World {
     castShadows(sofa);
     sofa.position.set(-3.1, 0, 0.6);
     this.root.add(this.tappable(sofa, 'sofa'));
+    this.toonOnly.push(sofa);
 
     // round table with two mugs
     const table = new THREE.Group();
@@ -381,6 +406,7 @@ export class World {
     castShadows(table);
     table.position.set(2.2, 0, -1.9);
     this.root.add(this.tappable(table, 'table'));
+    this.toonOnly.push(table);
     this.anchorsOf.set(table, new THREE.Vector3(2.2, 1.0, -1.9));
 
     // plant in the corner
@@ -405,6 +431,7 @@ export class World {
     leaves.position.set(3.25, 0, -3.25);
     castShadows(pot); castShadows(leaves);
     this.root.add(pot, leaves);
+    this.toonOnly.push(pot, leaves);
 
     // pet bed + bowl
     fx.bedRing = k.toonWith({ color: '#FF8FA3' });
@@ -414,6 +441,7 @@ export class World {
     const bedIn = k.mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.06, 24), '', { outline: 0, mat: fx.bedInside }); bedIn.position.set(-1.6, 0.05, -2.6);
     const bowl = k.mesh(new THREE.CylinderGeometry(0.24, 0.17, 0.14, 16), '#FFFFFF'); bowl.position.set(-0.4, 0.07, -3.0);
     this.root.add(this.tappable(bed, 'bed'), bedIn, bowl);
+    this.toonOnly.push(bed, bedIn, bowl);
 
     // floor lamp
     const pole = k.mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.0, 8), '#0A0A0A', { outline: 0 }); pole.position.set(-3.3, 1.0, -3.2);
@@ -424,6 +452,179 @@ export class World {
     const lamp = new THREE.Group();
     lamp.add(pole, shade);
     this.root.add(this.tappable(lamp, 'lamp'), this.lampLight);
+    this.toonOnly.push(lamp);
+  }
+
+  /**
+   * Move into the plush room (Tripo models): the shell's floor and walls, the
+   * furniture and the two people replace their toon versions. The walls still
+   * sink as the room turns: the shell has a back and a left wall, the front and
+   * right ones are mirror copies. Called once, after plushAssets has loaded.
+   */
+  usePlush(a: PlushAssets) {
+    if (this.plush) return;
+    const P = a.pieces;
+    const mats: Partial<Record<HomeSlot, THREE.MeshStandardMaterial[]>> = {};
+    const add = (slot: HomeSlot | null, m: THREE.Mesh) => {
+      if (slot) (mats[slot] ??= []).push(m.material as THREE.MeshStandardMaterial);
+      return m;
+    };
+    const place = (o: THREE.Object3D, x: number, z: number, s: number | [number, number, number], ry = 0) => {
+      o.position.set(x, 0, z);
+      if (Array.isArray(s)) o.scale.set(...s); else o.scale.setScalar(s);
+      o.rotation.y = ry;
+      return o;
+    };
+
+    // shell: the floor, then each wall's plush piece into its sinking part
+    const floor = add('floor', plushMesh(P.room_floor, { shadow: false }));
+    this.root.add(floor);
+    // a sinking wall slides into the floor; everything below the floor is cut off
+    const cut = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.01)];
+    this.root.updateMatrixWorld(true);
+    for (const w of this.walls) {
+      const piece = w.axis === 'x' ? P.room_left : P.room_back;
+      const wallMat = new THREE.MeshStandardMaterial({ map: piece.map, roughness: 0.92, metalness: 0, clippingPlanes: cut });
+      (mats.wall ??= []).push(wallMat);
+      const m = new THREE.Mesh(piece.geometry, wallMat);
+      m.receiveShadow = true;
+      // the shell's walls are at -x and -z; the other two are mirror copies
+      if (w.sign > 0) { if (w.axis === 'x') m.scale.x = -1; else m.scale.z = -1; }
+      const ky = w.lift.scale.y;
+      w.lift.scale.y = 1;
+      w.lift.updateMatrixWorld(true);
+      this.root.add(m);
+      m.updateMatrixWorld(true);
+      w.lift.attach(m);
+      w.lift.scale.y = ky;
+      w.plush = m;
+      w.toon.forEach((o) => { o.visible = false; });
+      w.decor.position.z = 0.08; // in front of the plush wall's bumps
+    }
+    this.toonOnly.forEach((o) => { o.visible = false; });
+
+    // the round window in the back wall (tap target only; the shell has the window)
+    const back = this.walls.find((w) => w.axis === 'z' && w.sign < 0)!;
+    const winHit = new THREE.Mesh(new THREE.CircleGeometry(1.0, 20), new THREE.MeshBasicMaterial({ visible: false }));
+    winHit.position.set(0.3, 1.95, 0.25);
+    back.decor.add(this.tappable(winHit, 'window', back));
+    this.bottles.position.x = 1.2; // shelf + bottles clear of the window
+    this.root.updateMatrixWorld(true);
+    const was = this.anchorsOf.get(this.bottles)!;
+    const now = this.bottles.localToWorld(new THREE.Vector3(1.4, 2.5, 0.3));
+    if (this.objectAnchor.equals(was)) this.objectAnchor.copy(now);
+    this.anchorsOf.set(this.bottles, now);
+
+    // wall decor: plush wooden frames round the board and the photos, a plush door and shelf
+    const fit = (piece: PlushAssets['pieces'][string], w: number, h: number, wall: Wall) => {
+      const g = piece.geometry;
+      if (!g.boundingBox) g.computeBoundingBox();
+      const bb = g.boundingBox!;
+      const m = plushMesh(piece, { shadow: false });
+      const sx = w / (bb.max.x - bb.min.x), sy = h / (bb.max.y - bb.min.y), sz = Math.min(sx, sy);
+      m.scale.set(sx, sy, sz);
+      m.position.set(-((bb.min.x + bb.max.x) / 2) * sx, -bb.min.y * sy, -bb.min.z * sz);
+      wall.mats.push({ m: m.material as THREE.Material, base: 1 });
+      return { mesh: m, depth: (bb.max.z - bb.min.z) * sz };
+    };
+    const left = this.leftWall;
+    const framePlush = (f: THREE.Group, piece: PlushAssets['pieces'][string], border: number) => {
+      const [w, h] = f.userData.size as [number, number];
+      (f.userData.toonBorder as THREE.Object3D).visible = false;
+      const { mesh, depth } = fit(piece, w + border, h + border, left);
+      mesh.position.y -= (h + border) / 2;
+      mesh.position.z -= 0.06;
+      f.add(mesh);
+      // the picture card sits just in front of the plush frame's own canvas
+      f.children.forEach((c) => {
+        const g = (c as THREE.Mesh).geometry;
+        // the caption strip (shorter than the picture) stays just in front of it
+        if (g instanceof THREE.PlaneGeometry) c.position.z = depth - 0.05 + (g.parameters.height < h * 0.5 ? 0.006 : 0);
+      });
+    };
+    framePlush(this.board as THREE.Group, P.board_frame, 0.4);
+    ((this.board.children[1] as THREE.Mesh).material as THREE.MeshBasicMaterial).map = this.tex.boardSoft;
+    this.frames.forEach((f) => {
+      framePlush(f, P.photo_frame, 0.3);
+      f.traverse((o) => { const m = (o as THREE.Mesh).material as THREE.MeshBasicMaterial; if (m && m.color && m.color.getHexString() === 'ffffff' && !o.userData.outline) m.color.set('#FFF8EC'); });
+    });
+    const right = this.walls.find((w) => w.axis === 'x' && w.sign > 0)!;
+    const door = fit(P.door, 1.35, 2.45, right).mesh;
+    door.position.x += this.doorAt.x;
+    door.position.z += 0.02;
+    right.decor.add(door);
+    const wallShelf = fit(P.wall_shelf, 1.9, 0.42, back).mesh;
+    wallShelf.position.add(new THREE.Vector3(1.4, 1.81 - 0.42, 0.06));
+    this.bottles.add(wallShelf);
+    this.bottles.traverse((o) => { if (o.userData.outline) o.visible = false; });
+
+    // the bookshelf stands against the front wall (sinks and fades with it)
+    const front = this.walls.find((w) => w.axis === 'z' && w.sign > 0)!;
+    const shelf = plushMesh(P.shelf);
+    shelf.position.set(0.6, 0, 0.42);
+    shelf.scale.setScalar(2.3);
+    front.decor.add(shelf);
+    front.mats.push({ m: shelf.material as THREE.Material, base: 1 });
+
+    // furniture
+    const rug = place(add('rug', plushMesh(P.rug, { shadow: false })), 0.3, 0.4, [4.3, 0.9, 4.3]);
+    const sofa = place(new THREE.Group().add(add('sofa', plushMesh(P.sofa))), -2.95, 0.6, 2.4, Math.PI / 2);
+    const table = place(new THREE.Group().add(add('table', plushMesh(P.table))), 2.2, -1.9, 1.25);
+    const mugGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.18, 14);
+    ([['#FF8FA3', -0.16, 0.08], ['#4DB6FF', 0.15, -0.1]] as const).forEach(([c, x, z]) => {
+      const mug = new THREE.Mesh(mugGeo, new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 }));
+      mug.position.set(x / 1.25, 0.735, z / 1.25);
+      mug.scale.setScalar(1 / 1.25);
+      mug.castShadow = true;
+      table.add(mug);
+    });
+    const bed = place(new THREE.Group().add(add('bed', plushMesh(P.bed))), -1.6, -2.6, 1.65);
+    const bowl = place(new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.17, 0.14, 16), new THREE.MeshStandardMaterial({ color: '#FFFFFF', roughness: 0.5 })), -0.4, -3.0, 1);
+    bowl.position.y = 0.07;
+    const plant = place(new THREE.Group(), 3.15, -3.15, 1.6);
+    plant.add(plushMesh(P.plant_pot), add('plant', plushMesh(P.plant_leaves)));
+    // the plant's styles grow flowers or oranges among the leaves
+    const dot = new THREE.SphereGeometry(0.045, 12, 8);
+    const flowers = new THREE.Group(), oranges = new THREE.Group();
+    const pink = new THREE.MeshStandardMaterial({ color: '#FF8FA3', roughness: 0.8 });
+    const yellow = new THREE.MeshStandardMaterial({ color: '#FFD43B', roughness: 0.8 });
+    const orange = new THREE.MeshStandardMaterial({ color: '#FFA53B', roughness: 0.6 });
+    ([[0.22, 0.72, 0.18], [-0.26, 0.68, 0.14], [0.05, 0.9, 0.2], [0.3, 0.86, -0.08], [-0.12, 0.6, 0.3], [-0.24, 0.92, -0.06]] as const).forEach(([x, y, z], i) => {
+      const f = new THREE.Mesh(dot, i % 2 ? yellow : pink); f.position.set(x, y, z); flowers.add(f);
+      const o = new THREE.Mesh(dot, orange); o.position.set(x, y - 0.02, z); o.scale.setScalar(1.3); o.castShadow = true; oranges.add(o);
+    });
+    flowers.visible = oranges.visible = false;
+    plant.add(flowers, oranges);
+    this.plushExtras = { flowers, oranges };
+    const lamp = place(new THREE.Group(), -3.3, -3.2, 2.3);
+    lamp.add(plushMesh(P.lamp_base), add('lamp', plushMesh(P.lamp_shade)));
+    const pouf = place(plushMesh(P.pouf), 2.95, -0.55, 1.0);
+    this.root.add(rug, sofa, table, bed, bowl, plant, lamp, pouf);
+    this.tappable(sofa, 'sofa');
+    this.tappable(table, 'table');
+    this.tappable(bed, 'bed');
+    this.tappable(lamp, 'lamp');
+    this.anchorsOf.set(table, new THREE.Vector3(2.2, 1.2, -1.9));
+    this.lampShade = (lamp.children[1] as THREE.Mesh).material as THREE.MeshStandardMaterial;
+    this.lampLight.position.set(-3.3, 1.8, -3.2);
+
+    // where things stand (the plush pieces are chunkier than the toon ones)
+    const set = (name: string, x0: number, x1: number, z0: number, z1: number) => {
+      const o = OBSTACLES.find((b) => b.name === name);
+      if (o) Object.assign(o, { x0, x1, z0, z1 }); else OBSTACLES.push({ name, x0, x1, z0, z1 });
+    };
+    set('sofa', -3.95, -2.05, -0.55, 1.75);
+    set('table', 1.6, 2.8, -2.5, -1.3);
+    set('plant', 2.55, 3.95, -3.95, -2.55);
+    set('lamp', -3.7, -2.9, -3.6, -2.8);
+    set('bookcase', -1.75, 0.55, 2.95, 3.95);
+    set('pouf', 2.5, 3.4, -1.0, -0.1);
+    for (const v of [this.me, this.partner]) { v.seatX = -2.75; v.seatY = 0.56; v.standX = -1.75; }
+
+    this.plush = mats;
+    this.me.usePlush(a);
+    this.partner.usePlush(a);
+    this.setFurniture(this.equipped);
   }
 
   // ── props from React ──
@@ -459,11 +660,18 @@ export class World {
 
   /** Show the couple's furniture styles (slot → item id; missing slots use the free default). */
   setFurniture(equipped: Record<string, string> | null | undefined) {
+    this.equipped = equipped;
     this.furniture = equippedLooks(equipped);
     const fx = this.fx;
     for (const slot of HOME_SLOTS) {
       const it = HOME_ITEM[this.furniture[slot]];
       if (!it) continue;
+      if (this.plush) {
+        this.plush[slot]?.forEach((m) => m.color.set(it.tint));
+        if (slot === 'lamp') { const l = it.look as LookBySlot['lamp']; this.lampColors = { on: it.tint, light: l.light }; this.lampLight.color.set(l.light); }
+        if (slot === 'plant' && this.plushExtras) { const l = it.look as LookBySlot['plant']; this.plushExtras.flowers.visible = l.extra === 'flowers'; this.plushExtras.oranges.visible = l.extra === 'oranges'; }
+        continue;
+      }
       switch (slot) {
         case 'sofa': { const l = it.look as LookBySlot['sofa']; fx.sofaSeat.color.set(l.seat); fx.sofaBack.color.set(l.back); fx.sofaPillow.color.set(l.pillow); break; }
         case 'rug': { const l = it.look as LookBySlot['rug']; fx.rugOuter.color.set(l.outer); fx.rugInner.color.set(l.inner); break; }
@@ -569,7 +777,7 @@ export class World {
     const a = this.anchorsOf.get(best.obj);
     if (a) this.objectAnchor.copy(a);
     switch (best.hit.kind) {
-      case 'sofa': this.me.sit(0.0, this.reduced); this.partner.sit(1.15, this.reduced); break;
+      case 'sofa': this.me.sit(this.plush ? 0.05 : 0.0, this.reduced); this.partner.sit(1.15, this.reduced); break;
       case 'bed': this.pet.nap(-1.6, -2.6, () => {}); break;
       case 'lamp': this.toggleLamp(); break;
       default: break;
@@ -636,7 +844,11 @@ export class World {
       const want = smooth(-0.35, 0.25, facing);
       w.shown += (want - w.shown) * Math.min(1, dt * 7);
       // the wall sinks to a stub; its pictures fade out before it sinks
-      w.lift.scale.y = 0.1 + 0.9 * w.shown;
+      if (w.plush) {
+        // only the rounded top stays above the floor, like a doll's-house rim
+        w.lift.scale.y = 1;
+        w.plush.position.y = -(1 - w.shown) * (WALL_H - 0.3);
+      } else w.lift.scale.y = 0.1 + 0.9 * w.shown;
       const alpha = smooth(0.45, 0.95, w.shown);
       w.alpha = alpha;
       w.decor.visible = alpha > 0.02;

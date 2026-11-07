@@ -125,6 +125,21 @@ function board() {
   return p.texture();
 }
 
+/** The plush room's board: the same layout in soft colours, no ink (it sits in a plush wooden frame). */
+function boardSoft() {
+  const p = new Pixels(128, 160);
+  p.rect(0, 0, 128, 160, hex('#FFF8EC'));
+  p.rect(0, 0, 128, 30, hex('#FFC9D3'));
+  const r = 7, x0 = 12, y0 = 102, x1 = 116, y1 = 146;
+  p.shape(hex('#FFE29A'), (x, y) => {
+    const cx = Math.max(x0 + r, Math.min(x1 - r, x)), cy = Math.max(y0 + r, Math.min(y1 - r, y));
+    return (x - cx) ** 2 + (y - cy) ** 2 < r * r;
+  }, x0, y0, x1, y1);
+  p.circle(hex('#D9A27A'), 34, 15, 4.5);
+  p.circle(hex('#D9A27A'), 94, 15, 4.5);
+  return p.texture();
+}
+
 // ── particle sprites ──
 
 function heart() {
@@ -189,6 +204,7 @@ export function makeTextures() {
     wallB: wallpaper('#F8E3A0', '#EED38A'),
     sky: sky(),
     board: board(),
+    boardSoft: boardSoft(),
     heart: heart(),
     drop: drop(),
     bento: bento(),
