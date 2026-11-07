@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 /**
  * A stand-in for the buddy (圆圆) on the 3D stage until its Tripo model is in:
@@ -165,57 +166,115 @@ export class BuddyCat {
 }
 
 /**
- * The buddy as its Tripo plush model (圆圆 the cat for now), before it has a
- * rig: the whole toy breathes, sways, hops when tapped and settles low and
- * slow when asleep. Same interface as BuddyCat so the stage can swap them.
+ * The buddy as its Tripo plush model, rigged by Tripo and animated in Blender
+ * (圆圆 the cat for now): clips idle, walk, hop, sleep (curled up like a loaf,
+ * tail round the side) and sit. The eyes are painted into the texture, so
+ * closing them (asleep, blinking) swaps in a second texture where the eyes
+ * are filled with the fur around them and a little ︶ line — same idea as
+ * 豆豆's closed mouth: no lids, no seams.
  */
-export class PlushBuddy {
-  readonly root = new THREE.Group();
-  private body: THREE.Mesh;
-  private mat: THREE.MeshStandardMaterial;
-  private t = Math.random() * 10;
-  private hopT = -1;
-  private sleep = 0;
-  asleep = false;
+export interface RiggedModel { scene: THREE.Group; clips: THREE.AnimationClip[]; map: THREE.Texture; mapClosed: THREE.Texture | null }
+export type BuddyMood = 'awake' | 'sad' | 'asleep';
 
-  /** `height`: how tall the toy stands at stage 1, in world units. */
-  constructor(geometry: THREE.BufferGeometry, map: THREE.Texture, stage: number, height = 0.85) {
-    this.mat = new THREE.MeshStandardMaterial({ map, roughness: 0.92, metalness: 0 });
-    this.body = new THREE.Mesh(geometry, this.mat);
-    this.body.castShadow = true;
-    geometry.computeBoundingBox();
-    const bb = geometry.boundingBox!;
-    const h = bb.max.y - bb.min.y || 1;
-    this.body.position.y = -bb.min.y / h; // stand on y = 0
-    const inner = new THREE.Group();
-    inner.add(this.body);
-    inner.scale.setScalar(1 / h);
+
+export class RiggedBuddy {
+  readonly root = new THREE.Group();
+  private mixer: THREE.AnimationMixer;
+  private actions: Record<string, THREE.AnimationAction> = {};
+  private current: THREE.AnimationAction | null = null;
+  private mats: THREE.Material[] = [];
+  private geos: THREE.BufferGeometry[] = [];
+  private mat: THREE.MeshStandardMaterial;
+  private maps: { open: THREE.Texture; closed: THREE.Texture | null };
+  private base = 'idle';
+  private hopping = false;
+  private t = Math.random() * 10;
+  private nextBlink = 2 + Math.random() * 2;
+  private blinkUntil = 0;
+  private shutFor = 0; // seconds into the sleep clip (the eyes close once it has settled)
+  mood: BuddyMood = 'awake';
+
+  constructor(model: RiggedModel, stage: number, height = 0.85) {
+    const inner = cloneSkinned(model.scene) as THREE.Group;
+    const mat = (this.mat = new THREE.MeshStandardMaterial({ map: model.map, roughness: 0.92, metalness: 0 }));
+    this.maps = { open: model.map, closed: model.mapClosed };
+    this.mats.push(mat);
+    inner.traverse((o: any) => {
+      if (!o.isMesh) return;
+      o.material = mat;
+      o.castShadow = true;
+      o.frustumCulled = false;
+    });
+    inner.scale.setScalar(1 / 0.977);
     this.root.add(inner);
     this.root.scale.setScalar(height * (buddyScale(stage) / buddyScale(1)));
+
+    this.mixer = new THREE.AnimationMixer(inner);
+    for (const c of model.clips) this.actions[c.name] = this.mixer.clipAction(c);
+    this.mixer.addEventListener('finished', (e: any) => {
+      if (e.action === this.actions.hop) { this.hopping = false; this.play(this.base); }
+    });
+    this.play('idle');
   }
 
-  hop() { if (!this.asleep) this.hopT = 0; }
+  /** Kept for the stage: asleep curls up, otherwise awake. */
+  set asleep(v: boolean) { this.setMood(v ? 'asleep' : this.mood === 'asleep' ? 'awake' : this.mood); }
+
+  setMood(m: BuddyMood) {
+    this.mood = m;
+    const clip = m === 'asleep' ? 'sleep' : m === 'sad' ? 'sit' : 'idle';
+    if (clip === this.base) return;
+    this.base = clip;
+    this.shutFor = 0;
+    if (!this.hopping) this.play(clip);
+  }
+
+  private play(name: string, once = false) {
+    const a = this.actions[name];
+    if (!a) return;
+    const prev = this.current;
+    if (prev === a && !once) return;
+    a.reset();
+    a.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
+    a.clampWhenFinished = true;
+    a.timeScale = name === 'sleep' ? 0.8 : 1;
+    a.enabled = true;
+    a.play();
+    if (prev && prev !== a) a.crossFadeFrom(prev, name === 'sleep' || name === 'sit' ? 0.6 : 0.2, false);
+    this.current = a;
+  }
+
+  hop() {
+    if (this.mood === 'asleep') return;
+    this.hopping = true;
+    this.play('hop', true);
+  }
 
   update(dt: number, animate: boolean) {
     const d = Math.min(dt, 0.05);
-    const t = (this.t += animate ? d : 0);
-    this.sleep += ((this.asleep ? 1 : 0) - this.sleep) * Math.min(1, d * (animate ? 3 : 1000));
-    const z = this.sleep;
-    let hopY = 0, squash = 0;
-    if (this.hopT >= 0) {
-      this.hopT += d / 0.55;
-      if (this.hopT >= 1) this.hopT = -1;
-      else {
-        hopY = Math.sin(this.hopT * Math.PI) * 0.22;
-        squash = this.hopT < 0.12 ? Math.sin((this.hopT / 0.12) * Math.PI) * 0.08 : 0;
+    const t = (this.t += d);
+    this.mixer.update(animate ? d : 0); // reduced motion: hold the clip's first pose
+    let shut = false;
+    if (this.mood === 'asleep') {
+      this.shutFor += d;
+      shut = this.shutFor > 0.4 || !animate;
+    } else if (this.hopping) {
+      shut = false;
+    } else if (animate) {
+      if (t >= this.nextBlink) {
+        this.blinkUntil = t + 0.13;
+        this.nextBlink = t + 2.4 + Math.random() * 2.8;
+        if (Math.random() < 0.2) this.nextBlink = t + 0.35;
       }
+      shut = t < this.blinkUntil;
     }
-    const breathe = Math.sin(t * (2.1 - z * 1.2)) * (0.018 + z * 0.01);
-    this.body.parent!.position.y = hopY;
-    this.body.scale.set(1 + breathe + squash, 1 - breathe - squash - z * 0.06, 1 + breathe * 0.5);
-    this.body.rotation.z = Math.sin(t * 0.9) * 0.04 * (1 - z);
-    this.body.rotation.y = Math.sin(t * 0.55) * 0.12 * (1 - z);
+    const map = shut && this.maps.closed ? this.maps.closed : this.maps.open;
+    if (this.mat.map !== map) { this.mat.map = map; this.mat.needsUpdate = true; }
   }
 
-  dispose() { this.mat.dispose(); }
+  dispose() {
+    this.mixer.stopAllAction();
+    this.mats.forEach((m) => m.dispose());
+    this.geos.forEach((g) => g.dispose());
+  }
 }
