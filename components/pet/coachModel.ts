@@ -55,6 +55,8 @@ const EYE_TEX: Record<'L' | 'R', Record<Face, number>> = {
 const PART_TEX = {
   body: require('@/assets/pet/3d/body_base.jpg'),
   bodyClosed: require('@/assets/pet/3d/body_closed.jpg'),
+  /** bodyClosed with a little down-turned mouth line (︵) painted on the muzzle, for sad. */
+  bodySad: require('@/assets/pet/3d/body_sad.jpg'),
   tongue: require('@/assets/pet/3d/tongue.jpg'),
   headband: require('@/assets/pet/3d/headband.jpg'),
   whistle: require('@/assets/pet/3d/whistle.jpg'),
@@ -150,7 +152,7 @@ export function loadCoachAssets(): Promise<CoachAssets> {
     const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
     const gltf = await new Promise<any>((res, rej) => new GLTFLoader().parse(buf, '', res, rej));
     const part = Object.fromEntries(await Promise.all((Object.keys(PART_TEX) as PartKey[]).map(async (k) =>
-      [k, await loadTexture(PART_TEX[k], true, k === 'body' || k === 'bodyClosed' ? 2048 : 512)] as const))) as Record<PartKey, THREE.Texture>;
+      [k, await loadTexture(PART_TEX[k], true, k === 'body' || k === 'bodyClosed' || k === 'bodySad' ? 2048 : 512)] as const))) as Record<PartKey, THREE.Texture>;
     const eyeTex = { L: {}, R: {} } as Record<'L' | 'R', Record<Face, THREE.Texture>>;
     await Promise.all((['L', 'R'] as const).flatMap((side) => EYE_FACES.map(async (f) => {
       eyeTex[side][f] = await loadTexture(EYE_TEX[side][f], true, 512);
@@ -166,7 +168,13 @@ export function loadCoachAssets(): Promise<CoachAssets> {
 
 /* --------------------------------- instance --------------------------------- */
 export type TongueMode = 'out' | 'in' | 'auto';
-export interface CoachLook { face: Face; tongue: TongueMode; blink: boolean }
+export interface CoachLook {
+  face: Face;
+  tongue: TongueMode;
+  blink: boolean;
+  /** With the mouth closed: 'sad' draws a down-turned mouth line on the muzzle. */
+  mouth?: 'sad';
+}
 export type CoachClip = 'idle' | 'walk' | 'sit' | 'lie' | 'hop';
 
 /**
@@ -326,7 +334,7 @@ export class CoachInstance {
     const k = this.mouth;
     if (this.body && this.mouthMorph >= 0 && this.body.morphTargetInfluences) this.body.morphTargetInfluences[this.mouthMorph] = k;
     if (this.tongueBone) this.tongueBone.scale.multiplyScalar(Math.max(0.01, 1 - k));
-    const bodyMap = k > 0.5 ? this.assets.part.bodyClosed : this.assets.part.body;
+    const bodyMap = k > 0.5 ? (look.mouth === 'sad' ? this.assets.part.bodySad : this.assets.part.bodyClosed) : this.assets.part.body;
     if (this.bodyMat.map !== bodyMap) { this.bodyMat.map = bodyMap; this.bodyMat.needsUpdate = true; }
   }
 
