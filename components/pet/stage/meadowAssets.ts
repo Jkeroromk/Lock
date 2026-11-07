@@ -49,11 +49,20 @@ export function loadMeadow(): Promise<MeadowProps> {
   return cache;
 }
 
-/** Buddy kinds that have a Tripo plush model (the others keep the simple toy). */
-const BUDDY_MODELS: Record<string, { model: number; tex: number }> = {
-  cat: { model: require('@/assets/pet/3d/buddy_cat.glb'), tex: require('@/assets/pet/3d/buddy_cat.jpg') },
+/**
+ * Buddy kinds that have a Tripo plush model (the others keep the simple toy):
+ * rigged by Tripo, clips (idle, walk, hop, sleep, sit) made in Blender; no
+ * images inside — the colour texture is its own linear-encoded JPEG.
+ */
+const BUDDY_MODELS: Record<string, { model: number; tex: number; closed?: number }> = {
+  cat: {
+    model: require('@/assets/pet/3d/buddy_cat.glb'),
+    tex: require('@/assets/pet/3d/buddy_cat.jpg'),
+    closed: require('@/assets/pet/3d/buddy_cat_closed.jpg'),
+  },
 };
-export type BuddyModel = { geometry: THREE.BufferGeometry; map: THREE.Texture };
+import type { RiggedModel } from './buddyCat';
+export type BuddyModel = RiggedModel;
 const buddyCache: Record<string, Promise<BuddyModel | null>> = {};
 
 /** The buddy's plush model, or null when its kind has none yet. */
@@ -66,10 +75,12 @@ export function loadBuddyModel(kind: string): Promise<BuddyModel | null> {
     const bytes = await new File(await localUri(src.model)).bytes();
     const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
     const gltf = await new Promise<any>((res, rej) => new GLTFLoader().parse(buf, '', res, rej));
-    let mesh: THREE.Mesh | null = null;
-    gltf.scene.traverse((o: any) => { if (o.isMesh && !mesh) mesh = o; });
-    if (!mesh) throw new Error('buddy model has no mesh');
-    return { geometry: (mesh as THREE.Mesh).geometry, map: await loadTexture(src.tex, true, 1024) };
+    if (!gltf.animations?.length) throw new Error('buddy model has no clips');
+    const [map, mapClosed] = await Promise.all([
+      loadTexture(src.tex, true, 1024),
+      src.closed ? loadTexture(src.closed, true, 1024) : Promise.resolve(null),
+    ]);
+    return { scene: gltf.scene, clips: gltf.animations, map, mapClosed };
   })();
   buddyCache[kind] = p;
   p.catch(() => { delete buddyCache[kind]; });

@@ -7,7 +7,7 @@ import type { CoachPose } from '@/constants/pets';
 import { CoachInstance, loadCoachAssets, type CoachAssets, type CoachClip, type CoachLook } from './coachModel';
 import { FloatFx, type Fx, type PetSpriteHandle } from './PetSprite';
 import { Outdoor } from './stage/outdoor';
-import { BuddyCat, PlushBuddy } from './stage/buddyCat';
+import { BuddyCat, RiggedBuddy, type BuddyMood } from './stage/buddyCat';
 import { loadBuddyModel, loadMeadow, type BuddyModel } from './stage/meadowAssets';
 import { recordJsError } from '@/lib/crashlog';
 
@@ -158,8 +158,8 @@ function CameraRig({ lookY, animate, orbit, tilt }: {
 interface BuddyCtl { hop: () => void }
 
 /** The meadow and the buddy (the dog is added by <Coach>). */
-function Meadow({ outdoor, x, asleep, buddyKind, buddyStage, animate, buddyCtl, plush }: {
-  outdoor: Outdoor; x: number; asleep: boolean; buddyKind: string; buddyStage: number; animate: boolean;
+function Meadow({ outdoor, x, mood, buddyKind, buddyStage, animate, buddyCtl, plush }: {
+  outdoor: Outdoor; x: number; mood: BuddyMood; buddyKind: string; buddyStage: number; animate: boolean;
   buddyCtl: { current: BuddyCtl | null };
   /** The buddy's Tripo plush model, when its kind has one (else the simple toy). */
   plush: BuddyModel | null;
@@ -172,7 +172,7 @@ function Meadow({ outdoor, x, asleep, buddyKind, buddyStage, animate, buddyCtl, 
     return () => clearInterval(id);
   }, [outdoor]);
 
-  const buddy = useMemo(() => (plush ? new PlushBuddy(plush.geometry, plush.map, buddyStage) : new BuddyCat(buddyKind, buddyStage)), [plush, buddyKind, buddyStage]);
+  const buddy = useMemo(() => (plush ? new RiggedBuddy(plush, buddyStage) : new BuddyCat(buddyKind, buddyStage)), [plush, buddyKind, buddyStage]);
   const buddyRoot = useMemo(() => {
     const g = new THREE.Group();
     g.add(buddy.root);
@@ -182,7 +182,10 @@ function Meadow({ outdoor, x, asleep, buddyKind, buddyStage, animate, buddyCtl, 
   }, [buddy, outdoor]);
   useEffect(() => { buddyRoot.position.x = x; }, [buddyRoot, x]);
   useEffect(() => () => buddy.dispose(), [buddy]);
-  useEffect(() => { buddy.asleep = asleep; }, [buddy, asleep]);
+  useEffect(() => {
+    if (buddy instanceof RiggedBuddy) buddy.setMood(mood);
+    else buddy.asleep = mood === 'asleep';
+  }, [buddy, mood]);
   useEffect(() => { buddyCtl.current = { hop: () => { if (animate) buddy.hop(); } }; }, [buddy, buddyCtl, animate]);
 
   useFrame((_, dt) => buddy.update(dt, animate));
@@ -421,7 +424,7 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
             frameloop="never"
           >
             <Suspense fallback={null}>
-              {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} asleep={pose === 'sleep'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} plush={plush} /> : null}
+              {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} mood={pose === 'sleep' ? 'asleep' : pose === 'sad' ? 'sad' : 'awake'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} plush={plush} /> : null}
               <Coach data={data} pose={pose} animate={animate} ctl={ctl} x={m.dogX} shadow={dogShadow} castShadow />
               <CameraRig lookY={m.lookY} animate={animate} orbit={orbit} tilt={tilt} />
             </Suspense>
