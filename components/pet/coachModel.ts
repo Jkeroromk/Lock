@@ -57,7 +57,7 @@ const PART_TEX = {
 type PartKey = keyof typeof PART_TEX;
 
 /* ---------- small runtime shims for three's GLTFLoader on Hermes ---------- */
-function shims() {
+export function shims() {
   const g = globalThis as any;
   if (typeof g.navigator !== 'undefined' && typeof g.navigator.userAgent !== 'string') {
     try { g.navigator.userAgent = 'ReactNative'; } catch {}
@@ -84,7 +84,7 @@ function shims() {
   }
 }
 
-async function localUri(mod: number) {
+export async function localUri(mod: number) {
   const a = await Asset.fromModule(mod).downloadAsync();
   const uri = a.localUri || a.uri;
   if (!uri) throw new Error('asset has no uri');
@@ -92,7 +92,7 @@ async function localUri(mod: number) {
 }
 
 /** A texture expo-gl uploads from a local file (no DOM image needed). */
-async function loadTexture(mod: number, srgb: boolean, size: number) {
+export async function loadTexture(mod: number, srgb: boolean, size: number) {
   const uri = await localUri(mod);
   const t = new THREE.Texture();
   t.image = { data: { localUri: uri }, width: size, height: size } as any;
