@@ -482,9 +482,11 @@ export class World {
 
     // shell: built from the model's back-left quarter, mirrored (seamless joins).
     // A sinking wall slides into the floor and is cut off there.
-    const cut = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.01)];
+    // (cut a little below the boards, so a sunk wall's rim still covers the slab's rough edge under it)
+    const cut = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.14)];
     const shellMat = (piece: PlushAssets['pieces'][string]) =>
-      new THREE.MeshStandardMaterial({ map: piece.map, roughness: 0.92, metalness: 0, clippingPlanes: cut });
+      // double-sided: where the floor cuts a sunk wall open, its inside shows (soft cream), not the gaps behind it
+      new THREE.MeshStandardMaterial({ map: piece.map, roughness: 0.92, metalness: 0, clippingPlanes: cut, side: THREE.DoubleSide });
     const wallMat = shellMat(P.room_back_half);
     (mats.wall ??= []).push(wallMat);
     const floorMat = new THREE.MeshStandardMaterial({ map: P.room_floor_q.map, roughness: 0.92, metalness: 0 });

@@ -238,7 +238,8 @@ function Scene({ world, orbit, link, overlay, bottomInset }: {
     orbit.setViewHeight(h);
     camera.aspect = w / h;
     camera.fov = w / h < 0.6 ? 40 : 32;
-    if (bottomInset > 0) camera.setViewOffset(w, h, 0, bottomInset * 0.5, w, h);
+    // (a bit less than half: the room sits lower, clear of the floating header)
+    if (bottomInset > 0) camera.setViewOffset(w, h, 0, bottomInset * 0.36, w, h);
     else camera.clearViewOffset();
     camera.updateProjectionMatrix();
   }, [camera, size.width, size.height, bottomInset]);
