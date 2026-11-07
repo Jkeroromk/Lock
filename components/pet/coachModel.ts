@@ -7,9 +7,12 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 /**
  * The bichon coach in real-time 3D (Tripo model v3, animated in Blender).
  *
- * coach_v3.glb: meshes body / eye_L / eye_R / nose / tongue / headband /
- * whistle / collar on one rig, clips idle, walk, sit (sits down, holds, stands
- * up), hop. The body has a "mouth_closed" morph target.
+ * coach_v4.glb: meshes body / eye_L / eye_R / nose / tongue / headband /
+ * whistle / collar on one rig, clips idle, walk, hop, sit (a dog sit: sits
+ * down, then holds and breathes) and lie (lying on the belly, chin on the
+ * front paws, breathing — for sleep). The body has a "mouth_closed" morph
+ * target. v4 replaced v3's sit, which kept the torso upright like a person
+ * (it read as standing on the hind legs), and added lie.
  *
  * Faces never deform: blinking and expressions are texture swaps on the two
  * eye meshes (open, closed, happy, sad, sleepy, determined, love, star). When
@@ -29,7 +32,7 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
  */
 
 
-const MODEL = require('@/assets/pet/3d/coach_v3.glb');
+const MODEL = require('@/assets/pet/3d/coach_v4.glb');
 export const EYE_FACES = ['open', 'closed', 'happy', 'sad', 'sleepy', 'determined', 'love', 'star'] as const;
 export type Face = (typeof EYE_FACES)[number];
 const EYE_TEX: Record<'L' | 'R', Record<Face, number>> = {
@@ -161,7 +164,7 @@ export function loadCoachAssets(): Promise<CoachAssets> {
 /* --------------------------------- instance --------------------------------- */
 export type TongueMode = 'out' | 'in' | 'auto';
 export interface CoachLook { face: Face; tongue: TongueMode; blink: boolean }
-export type CoachClip = 'idle' | 'walk' | 'sit' | 'hop';
+export type CoachClip = 'idle' | 'walk' | 'sit' | 'lie' | 'hop';
 
 /**
  * One 豆豆 in one scene: its own skeleton, materials and mixer. The owner
@@ -252,7 +255,8 @@ export class CoachInstance {
     this.holdAt = opts.holdAt ?? null;
     a.enabled = true;
     a.play();
-    if (prev && prev !== a) a.crossFadeFrom(prev, 0.25, false);
+    // lying down / getting up takes a moment; everything else blends quickly
+    if (prev && prev !== a) a.crossFadeFrom(prev, name === 'lie' || prev === this.actions.lie ? 0.8 : 0.25, false);
     this.current = a;
   }
 
