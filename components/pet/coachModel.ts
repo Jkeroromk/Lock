@@ -7,12 +7,15 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 /**
  * The bichon coach in real-time 3D (Tripo model v3, animated in Blender).
  *
- * coach_v4.glb: meshes body / eye_L / eye_R / nose / tongue / headband /
+ * coach_v5.glb: meshes body / eye_L / eye_R / nose / tongue / headband /
  * whistle / collar on one rig, clips idle, walk, hop, sit (a dog sit: sits
  * down, then holds and breathes) and lie (lying on the belly, chin on the
  * front paws, breathing — for sleep). The body has a "mouth_closed" morph
  * target. v4 replaced v3's sit, which kept the torso upright like a person
- * (it read as standing on the hind legs), and added lie.
+ * (it read as standing on the hind legs), and added lie. v5 (patched from
+ * v4) leans the sitting chest forward so the front paws reach the ground,
+ * and rebuilds the closed mouth: the lips are snapped onto a smooth shell and
+ * their normals smoothed (Tripo's lips were a jumble of tiny facets).
  *
  * Faces never deform: blinking and expressions are texture swaps on the two
  * eye meshes (open, closed, happy, sad, sleepy, determined, love, star). When
@@ -32,7 +35,7 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
  */
 
 
-const MODEL = require('@/assets/pet/3d/coach_v4.glb');
+const MODEL = require('@/assets/pet/3d/coach_v5.glb');
 export const EYE_FACES = ['open', 'closed', 'happy', 'sad', 'sleepy', 'determined', 'love', 'star'] as const;
 export type Face = (typeof EYE_FACES)[number];
 const EYE_TEX: Record<'L' | 'R', Record<Face, number>> = {
