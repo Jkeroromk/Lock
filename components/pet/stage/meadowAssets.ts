@@ -69,7 +69,8 @@ const buddyCache: Record<string, Promise<BuddyModel | null>> = {};
 export function loadBuddyModel(kind: string): Promise<BuddyModel | null> {
   const src = BUDDY_MODELS[kind];
   if (!src) return Promise.resolve(null);
-  if (buddyCache[kind]) return buddyCache[kind];
+  const cached = buddyCache[kind] as Promise<BuddyModel | null> | undefined;
+  if (cached) return cached;
   const p = (async () => {
     shims();
     const bytes = await new File(await localUri(src.model)).bytes();

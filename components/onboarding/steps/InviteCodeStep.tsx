@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { FONTS } from '@/constants/fonts';
 import { useStore } from '@/store/useStore';
 import { redeemInviteCode, sendFriendRequest } from '@/services/api';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * Last, optional onboarding step: the invite code of whoever invited you. Both
@@ -18,7 +19,7 @@ import { redeemInviteCode, sendFriendRequest } from '@/services/api';
 export default function InviteCodeStep() {
   const { t } = useTranslation();
   const c = useTheme();
-  const { user, setUser, pendingInviteCode, setPendingInviteCode } = useStore();
+  const { user, setUser, pendingInviteCode, setPendingInviteCode } = useStore(useShallow((st) => ({ user: st.user, setUser: st.setUser, pendingInviteCode: st.pendingInviteCode, setPendingInviteCode: st.setPendingInviteCode })));
   // Pre-filled when the app was opened from someone's lock://invite/… link.
   const [code, setCode] = useState(pendingInviteCode ?? '');
   const [busy, setBusy] = useState(false);

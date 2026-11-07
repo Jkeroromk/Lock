@@ -12,6 +12,7 @@ import { searchUser, sendFriendRequest } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import { getQuota } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
+import { useShallow } from 'zustand/react/shallow';
 
 interface AddFriendModalProps {
   visible: boolean;
@@ -34,7 +35,7 @@ interface FoundUser {
 export default function AddFriendModal({ visible, onClose, onSuccess, initialValue }: AddFriendModalProps) {
   const colors = useTheme();
   const router = useRouter();
-  const { user } = useStore();
+  const { user } = useStore(useShallow((st) => ({ user: st.user })));
   const { t } = useTranslation();
 
   const [query, setQuery] = useState(initialValue ?? '');

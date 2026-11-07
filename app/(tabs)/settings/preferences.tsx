@@ -16,10 +16,11 @@ import SettingItem from '@/components/settings/SettingItem';
 import SettingsPage, { SettingsSection } from '@/components/settings/SettingsPage';
 import LanguageModal from '@/components/settings/LanguageModal';
 import LanguageChangeLoadingModal from '@/components/settings/LanguageChangeLoadingModal';
+import { useShallow } from 'zustand/react/shallow';
 
 /** Language, appearance, app icon, notifications and Apple Health. */
 export default function PreferencesScreen() {
-  const { language, setLanguage, themeMode, setThemeMode, calorieWarnings, setCalorieWarnings } = useStore();
+  const { language, setLanguage, themeMode, setThemeMode, calorieWarnings, setCalorieWarnings } = useStore(useShallow((st) => ({ language: st.language, setLanguage: st.setLanguage, themeMode: st.themeMode, setThemeMode: st.setThemeMode, calorieWarnings: st.calorieWarnings, setCalorieWarnings: st.setCalorieWarnings })));
   const { t } = useTranslation();
   const router = useRouter();
 

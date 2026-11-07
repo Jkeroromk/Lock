@@ -14,6 +14,7 @@ import { useStore } from '@/store/useStore';
 import { deleteAccount } from '@/services/api';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useShallow } from 'zustand/react/shallow';
 
 type OAuthStrategy = 'oauth_google' | 'oauth_apple' | 'oauth_facebook';
 
@@ -24,7 +25,7 @@ export default function AccountSecurityScreen() {
   const colors = useTheme();
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
-  const { clearSession } = useStore();
+  const { clearSession } = useStore(useShallow((st) => ({ clearSession: st.clearSession })));
   const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
 

@@ -19,6 +19,7 @@ import {
 } from '@/lib/goals';
 import { stepHistory, weekKey } from '@/hooks/useAdaptiveStepGoal';
 import SheetModal from '@/components/ui/SheetModal';
+import { useShallow } from 'zustand/react/shallow';
 
 interface GoalsModalProps {
   visible: boolean;
@@ -49,7 +50,7 @@ export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
   const { t } = useTranslation();
   const c = useTheme();
   const unit = useWeightUnit();
-  const { user, setUser, goalSettings, setGoalSettings } = useStore();
+  const { user, setUser, goalSettings, setGoalSettings } = useStore(useShallow((st) => ({ user: st.user, setUser: st.setUser, goalSettings: st.goalSettings, setGoalSettings: st.setGoalSettings })));
   const plan = useWorkoutStore((s) => s.plan);
 
   const [settings, setSettings] = useState<GoalSettings>(() => goalSettings ?? defaultSettings(user ?? {}));

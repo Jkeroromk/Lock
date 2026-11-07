@@ -21,9 +21,10 @@ import WeeklyNutritionBreakdown from '@/components/calendar/WeeklyNutritionBreak
 import MonthlyStats from '@/components/calendar/MonthlyStats';
 import DayMealsModal from '@/components/calendar/DayMealsModal';
 import TabFocusFade from '@/components/ui/TabFocusFade';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function CalendarScreen() {
-  const { language, dailyCalorieGoal, user } = useStore();
+  const { language, dailyCalorieGoal, user } = useStore(useShallow((st) => ({ language: st.language, dailyCalorieGoal: st.dailyCalorieGoal, user: st.user })));
   const uid = user?.id ?? 'anon';
   const { t } = useTranslation();
   const router = useRouter();

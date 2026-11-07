@@ -6,6 +6,7 @@ import { useStore } from '@/store/useStore';
 import { FONTS } from '@/constants/fonts';
 import { Card, Label } from '@/components/ui/bxc';
 import type { DayMark } from '@/components/calendar/CalendarView';
+import { useShallow } from 'zustand/react/shallow';
 
 interface MonthlyStatsProps {
   markedDates: Record<string, DayMark>;
@@ -15,7 +16,7 @@ interface MonthlyStatsProps {
 export default function MonthlyStats({ markedDates, avgDailyCalories }: MonthlyStatsProps) {
   const { t } = useTranslation();
   const c = useTheme();
-  const { dailyCalorieGoal } = useStore();
+  const { dailyCalorieGoal } = useStore(useShallow((st) => ({ dailyCalorieGoal: st.dailyCalorieGoal })));
 
   const days = Object.values(markedDates);
   const logged = days.filter((d) => d.calories > 0);

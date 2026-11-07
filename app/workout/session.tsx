@@ -16,6 +16,7 @@ import ExerciseThumb from '@/components/train/ExerciseThumb';
 import ExercisePicker from '@/components/train/ExercisePicker';
 import { showToast } from '@/components/ui/Toast';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
+import { useShallow } from 'zustand/react/shallow';
 
 const mmss = (sec: number) => {
   const s = Math.max(0, Math.round(sec));
@@ -34,7 +35,7 @@ export default function WorkoutSessionScreen() {
   const {
     active, history, loadHistory, setCurrent, updateSet, toggleSet, addSet, removeSet,
     addExercises, removeExercise, startRest, adjustRest, skipRest, discard, finish,
-  } = useWorkoutStore();
+  } = useWorkoutStore(useShallow((st) => ({ active: st.active, history: st.history, loadHistory: st.loadHistory, setCurrent: st.setCurrent, updateSet: st.updateSet, toggleSet: st.toggleSet, addSet: st.addSet, removeSet: st.removeSet, addExercises: st.addExercises, removeExercise: st.removeExercise, startRest: st.startRest, adjustRest: st.adjustRest, skipRest: st.skipRest, discard: st.discard, finish: st.finish })));
   const [now, setNow] = useState(Date.now());
   const [picker, setPicker] = useState(false);
   const [saving, setSaving] = useState(false);

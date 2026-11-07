@@ -24,6 +24,7 @@ import { syncSubscriptionPlan } from '@/services/api';
 import type { Feature } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
 import SheetModal from '@/components/ui/SheetModal';
+import { useShallow } from 'zustand/react/shallow';
 
 // One icon per paywall.featureN string. Only list what Pro actually adds over Free.
 const PRO_HIGHLIGHT_ICONS = ['camera', 'analytics', 'barbell'];
@@ -44,7 +45,7 @@ export default function PaywallModal({
 }: PaywallModalProps) {
   const router = useRouter();
   const colors = useTheme();
-  const { setPlan } = useStore();
+  const { setPlan } = useStore(useShallow((st) => ({ setPlan: st.setPlan })));
   const { t } = useTranslation();
   const defaultTitle = t('paywall.upgradeTitle' as any);
   const defaultDesc = t('paywall.upgradeDesc' as any);

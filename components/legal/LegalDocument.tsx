@@ -9,6 +9,7 @@ import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { getPrivacyContent, getTermsContent } from '@/i18n/legal';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
+import { useShallow } from 'zustand/react/shallow';
 import { SUPPORT_EMAIL, SITE } from '@/constants/safety';
 
 const EMAIL_RE = /([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/g;
@@ -30,7 +31,7 @@ export default function LegalDocument({ kind }: { kind: 'privacy' | 'terms' }) {
   const router = useRouter();
   const colors = useTheme();
   const { t } = useTranslation();
-  const { language } = useStore();
+  const { language } = useStore(useShallow((st) => ({ language: st.language })));
   const content = kind === 'privacy' ? getPrivacyContent(language) : getTermsContent(language);
 
   return (

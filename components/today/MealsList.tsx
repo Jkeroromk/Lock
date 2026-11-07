@@ -9,6 +9,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { deleteMeal } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import EditMealModal from './EditMealModal';
+import { useShallow } from 'zustand/react/shallow';
 
 interface Meal {
   id?: string;
@@ -30,7 +31,7 @@ const hasPhoto = (url?: string | null) => !!url && (url.startsWith('https://') |
 export default function MealsList({ meals }: MealsListProps) {
   const { t } = useTranslation();
   const c = useTheme();
-  const { removeMealOptimistic, refreshToday } = useStore();
+  const { removeMealOptimistic, refreshToday } = useStore(useShallow((st) => ({ removeMealOptimistic: st.removeMealOptimistic, refreshToday: st.refreshToday })));
   const [activeMealId, setActiveMealId] = useState<string | null>(null);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);

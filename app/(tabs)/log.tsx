@@ -30,6 +30,7 @@ import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
 import { calorieGoalNow } from '@/hooks/useDailyGoals';
+import { useShallow } from 'zustand/react/shallow';
 
 type LogMode = 'photo' | 'label' | 'barcode';
 
@@ -41,7 +42,7 @@ export default function LogScreen() {
   const { t, language } = useTranslation();
   const c = useTheme();
   const router = useRouter();
-  const { refreshToday, user } = useStore();
+  const { refreshToday, user } = useStore(useShallow((st) => ({ refreshToday: st.refreshToday, user: st.user })));
   useRefreshRewards();
   const plan = user?.plan ?? 'FREE';
   const aiQuota = user?.isAdmin ? -1 : getQuota(plan, 'dailyAiCalls');

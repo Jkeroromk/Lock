@@ -4,10 +4,11 @@ import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import SettingItem from '@/components/settings/SettingItem';
 import SettingsPage, { SettingsSection } from '@/components/settings/SettingsPage';
+import { useShallow } from 'zustand/react/shallow';
 
 /** Sign-in & security, subscription and data export. */
 export default function AccountScreen() {
-  const { user } = useStore();
+  const { user } = useStore(useShallow((st) => ({ user: st.user })));
   const { t } = useTranslation();
   const router = useRouter();
   const paid = !!user?.plan && user.plan !== 'FREE';

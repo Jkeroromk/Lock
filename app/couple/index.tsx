@@ -21,6 +21,7 @@ import CoupleRoom from '@/components/couple/room/SafeCoupleRoom';
 import AnniversarySheet from '@/components/couple/AnniversarySheet';
 import InviteSheet from '@/components/couple/InviteSheet';
 import HomeShopSheet from '@/components/couple/HomeShopSheet';
+import { useShallow } from 'zustand/react/shallow';
 
 /** Height of the phone layout's bottom panel (day cards + nudges). */
 const SHEET_H = 186;
@@ -38,7 +39,7 @@ export default function CoupleScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const layout = useDeviceLayout();
-  const { couple, loaded, error, refresh } = useCoupleStore();
+  const { couple, loaded, error, refresh } = useCoupleStore(useShallow((st) => ({ couple: st.couple, loaded: st.loaded, error: st.error, refresh: st.refresh })));
 
   const [focused, setFocused] = useState(true);
   const [annOpen, setAnnOpen] = useState(false);
