@@ -29,6 +29,12 @@ export default function GoalsScreen() {
         description={t('settings.weightTrackerDescription' as any)}
         onPress={() => router.push('/(tabs)/settings/weight-tracker')}
       />
+      <SettingItem
+        icon="library-outline"
+        title={t('sources.title')}
+        description={t('sources.rowDesc')}
+        onPress={() => router.push('/(tabs)/settings/sources')}
+      />
       <HealthDisclaimer />
       <GoalsModal visible={showGoalsModal} onClose={() => setShowGoalsModal(false)} />
     </SettingsPage>
