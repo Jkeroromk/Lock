@@ -60,6 +60,8 @@ interface Wall {
   mats: { m: THREE.Material; base: number }[];
   /** The toon wall itself (paper, cap, skirt): hidden once the plush room is in. */
   toon: THREE.Object3D[];
+  /** Plush room: the wall is either standing or sunk (never resting half way). */
+  up: boolean;
   /** The plush wall (two mirrored halves): slides down into the floor (cut off there) instead of squashing. */
   plush?: THREE.Mesh[];
 }
@@ -245,7 +247,7 @@ export class World {
     if (axis === 'x') { g.rotation.y = (Math.PI / 2) * -sign; g.position.x = sign * ROOM; }
     else { g.rotation.y = sign > 0 ? Math.PI : 0; g.position.z = sign * ROOM; }
 
-    const wall: Wall = { group: g, lift, decor, ink, axis, sign, shown: 1, alpha: 1, lastAlpha: -1, mats: [], toon: [body, cap, skirt] };
+    const wall: Wall = { group: g, lift, decor, ink, axis, sign, shown: 1, up: true, alpha: 1, lastAlpha: -1, mats: [], toon: [body, cap, skirt] };
     decorate(decor, dk, wall);
     const seen = new Set<THREE.Material>();
     decor.traverse((o) => {
@@ -527,7 +529,7 @@ export class World {
     const winHit = new THREE.Mesh(new THREE.CircleGeometry(1.0, 20), new THREE.MeshBasicMaterial({ visible: false }));
     winHit.position.set(0.3, 1.95, 0.25);
     back.decor.add(this.tappable(winHit, 'window', back));
-    this.bottles.position.set(1.2, 0.6, 0); // shelf + bottles clear of the window and above the plant
+    this.bottles.position.set(0.75, 0.6, 0); // shelf + bottles between the window and the corner, above the plant
     this.root.updateMatrixWorld(true);
     const was = this.anchorsOf.get(this.bottles)!;
     const now = this.bottles.localToWorld(new THREE.Vector3(1.4, 2.5, 0.3));
@@ -870,15 +872,26 @@ export class World {
     for (const w of this.walls) {
       // how much this wall faces away from the camera: 1 behind the room, 0 in front
       const facing = (-(w.axis === 'x' ? vx : vz) / len) * w.sign;
-      const want = smooth(-0.35, 0.25, facing);
-      w.shown += (want - w.shown) * Math.min(1, dt * 7);
+      if (w.plush) {
+        // plush walls are up or down, never half way (a half-sunk plush wall is
+        // cut open by the floor): flip past a threshold, with a little slack so
+        // they don't flicker, and slide there in about a third of a second
+        if (w.up && facing < -0.12) w.up = false;
+        else if (!w.up && facing > 0.02) w.up = true;
+        const goal = w.up ? 1 : 0;
+        w.shown = this.reduced ? goal : w.shown + Math.sign(goal - w.shown) * Math.min(Math.abs(goal - w.shown), dt / 0.32);
+      } else {
+        const want = smooth(-0.35, 0.25, facing);
+        w.shown += (want - w.shown) * Math.min(1, dt * 7);
+      }
       // the wall sinks to a stub; its pictures fade out before it sinks
       if (w.plush) {
         // only the rounded top stays above the floor, like a doll's-house rim
         w.lift.scale.y = 1;
         for (const m of w.plush) m.position.y = sunk(w.shown);
+        w.decor.position.y = sunk(w.shown); // pictures go down with their wall (and fade)
       } else w.lift.scale.y = 0.1 + 0.9 * w.shown;
-      const alpha = smooth(0.45, 0.95, w.shown);
+      const alpha = w.plush ? smooth(0.55, 0.95, w.shown) : smooth(0.45, 0.95, w.shown);
       w.alpha = alpha;
       w.decor.visible = alpha > 0.02;
       if (Math.abs(w.lastAlpha - alpha) < 0.01 && !(alpha === 1 && w.lastAlpha !== 1)) continue;
