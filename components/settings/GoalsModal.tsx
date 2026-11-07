@@ -1,4 +1,5 @@
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
@@ -45,6 +46,7 @@ const intOr = (s: string, fallback: number) => {
  * me" (a bit above the last two weeks' average).
  */
 export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
+  const router = useRouter();
   const { t } = useTranslation();
   const c = useTheme();
   const unit = useWeightUnit();
@@ -175,6 +177,14 @@ export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
                           {t('goals.floored', { kcal: floor.toLocaleString() })}
                         </Text>
                       ) : null}
+                      {/* Where the formula and limits come from (App Review 1.4.1). */}
+                      <TouchableOpacity
+                        accessibilityRole="link"
+                        onPress={() => { onClose(); router.push('/(tabs)/settings/sources'); }}
+                        style={{ alignSelf: 'center', marginTop: 4, paddingVertical: 4 }}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: c.textPrimary, textDecorationLine: 'underline' }}>{t('sources.link')}</Text>
+                      </TouchableOpacity>
                     </View>
                   ) : (
                     <Text style={{ marginTop: 14, fontSize: 13, color: c.textSecondary, textAlign: 'center' }}>{t('goals.needBody')}</Text>

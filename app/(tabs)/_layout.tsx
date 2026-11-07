@@ -13,6 +13,7 @@ import { TAB_BAR_HEIGHT, INNER_TAB_BAR_HEIGHT, tabBandHeight } from '@/hooks/use
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
 import { Text } from '@/components/ui/Text';
+import HealthNotice from '@/components/safety/HealthNotice';
 import { FONTS } from '@/constants/fonts';
 import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT, INNER_PAGE_TOP, INNER_PAGE_SIDE } from '@/hooks/useDeviceLayout';
 
@@ -446,6 +447,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
   return (
+    <>
     <Tabs
       tabBar={(props) => <AdaptiveTabBar {...props} />}
       screenOptions={{
@@ -508,5 +510,8 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    {/* Age requirement + health disclaimer, once per account (App Review 1.4.1). */}
+    <HealthNotice />
+    </>
   );
 }

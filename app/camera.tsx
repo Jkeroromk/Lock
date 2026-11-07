@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Pressable, ActivityIndicator, Image, Alert } from 'react-native';
+import { View, Pressable, ActivityIndicator, Image, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -220,7 +220,15 @@ export default function CameraScreen() {
               </View>
               <Text style={{ fontSize: 20, fontWeight: '800', color: PAPER, textAlign: 'center' }}>{t('log.cameraPermissionTitle' as any)}</Text>
               <Text style={{ fontSize: 14, lineHeight: 20, color: MUTED, textAlign: 'center' }}>{t('log.cameraPermissionDesc' as any)}</Text>
-              <Button label={t('log.grantCamera' as any)} onPress={requestPermission} style={{ alignSelf: 'stretch', marginTop: 6 }} />
+              {/* Neutral wording (App Review 5.1.1(iv)); once declined, iOS won't ask again, so point to Settings. */}
+              {permission.canAskAgain ? (
+                <Button label={t('log.grantCamera' as any)} onPress={requestPermission} style={{ alignSelf: 'stretch', marginTop: 6 }} />
+              ) : (
+                <>
+                  <Text style={{ fontSize: 14, lineHeight: 20, color: MUTED, textAlign: 'center' }}>{t('perm.denied')}</Text>
+                  <Button label={t('perm.openSettings')} onPress={() => Linking.openSettings()} style={{ alignSelf: 'stretch', marginTop: 6 }} />
+                </>
+              )}
               <Button label={t('camera.fromLibrary')} variant="outline" onPress={pickFromLibrary} style={{ alignSelf: 'stretch', borderColor: LINE }} />
             </>
           )}

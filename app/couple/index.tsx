@@ -284,7 +284,7 @@ export default function CoupleScreen() {
 
   const sheets = (
     <>
-      <AnniversarySheet visible={annOpen} onClose={() => setAnnOpen(false)} items={couple!.anniversaries} highlight={annHighlight} onChanged={refresh} />
+      <AnniversarySheet visible={annOpen} onClose={() => setAnnOpen(false)} items={couple!.anniversaries} highlight={annHighlight} onChanged={refresh} since={couple!.since} days={days} nextLabel={nextLabel} />
       <HomeShopSheet visible={homeOpen} onClose={() => setHomeOpen(false)} home={home} onChanged={(h) => setHomeNow(h)} />
     </>
   );

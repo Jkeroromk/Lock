@@ -13,6 +13,7 @@ import { Card, HardShadow } from '@/components/ui/bxc';
 import { getAppIconOption, getCurrentAppIcon } from '@/lib/appIcon';
 import SettingItem from '@/components/settings/SettingItem';
 import SettingsPage, { SettingsSection } from '@/components/settings/SettingsPage';
+import HealthDisclaimer from '@/components/safety/HealthDisclaimer';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -68,7 +69,10 @@ export default function AboutScreen() {
         <Text style={{ fontSize: 15, lineHeight: 22, color: c.textSecondary, marginTop: 14 }}>{t('about.description')}</Text>
       </Card>
 
+      <HealthDisclaimer />
+
       <SettingsSection label={t('about.legal')} />
+      <SettingItem icon="library-outline" title={t('sources.title')} onPress={() => router.push('/(tabs)/settings/sources')} />
       <SettingItem icon="shield-outline" title={t('about.privacyPolicy')} onPress={() => router.push('/(tabs)/settings/privacy-policy')} />
       <SettingItem icon="document-text-outline" title={t('about.termsOfService')} onPress={() => router.push('/(tabs)/settings/terms-of-service')} />
       <SettingItem icon="mail-outline" title={t('about.contact')} value={t('about.contactEmail')} onPress={() => Linking.openURL(`mailto:${t('about.contactEmail')}`)} />

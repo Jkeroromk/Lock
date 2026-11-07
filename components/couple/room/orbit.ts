@@ -12,7 +12,7 @@ export class Orbit {
   // where the finger wants the camera …
   theta = Math.PI / 4;
   phi = 1.073;
-  radius = 20.1;
+  radius = 21.5; // the plush room is chunkier than the toon one: a step further back so it all fits
   // … and where it is now
   private cTheta = this.theta;
   private cPhi = this.phi;

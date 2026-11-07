@@ -6,6 +6,7 @@ import { findUserByHandle } from '@/lib/find-user';
 import { getMaxFriends } from '@/lib/plans';
 import { sendPushToUser } from '@/lib/notify';
 import { pushName } from '@/lib/sanitize';
+import { caloriesToday, liveStreaks } from '@/lib/local-day';
 
 // GET /api/social/friends — list accepted friends
 export async function GET(request: NextRequest) {
@@ -20,30 +21,14 @@ export async function GET(request: NextRequest) {
         OR: [{ requesterId: userId }, { addresseeId: userId }],
       },
       include: {
-        requester: { select: { id: true, name: true, username: true, streak: true } },
-        addressee: { select: { id: true, name: true, username: true, streak: true } },
+        requester: { select: { id: true, name: true, username: true, streak: true, timeZone: true } },
+        addressee: { select: { id: true, name: true, username: true, streak: true, timeZone: true } },
       },
     });
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // 一次性聚合所有好友今日卡路里，避免 N+1 查询
-    const friendIds = friendships.map((f) =>
-      f.requesterId === userId ? f.addresseeId : f.requesterId
-    );
-
-    const calorieSums = await prisma.meal.groupBy({
-      by: ['userId'],
-      where: { userId: { in: friendIds }, createdAt: { gte: today, lt: tomorrow } },
-      _sum: { calories: true },
-    });
-
-    const calorieMap = new Map(
-      calorieSums.map((c) => [c.userId, Math.round(Number(c._sum.calories || 0))])
-    );
+    // Each friend's own today (the server clock is UTC), and streaks that lapse.
+    const people = friendships.map((f) => (f.requesterId === userId ? f.addressee : f.requester));
+    const [calorieMap, streaks] = await Promise.all([caloriesToday(people), liveStreaks(people)]);
 
     const friends = friendships.map((f) => {
       const friend = f.requesterId === userId ? f.addressee : f.requester;
@@ -54,7 +39,7 @@ export async function GET(request: NextRequest) {
         username: friend.username,
         avatar: (friend.name || friend.username || 'U').charAt(0).toUpperCase(),
         calories: calorieMap.get(friend.id) ?? 0,
-        streak: friend.streak,
+        streak: streaks.get(friend.id) ?? 0,
       };
     });
 

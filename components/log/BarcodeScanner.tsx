@@ -1,4 +1,4 @@
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Linking } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef } from 'react';
@@ -46,7 +46,15 @@ export default function BarcodeScanner({ onScanned }: Props) {
         <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, textAlign: 'center', marginTop: 6 }}>
           {t('log.cameraPermissionDesc' as any)}
         </Text>
-        <Button label={t('log.grantCamera' as any)} onPress={requestPermission} style={{ marginTop: 16, alignSelf: 'stretch' }} />
+        {/* Neutral wording (App Review 5.1.1(iv)); once declined, iOS won't ask again, so point to Settings. */}
+        {permission.canAskAgain ? (
+          <Button label={t('log.grantCamera' as any)} onPress={requestPermission} style={{ marginTop: 16, alignSelf: 'stretch' }} />
+        ) : (
+          <>
+            <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, textAlign: 'center', marginTop: 10 }}>{t('perm.denied')}</Text>
+            <Button label={t('perm.openSettings')} onPress={() => Linking.openSettings()} style={{ marginTop: 12, alignSelf: 'stretch' }} />
+          </>
+        )}
       </View>
     );
   }

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
 import { trustedTimeZone } from '@/lib/timezone';
 import { localDayKey, petSummaries } from '@/lib/pet';
+import { caloriesToday, liveStreaks } from '@/lib/local-day';
 
 type LeaderboardEntry = {
   id: string;
@@ -30,11 +31,6 @@ export async function GET(request: NextRequest) {
   const { userId } = auth;
 
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
     const friendships = await prisma.friendship.findMany({
       where: { status: 'ACCEPTED', OR: [{ requesterId: userId }, { addresseeId: userId }] },
     });
@@ -50,29 +46,22 @@ export async function GET(request: NextRequest) {
     );
     const allIds = [userId, ...friendIds];
 
-    const [users, calorieSums] = await Promise.all([
-      prisma.user.findMany({
-        where: { id: { in: allIds } },
-        select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, streak: true },
-      }),
-      prisma.meal.groupBy({
-        by: ['userId'],
-        where: { userId: { in: allIds }, createdAt: { gte: today, lt: tomorrow } },
-        _sum: { calories: true },
-      }),
-    ]);
+    // Resolve my zone first: it may adopt the request's zone, and the queries below read it.
+    const myTz = await trustedTimeZone(userId, request);
+    const users = await prisma.user.findMany({
+      where: { id: { in: allIds } },
+      select: { id: true, name: true, username: true, avatarEmoji: true, avatarImage: true, streak: true, timeZone: true },
+    });
+    // Each person's own today (the server clock is UTC).
+    const [calorieMap, streaks] = await Promise.all([caloriesToday(users), liveStreaks(users)]);
 
-    const dayKey = localDayKey(new Date(), await trustedTimeZone(userId, request));
+    const dayKey = localDayKey(new Date(), myTz);
     const [pets, myPats, received] = await Promise.all([
       petSummaries(allIds),
       prisma.petPat.findMany({ where: { fromUser: userId, dayKey }, select: { toUser: true } }),
       prisma.petPat.count({ where: { toUser: userId, dayKey } }),
     ]);
     const pattedSet = new Set(myPats.map((p) => p.toUser));
-
-    const calorieMap = new Map(
-      calorieSums.map((c) => [c.userId, Math.round(Number(c._sum.calories || 0))])
-    );
 
     const entries: LeaderboardEntry[] = users.map((u) => ({
       id: u.id,
@@ -81,7 +70,7 @@ export async function GET(request: NextRequest) {
       avatar: (u.name || u.username || 'U').charAt(0).toUpperCase(), status: u.avatarEmoji || null,
       avatarImage: u.avatarImage || null,
       calories: calorieMap.get(u.id) ?? 0,
-      streak: u.streak,
+      streak: streaks.get(u.id) ?? 0,
       isMe: u.id === userId,
       friendshipId: friendshipMap.get(u.id),
       rank: 0,
