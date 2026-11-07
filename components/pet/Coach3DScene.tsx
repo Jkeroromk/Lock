@@ -1,5 +1,6 @@
 import { forwardRef, Suspense, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode } from 'react';
-import { PanResponder, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { AppState, PanResponder, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { Canvas, advance, useFrame, useStore, type RootState } from '@react-three/fiber/native';
 import { useReducedMotion } from 'react-native-reanimated';
 import * as THREE from 'three';
@@ -284,6 +285,21 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
   const dragStart = useRef(0);
   const moved = useRef(false);
 
+  // Only draw while someone can see it. Tabs stay mounted, so without this the
+  // coach kept rendering WebGL every frame while the user was on Today or
+  // Train, or with the app in the background (battery and heat).
+  const [onScreen, setOnScreen] = useState(true);
+  const [appActive, setAppActive] = useState(AppState.currentState !== 'background');
+  useFocusEffect(useCallback(() => {
+    setOnScreen(true);
+    return () => setOnScreen(false);
+  }, []));
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => setAppActive(s !== 'background'));
+    return () => sub.remove();
+  }, []);
+  const drawing = onScreen && appActive;
+
   useEffect(() => {
     let alive = true;
     loadCoachAssets().then((d) => alive && setData(d)).catch((e) => {
@@ -312,7 +328,8 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
   // otherwise escape requestAnimationFrame and take the whole app down.
   const crashed = useRef(false);
   useEffect(() => {
-    if (!ready) return;
+    // Paused: the last frame stays on screen; update() clamps dt, so resuming doesn't jump.
+    if (!ready || !drawing) return;
     let raf = 0;
     let alive = true;
     const tick = (t: number) => {
@@ -334,7 +351,7 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
     };
     raf = requestAnimationFrame(tick);
     return () => { alive = false; cancelAnimationFrame(raf); };
-  }, [ready, onCrash]);
+  }, [ready, drawing, onCrash]);
 
   const hop = useCallback(() => (ready ? ctl.current?.hop() : fallbackRef?.current?.hop()), [ready, fallbackRef]);
   const hearts = useCallback((n = 3) => {

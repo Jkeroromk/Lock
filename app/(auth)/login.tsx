@@ -20,13 +20,14 @@ import { fetchProfile, updateProfile } from '@/services/api';
 import { SocialButton } from '@/components/auth/SocialButton';
 import OtpVerificationScreen from '@/components/auth/OtpVerificationScreen';
 import ForgotPasswordScreen from '@/components/auth/ForgotPasswordScreen';
+import { useShallow } from 'zustand/react/shallow';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { setUser } = useStore();
+  const { setUser } = useStore(useShallow((st) => ({ setUser: st.setUser })));
   const colors = useTheme();
 
   const { getToken, userId: clerkUserId } = useAuth();

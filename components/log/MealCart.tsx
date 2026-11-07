@@ -8,6 +8,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { useMealCartStore, cartTotals, type CartItem } from '@/store/useMealCartStore';
+import { useShallow } from 'zustand/react/shallow';
 
 const SOURCE_ICON: Record<CartItem['source'], string> = {
   photo: 'camera-outline',
@@ -87,7 +88,7 @@ export function CartSheet({ visible, onClose, onLogAll, logging }: {
 }) {
   const c = useTheme();
   const { t } = useTranslation();
-  const { items, setServings, remove, clear } = useMealCartStore();
+  const { items, setServings, remove, clear } = useMealCartStore(useShallow((st) => ({ items: st.items, setServings: st.setServings, remove: st.remove, clear: st.clear })));
   const tot = cartTotals(items);
   const [confirmClear, setConfirmClear] = useState(false);
 

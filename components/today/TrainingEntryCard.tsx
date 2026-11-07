@@ -10,6 +10,7 @@ import { FONTS } from '@/constants/fonts';
 import { useStore, localDateKey } from '@/store/useStore';
 import { useWorkoutStore, dayMinutes } from '@/store/useWorkoutStore';
 import { dayTitle } from '@/components/train/dayTitle';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * Today's planned workout on the Today page: one tap starts it. Hidden on
@@ -20,7 +21,7 @@ export default function TrainingEntryCard() {
   const { t } = useTranslation();
   const router = useRouter();
   const uid = useStore((s) => s.user?.id);
-  const { plan, sessions, active, ensureUser, load, start } = useWorkoutStore();
+  const { plan, sessions, active, ensureUser, load, start } = useWorkoutStore(useShallow((st) => ({ plan: st.plan, sessions: st.sessions, active: st.active, ensureUser: st.ensureUser, load: st.load, start: st.start })));
 
   useEffect(() => {
     if (!uid) return;

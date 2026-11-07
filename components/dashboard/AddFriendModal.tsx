@@ -13,6 +13,7 @@ import { useStore } from '@/store/useStore';
 import { getQuota } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
 import { useSheetSides } from '@/hooks/useSheetSides';
+import { useShallow } from 'zustand/react/shallow';
 
 interface AddFriendModalProps {
   visible: boolean;
@@ -36,7 +37,7 @@ export default function AddFriendModal({ visible, onClose, onSuccess, initialVal
   const colors = useTheme();
   const sides = useSheetSides();
   const router = useRouter();
-  const { user } = useStore();
+  const { user } = useStore(useShallow((st) => ({ user: st.user })));
   const { t } = useTranslation();
 
   const [query, setQuery] = useState(initialValue ?? '');

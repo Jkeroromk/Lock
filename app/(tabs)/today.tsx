@@ -28,12 +28,13 @@ import TwoPane from '@/components/layout/TwoPane';
 import SnapMealCard from '@/components/today/SnapMealCard';
 import FriendRequestBanner from '@/components/today/FriendRequestBanner';
 import { useProteinTarget } from '@/hooks/useProteinTarget';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function TodayScreen() {
   const tabInset = useTabBarInset();
   const { twoPane, tabletop } = useDeviceLayout();
   const proteinTarget = useProteinTarget().target;
-  const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore();
+  const { todayCalories, todayMeals, todayDate, refreshToday, dailyCalorieGoal, user } = useStore(useShallow((st) => ({ todayCalories: st.todayCalories, todayMeals: st.todayMeals, todayDate: st.todayDate, refreshToday: st.refreshToday, dailyCalorieGoal: st.dailyCalorieGoal, user: st.user })));
   // Today's numbers from the last session are shown instantly; fresh data replaces them.
   const hasFreshCache = todayDate === localDateKey();
   const streak = user?.streak ?? 0;

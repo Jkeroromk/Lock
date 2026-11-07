@@ -13,6 +13,7 @@ import {
   fetchProPackages, freeTrialDays, annualSavingsPercent,
   purchasePackage, planFromCustomerInfo, type PurchasesPackage,
 } from '@/lib/revenuecat';
+import { useShallow } from 'zustand/react/shallow';
 
 type Choice = 'annual' | 'monthly';
 
@@ -71,7 +72,7 @@ type Plans = ReturnType<typeof useProPlans>;
 export function ProPlanPicker({ plans, onPurchased }: { plans: Plans; onPurchased?: () => void }) {
   const c = useTheme();
   const { t } = useTranslation();
-  const { setPlan } = useStore();
+  const { setPlan } = useStore(useShallow((st) => ({ setPlan: st.setPlan })));
   const [purchasing, setPurchasing] = useState(false);
   const { annual, monthly, pkg, selected, setSelected, loading, trialDays, annualTrialDays, savings } = plans;
 
