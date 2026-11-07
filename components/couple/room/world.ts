@@ -619,7 +619,8 @@ export class World {
     set('lamp', -3.7, -2.9, -3.6, -2.8);
     set('bookcase', -1.75, 0.55, 2.95, 3.95);
     set('pouf', 2.5, 3.4, -1.0, -0.1);
-    for (const v of [this.me, this.partner]) { v.seatX = -2.75; v.seatY = 0.56; v.standX = -1.75; }
+    // the seat cushions' top is 0.61 up, from x -2.6 (back cushions) to -2.0 (front edge)
+    for (const v of [this.me, this.partner]) { v.seatX = -2.5; v.seatY = 0.61; v.standX = -1.75; }
 
     this.plush = mats;
     this.me.usePlush(a);

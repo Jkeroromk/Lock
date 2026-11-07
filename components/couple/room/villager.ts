@@ -232,7 +232,7 @@ export class Villager extends Actor {
   dispose() { disposeTree(this.rig.group); this.dropPlush(); }
 
   /** Seated height of the body's origin: the plush hips rest on the cushion. */
-  private get seatHeight() { return this.plush ? this.seatY - this.plush.hipY + 0.12 : this.seatY; }
+  private get seatHeight() { return this.plush ? this.seatY - this.plush.hipY + 0.07 : this.seatY; }
 
   get pinned() { return this.seat !== null; }
   get sitting() { return this.seat !== null; }

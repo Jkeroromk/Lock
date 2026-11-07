@@ -116,11 +116,12 @@ export class PlushPerson {
     for (const key in this.j) { const jt = this.j[key as BoneKey]; jt.bone.quaternion.copy(jt.rest); jt.bone.position.copy(jt.restPos); }
     const s = this.side;
     const sit = p.sit;
-    // legs: walking swing, or thighs forward and shins down when seated
-    this.turn('upLegL', X, -p.swing * (1 - sit) - 1.45 * sit);
-    this.turn('upLegR', X, p.swing * (1 - sit) - 1.45 * sit);
-    this.turn('legL', X, Math.max(0, p.swing) * 0.5 * (1 - sit) + 1.35 * sit);
-    this.turn('legR', X, Math.max(0, -p.swing) * 0.5 * (1 - sit) + 1.35 * sit);
+    // legs: walking swing, or straight out in front when seated (a plush doll's sit:
+    // the short legs can't reach the cushion's edge, so bent knees would sink into it)
+    this.turn('upLegL', X, -p.swing * (1 - sit) - 1.5 * sit);
+    this.turn('upLegR', X, p.swing * (1 - sit) - 1.5 * sit);
+    this.turn('legL', X, Math.max(0, p.swing) * 0.5 * (1 - sit) + 0.15 * sit);
+    this.turn('legR', X, Math.max(0, -p.swing) * 0.5 * (1 - sit) + 0.15 * sit);
     // arms: opposite to the legs; the right hand waves
     // (Tripo binds much of each sleeve to the shoulder bone, so swings start there)
     this.turn('shoulderL', X, p.swing * 0.4 * (1 - sit));
@@ -136,6 +137,7 @@ export class PlushPerson {
     }
     // body: bob and lean while walking, breathing when still
     this.turn('spine', Z, p.roll);
+    this.turn('spine', X, 0.12 * sit); // leaning back into the cushions
     this.turn('chest', X, Math.sin(p.t * 2.2) * 0.02);
     this.turn('head', Y, p.headYaw);
     this.turn('head', Z, p.headRoll);
