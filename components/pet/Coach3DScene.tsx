@@ -6,6 +6,8 @@ import * as THREE from 'three';
 import type { CoachPose } from '@/constants/pets';
 import { CoachInstance, loadCoachAssets, type CoachAssets, type CoachClip, type CoachLook } from './coachModel';
 import { FloatFx, type Fx, type PetSpriteHandle } from './PetSprite';
+import { Outdoor } from './stage/outdoor';
+import { BuddyCat } from './stage/buddyCat';
 import { recordJsError } from '@/lib/crashlog';
 
 /**
@@ -68,13 +70,27 @@ const LOOKS: Record<CoachPose, CoachLook & { clip: CoachClip; speed?: number }> 
 
 interface Ctl { hop: () => void; love: () => void; yaw: { current: number }; state: () => RootState }
 
-function Coach({ data, pose, animate, ctl }: { data: CoachAssets; pose: CoachPose; animate: boolean; ctl: { current: Ctl | null } }) {
+function Coach({ data, pose, animate, ctl, x = 0, shadow }: {
+  data: CoachAssets; pose: CoachPose; animate: boolean; ctl: { current: Ctl | null };
+  /** Where 豆豆 stands (stage mode) and a contact shadow to stand on. */
+  x?: number; shadow?: THREE.Object3D | null;
+}) {
   const inst = useMemo(() => new CoachInstance(data), [data]);
   const root = useMemo(() => {
     const g = new THREE.Group();
     g.add(inst.root);
     return g;
   }, [inst]);
+  const place = useMemo(() => {
+    const g = new THREE.Group();
+    g.add(root);
+    return g;
+  }, [root]);
+  useEffect(() => {
+    place.position.x = x;
+    if (shadow) place.add(shadow);
+    return () => { if (shadow) place.remove(shadow); };
+  }, [place, x, shadow]);
   const yaw = useRef(0.35);
   const store = useStore();
   const look = LOOKS[pose] ?? LOOKS.idle;
@@ -101,7 +117,60 @@ function Coach({ data, pose, animate, ctl }: { data: CoachAssets; pose: CoachPos
     root.rotation.y += (yaw.current - root.rotation.y) * Math.min(1, Math.min(dt, 0.05) * 10);
   });
 
-  return <primitive object={root} />;
+  return <primitive object={place} />;
+}
+
+/* --------------------------------- stage --------------------------------- */
+// Camera and spots on the stage (world units; 豆豆 is ~1 tall).
+const STAGE_CAM = { fov: 30, pos: [0, 0.85, 3.3] as [number, number, number] };
+const DOG_X = -0.7;
+const BUDDY_X = 0.78;
+
+interface BuddyCtl { hop: () => void }
+
+/** The meadow and the buddy (the dog is added by <Coach>). */
+function Meadow({ outdoor, x, night, buddyKind, buddyStage, animate, buddyCtl }: {
+  outdoor: Outdoor; x: number; night: boolean; buddyKind: string; buddyStage: number; animate: boolean;
+  buddyCtl: { current: BuddyCtl | null };
+}) {
+  useEffect(() => { outdoor.setNight(night); }, [outdoor, night]);
+
+  const buddy = useMemo(() => new BuddyCat(buddyKind, buddyStage), [buddyKind, buddyStage]);
+  const buddyRoot = useMemo(() => {
+    const g = new THREE.Group();
+    g.add(buddy.root);
+    g.add(outdoor.blob(0.75));
+    buddy.root.rotation.y = -0.45;
+    return g;
+  }, [buddy, outdoor]);
+  useEffect(() => { buddyRoot.position.x = x; }, [buddyRoot, x]);
+  useEffect(() => () => buddy.dispose(), [buddy]);
+  useEffect(() => { buddy.asleep = night; }, [buddy, night]);
+  useEffect(() => { buddyCtl.current = { hop: () => { if (animate) buddy.hop(); } }; }, [buddy, buddyCtl, animate]);
+
+  useFrame((_, dt) => buddy.update(dt, animate));
+
+  return (
+    <>
+      <primitive object={outdoor.root} />
+      <primitive object={buddyRoot} />
+    </>
+  );
+}
+
+/**
+ * Camera framing for a w × h stage whose characters stand `floor` px above
+ * the bottom edge, and where things land on screen: px per world unit at the
+ * characters' depth, the ground line (px from the top) and a world x → px.
+ */
+function stageMetrics(w: number, h: number, floor = h * 0.15, spots?: { dog: number; buddy: number }) {
+  const d = STAGE_CAM.pos[2];
+  const unit = h / (2 * d * Math.tan((STAGE_CAM.fov / 2) * Math.PI / 180));
+  const groundY = h - floor;
+  const lookY = (h / 2 - floor) / unit; // aim the camera so y = 0 lands on the ground line
+  const sx = (x: number) => w / 2 + x * unit;
+  const toX = (f: number) => (f * w - w / 2) / unit;
+  return { unit, groundY, sx, lookY, dogX: spots ? toX(spots.dog) : DOG_X, buddyX: spots ? toX(spots.buddy) : BUDDY_X };
 }
 
 /* -------------------------------- component -------------------------------- */
@@ -117,20 +186,47 @@ interface Props {
   style?: StyleProp<ViewStyle>;
   /** Called when the render loop throws; the parent then switches to the 2D sprite. */
   onCrash?: (where: string, e: unknown) => void;
+  /**
+   * Stage mode: one canvas fills the whole scene (width × height) with the
+   * outdoor meadow, 豆豆 on the left and the buddy on the right. `fallback`
+   * is then the whole 2D scene. Without it, just 豆豆 in a size × size box.
+   */
+  stage?: StageOpts;
+}
+
+export interface StageOpts {
+  width: number;
+  height: number;
+  buddyKind: string;
+  buddyStage: number;
+  buddyLabel?: string;
+  onBuddyPress?: () => void;
+  /** Where the characters' feet are, in px above the bottom edge (default 15% of the height). */
+  floor?: number;
+  /** Where 豆豆 and the buddy stand, as fractions of the width (default: left and right of centre). */
+  spots?: { dog: number; buddy: number };
 }
 
 let fxId = 1;
 
 export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DScene(
-  { pose, size, fallback, fallbackRef, onPress, accessibilityLabel, style, onCrash },
+  { pose, size: boxSize, fallback, fallbackRef, onPress, accessibilityLabel, style, onCrash, stage },
   ref,
 ) {
   const reduce = useReducedMotion();
   const animate = !reduce;
   const [data, setData] = useState<CoachAssets | null>(null);
   const [failed, setFailed] = useState(false);
-  const [fx, setFx] = useState<Fx[]>([]);
+  const [fx, setFx] = useState<(Fx & { who?: 'buddy' })[]>([]);
   const ctl = useRef<Ctl | null>(null);
+  const buddyCtl = useRef<BuddyCtl | null>(null);
+  const staged = !!stage;
+  const outdoor = useMemo(() => (staged ? new Outdoor() : null), [staged]);
+  useEffect(() => () => outdoor?.dispose(), [outdoor]);
+  const dogShadow = useMemo(() => outdoor?.blob(0.95) ?? null, [outdoor]);
+  const m = stage ? stageMetrics(stage.width, stage.height, stage.floor, stage.spots) : null;
+  // the dog's on-screen height: hearts and Zz are sized to it
+  const size = m ? Math.round(m.unit * 1.05) : boxSize;
   const dragStart = useRef(0);
   const moved = useRef(false);
 
@@ -144,9 +240,9 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
     return () => { alive = false; };
   }, []);
 
-  const addFx = useCallback((kind: Fx['kind'], n: number) => {
-    const items: Fx[] = Array.from({ length: n }, (_, i) => ({
-      id: fxId++, kind,
+  const addFx = useCallback((kind: Fx['kind'], n: number, who?: 'buddy') => {
+    const items: (Fx & { who?: 'buddy' })[] = Array.from({ length: n }, (_, i) => ({
+      id: fxId++, kind, who,
       dx: kind === 'z' ? size * 0.25 : (i - (n - 1) / 2) * size * 0.18 + (Math.random() - 0.5) * size * 0.1,
       rot: (Math.random() - 0.5) * 40,
     }));
@@ -213,6 +309,60 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
   }), [size]);
 
   if (!ready || !data) return <>{fallback}</>;
+
+  if (stage && m && outdoor) {
+    // One canvas for the whole scene: meadow, 豆豆 (left), the buddy (right).
+    // Taps: left of the midpoint pats 豆豆, right of it the buddy.
+    const { width: W, height: H } = stage;
+    const dogX = m.sx(m.dogX), buddyX = m.sx(m.buddyX), mid = (dogX + buddyX) / 2;
+    const fxBox = (cx: number) => ({ position: 'absolute' as const, left: cx - size / 2, top: m.groundY - size, width: size, height: size });
+    return (
+      <View style={[{ width: W, height: H, overflow: 'hidden' }, style]} {...pan.panHandlers}>
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 0, width: W, height: H }}>
+          <Canvas
+            style={{ flex: 1 }}
+            flat
+            gl={{ antialias: true }}
+            camera={{ fov: STAGE_CAM.fov, near: 0.05, far: 60, position: [0, m.lookY + 0.25, STAGE_CAM.pos[2]] }}
+            onCreated={({ gl, camera }) => {
+              try {
+                gl.setClearColor(0x8fd3ff, 1);
+                camera.lookAt(0, m.lookY, 0);
+                instrument(gl);
+              } catch (e) {
+                recordJsError('coach3d:created', e);
+                onCrash?.('coach3d:created', e);
+              }
+            }}
+            frameloop="never"
+          >
+            <Suspense fallback={null}>
+              {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} night={pose === 'sleep'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} /> : null}
+              <Coach data={data} pose={pose} animate={animate} ctl={ctl} x={m.dogX} shadow={dogShadow} />
+            </Suspense>
+          </Canvas>
+        </View>
+        <Pressable
+          onPress={() => { hop(); ctl.current?.love(); hearts(3); onPress?.(); }}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: mid }}
+        />
+        <Pressable
+          onPress={() => { buddyCtl.current?.hop(); if (!reduce && pose !== 'sleep') addFx('heart', 2, 'buddy'); stage.onBuddyPress?.(); }}
+          accessibilityRole="button"
+          accessibilityLabel={stage.buddyLabel}
+          style={{ position: 'absolute', left: mid, top: 0, bottom: 0, right: 0 }}
+        />
+        <View pointerEvents="none" style={fxBox(dogX)}>
+          {fx.filter((f) => !f.who).map((f) => <FloatFx key={f.id} fx={f} size={size} />)}
+        </View>
+        <View pointerEvents="none" style={fxBox(buddyX)}>
+          {fx.filter((f) => f.who === 'buddy').map((f) => <FloatFx key={f.id} fx={f} size={Math.round(size * 0.8)} />)}
+        </View>
+      </View>
+    );
+  }
 
   // The canvas is taller than the slot so ears and hops never clip.
   return (
