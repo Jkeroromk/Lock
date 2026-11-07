@@ -608,8 +608,11 @@ export class World {
       mug.castShadow = true;
       table.add(mug);
     });
-    const bed = place(new THREE.Group().add(add('bed', plushMesh(P.bed))), -1.6, -2.6, 1.65);
-    const bowl = place(new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.17, 0.14, 16), new THREE.MeshStandardMaterial({ color: '#FFFFFF', roughness: 0.5 })), -0.4, -3.0, 1);
+    // big enough for 豆豆 to lie in (~1 unit long); its cushion top is 0.21 × scale up
+    const BED = 2.4;
+    const bed = place(new THREE.Group().add(add('bed', plushMesh(P.bed))), -1.6, -2.6, BED);
+    this.pet.bedLift = 0.21 * BED;
+    const bowl = place(new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.17, 0.14, 16), new THREE.MeshStandardMaterial({ color: '#FFFFFF', roughness: 0.5 })), 0.2, -3.3, 1);
     bowl.position.y = 0.07;
     const plant = place(new THREE.Group(), 3.15, -3.15, 1.6);
     plant.add(plushMesh(P.plant_pot), add('plant', plushMesh(P.plant_leaves)));
@@ -649,6 +652,8 @@ export class World {
     set('lamp', -3.7, -2.9, -3.6, -2.8);
     set('bookcase', -3.7, -1.45, 2.9, 3.95);
     set('pouf', 2.5, 3.4, -1.0, -0.1);
+    set('bed', -2.75, -0.45, -3.75, -1.45);
+    set('bowl', -0.1, 0.5, -3.6, -3.0);
     // the seat cushions' top is 0.61 up, from x -2.6 (back cushions) to -2.0 (front edge)
     for (const v of [this.me, this.partner]) { v.seatX = -2.5; v.seatY = 0.61; v.standX = -1.75; }
 

@@ -92,6 +92,8 @@ export class Pet extends Actor {
   private hopFired = false;
   hop = 0;
   napping = false;
+  /** Height of the bed's cushion: lying in the bed, the pet rests on it (not sunk into it). */
+  bedLift = 0;
 
   /** Swap the stand-in cat for 豆豆. */
   useCoach(inst: CoachInstance) {
@@ -165,8 +167,12 @@ export class Pet extends Actor {
       }
     }
     const c = this.coach;
+    const inBed = this.napping && !this.hasTarget && t < this.idleUntil;
+    // climb onto the bed's cushion (and back down when it gets up)
+    const lift = inBed ? this.bedLift : 0;
+    this.root.position.y += (lift - this.root.position.y) * (reduced ? 1 : Math.min(1, dt * 6));
     if (c) {
-      const resting = this.napping && !this.hasTarget && t < this.idleUntil;
+      const resting = inBed;
       if (this.hop > 0 && !this.hopFired && !resting) { this.hopFired = true; c.hop(); }
       if (this.hop <= 0) this.hopFired = false;
       this.hop = Math.max(0, this.hop - dt * 1.6);
