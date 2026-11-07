@@ -625,6 +625,24 @@ const jaJP = {
     keepScanning: "続けてスキャン",
     photoFailed: "撮影できませんでした。もう一度どうぞ。",
   },
+  safety: {
+    title: "はじめる前に",
+    disclaimer: "Lock は記録ツールであり、医療アドバイスではありません。カロリーと栄養素の目標は推定値です。新しい食事、減量、運動のプログラムを始める前に、医師または管理栄養士に相談してください。妊娠中、授乳中、または持病がある場合は特にご注意ください。",
+    disorderedEating: "摂食障害がある、または過去にあった場合は、医療チームの指導なしにカロリー目標に従わないでください。",
+    confirmAge: "{age} 歳以上です",
+    accept: "理解しました",
+    imUnder: "{age} 歳未満です",
+    underageTitle: "Lock は成人向けです",
+    underageBody: "Lock は {age} 歳以上の方を対象としています。",
+    ageNote: "Lock のご利用は {age} 歳以上が対象です。",
+    signOut: "ログアウト",
+  },
+  legalContact: {
+    title: "お問い合わせ",
+    body: "データに関するご質問やご依頼はメールでお送りください。24 時間以内に返信します。",
+    support: "サポートページ",
+    online: "Web で読む",
+  },
 };
 
 export default jaJP;

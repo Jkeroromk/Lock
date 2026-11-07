@@ -712,6 +712,24 @@ const enUS = {
     keepScanning: "Keep scanning",
     photoFailed: "Couldn't take the photo. Try again.",
   },
+  safety: {
+    title: "Before you start",
+    disclaimer: "Lock is a tracking tool, not medical advice. Calorie and macro targets are estimates. Talk to a doctor or a registered dietitian before you start a new diet, weight-loss or exercise program, especially if you are pregnant, breastfeeding or have a health condition.",
+    disorderedEating: "If you have, or have had, an eating disorder, please don't follow calorie targets without guidance from your care team.",
+    confirmAge: "I am {age} or older",
+    accept: "I understand",
+    imUnder: "I'm under {age}",
+    underageTitle: "Lock is for adults",
+    underageBody: "Lock is for people {age} and older.",
+    ageNote: "You must be {age} or older to use Lock.",
+    signOut: "Sign out",
+  },
+  legalContact: {
+    title: "Contact us",
+    body: "Questions or requests about your data? Email us and we reply within 24 hours.",
+    support: "Support page",
+    online: "Read it on the web",
+  },
 };
 
 export default enUS;

@@ -644,6 +644,24 @@ const zhTW = {
     keepScanning: "繼續掃",
     photoFailed: "沒拍成功，再試一次",
   },
+  safety: {
+    title: "開始之前",
+    disclaimer: "Lock 是記錄工具，不提供醫療建議。熱量和營養素目標都是估算值。開始新的飲食、減重或運動計畫前，請先諮詢醫師或註冊營養師，尤其是在懷孕、哺乳期或有健康問題時。",
+    disorderedEating: "如果你有或曾有飲食障礙，請在醫療團隊的指導下再參考熱量目標。",
+    confirmAge: "我已年滿 {age} 歲",
+    accept: "我已了解",
+    imUnder: "我未滿 {age} 歲",
+    underageTitle: "Lock 僅限成年人使用",
+    underageBody: "Lock 僅供 {age} 歲及以上的使用者使用。",
+    ageNote: "使用 Lock 需年滿 {age} 歲。",
+    signOut: "登出",
+  },
+  legalContact: {
+    title: "聯絡我們",
+    body: "關於你的資料有任何問題或請求，請寄信給我們，24 小時內回覆。",
+    support: "支援頁面",
+    online: "在網頁上查看",
+  },
 };
 
 export default zhTW;
