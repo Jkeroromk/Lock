@@ -668,8 +668,9 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
               <View style={{ position: 'absolute', right: 18, bottom: 8 }}>{buddySprite(layout === 'panel' ? 0.85 : 1)}</View>
             </>
           ))}
-          {/* top right: 豆豆's head (left) and the bubble no longer overlap in 3D */}
-          {bubble({ right: 14, top: 14, maxWidth: layout === 'panel' ? 200 : 220 })}
+          {/* top right: 豆豆's head (left) and the bubble no longer overlap in 3D;
+              on the panel layout it stops short of the corner button (collection) */}
+          {bubble({ right: corner ? 66 : 14, top: 14, maxWidth: layout === 'panel' ? 200 : 220 })}
           {coachTag({ left: 26, bottom: 6 })}
         </View>
 
