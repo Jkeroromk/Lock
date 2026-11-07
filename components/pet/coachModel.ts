@@ -194,6 +194,8 @@ export class CoachInstance {
   private mouth = 0; // 0 = open (tongue out) … 1 = closed
   /** Playback speed of the walk clip (match it to how fast the owner moves the root). */
   walkSpeed = 1;
+  /** Playback speed of the idle clip: slower reads as tired / asleep. */
+  private idleSpeed = 0.8;
 
   constructor(private assets: CoachAssets, opts: { shadows?: boolean } = {}) {
     this.root = cloneSkinned(assets.scene) as THREE.Group;
@@ -244,7 +246,7 @@ export class CoachInstance {
     if (prev === a && !opts.once) return;
     a.reset();
     a.setLoop(opts.once || opts.holdAt != null ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
-    a.timeScale = name === 'idle' ? 0.8 : name === 'walk' ? this.walkSpeed : 1;
+    a.timeScale = name === 'idle' ? this.idleSpeed : name === 'walk' ? this.walkSpeed : 1;
     a.clampWhenFinished = true;
     a.paused = false;
     this.holdAt = opts.holdAt ?? null;
@@ -260,7 +262,11 @@ export class CoachInstance {
   }
 
   /** The clip to fall back to: idle, walk (looping) or sit (sits down and stays). */
-  setBase(clip: CoachClip) {
+  setBase(clip: CoachClip, idleSpeed = 0.8) {
+    if (idleSpeed !== this.idleSpeed) {
+      this.idleSpeed = idleSpeed;
+      if (this.actions.idle && this.current === this.actions.idle) this.actions.idle.timeScale = idleSpeed;
+    }
     if (clip === this.base) return;
     this.base = clip;
     if (!this.hopping) this.playBase();
