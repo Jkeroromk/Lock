@@ -6,23 +6,75 @@ import * as THREE from 'three';
  * and flowers — in the same soft, matte, toy-like look as 豆豆. Nothing in it
  * moves, so it costs one draw of a few dozen small meshes per frame.
  *
- * At night (the buddy is asleep) the same meadow turns blue with a moon and
- * a few stars.
+ * The sky follows the phone's local time (setHour): pink dawn, blue day,
+ * golden sunset, blue night with the moon and stars. The sun and the moon
+ * cross the sky, and the light — and so the shadows — follows them.
  *
  * Units: the characters stand at y = 0 around x = 0 (豆豆 is ~1 tall).
  */
 
-const DAY = {
+interface Palette {
+  skyTop: string; skyLow: string; ground: string; patch: string;
+  hills: string[]; leaves: string[]; trunk: string; cloud: string; tuft: string;
+  /** sun/moon light colour and strength, sky light colours and strength */
+  light: string; sun: number; hemi: string; hemiGround: string; sky: number;
+  fill: string; fillI: number;
+  /** multiplies the plush props' own colours */
+  tint: string;
+  /** 0 day … 1 full night (moon and stars) */
+  night: number;
+}
+const DAY: Palette = {
   skyTop: '#8FD3FF', skyLow: '#E4F6FF', ground: '#93D36B', patch: '#A7DE80',
   hills: ['#7FC75E', '#6CB851', '#8ACF68'], leaves: ['#5DAE4C', '#6FC05A'], trunk: '#B07D4F',
-  cloud: '#FFFFFF', tuft: '#7CC45A', sun: 1.35, sky: 1.1,
+  cloud: '#FFFFFF', tuft: '#7CC45A',
+  light: '#FFF4E0', sun: 1.35, hemi: '#FFFFFF', hemiGround: '#EEF6E2', sky: 1.1, fill: '#FFFFFF', fillI: 0.45,
+  tint: '#FFFFFF', night: 0,
 };
-const NIGHT = {
+const DAWN: Palette = {
+  skyTop: '#8FA8E8', skyLow: '#FFC7B0', ground: '#8CC86E', patch: '#9FD47E',
+  hills: ['#86B96A', '#76AC60', '#92C276'], leaves: ['#5FA352', '#70B45E'], trunk: '#A97A55',
+  cloud: '#FFE3E0', tuft: '#7CBB5E',
+  light: '#FFD2B8', sun: 1.05, hemi: '#FFE6F0', hemiGround: '#E6EED8', sky: 1.0, fill: '#C8D4FF', fillI: 0.45,
+  tint: '#FFF0EC', night: 0.15,
+};
+const SUNSET: Palette = {
+  skyTop: '#6F86D8', skyLow: '#FFB070', ground: '#9AC468', patch: '#ABCF78',
+  hills: ['#8FB45E', '#7FA655', '#9BBE68'], leaves: ['#64A04A', '#76B055'], trunk: '#B0784A',
+  cloud: '#FFD6B0', tuft: '#85B85A',
+  light: '#FFC07A', sun: 1.15, hemi: '#FFE2C4', hemiGround: '#E8E2C8', sky: 1.0, fill: '#B8C4FF', fillI: 0.5,
+  tint: '#FFEBD8', night: 0.1,
+};
+const NIGHT: Palette = {
   skyTop: '#26346A', skyLow: '#5A6A9E', ground: '#4C7E58', patch: '#578A62',
   hills: ['#3F6B4E', '#365F45', '#467355'], leaves: ['#386848', '#427552'], trunk: '#6B5442',
-  cloud: '#8E9AC4', tuft: '#467A55', sun: 0.75, sky: 0.85,
+  cloud: '#8E9AC4', tuft: '#467A55',
+  light: '#C8D6FF', sun: 0.75, hemi: '#AFC2FF', hemiGround: '#4A6A5A', sky: 0.85, fill: '#9DB4FF', fillI: 0.5,
+  tint: '#7F8DB8', night: 1,
 };
-type Palette = typeof DAY;
+/** The sky through the day (local hours). */
+const DAY_KEYS: [number, Palette][] = [
+  [0, NIGHT], [5, NIGHT], [6.3, DAWN], [8, DAY], [16.3, DAY], [18.2, SUNSET], [19.6, NIGHT], [24, NIGHT],
+];
+
+const _a = new THREE.Color(), _b = new THREE.Color();
+const mixCol = (x: string, y: string, k: number) => '#' + _a.set(x).lerp(_b.set(y), k).getHexString();
+const mixNum = (x: number, y: number, k: number) => x + (y - x) * k;
+function paletteAt(hour: number): Palette {
+  const h = ((hour % 24) + 24) % 24;
+  let i = 0;
+  while (i < DAY_KEYS.length - 2 && h >= DAY_KEYS[i + 1][0]) i++;
+  const [h0, a] = DAY_KEYS[i], [h1, b] = DAY_KEYS[i + 1];
+  const k = h1 > h0 ? Math.min(1, Math.max(0, (h - h0) / (h1 - h0))) : 0;
+  const ks = k * k * (3 - 2 * k);
+  const out: any = {};
+  for (const key of Object.keys(a) as (keyof Palette)[]) {
+    const x = a[key] as any, y = b[key] as any;
+    out[key] = Array.isArray(x) ? x.map((v: string, j: number) => mixCol(v, y[j], ks))
+      : typeof x === 'number' ? mixNum(x, y, ks) : mixCol(x, y, ks);
+  }
+  return out as Palette;
+}
 
 /**
  * Where the plush props go: [prop, x, y, z, scale, turn, height scale?].
@@ -114,7 +166,10 @@ export class Outdoor {
   readonly hemi: THREE.HemisphereLight;
   readonly sun: THREE.DirectionalLight;
   readonly fill: THREE.DirectionalLight;
-  private isNight = false;
+  private hour = 12;
+  private sunDisc!: THREE.Mesh;
+  private moon!: THREE.Mesh;
+  private stars!: THREE.MeshBasicMaterial;
 
   constructor() {
     const R = rng(7);
@@ -252,11 +307,14 @@ export class Outdoor {
     // night: moon and stars (hidden by day)
     this.night = new THREE.Group();
     const moonMat = new THREE.MeshBasicMaterial({ color: '#FFF4C2', fog: false });
-    const starMat = new THREE.MeshBasicMaterial({ color: '#FFFFFF', fog: false });
-    this.extra.push(moonMat, starMat);
-    const moon = new THREE.Mesh(this.geo(new THREE.CircleGeometry(0.55, 32)), moonMat);
-    moon.position.set(-3.2, 3.1, -15.5);
-    this.night.add(moon);
+    const starMat = (this.stars = new THREE.MeshBasicMaterial({ color: '#FFFFFF', fog: false, transparent: true }));
+    const sunMat = new THREE.MeshBasicMaterial({ color: '#FFE27A', fog: false });
+    this.extra.push(moonMat, starMat, sunMat);
+    // sun and moon live just in front of the sky wall, behind the hills (they rise from behind them)
+    const moon = (this.moon = new THREE.Mesh(this.geo(new THREE.CircleGeometry(0.55, 32)), moonMat));
+    g.add(moon);
+    const sunDisc = (this.sunDisc = new THREE.Mesh(this.geo(new THREE.CircleGeometry(0.75, 32)), sunMat));
+    g.add(sunDisc);
     const starGeo = this.geo(new THREE.CircleGeometry(0.05, 5));
     for (let i = 0; i < 26; i++) {
       const s = new THREE.Mesh(starGeo, starMat);
@@ -264,7 +322,6 @@ export class Outdoor {
       s.scale.setScalar(0.6 + R() * 0.9);
       this.night.add(s);
     }
-    this.night.visible = false;
     g.add(this.night);
 
     // lights: soft sky light plus a warm sun from the front left
@@ -283,7 +340,7 @@ export class Outdoor {
     g.add(this.hemi, this.sun, this.fill);
 
     this.shadowTex = blobTexture();
-    this.apply(DAY);
+    this.setHour(12, true);
   }
 
   /** A soft round shadow on the grass (for trees here; the characters get theirs from blob()). */
@@ -338,13 +395,32 @@ export class Outdoor {
     if (this.patch) this.patch.visible = false;
     this.dressed = g;
     this.root.add(g);
-    this.apply(this.isNight ? NIGHT : DAY);
+    this.setHour(this.hour, true);
   }
 
-  setNight(on: boolean) {
-    if (on === this.isNight) return;
-    this.isNight = on;
-    this.apply(on ? NIGHT : DAY);
+  /** Local time of day, in hours (e.g. 18.5 = 6:30 pm). */
+  setHour(hour: number, force = false) {
+    const h = ((hour % 24) + 24) % 24;
+    if (!force && Math.abs(h - this.hour) < 1 / 60) return;
+    this.hour = h;
+    const p = paletteAt(h);
+    this.apply(p);
+    // the sun crosses the sky 6:00 → 18:00, the moon 18:00 → 6:00; both start
+    // and end low behind the hills
+    const arc = (k: number, o: THREE.Object3D) => {
+      o.visible = k > -0.05 && k < 1.05;
+      o.position.set(-9 + 18 * k, 0.5 + 2.7 * Math.sin(Math.PI * Math.min(1, Math.max(0, k))), -15.4);
+    };
+    const sunK = (h - 6) / 12;
+    const moonK = (((h - 18) % 24) + 24) % 24 / 12;
+    arc(sunK, this.sunDisc);
+    arc(moonK, this.moon);
+    // the key light comes from whichever is up (low and from the side early and late: long shadows)
+    const k = sunK >= 0 && sunK <= 1 ? sunK : Math.min(1, Math.max(0, moonK));
+    const height = Math.sin(Math.PI * k);
+    this.sun.position.set(-4 + 8 * k, 1.6 + 3.2 * height, 2.4);
+    this.stars.opacity = Math.max(0, (p.night - 0.4) / 0.6);
+    this.night.visible = this.stars.opacity > 0.01;
   }
 
   private apply(p: Palette) {
@@ -362,17 +438,17 @@ export class Outdoor {
     set('ground', p.ground); set('patch', p.patch); set('trunk', p.trunk); set('cloud', p.cloud); set('tuft', p.tuft);
     p.hills.forEach((col, i) => set(`hill${i}`, col));
     p.leaves.forEach((col, i) => set(`leaf${i}`, col));
-    this.night.visible = p === NIGHT;
-    // the plush props carry their own colours: just dim and cool them at night
-    for (const m of this.dressMats) m.color.set(p === NIGHT ? '#7F8DB8' : '#FFFFFF');
+    // the plush props carry their own colours: tint them with the light of the hour
+    for (const m of this.dressMats) m.color.set(p.tint);
     this.hemi.intensity = p.sky;
     this.sun.intensity = p.sun;
-    this.hemi.color.set(p === NIGHT ? '#AFC2FF' : '#FFFFFF');
-    this.hemi.groundColor.set(p === NIGHT ? '#4A6A5A' : '#EEF6E2');
+    this.sun.color.set(p.light);
+    this.hemi.color.set(p.hemi);
+    this.hemi.groundColor.set(p.hemiGround);
     const cloud = this.mats.get('cloud');
     if (cloud) cloud.emissive.set(p.cloud).multiplyScalar(0.6);
-    this.fill.intensity = p === NIGHT ? 0.5 : 0.45;
-    this.fill.color.set(p === NIGHT ? '#9DB4FF' : '#FFFFFF');
+    this.fill.intensity = p.fillI;
+    this.fill.color.set(p.fill);
   }
 
   /** Recolourable matte material, shared by key. */

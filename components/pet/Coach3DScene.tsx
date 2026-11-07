@@ -158,13 +158,19 @@ function CameraRig({ lookY, animate, orbit, tilt }: {
 interface BuddyCtl { hop: () => void }
 
 /** The meadow and the buddy (the dog is added by <Coach>). */
-function Meadow({ outdoor, x, night, buddyKind, buddyStage, animate, buddyCtl, plush }: {
-  outdoor: Outdoor; x: number; night: boolean; buddyKind: string; buddyStage: number; animate: boolean;
+function Meadow({ outdoor, x, asleep, buddyKind, buddyStage, animate, buddyCtl, plush }: {
+  outdoor: Outdoor; x: number; asleep: boolean; buddyKind: string; buddyStage: number; animate: boolean;
   buddyCtl: { current: BuddyCtl | null };
   /** The buddy's Tripo plush model, when its kind has one (else the simple toy). */
   plush: BuddyModel | null;
 }) {
-  useEffect(() => { outdoor.setNight(night); }, [outdoor, night]);
+  // the sky follows the phone's local time; checked every minute
+  useEffect(() => {
+    const now = () => { const d = new Date(); outdoor.setHour(d.getHours() + d.getMinutes() / 60); };
+    now();
+    const id = setInterval(now, 60_000);
+    return () => clearInterval(id);
+  }, [outdoor]);
 
   const buddy = useMemo(() => (plush ? new PlushBuddy(plush.geometry, plush.map, buddyStage) : new BuddyCat(buddyKind, buddyStage)), [plush, buddyKind, buddyStage]);
   const buddyRoot = useMemo(() => {
@@ -176,7 +182,7 @@ function Meadow({ outdoor, x, night, buddyKind, buddyStage, animate, buddyCtl, p
   }, [buddy, outdoor]);
   useEffect(() => { buddyRoot.position.x = x; }, [buddyRoot, x]);
   useEffect(() => () => buddy.dispose(), [buddy]);
-  useEffect(() => { buddy.asleep = night; }, [buddy, night]);
+  useEffect(() => { buddy.asleep = asleep; }, [buddy, asleep]);
   useEffect(() => { buddyCtl.current = { hop: () => { if (animate) buddy.hop(); } }; }, [buddy, buddyCtl, animate]);
 
   useFrame((_, dt) => buddy.update(dt, animate));
@@ -415,7 +421,7 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
             frameloop="never"
           >
             <Suspense fallback={null}>
-              {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} night={pose === 'sleep'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} plush={plush} /> : null}
+              {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} asleep={pose === 'sleep'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} plush={plush} /> : null}
               <Coach data={data} pose={pose} animate={animate} ctl={ctl} x={m.dogX} shadow={dogShadow} castShadow />
               <CameraRig lookY={m.lookY} animate={animate} orbit={orbit} tilt={tilt} />
             </Suspense>
