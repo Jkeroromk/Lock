@@ -63,7 +63,7 @@ const LOOKS: Record<CoachPose, CoachLook & { clip: CoachClip; speed?: number }> 
   cheer: { clip: 'idle', face: 'happy', tongue: 'out', blink: false },
   wave: { clip: 'idle', face: 'happy', tongue: 'out', blink: false },
   think: { clip: 'idle', face: 'determined', tongue: 'in', blink: true },
-  sad: { clip: 'sit', face: 'sad', tongue: 'in', blink: true },
+  sad: { clip: 'sit', face: 'sad', tongue: 'in', blink: true, mouth: 'sad' },
   sleep: { clip: 'lie', face: 'closed', tongue: 'in', blink: false },
 };
 
@@ -97,7 +97,7 @@ function Coach({ data, pose, animate, ctl, x = 0, shadow, castShadow = false }: 
   const look = LOOKS[pose] ?? LOOKS.idle;
 
   useEffect(() => {
-    inst.look = { face: look.face, tongue: look.tongue, blink: look.blink };
+    inst.look = { face: look.face, tongue: look.tongue, blink: look.blink, mouth: look.mouth };
     inst.setBase(look.clip, look.speed);
   }, [inst, look]);
 
