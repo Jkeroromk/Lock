@@ -11,12 +11,13 @@ import Overlay from './Overlay';
 import { Orbit } from './orbit';
 import { SLOT_COUNT, STRIDE, World, type TapHit } from './world';
 import { CoachInstance, loadCoachAssets } from '@/components/pet/coachModel';
+import { loadCoupleAssets } from './plushAssets';
 
 /**
- * The couple's 3D room (ported from the approved web prototype): two
- * Animal-Crossing-style villagers and 豆豆 (the 3D bichon) wander a toon-shaded
- * room with ink outlines; the walls between you and the room sink away as you
- * turn it. Words (names, bubbles, the anniversary board, frame captions) are
+ * The couple's 3D room: the two of you (Tripo plush dolls) and 豆豆 (the 3D
+ * bichon) wander a plush little room (Tripo models, plush.ts); the walls
+ * between you and the room sink away as you turn it. Until the plush pack has
+ * loaded (or if it can't) the original toon room with ink outlines shows. Words (names, bubbles, the anniversary board, frame captions) are
  * React Native views over the 3D view — see Overlay.tsx.
  *
  * Files: world.ts builds and animates the scene, villager.ts / pet.ts the
@@ -80,6 +81,14 @@ export default function CoupleRoom(props: CoupleRoomProps) {
     loadCoachAssets()
       .then((a) => { if (alive) world.pet.useCoach(new CoachInstance(a, { shadows: true })); })
       .catch((e) => { if (__DEV__) console.warn('[CoupleRoom] 豆豆 failed to load, keeping the cat:', e); });
+    return () => { alive = false; };
+  }, [world]);
+  // the plush room (Tripo models) replaces the toon one once it has loaded
+  useEffect(() => {
+    let alive = true;
+    loadCoupleAssets()
+      .then((a) => { if (alive) world.usePlush(a); })
+      .catch((e) => { if (__DEV__) console.warn('[CoupleRoom] plush room failed to load, keeping the toon room:', e); });
     return () => { alive = false; };
   }, [world]);
 
@@ -210,6 +219,9 @@ function Scene({ world, orbit, link, overlay, bottomInset }: {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const scene = useThree((s) => s.scene);
   const size = useThree((s) => s.size);
+  const gl = useThree((s) => s.gl);
+  // the plush walls sink into the floor and are cut off there (plane clipping)
+  useEffect(() => { gl.localClippingEnabled = true; }, [gl]);
 
   useEffect(() => {
     scene.background = world.bg;
