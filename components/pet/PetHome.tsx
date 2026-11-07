@@ -310,6 +310,8 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
   const [poke, setPoke] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [growing, setGrowing] = useState(false);
+  const [sceneW, setSceneW] = useState(0);
+  const [roomSize, setRoomSize] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
     isHealthConnected().then(setHealthOn).catch(() => {});
@@ -539,29 +541,38 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
     </View>
   );
 
-  // The coach is 3D; the 2D sprite shows while the model loads or if 3D fails.
   const coachSprite = (size: number) => (
-    <Coach3D
-      ref={coachRef}
-      pose={shownPose}
+    <PetSprite
+      ref={coachFallbackRef}
+      source={COACH_IMAGES[shownPose]}
+      blinkSource={shownPose === 'idle' ? COACH_IMAGES.blink : undefined}
+      sleeping={shownPose === 'sleep'}
+      sad={shownPose === 'sad'}
       size={size}
       onPress={pokeCoach}
       accessibilityLabel={t('pet.coachTag', { name: p.coachName })}
-      fallbackRef={coachFallbackRef}
-      fallback={
-        <PetSprite
-          ref={coachFallbackRef}
-          source={COACH_IMAGES[shownPose]}
-          blinkSource={shownPose === 'idle' ? COACH_IMAGES.blink : undefined}
-          sleeping={shownPose === 'sleep'}
-          sad={shownPose === 'sad'}
-          size={size}
-          onPress={pokeCoach}
-          accessibilityLabel={t('pet.coachTag', { name: p.coachName })}
-        />
-      }
     />
   );
+
+  // The whole scene is 3D (meadow, 豆豆, the buddy); the 2D scene shows
+  // until the stage has a size and the model has loaded, or if 3D fails.
+  const stage3d = (w: number, h: number, flat: ReactNode, floor?: number, spots?: { dog: number; buddy: number }) => (w > 0 && h > 0 ? (
+    <Coach3D
+      ref={coachRef}
+      pose={shownPose}
+      size={Math.round(h * 0.6)}
+      onPress={pokeCoach}
+      accessibilityLabel={t('pet.coachTag', { name: p.coachName })}
+      fallbackRef={coachFallbackRef}
+      fallback={flat}
+      style={{ position: 'absolute', left: 0, top: 0 }}
+      stage={{
+        width: w, height: h, floor, spots,
+        buddyKind: p.buddyKind, buddyStage: stage,
+        buddyLabel: `${p.buddyName} · ${stageLabel(tt, stage)}`,
+      }}
+    />
+  ) : flat);
 
   const buddySprite = (scale: number) => (
     <PetSprite
@@ -599,9 +610,16 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
 
   // ── Tabletop: the buddy's room fills the top half ──
   if (tabletop) {
-    const room = (
-      <View style={{ flex: 1 }}>
+    const flatRoom = (
+      <>
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 118, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
+        <View style={{ position: 'absolute', left: 10, bottom: 82 }}>{coachSprite(170)}</View>
+        <View style={{ position: 'absolute', right: 40, bottom: 86 }}>{buddySprite(1.3)}</View>
+      </>
+    );
+    const room = (
+      <View style={{ flex: 1 }} onLayout={(e) => setRoomSize({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
+        {stage3d(roomSize.w, roomSize.h, flatRoom, 92, { dog: 0.56, buddy: 0.8 })}
         {bubble({ left: 22, top: 18, maxWidth: 320 }, 16)}
         <View style={{ position: 'absolute', right: 18, top: 10, alignItems: 'flex-end' }}>
           <Pressable onPress={() => setRenaming(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 }} accessibilityRole="button" accessibilityLabel={t('pet.rename')}>
@@ -610,9 +628,7 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
           </Pressable>
           <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: '#55544F' }}>{t('pet.day', { n: String(p.buddyDay) })}</Text>
         </View>
-        <View style={{ position: 'absolute', left: 10, bottom: 82 }}>{coachSprite(170)}</View>
         {coachTag({ left: 34, bottom: 80 })}
-        <View style={{ position: 'absolute', right: 40, bottom: 86 }}>{buddySprite(1.3)}</View>
         <View style={{
           position: 'absolute', left: 18, right: 18, bottom: 14, padding: 10, gap: 7, borderRadius: 16,
           borderWidth: 2, borderColor: INK, backgroundColor: c.cardBackground,
@@ -647,11 +663,17 @@ export default function PetHome({ friends, onFriendsChanged, layout = 'stack', c
   const scene = (
     <HardShadow color={c.cardShadow} radius={RADIUS.hero}>
       <View style={{ borderRadius: RADIUS.hero, borderWidth: 2, borderColor: c.borderStrong, backgroundColor: c.cardBackground, overflow: 'hidden' }}>
-        <View style={{ height: sceneHeight, backgroundColor: SCENE_BG, borderBottomWidth: 2, borderBottomColor: INK }}>
-          <View style={{ position: 'absolute', left: -20, right: -20, bottom: -36, height: 70, borderRadius: 200, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
-          {bubble({ left: 14, top: 14, maxWidth: layout === 'panel' ? 200 : 220 })}
-          <View style={{ position: 'absolute', left: 4, bottom: 4 }}>{coachSprite(layout === 'panel' ? 118 : 140)}</View>
-          <View style={{ position: 'absolute', right: 18, bottom: 8 }}>{buddySprite(layout === 'panel' ? 0.85 : 1)}</View>
+        <View style={{ height: sceneHeight, backgroundColor: SCENE_BG, borderBottomWidth: 2, borderBottomColor: INK }} onLayout={(e) => setSceneW(Math.round(e.nativeEvent.layout.width))}>
+          {stage3d(sceneW, sceneHeight - 2, (
+            <>
+              <View style={{ position: 'absolute', left: -20, right: -20, bottom: -36, height: 70, borderRadius: 200, backgroundColor: SCENE_GROUND, borderTopWidth: 2, borderTopColor: INK }} />
+              <View style={{ position: 'absolute', left: 4, bottom: 4 }}>{coachSprite(layout === 'panel' ? 118 : 140)}</View>
+              <View style={{ position: 'absolute', right: 18, bottom: 8 }}>{buddySprite(layout === 'panel' ? 0.85 : 1)}</View>
+            </>
+          ))}
+          {/* top right: 豆豆's head (left) and the bubble no longer overlap in 3D;
+              on the panel layout it stops short of the corner button (collection) */}
+          {bubble({ right: corner ? 66 : 14, top: 14, maxWidth: layout === 'panel' ? 200 : 220 })}
           {coachTag({ left: 26, bottom: 6 })}
         </View>
 

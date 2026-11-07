@@ -1,6 +1,6 @@
 # TypeScript check for the app and the backend on every PR.
-# Informational for now (doesn't block merging); errors show up as
-# annotations on the PR's "Files changed" tab.
+# Fails the check when tsc finds an error (both were clean as of 2026-11-04);
+# errors also show up as annotations on the PR's "Files changed" tab.
 name: Typecheck
 
 on:
@@ -28,7 +28,6 @@ jobs:
         run: node scripts/sync-watch-model.mjs --check
       - run: npm ci
       - name: tsc (app)
-        continue-on-error: true
         run: npx tsc --noEmit --pretty false
 
   backend:
@@ -44,5 +43,4 @@ jobs:
           node-version: 22
       - run: npm ci || npm install --no-audit --no-fund
       - name: tsc (backend)
-        continue-on-error: true
         run: npx prisma generate >/dev/null 2>&1 || true; npx tsc --noEmit --pretty false

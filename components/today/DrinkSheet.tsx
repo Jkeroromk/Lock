@@ -10,6 +10,7 @@ import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { DRINKS, drinkAmounts, type DrinkKind } from '@/constants/drinks';
 import { QUICK_ADD_ML, MAX_SINGLE_ADD_ML } from '@/services/waterTracker';
+import SheetModal from '@/components/ui/SheetModal';
 
 /**
  * "Add a drink": pick what you drank and how much. Shows how much counts as
@@ -39,21 +40,14 @@ export default function DrinkSheet({ visible, onClose, onAdd, initialKind = 'wat
   const amounts = drinkAmounts(drink, ml);
   const name = (k: DrinkKind) => t(`water.drinks.${k}` as any);
 
-  return (
-    <Modal visible={visible} transparent animationType={fold ? 'fade' : 'slide'} onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, ...(fold ? null : { paddingLeft: insets.left, paddingRight: insets.right }) }}>
-        {/* Dim the whole screen; tap outside to close. */}
-        <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} accessibilityLabel={t('common.close')} />
-        {/* Open iPhone Duo: the sheet fills one half and never crosses the fold
-            (right page side by side, bottom half turned a quarter). Phones: a
-            bottom sheet. */}
+  const sheet = (
         <View style={[
           { backgroundColor: c.backgroundPrimary, paddingTop: 10, paddingHorizontal: 20 },
           fold?.axis === 'vertical'
             ? { position: 'absolute', left: fold.start + fold.width, right: 0, top: 0, bottom: 0, borderTopLeftRadius: 30, borderBottomLeftRadius: 30, paddingTop: insets.top + 18, paddingRight: insets.right + 16, paddingBottom: insets.bottom + 16 }
             : fold?.axis === 'horizontal'
               ? { position: 'absolute', left: 0, right: 0, top: fold.start + fold.width, bottom: 0, borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingLeft: insets.left + 20, paddingRight: insets.right + 20, paddingBottom: insets.bottom + 16 }
-              : { marginTop: 'auto', borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: insets.bottom + 18, maxHeight: '88%', alignSelf: 'center', width: '100%', maxWidth: 520 },
+              : { flexShrink: 1, borderTopLeftRadius: 30, borderTopRightRadius: 30, paddingBottom: insets.bottom + 18, width: '100%' },
         ]}>
           {fold ? null : <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: c.borderSecondary, marginBottom: 10 }} />}
           <ScrollView style={{ flexShrink: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 14, paddingBottom: 14 }}>
@@ -145,7 +139,24 @@ export default function DrinkSheet({ visible, onClose, onAdd, initialKind = 'wat
               <Text style={{ fontSize: 18, fontWeight: '800', color: c.onAccent }}>{t('water.addCta', { ml: String(ml), drink: name(kind) })}</Text>
             </PressScale>
         </View>
-      </KeyboardAvoidingView>
-    </Modal>
+  );
+
+  return (
+    fold ? (
+      // Open iPhone Duo: the sheet fills one half and never crosses the fold
+      // (right page side by side, bottom half turned a quarter); it fades in.
+      <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+          {/* Dim the whole screen; tap outside to close. */}
+          <Pressable onPress={onClose} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} accessibilityLabel={t('common.close')} />
+          {sheet}
+        </KeyboardAvoidingView>
+      </Modal>
+    ) : (
+      // Phones: a bottom sheet (the dim fades in place, only the sheet slides).
+      <SheetModal visible={visible} onClose={onClose} keyboard closeLabel={t('common.close')} style={{ maxHeight: '88%', alignSelf: 'center', width: '100%', maxWidth: 520 }}>
+        {sheet}
+      </SheetModal>
+    )
   );
 }

@@ -7,9 +7,15 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 /**
  * The bichon coach in real-time 3D (Tripo model v3, animated in Blender).
  *
- * coach_v3.glb: meshes body / eye_L / eye_R / nose / tongue / headband /
- * whistle / collar on one rig, clips idle, walk, sit (sits down, holds, stands
- * up), hop. The body has a "mouth_closed" morph target.
+ * coach_v5.glb: meshes body / eye_L / eye_R / nose / tongue / headband /
+ * whistle / collar on one rig, clips idle, walk, hop, sit (a dog sit: sits
+ * down, then holds and breathes) and lie (lying on the belly, chin on the
+ * front paws, breathing — for sleep). The body has a "mouth_closed" morph
+ * target. v4 replaced v3's sit, which kept the torso upright like a person
+ * (it read as standing on the hind legs), and added lie. v5 (patched from
+ * v4) leans the sitting chest forward so the front paws reach the ground,
+ * and rebuilds the closed mouth: the lips are snapped onto a smooth shell and
+ * their normals smoothed (Tripo's lips were a jumble of tiny facets).
  *
  * Faces never deform: blinking and expressions are texture swaps on the two
  * eye meshes (open, closed, happy, sad, sleepy, determined, love, star). When
@@ -29,7 +35,7 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
  */
 
 
-const MODEL = require('@/assets/pet/3d/coach_v3.glb');
+const MODEL = require('@/assets/pet/3d/coach_v5.glb');
 export const EYE_FACES = ['open', 'closed', 'happy', 'sad', 'sleepy', 'determined', 'love', 'star'] as const;
 export type Face = (typeof EYE_FACES)[number];
 const EYE_TEX: Record<'L' | 'R', Record<Face, number>> = {
@@ -49,6 +55,8 @@ const EYE_TEX: Record<'L' | 'R', Record<Face, number>> = {
 const PART_TEX = {
   body: require('@/assets/pet/3d/body_base.jpg'),
   bodyClosed: require('@/assets/pet/3d/body_closed.jpg'),
+  /** bodyClosed with a little down-turned mouth line (︵) painted on the muzzle, for sad. */
+  bodySad: require('@/assets/pet/3d/body_sad.jpg'),
   tongue: require('@/assets/pet/3d/tongue.jpg'),
   headband: require('@/assets/pet/3d/headband.jpg'),
   whistle: require('@/assets/pet/3d/whistle.jpg'),
@@ -57,7 +65,7 @@ const PART_TEX = {
 type PartKey = keyof typeof PART_TEX;
 
 /* ---------- small runtime shims for three's GLTFLoader on Hermes ---------- */
-function shims() {
+export function shims() {
   const g = globalThis as any;
   if (typeof g.navigator !== 'undefined' && typeof g.navigator.userAgent !== 'string') {
     try { g.navigator.userAgent = 'ReactNative'; } catch {}
@@ -84,7 +92,7 @@ function shims() {
   }
 }
 
-async function localUri(mod: number) {
+export async function localUri(mod: number) {
   const a = await Asset.fromModule(mod).downloadAsync();
   const uri = a.localUri || a.uri;
   if (!uri) throw new Error('asset has no uri');
@@ -92,7 +100,7 @@ async function localUri(mod: number) {
 }
 
 /** A texture expo-gl uploads from a local file (no DOM image needed). */
-async function loadTexture(mod: number, srgb: boolean, size: number) {
+export async function loadTexture(mod: number, srgb: boolean, size: number) {
   const uri = await localUri(mod);
   const t = new THREE.Texture();
   t.image = { data: { localUri: uri }, width: size, height: size } as any;
@@ -144,7 +152,7 @@ export function loadCoachAssets(): Promise<CoachAssets> {
     const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
     const gltf = await new Promise<any>((res, rej) => new GLTFLoader().parse(buf, '', res, rej));
     const part = Object.fromEntries(await Promise.all((Object.keys(PART_TEX) as PartKey[]).map(async (k) =>
-      [k, await loadTexture(PART_TEX[k], true, k === 'body' || k === 'bodyClosed' ? 2048 : 512)] as const))) as Record<PartKey, THREE.Texture>;
+      [k, await loadTexture(PART_TEX[k], true, k === 'body' || k === 'bodyClosed' || k === 'bodySad' ? 2048 : 512)] as const))) as Record<PartKey, THREE.Texture>;
     const eyeTex = { L: {}, R: {} } as Record<'L' | 'R', Record<Face, THREE.Texture>>;
     await Promise.all((['L', 'R'] as const).flatMap((side) => EYE_FACES.map(async (f) => {
       eyeTex[side][f] = await loadTexture(EYE_TEX[side][f], true, 512);
@@ -160,8 +168,14 @@ export function loadCoachAssets(): Promise<CoachAssets> {
 
 /* --------------------------------- instance --------------------------------- */
 export type TongueMode = 'out' | 'in' | 'auto';
-export interface CoachLook { face: Face; tongue: TongueMode; blink: boolean }
-export type CoachClip = 'idle' | 'walk' | 'sit' | 'hop';
+export interface CoachLook {
+  face: Face;
+  tongue: TongueMode;
+  blink: boolean;
+  /** With the mouth closed: 'sad' draws a down-turned mouth line on the muzzle. */
+  mouth?: 'sad';
+}
+export type CoachClip = 'idle' | 'walk' | 'sit' | 'lie' | 'hop';
 
 /**
  * One 豆豆 in one scene: its own skeleton, materials and mixer. The owner
@@ -194,6 +208,8 @@ export class CoachInstance {
   private mouth = 0; // 0 = open (tongue out) … 1 = closed
   /** Playback speed of the walk clip (match it to how fast the owner moves the root). */
   walkSpeed = 1;
+  /** Playback speed of the idle clip: slower reads as tired / asleep. */
+  private idleSpeed = 0.8;
 
   constructor(private assets: CoachAssets, opts: { shadows?: boolean } = {}) {
     this.root = cloneSkinned(assets.scene) as THREE.Group;
@@ -244,13 +260,14 @@ export class CoachInstance {
     if (prev === a && !opts.once) return;
     a.reset();
     a.setLoop(opts.once || opts.holdAt != null ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
-    a.timeScale = name === 'idle' ? 0.8 : name === 'walk' ? this.walkSpeed : 1;
+    a.timeScale = name === 'idle' ? this.idleSpeed : name === 'walk' ? this.walkSpeed : 1;
     a.clampWhenFinished = true;
     a.paused = false;
     this.holdAt = opts.holdAt ?? null;
     a.enabled = true;
     a.play();
-    if (prev && prev !== a) a.crossFadeFrom(prev, 0.25, false);
+    // lying down / getting up takes a moment; everything else blends quickly
+    if (prev && prev !== a) a.crossFadeFrom(prev, name === 'lie' || prev === this.actions.lie ? 0.8 : 0.25, false);
     this.current = a;
   }
 
@@ -260,7 +277,11 @@ export class CoachInstance {
   }
 
   /** The clip to fall back to: idle, walk (looping) or sit (sits down and stays). */
-  setBase(clip: CoachClip) {
+  setBase(clip: CoachClip, idleSpeed = 0.8) {
+    if (idleSpeed !== this.idleSpeed) {
+      this.idleSpeed = idleSpeed;
+      if (this.actions.idle && this.current === this.actions.idle) this.actions.idle.timeScale = idleSpeed;
+    }
     if (clip === this.base) return;
     this.base = clip;
     if (!this.hopping) this.playBase();
@@ -313,7 +334,7 @@ export class CoachInstance {
     const k = this.mouth;
     if (this.body && this.mouthMorph >= 0 && this.body.morphTargetInfluences) this.body.morphTargetInfluences[this.mouthMorph] = k;
     if (this.tongueBone) this.tongueBone.scale.multiplyScalar(Math.max(0.01, 1 - k));
-    const bodyMap = k > 0.5 ? this.assets.part.bodyClosed : this.assets.part.body;
+    const bodyMap = k > 0.5 ? (look.mouth === 'sad' ? this.assets.part.bodySad : this.assets.part.bodyClosed) : this.assets.part.body;
     if (this.bodyMat.map !== bodyMap) { this.bodyMat.map = bodyMap; this.bodyMat.needsUpdate = true; }
   }
 

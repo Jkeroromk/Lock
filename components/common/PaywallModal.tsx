@@ -10,9 +10,7 @@
  *     description="解锁专属 AI，每周为你生成个性化饮食报告和优化建议"
  *   />
  */
-import {
-  View, Modal, TouchableOpacity, ActivityIndicator, ScrollView,
-} from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +23,7 @@ import { useProPlans, ProPlanPicker } from '@/components/pricing/ProPlanPicker';
 import { syncSubscriptionPlan } from '@/services/api';
 import type { Feature } from '@/lib/plans';
 import { useTranslation } from '@/i18n';
-import { useSheetSides } from '@/hooks/useSheetSides';
+import SheetModal from '@/components/ui/SheetModal';
 
 // One icon per paywall.featureN string. Only list what Pro actually adds over Free.
 const PRO_HIGHLIGHT_ICONS = ['camera', 'analytics', 'barbell'];
@@ -46,7 +44,6 @@ export default function PaywallModal({
 }: PaywallModalProps) {
   const router = useRouter();
   const colors = useTheme();
-  const sides = useSheetSides();
   const { setPlan } = useStore();
   const { t } = useTranslation();
   const defaultTitle = t('paywall.upgradeTitle' as any);
@@ -76,9 +73,8 @@ export default function PaywallModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end', ...sides }}>
-        <View style={{
+    <SheetModal visible={visible} onClose={onClose} closeLabel="Close" style={{ maxHeight: '88%' }}>
+        <View style={{ flexShrink: 1,
           backgroundColor: colors.backgroundPrimary,
           borderTopLeftRadius: 30, borderTopRightRadius: 30,
           borderWidth: 2, borderBottomWidth: 0, borderColor: colors.borderStrong,
@@ -138,7 +134,6 @@ export default function PaywallModal({
             </Text>
           </ScrollView>
         </View>
-      </View>
-    </Modal>
+    </SheetModal>
   );
 }

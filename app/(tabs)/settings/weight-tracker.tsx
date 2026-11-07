@@ -1,5 +1,5 @@
 import {
-  View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform,
+  View, ScrollView, TouchableOpacity, Alert, ActivityIndicator,
 } from 'react-native';
 import { Text, TextInput } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +13,7 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchWeightRecords, logWeight, deleteWeight } from '@/services/api';
 import { kgTo, toKg, fmtWeight, useWeightUnit } from '@/lib/units';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
-import { useSheetSides } from '@/hooks/useSheetSides';
+import SheetModal from '@/components/ui/SheetModal';
 
 interface WeightRecord {
   id: string;
@@ -26,7 +26,6 @@ export default function WeightTrackerScreen() {
   const tabInset = useTabBarInset();
   const router = useRouter();
   const colors = useTheme();
-  const sides = useSheetSides();
   const { t } = useTranslation();
   const { language } = useStore();
   const unit = useWeightUnit();
@@ -249,14 +248,7 @@ export default function WeightTrackerScreen() {
         </ScrollView>
       )}
 
-      <Modal visible={showModal} transparent animationType="slide" onRequestClose={() => setShowModal(false)}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <TouchableOpacity
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end', ...sides }}
-            activeOpacity={1}
-            onPress={() => setShowModal(false)}
-          >
-            <TouchableOpacity activeOpacity={1}>
+      <SheetModal visible={showModal} onClose={() => setShowModal(false)} keyboard closeLabel={t('common.close')}>
               <View style={{
                 backgroundColor: colors.backgroundPrimary,
                 borderTopLeftRadius: 32, borderTopRightRadius: 32,
@@ -324,10 +316,7 @@ export default function WeightTrackerScreen() {
                   }
                 </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </KeyboardAvoidingView>
-      </Modal>
+      </SheetModal>
     </SafeAreaView>
   );
 }

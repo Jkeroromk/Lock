@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
 import type { CoachPose } from '@/constants/pets';
 import type { PetSpriteHandle } from './PetSprite';
+import type { StageOpts } from './Coach3DScene';
 import { recordJsError } from '@/lib/crashlog';
 
 /**
@@ -29,6 +30,8 @@ interface Props {
   onPress?: () => void;
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
+  /** Stage mode: the whole scene in 3D (meadow, 豆豆 and the buddy); `fallback` is then the whole 2D scene. */
+  stage?: StageOpts;
 }
 
 type SceneProps = Props & { onCrash?: (where: string, e: unknown) => void };
