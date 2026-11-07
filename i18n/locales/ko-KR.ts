@@ -634,6 +634,24 @@ const koKR = {
     keepScanning: "계속 스캔",
     photoFailed: "촬영하지 못했어요. 다시 시도해 주세요.",
   },
+  safety: {
+    title: "시작하기 전에",
+    disclaimer: "Lock은 기록 도구이며 의학적 조언이 아닙니다. 칼로리와 영양소 목표는 추정치입니다. 새로운 식단, 체중 감량 또는 운동 프로그램을 시작하기 전에 의사나 영양사와 상담하세요. 임신 중이거나 수유 중이거나 건강 문제가 있다면 특히 그렇습니다.",
+    disorderedEating: "섭식 장애가 있거나 있었던 적이 있다면 의료진의 안내 없이 칼로리 목표를 따르지 마세요.",
+    confirmAge: "만 {age}세 이상입니다",
+    accept: "이해했습니다",
+    imUnder: "만 {age}세 미만입니다",
+    underageTitle: "Lock은 성인용입니다",
+    underageBody: "Lock은 만 {age}세 이상만 사용할 수 있습니다.",
+    ageNote: "Lock은 만 {age}세 이상만 사용할 수 있습니다.",
+    signOut: "로그아웃",
+  },
+  legalContact: {
+    title: "문의하기",
+    body: "데이터에 관한 질문이나 요청은 이메일로 보내 주세요. 24시간 이내에 답변드립니다.",
+    support: "지원 페이지",
+    online: "웹에서 보기",
+  },
 };
 
 export default koKR;

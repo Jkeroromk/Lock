@@ -807,6 +807,24 @@ const zhCN = {
     keepScanning: "继续扫",
     photoFailed: "没拍成功，再试一次",
   },
+  safety: {
+    title: "开始之前",
+    disclaimer: "Lock 是记录工具，不提供医疗建议。热量和营养素目标都是估算值。开始新的饮食、减重或运动计划前，请先咨询医生或注册营养师，尤其是在怀孕、哺乳期或有健康问题时。",
+    disorderedEating: "如果你有或曾有进食障碍，请在医疗团队的指导下再参考热量目标。",
+    confirmAge: "我已年满 {age} 岁",
+    accept: "我已了解",
+    imUnder: "我未满 {age} 岁",
+    underageTitle: "Lock 仅限成年人使用",
+    underageBody: "Lock 仅供 {age} 岁及以上的用户使用。",
+    ageNote: "使用 Lock 需年满 {age} 岁。",
+    signOut: "退出登录",
+  },
+  legalContact: {
+    title: "联系我们",
+    body: "关于你的数据有任何问题或请求，请发邮件给我们，24 小时内回复。",
+    support: "支持页面",
+    online: "在网页上查看",
+  },
 };
 
 export default zhCN;

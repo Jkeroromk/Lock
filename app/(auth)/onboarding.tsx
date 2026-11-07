@@ -12,6 +12,7 @@ import CompletionAnimation from '@/components/onboarding/CompletionAnimation';
 import OnboardingSteps from '@/components/onboarding/OnboardingSteps';
 import { useOnboardingData } from '@/hooks/useOnboardingData';
 import { useOnboardingAnimation } from '@/hooks/useOnboardingAnimation';
+import { MIN_AGE } from '@/constants/safety';
 
 const STEPS = [
   'theme',
@@ -95,7 +96,7 @@ export default function OnboardingScreen() {
       case 'height':
         return onboardingData.height > 0;
       case 'age':
-        return onboardingData.age > 0;
+        return onboardingData.age >= MIN_AGE;
       case 'weight':
         return onboardingData.weight > 0;
       case 'gender':
