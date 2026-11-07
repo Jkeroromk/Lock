@@ -170,7 +170,7 @@ export class Pet extends Actor {
       if (this.hop > 0 && !this.hopFired && !resting) { this.hopFired = true; c.hop(); }
       if (this.hop <= 0) this.hopFired = false;
       this.hop = Math.max(0, this.hop - dt * 1.6);
-      c.setBase(moving ? 'walk' : 'idle', resting ? 0.25 : 0.8); // no hind-legs "sit" (see Coach3DScene)
+      c.setBase(moving ? 'walk' : resting ? 'lie' : 'idle'); // napping in the bed: lies down, chin on paws
       c.look = resting ? NAP_LOOK : AWAKE_LOOK;
       try {
         c.update(dt, !reduced);

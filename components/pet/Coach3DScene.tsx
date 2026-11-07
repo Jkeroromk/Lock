@@ -55,18 +55,16 @@ function instrument(gl: THREE.WebGLRenderer) {
 
 /* --------------------------------- scene --------------------------------- */
 /** What each app pose looks like: body clip, eyes, and whether the tongue is out. */
-// The Blender "sit" keeps the torso upright like a person, so on a dog it reads
-// as standing on its hind legs (Jason, 11-07). Until there are proper dog sit /
-// lie-down clips, sad and asleep stay on four legs: the idle clip, slowed right
-// down, with sad / closed eyes and the mouth shut.
+// Missing you (sad) sits like a dog (back legs folded, front legs straight);
+// asleep lies on the belly with the chin on the front paws, eyes shut.
 const LOOKS: Record<CoachPose, CoachLook & { clip: CoachClip; speed?: number }> = {
   idle: { clip: 'idle', face: 'open', tongue: 'auto', blink: true },
   blink: { clip: 'idle', face: 'open', tongue: 'auto', blink: true },
   cheer: { clip: 'idle', face: 'happy', tongue: 'out', blink: false },
   wave: { clip: 'idle', face: 'happy', tongue: 'out', blink: false },
   think: { clip: 'idle', face: 'determined', tongue: 'in', blink: true },
-  sad: { clip: 'idle', speed: 0.45, face: 'sad', tongue: 'in', blink: true },
-  sleep: { clip: 'idle', speed: 0.25, face: 'closed', tongue: 'in', blink: false },
+  sad: { clip: 'sit', face: 'sad', tongue: 'in', blink: true },
+  sleep: { clip: 'lie', face: 'closed', tongue: 'in', blink: false },
 };
 
 interface Ctl { hop: () => void; love: () => void; yaw: { current: number }; state: () => RootState }
