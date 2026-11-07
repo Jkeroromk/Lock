@@ -24,6 +24,48 @@ const NIGHT = {
 };
 type Palette = typeof DAY;
 
+/**
+ * Where the plush props go: [prop, x, y, z, scale, turn, height scale?].
+ * The props come out of Tripo about 1 unit wide, standing on y = 0; 豆豆 is
+ * ~1 tall and stands at x ≈ -0.7, the buddy at x ≈ 0.8, both at z = 0, so
+ * the middle front stays clear.
+ */
+export const MEADOW_LAYOUT: [string, number, number, number, number, number, number?][] = [
+  ['ground', 0, -0.075, -1.6, 9, 0, 0.12],
+  // trees: one big one each side, more behind
+  ['tree_round', -2.35, 0, -2.4, 1.9, 0.3],
+  ['tree_pine', 2.55, 0, -2.9, 2.1, 0],
+  ['tree_fruit', 3.7, 0, -4.8, 1.7, -0.4],
+  ['tree_round', -3.8, 0, -4.9, 1.6, 1.2],
+  ['tree_pine', -1.3, 0, -6.6, 1.8, 0.5],
+  ['tree_fruit', 0.9, 0, -7.6, 1.4, 0.2],
+  ['tree_pine', 4.9, 0, -7.2, 1.9, 0.8],
+  // bushes framing the two of them
+  ['bush', -1.75, 0, -1.35, 0.85, 0.2],
+  ['bush', 1.85, 0, -1.55, 0.8, -0.3],
+  ['bush', -2.75, 0, -0.3, 0.7, 0.6],
+  ['bush', 2.85, 0, -0.1, 0.72, -0.5],
+  ['bush', 0.25, 0, -3.9, 1.0, 0],
+  // flowers, grass and stones
+  ['flowers', -1.45, 0, 0.55, 0.36, 0.3],
+  ['flowers', 1.6, 0, 0.62, 0.32, -0.4],
+  ['flowers', -0.15, 0, -1.25, 0.3, 0.9],
+  ['flowers', 2.25, 0, -0.85, 0.3, 0.2],
+  ['flowers', -2.3, 0, 0.95, 0.3, -0.6],
+  ['grass', -1.05, 0, -0.55, 0.32, 0.4],
+  ['grass', 1.2, 0, -0.45, 0.3, -0.2],
+  ['grass', -2.0, 0, -2.0, 0.36, 0.1],
+  ['grass', 2.35, 0, -2.25, 0.36, -0.7],
+  ['grass', 0.35, 0, 0.95, 0.24, 0.2],
+  ['rock', 1.45, 0, -1.05, 0.34, 0.6],
+  ['rock', -2.85, 0, -1.8, 0.45, -0.3],
+  // clouds high up behind the hills
+  ['cloud', -3.6, 2.7, -11, 1.8, 0.1],
+  ['cloud', 0.9, 3.3, -12.5, 2.2, -0.2],
+  ['cloud', 4.9, 2.5, -10.5, 1.5, 0.3],
+  ['cloud', -0.9, 2.2, -9.5, 1.1, 0],
+];
+
 const FLOWER_COLORS = ['#FFFFFF', '#FFE066', '#FF9BB3', '#FFFFFF', '#C9B6FF'];
 
 /** Seeded random so the meadow is laid out the same every time. */
@@ -61,6 +103,11 @@ export class Outdoor {
   private skyGeo: THREE.PlaneGeometry;
   private skyMat: THREE.MeshBasicMaterial;
   private night: THREE.Group;
+  private simple = new THREE.Group();
+  private patch: THREE.Object3D | null = null;
+  private ground: THREE.Mesh | null = null;
+  private dressed: THREE.Group | null = null;
+  private dressMats: (THREE.MeshLambertMaterial | THREE.MeshBasicMaterial)[] = [];
   private shadowTex: THREE.DataTexture;
   readonly hemi: THREE.HemisphereLight;
   readonly sun: THREE.DirectionalLight;
@@ -83,7 +130,7 @@ export class Outdoor {
     g.add(sky);
 
     // ground and a lighter patch where the two of them stand
-    const ground = new THREE.Mesh(this.geo(new THREE.CircleGeometry(30, 48)), this.mat('ground'));
+    const ground = (this.ground = new THREE.Mesh(this.geo(new THREE.CircleGeometry(30, 48)), this.mat('ground')));
     ground.rotation.x = -Math.PI / 2;
     g.add(ground);
     const patch = new THREE.Mesh(this.geo(new THREE.CircleGeometry(1, 40)), this.mat('patch'));
@@ -91,6 +138,7 @@ export class Outdoor {
     patch.scale.set(2.3, 1.1, 1);
     patch.position.set(0.05, 0.002, 0.15);
     g.add(patch);
+    this.patch = patch;
 
     // rolling hills on the horizon
     const hillGeo = this.geo(new THREE.SphereGeometry(1, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2));
@@ -104,6 +152,10 @@ export class Outdoor {
       m.position.set(x, 0, z);
       g.add(m);
     }
+
+    // the simple built-in props (until the Tripo set is loaded: dress())
+    const P = this.simple;
+    g.add(P);
 
     // round "lollipop" trees: one cluster each side, a couple far away
     const trunkGeo = this.geo(new THREE.CylinderGeometry(0.07, 0.1, 1, 10));
@@ -123,8 +175,8 @@ export class Outdoor {
       c2.position.set(0.3 * s, 0.78 * s, 0.12 * s);
       t.add(c2);
       t.position.set(x, 0, z);
-      g.add(t);
-      this.shadow(x, z + 0.05, 0.9 * s, 0.32);
+      P.add(t);
+      P.add(this.shadow(x, z + 0.05, 0.9 * s, 0.32));
     };
     tree(-2.55, -2.6, 1.25, 0);
     tree(-3.4, -4.4, 1.0, 1);
@@ -139,7 +191,7 @@ export class Outdoor {
         const b = new THREE.Mesh(crownGeo, this.mat(`leaf${k % 2}`));
         b.scale.setScalar(s * (k === 1 ? 1 : 0.75));
         b.position.set(x + (k - 1) * s * 0.9, s * (k === 1 ? 0.55 : 0.4), z + (k === 1 ? 0 : 0.05));
-        g.add(b);
+        P.add(b);
       }
     }
 
@@ -158,7 +210,7 @@ export class Outdoor {
       tuft.position.set(x, 0, z);
       tuft.rotation.y = R() * Math.PI;
       tuft.scale.setScalar(0.6 + R() * 0.45);
-      g.add(tuft);
+      P.add(tuft);
     }
 
     // flowers: a white/yellow/pink dot on a tiny stem, scattered around the edges
@@ -181,7 +233,7 @@ export class Outdoor {
       f.add(h);
       f.position.set(x, 0, z);
       f.scale.setScalar(0.8 + R() * 0.5);
-      g.add(f);
+      P.add(f);
     }
 
     // clouds: puffs of three spheres
@@ -190,7 +242,7 @@ export class Outdoor {
         const c = new THREE.Mesh(crownGeo, this.mat('cloud'));
         c.scale.set(0.55 * s * (k === 1 ? 1.3 : 1), 0.38 * s * (k === 1 ? 1.3 : 1), 0.4 * s);
         c.position.set(x + (k - 1) * 0.6 * s, y + (k === 1 ? 0.12 * s : 0), z);
-        g.add(c);
+        P.add(c);
       }
     }
 
@@ -225,7 +277,6 @@ export class Outdoor {
   private shadow(x: number, z: number, w: number, opacity: number) {
     const m = this.blob(w, opacity);
     m.position.set(x, 0.004, z);
-    this.root.add(m);
     return m;
   }
 
@@ -242,6 +293,38 @@ export class Outdoor {
     return m;
   }
   private blobGeo: THREE.BufferGeometry | null = null;
+
+  /**
+   * Swap the simple built-in props for the Tripo-made plush set (meadow.glb):
+   * the felt ground, trees, bushes, flowers, grass, stones and clouds, laid
+   * out by MEADOW_LAYOUT. Geometry is shared; each prop kind has one material.
+   */
+  dress(props: Record<string, { geometry: THREE.BufferGeometry; map: THREE.Texture }>) {
+    if (this.dressed) return;
+    const g = new THREE.Group();
+    const mats: Record<string, THREE.MeshLambertMaterial | THREE.MeshBasicMaterial> = {};
+    for (const [name, p] of Object.entries(props)) {
+      // clouds are far away and lit from the front: unlit keeps them white
+      mats[name] = name === 'cloud' ? new THREE.MeshBasicMaterial({ map: p.map, fog: false }) : new THREE.MeshLambertMaterial({ map: p.map });
+      this.dressMats.push(mats[name]);
+    }
+    for (const [name, x, y, z, s, ry, sy] of MEADOW_LAYOUT) {
+      const p = props[name];
+      if (!p) continue;
+      const m = new THREE.Mesh(p.geometry, mats[name]);
+      m.position.set(x, y, z);
+      m.scale.set(s, s * (sy ?? 1), name === 'ground' ? s * 0.62 : s);
+      m.rotation.y = ry;
+      g.add(m);
+      if (name.startsWith('tree')) g.add(this.shadow(x, z + 0.05, 0.8 * s, 0.3));
+      else if (name === 'bush' || name === 'rock') g.add(this.shadow(x, z + 0.03, 1.1 * s, 0.25));
+    }
+    this.simple.visible = false;
+    if (this.patch) this.patch.visible = false;
+    this.dressed = g;
+    this.root.add(g);
+    this.apply(this.isNight ? NIGHT : DAY);
+  }
 
   setNight(on: boolean) {
     if (on === this.isNight) return;
@@ -264,6 +347,8 @@ export class Outdoor {
     p.hills.forEach((col, i) => set(`hill${i}`, col));
     p.leaves.forEach((col, i) => set(`leaf${i}`, col));
     this.night.visible = p === NIGHT;
+    // the plush props carry their own colours: just dim and cool them at night
+    for (const m of this.dressMats) m.color.set(p === NIGHT ? '#7F8DB8' : '#FFFFFF');
     this.hemi.intensity = p.sky;
     this.sun.intensity = p.sun;
     this.hemi.color.set(p === NIGHT ? '#AFC2FF' : '#FFFFFF');
@@ -305,6 +390,7 @@ export class Outdoor {
     this.mats.forEach((m) => m.dispose());
     this.fixedMats.forEach((m) => m.dispose());
     this.extra.forEach((m) => m.dispose());
+    this.dressMats.forEach((m) => m.dispose());
     this.shadowTex.dispose();
   }
 }

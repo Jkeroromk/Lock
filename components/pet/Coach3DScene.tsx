@@ -7,7 +7,8 @@ import type { CoachPose } from '@/constants/pets';
 import { CoachInstance, loadCoachAssets, type CoachAssets, type CoachClip, type CoachLook } from './coachModel';
 import { FloatFx, type Fx, type PetSpriteHandle } from './PetSprite';
 import { Outdoor } from './stage/outdoor';
-import { BuddyCat } from './stage/buddyCat';
+import { BuddyCat, PlushBuddy } from './stage/buddyCat';
+import { loadBuddyModel, loadMeadow, type BuddyModel } from './stage/meadowAssets';
 import { recordJsError } from '@/lib/crashlog';
 
 /**
@@ -129,13 +130,15 @@ const BUDDY_X = 0.78;
 interface BuddyCtl { hop: () => void }
 
 /** The meadow and the buddy (the dog is added by <Coach>). */
-function Meadow({ outdoor, x, night, buddyKind, buddyStage, animate, buddyCtl }: {
+function Meadow({ outdoor, x, night, buddyKind, buddyStage, animate, buddyCtl, plush }: {
   outdoor: Outdoor; x: number; night: boolean; buddyKind: string; buddyStage: number; animate: boolean;
   buddyCtl: { current: BuddyCtl | null };
+  /** The buddy's Tripo plush model, when its kind has one (else the simple toy). */
+  plush: BuddyModel | null;
 }) {
   useEffect(() => { outdoor.setNight(night); }, [outdoor, night]);
 
-  const buddy = useMemo(() => new BuddyCat(buddyKind, buddyStage), [buddyKind, buddyStage]);
+  const buddy = useMemo(() => (plush ? new PlushBuddy(plush.geometry, plush.map, buddyStage) : new BuddyCat(buddyKind, buddyStage)), [plush, buddyKind, buddyStage]);
   const buddyRoot = useMemo(() => {
     const g = new THREE.Group();
     g.add(buddy.root);
@@ -223,6 +226,22 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
   const staged = !!stage;
   const outdoor = useMemo(() => (staged ? new Outdoor() : null), [staged]);
   useEffect(() => () => outdoor?.dispose(), [outdoor]);
+  // the plush Tripo props replace the simple built-in ones once loaded (if they fail, the simple ones stay)
+  useEffect(() => {
+    if (!outdoor) return;
+    let alive = true;
+    loadMeadow().then((p) => { if (alive) outdoor.dress(p); }).catch((e) => recordJsError('coach3d:meadow', e));
+    return () => { alive = false; };
+  }, [outdoor]);
+  const buddyKind = stage?.buddyKind ?? '';
+  const [plush, setPlush] = useState<BuddyModel | null>(null);
+  useEffect(() => {
+    if (!staged) return;
+    let alive = true;
+    setPlush(null);
+    loadBuddyModel(buddyKind).then((b) => { if (alive) setPlush(b); }).catch((e) => recordJsError('coach3d:buddy', e));
+    return () => { alive = false; };
+  }, [staged, buddyKind]);
   const dogShadow = useMemo(() => outdoor?.blob(0.95) ?? null, [outdoor]);
   const m = stage ? stageMetrics(stage.width, stage.height, stage.floor, stage.spots) : null;
   // the dog's on-screen height: hearts and Zz are sized to it
@@ -337,7 +356,7 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
             frameloop="never"
           >
             <Suspense fallback={null}>
-              {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} night={pose === 'sleep'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} /> : null}
+              {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} night={pose === 'sleep'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} plush={plush} /> : null}
               <Coach data={data} pose={pose} animate={animate} ctl={ctl} x={m.dogX} shadow={dogShadow} />
             </Suspense>
           </Canvas>

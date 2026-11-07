@@ -163,3 +163,58 @@ export class BuddyCat {
     this.mats.forEach((m) => m.dispose());
   }
 }
+
+/**
+ * The buddy as its Tripo plush model (圆圆 the cat for now), before it has a
+ * rig: the whole toy breathes, sways, hops when tapped and settles low and
+ * slow when asleep. Same interface as BuddyCat so the stage can swap them.
+ */
+export class PlushBuddy {
+  readonly root = new THREE.Group();
+  private body: THREE.Mesh;
+  private mat: THREE.MeshStandardMaterial;
+  private t = Math.random() * 10;
+  private hopT = -1;
+  private sleep = 0;
+  asleep = false;
+
+  /** `height`: how tall the toy stands at stage 1, in world units. */
+  constructor(geometry: THREE.BufferGeometry, map: THREE.Texture, stage: number, height = 0.85) {
+    this.mat = new THREE.MeshStandardMaterial({ map, roughness: 0.92, metalness: 0 });
+    this.body = new THREE.Mesh(geometry, this.mat);
+    geometry.computeBoundingBox();
+    const bb = geometry.boundingBox!;
+    const h = bb.max.y - bb.min.y || 1;
+    this.body.position.y = -bb.min.y / h; // stand on y = 0
+    const inner = new THREE.Group();
+    inner.add(this.body);
+    inner.scale.setScalar(1 / h);
+    this.root.add(inner);
+    this.root.scale.setScalar(height * (buddyScale(stage) / buddyScale(1)));
+  }
+
+  hop() { if (!this.asleep) this.hopT = 0; }
+
+  update(dt: number, animate: boolean) {
+    const d = Math.min(dt, 0.05);
+    const t = (this.t += animate ? d : 0);
+    this.sleep += ((this.asleep ? 1 : 0) - this.sleep) * Math.min(1, d * (animate ? 3 : 1000));
+    const z = this.sleep;
+    let hopY = 0, squash = 0;
+    if (this.hopT >= 0) {
+      this.hopT += d / 0.55;
+      if (this.hopT >= 1) this.hopT = -1;
+      else {
+        hopY = Math.sin(this.hopT * Math.PI) * 0.22;
+        squash = this.hopT < 0.12 ? Math.sin((this.hopT / 0.12) * Math.PI) * 0.08 : 0;
+      }
+    }
+    const breathe = Math.sin(t * (2.1 - z * 1.2)) * (0.018 + z * 0.01);
+    this.body.parent!.position.y = hopY;
+    this.body.scale.set(1 + breathe + squash, 1 - breathe - squash - z * 0.06, 1 + breathe * 0.5);
+    this.body.rotation.z = Math.sin(t * 0.9) * 0.04 * (1 - z);
+    this.body.rotation.y = Math.sin(t * 0.55) * 0.12 * (1 - z);
+  }
+
+  dispose() { this.mat.dispose(); }
+}
