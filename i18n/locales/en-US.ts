@@ -367,6 +367,7 @@ const enUS = {
     homeButton: 'Home', homeBought: 'Bought: {name}', homeNotEnough: 'Not enough points yet', homeNeedMore: '{n} more points to go', homeBuyQ: 'Buy “{name}”?',
     homeBuyBody: 'Costs {n} points, leaves {left}. It goes in right away and your partner will see it.', homeBuy: 'Buy', homeInUse: 'In use', homeUse: 'Use',
     homeSlot_sofa: 'Sofa', homeSlot_rug: 'Rug', homeSlot_wall: 'Wallpaper', homeSlot_floor: 'Floor', homeSlot_lamp: 'Lamp', homeSlot_plant: 'Plant', homeSlot_bed: 'Dog bed', homeSlot_table: 'Table',
+    heroLabel: 'Together', heroDays: 'days', heroSince: 'since {date}',
     annTitle: 'Our anniversaries', annSub: 'You both see and add these', annSince: 'so far', annLeft: 'to go', annToday: 'today', annPassed: 'ago',
     annAdd: '＋ Add anniversary', annName: 'Name', annNamePh: 'e.g. First trip', annDate: 'Date', annYearly: 'Every year', annSave: 'Save', annDelete: 'Delete', annDeleteQ: 'Delete this anniversary?',
     milestoneDays: '{n} days together', milestoneYears: '{n}-year anniversary', nextLabel: '{title} · {n} days to go',

@@ -332,6 +332,7 @@ const zhTW = {
     homeButton: '小家', homeBought: '買好了：{name}', homeNotEnough: '分數不夠啦', homeNeedMore: '還差 {n} 分', homeBuyQ: '買下「{name}」？',
     homeBuyBody: '花 {n} 分，剩 {left} 分。買完馬上換上，TA 也會看到。', homeBuy: '買', homeInUse: '使用中', homeUse: '換上',
     homeSlot_sofa: '沙發', homeSlot_rug: '地毯', homeSlot_wall: '壁紙', homeSlot_floor: '地板', homeSlot_lamp: '落地燈', homeSlot_plant: '植物', homeSlot_bed: '狗窩', homeSlot_table: '桌子',
+    heroLabel: '在一起', heroDays: '天', heroSince: '從 {date} 開始',
     annTitle: '我們的紀念日', annSub: '两個人都能看到和新增', annSince: '已經', annLeft: '還有', annToday: '就是今天', annPassed: '已經過去',
     annAdd: '＋ 新增紀念日', annName: '名字', annNamePh: '比如：第一次旅行', annDate: '日期', annYearly: '每年都提醒', annSave: '保存', annDelete: '刪除', annDeleteQ: '刪除這個紀念日？',
     milestoneDays: '在一起 {n} 天', milestoneYears: '{n} 週年', nextLabel: '{title} · 還有 {n} 天',

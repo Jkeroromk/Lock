@@ -17,7 +17,7 @@ export interface PlushPiece { geometry: THREE.BufferGeometry; map: THREE.Texture
 export interface PlushPersonModel { scene: THREE.Object3D; map: THREE.Texture }
 
 export interface PlushAssets {
-  /** room_floor / room_left / room_back (already in room units), sofa, rug, lamp_base, lamp_shade, table, bed, plant_pot, plant_leaves, shelf, pouf, board_frame, photo_frame, door, wall_shelf. */
+  /** The shell's back-left quarter in room units (room_floor_q, room_corner, room_back_half, room_left_half) and the walls' rounded ends (room_cap_back, room_cap_left), mirrored by the room; sofa, rug, lamp_base, lamp_shade, table, bed, plant_pot, plant_leaves, shelf, pouf, board_frame, photo_frame, door, wall_shelf. */
   pieces: Record<string, PlushPiece>;
   people: { boy: PlushPersonModel; girl: PlushPersonModel };
 }

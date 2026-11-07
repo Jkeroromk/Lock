@@ -20,16 +20,22 @@ const todayYmd = () => {
 };
 
 /**
- * Our anniversaries, opened from the anniversary wall in the room: each with
- * how long ago / how long to go, the tapped one highlighted. Either of the two
- * can add one or delete one (not the day you got together).
+ * Our anniversaries, opened from the anniversary board (or a photo frame) in
+ * the room: a big "together N days" card with the next milestone on top, then
+ * each anniversary with how long ago / how long to go, the tapped one
+ * highlighted. Either of the two can add one or delete one. (The room itself
+ * shows no words on its walls — they all live here.)
  */
-export default function AnniversarySheet({ visible, onClose, items, highlight, onChanged }: {
+export default function AnniversarySheet({ visible, onClose, items, highlight, onChanged, since, days, nextLabel }: {
   visible: boolean;
   onClose: () => void;
   items: Anniversary[];
   highlight?: string | null;
   onChanged: () => void;
+  /** The day you got together (YYYY-MM-DD), the days since, and the next milestone line. */
+  since?: string;
+  days?: number;
+  nextLabel?: string;
 }) {
   const c = useTheme();
   const { t } = useTranslation();
@@ -70,6 +76,10 @@ export default function AnniversarySheet({ visible, onClose, items, highlight, o
     ]);
   };
 
+  // with the big card on top, the built-in "together" row would only repeat it
+  const hero = typeof days === 'number' && days >= 0;
+  const list = hero ? items.filter((a) => !a.builtIn) : items;
+
   const count = (a: Anniversary) => {
     if (a.builtIn) return { n: daysSince(a.date), label: t('couple.annSince') };
     const { days } = nextOccurrence(a);
@@ -88,7 +98,32 @@ export default function AnniversarySheet({ visible, onClose, items, highlight, o
           <Text style={{ fontSize: 24, fontWeight: '800', color: c.textPrimary }}>{t('couple.annTitle')}</Text>
           <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, marginTop: 2, marginBottom: 12 }}>{t('couple.annSub')}</Text>
           <ScrollView ref={scroll} style={{ flexShrink: 1, marginHorizontal: -8 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 8, paddingTop: 2, paddingBottom: 14 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-            {items.map((a) => {
+            {hero ? (
+              <View accessible accessibilityLabel={`${t('couple.together', { n: String(days) })}. ${nextLabel ?? ''}`}
+                style={{
+                  borderRadius: 22, borderWidth: 2, borderColor: c.ink, backgroundColor: '#FFE0E6', padding: 16, marginBottom: 6,
+                  shadowColor: c.ink, shadowOpacity: 1, shadowRadius: 0, shadowOffset: { width: 4, height: 4 },
+                }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: '#55544F' }}>{t('couple.heroLabel')}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                      <Text style={{ fontSize: 52, lineHeight: 58, fontWeight: '800', color: '#0A0A0A' }}>{days}</Text>
+                      <Text style={{ fontSize: 18, fontWeight: '800', color: '#0A0A0A' }}>{t('couple.heroDays')}</Text>
+                    </View>
+                    {since ? <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: '#55544F' }}>{t('couple.heroSince', { date: fmt(since) })}</Text> : null}
+                  </View>
+                  <Text style={{ fontSize: 46 }}>💕</Text>
+                </View>
+                {nextLabel ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, alignSelf: 'flex-start', maxWidth: '100%', paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999, borderWidth: 2, borderColor: c.ink, backgroundColor: '#FFD43B' }}>
+                    <Text style={{ fontSize: 14 }}>🎉</Text>
+                    <Text numberOfLines={2} style={{ flexShrink: 1, fontSize: 13, fontWeight: '800', color: '#0A0A0A' }}>{nextLabel}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+            {list.map((a) => {
               const hl = a.id === highlight;
               const k = count(a);
               return (

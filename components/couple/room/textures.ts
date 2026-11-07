@@ -125,18 +125,36 @@ function board() {
   return p.texture();
 }
 
-/** The plush room's board: the same layout in soft colours, no ink (it sits in a plush wooden frame). */
+/** A heart (implicit curve) centred at (cx, cy), half-width r. */
+function drawHeart(p: Pixels, c: RGB, cx: number, cy: number, r: number) {
+  p.shape(c, (x, y) => {
+    const u = (x - cx) / r, v = (cy - 2 - y) / r;
+    return (u * u + v * v - 1) ** 3 - u * u * v * v * v < 0;
+  }, Math.floor(cx - r * 1.3), Math.floor(cy - r * 1.4), Math.ceil(cx + r * 1.3), Math.ceil(cy + r * 1.3));
+}
+
+/**
+ * The plush room's anniversary board: a soft little calendar page with a heart
+ * and no words (the days and dates are in the anniversary sheet it opens).
+ */
 function boardSoft() {
   const p = new Pixels(128, 160);
   p.rect(0, 0, 128, 160, hex('#FFF8EC'));
-  p.rect(0, 0, 128, 30, hex('#FFC9D3'));
-  const r = 7, x0 = 12, y0 = 102, x1 = 116, y1 = 146;
-  p.shape(hex('#FFE29A'), (x, y) => {
-    const cx = Math.max(x0 + r, Math.min(x1 - r, x)), cy = Math.max(y0 + r, Math.min(y1 - r, y));
-    return (x - cx) ** 2 + (y - cy) ** 2 < r * r;
-  }, x0, y0, x1, y1);
-  p.circle(hex('#D9A27A'), 34, 15, 4.5);
-  p.circle(hex('#D9A27A'), 94, 15, 4.5);
+  p.rect(0, 0, 128, 34, hex('#FFC9D3'));
+  p.circle(hex('#D9A27A'), 34, 17, 5);
+  p.circle(hex('#D9A27A'), 94, 17, 5);
+  drawHeart(p, hex('#FF8FA3'), 64, 82, 30);
+  p.circle(hex('#FFFFFF'), 52, 70, 5);
+  // a row of calendar dots under the heart, one ringed
+  for (let i = 0; i < 6; i++) p.circle(hex(i === 3 ? '#FF8FA3' : '#EAD9C3'), 22 + i * 17, 136, 5);
+  return p.texture();
+}
+
+/** A photo-frame picture for the plush room: soft colour, a little white heart. */
+function framePic(bg: string) {
+  const p = new Pixels(64, 64);
+  p.rect(0, 0, 64, 64, hex(bg));
+  drawHeart(p, hex('#FFFFFF'), 32, 30, 12);
   return p.texture();
 }
 
@@ -205,6 +223,7 @@ export function makeTextures() {
     sky: sky(),
     board: board(),
     boardSoft: boardSoft(),
+    framePics: [framePic('#BFE6FF'), framePic('#FFE0E6'), framePic('#FFF1BF')],
     heart: heart(),
     drop: drop(),
     bento: bento(),
@@ -214,5 +233,5 @@ export function makeTextures() {
 }
 
 export function disposeTextures(t: RoomTextures) {
-  Object.values(t).forEach((x) => x.dispose());
+  Object.values(t).forEach((x) => (Array.isArray(x) ? x : [x]).forEach((y) => y.dispose()));
 }
