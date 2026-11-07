@@ -135,6 +135,13 @@ export default function AiInsightsCard() {
             <Ionicons name="barbell-outline" size={16} color={ink} style={{ marginTop: 2 }} />
             <Text style={[body, { flex: 1 }]}>{data.exercise}</Text>
           </View>
+
+          {/* AI suggestions are general information; show where targets come from (App Review 1.4.1). */}
+          <TouchableOpacity accessibilityRole="link" onPress={() => router.push('/(tabs)/settings/sources')} style={{ paddingTop: 2 }}>
+            <Text style={{ fontSize: 12, lineHeight: 17, color: ink, opacity: 0.8 }}>
+              {t('sources.aiNote')} <Text style={{ fontWeight: '800', textDecorationLine: 'underline' }}>{t('sources.link')}</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : null}
     </View>
