@@ -109,6 +109,8 @@ export class Outdoor {
   private dressed: THREE.Group | null = null;
   private dressMats: (THREE.MeshLambertMaterial | THREE.MeshBasicMaterial)[] = [];
   private shadowTex: THREE.DataTexture;
+  /** Distance haze (the owner puts it on the scene): far hills fade into the sky. */
+  readonly fog = new THREE.Fog(0xe4f6ff, 7, 22);
   readonly hemi: THREE.HemisphereLight;
   readonly sun: THREE.DirectionalLight;
   readonly fill: THREE.DirectionalLight;
@@ -132,6 +134,7 @@ export class Outdoor {
     // ground and a lighter patch where the two of them stand
     const ground = (this.ground = new THREE.Mesh(this.geo(new THREE.CircleGeometry(30, 48)), this.mat('ground')));
     ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
     g.add(ground);
     const patch = new THREE.Mesh(this.geo(new THREE.CircleGeometry(1, 40)), this.mat('patch'));
     patch.rotation.x = -Math.PI / 2;
@@ -248,12 +251,15 @@ export class Outdoor {
 
     // night: moon and stars (hidden by day)
     this.night = new THREE.Group();
-    const moon = new THREE.Mesh(this.geo(new THREE.CircleGeometry(0.55, 32)), this.fixed('#FFF4C2'));
+    const moonMat = new THREE.MeshBasicMaterial({ color: '#FFF4C2', fog: false });
+    const starMat = new THREE.MeshBasicMaterial({ color: '#FFFFFF', fog: false });
+    this.extra.push(moonMat, starMat);
+    const moon = new THREE.Mesh(this.geo(new THREE.CircleGeometry(0.55, 32)), moonMat);
     moon.position.set(-3.2, 3.1, -15.5);
     this.night.add(moon);
     const starGeo = this.geo(new THREE.CircleGeometry(0.05, 5));
     for (let i = 0; i < 26; i++) {
-      const s = new THREE.Mesh(starGeo, this.fixed('#FFFFFF'));
+      const s = new THREE.Mesh(starGeo, starMat);
       s.position.set((R() - 0.5) * 18, 2.3 + R() * 1.9, -15.6);
       s.scale.setScalar(0.6 + R() * 0.9);
       this.night.add(s);
@@ -264,7 +270,14 @@ export class Outdoor {
     // lights: soft sky light plus a warm sun from the front left
     this.hemi = new THREE.HemisphereLight(0xffffff, 0xeef6e2, DAY.sky);
     this.sun = new THREE.DirectionalLight(0xfff4e0, DAY.sun);
-    this.sun.position.set(-1.6, 2.8, 2.4);
+    this.sun.position.set(-2.4, 4.2, 2.2);
+    // real shadows sell the depth: everyone and every prop near the middle casts onto the grass
+    this.sun.castShadow = true;
+    this.sun.shadow.mapSize.set(1024, 1024);
+    const sc = this.sun.shadow.camera;
+    sc.left = -4.5; sc.right = 4.5; sc.top = 4.5; sc.bottom = -4.5; sc.near = 0.5; sc.far = 16;
+    this.sun.shadow.bias = -0.0015;
+    this.sun.shadow.normalBias = 0.02;
     this.fill = new THREE.DirectionalLight(0xffffff, 0.45);
     this.fill.position.set(1.8, 1.4, -1.6);
     g.add(this.hemi, this.sun, this.fill);
@@ -281,7 +294,7 @@ export class Outdoor {
   }
 
   /** A soft contact shadow to put under a character (add it to the character's own group). */
-  blob(width: number, opacity = 0.28) {
+  blob(width: number, opacity = 0.2) {
     if (!this.blobGeo) this.blobGeo = this.geo(new THREE.PlaneGeometry(1, 1));
     const mat = new THREE.MeshBasicMaterial({ map: this.shadowTex, color: 0x2f5a22, transparent: true, opacity, depthWrite: false });
     this.extra.push(mat);
@@ -315,6 +328,8 @@ export class Outdoor {
       m.position.set(x, y, z);
       m.scale.set(s, s * (sy ?? 1), name === 'ground' ? s * 0.62 : s);
       m.rotation.y = ry;
+      if (name === 'ground') m.receiveShadow = true;
+      else if (name !== 'cloud') m.castShadow = Math.abs(z) < 6;
       g.add(m);
       if (name.startsWith('tree')) g.add(this.shadow(x, z + 0.05, 0.8 * s, 0.3));
       else if (name === 'bush' || name === 'rock') g.add(this.shadow(x, z + 0.03, 1.1 * s, 0.25));
@@ -342,6 +357,7 @@ export class Outdoor {
       this.skyColors.setXYZ(i, c.r, c.g, c.b);
     }
     this.skyColors.needsUpdate = true;
+    this.fog.color.copy(low);
     const set = (key: string, col: string) => this.mats.get(key)?.color.set(col);
     set('ground', p.ground); set('patch', p.patch); set('trunk', p.trunk); set('cloud', p.cloud); set('tuft', p.tuft);
     p.hills.forEach((col, i) => set(`hill${i}`, col));

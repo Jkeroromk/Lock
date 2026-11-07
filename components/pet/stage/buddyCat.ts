@@ -182,6 +182,7 @@ export class PlushBuddy {
   constructor(geometry: THREE.BufferGeometry, map: THREE.Texture, stage: number, height = 0.85) {
     this.mat = new THREE.MeshStandardMaterial({ map, roughness: 0.92, metalness: 0 });
     this.body = new THREE.Mesh(geometry, this.mat);
+    this.body.castShadow = true;
     geometry.computeBoundingBox();
     const bb = geometry.boundingBox!;
     const h = bb.max.y - bb.min.y || 1;

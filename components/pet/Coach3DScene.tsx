@@ -71,12 +71,14 @@ const LOOKS: Record<CoachPose, CoachLook & { clip: CoachClip; speed?: number }> 
 
 interface Ctl { hop: () => void; love: () => void; yaw: { current: number }; state: () => RootState }
 
-function Coach({ data, pose, animate, ctl, x = 0, shadow }: {
+function Coach({ data, pose, animate, ctl, x = 0, shadow, castShadow = false }: {
   data: CoachAssets; pose: CoachPose; animate: boolean; ctl: { current: Ctl | null };
   /** Where 豆豆 stands (stage mode) and a contact shadow to stand on. */
   x?: number; shadow?: THREE.Object3D | null;
+  /** Cast a real shadow (stage mode has a shadow-casting sun). */
+  castShadow?: boolean;
 }) {
-  const inst = useMemo(() => new CoachInstance(data), [data]);
+  const inst = useMemo(() => new CoachInstance(data, { shadows: castShadow }), [data, castShadow]);
   const root = useMemo(() => {
     const g = new THREE.Group();
     g.add(inst.root);
@@ -122,10 +124,36 @@ function Coach({ data, pose, animate, ctl, x = 0, shadow }: {
 }
 
 /* --------------------------------- stage --------------------------------- */
-// Camera and spots on the stage (world units; 豆豆 is ~1 tall).
-const STAGE_CAM = { fov: 30, pos: [0, 0.85, 3.3] as [number, number, number] };
-const DOG_X = -0.7;
-const BUDDY_X = 0.78;
+// Camera and spots on the stage (world units; 豆豆 is ~1 tall). A fairly wide
+// lens from a little above, plus a camera that drifts, follows the phone's
+// tilt and orbits on a drag: the parallax is what makes it read as 3D (a long
+// lens straight on looked flat — Jason, 11-07).
+const STAGE_CAM = { fov: 42, dist: 2.75, elev: (12 * Math.PI) / 180, lookY: 0.58 };
+const DOG_X = -0.62;
+const BUDDY_X = 0.68;
+
+/** Lives in the Canvas: orbits the camera around the two of them. */
+function CameraRig({ lookY, animate, orbit, tilt }: {
+  lookY: number; animate: boolean;
+  /** Drag offset (radians), set by the gesture outside the Canvas. */
+  orbit: { current: number };
+  /** Phone tilt −1…1 (accelerometer), 0 if unavailable. */
+  tilt: { current: number };
+}) {
+  const t = useRef(0);
+  const az = useRef(0);
+  useFrame(({ camera }, dt) => {
+    const d = Math.min(dt, 0.05);
+    t.current += animate ? d : 0;
+    const drift = animate ? Math.sin((t.current * Math.PI * 2) / 16) * 0.1 : 0; // ±6°, very slow
+    const want = drift + tilt.current * 0.2 + orbit.current;
+    az.current += (want - az.current) * Math.min(1, d * 4);
+    const { dist, elev } = STAGE_CAM;
+    camera.position.set(Math.sin(az.current) * Math.cos(elev) * dist, lookY + Math.sin(elev) * dist, Math.cos(az.current) * Math.cos(elev) * dist);
+    camera.lookAt(0, lookY, 0);
+  });
+  return null;
+}
 
 interface BuddyCtl { hop: () => void }
 
@@ -166,11 +194,11 @@ function Meadow({ outdoor, x, night, buddyKind, buddyStage, animate, buddyCtl, p
  * the bottom edge, and where things land on screen: px per world unit at the
  * characters' depth, the ground line (px from the top) and a world x → px.
  */
-function stageMetrics(w: number, h: number, floor = h * 0.15, spots?: { dog: number; buddy: number }) {
-  const d = STAGE_CAM.pos[2];
-  const unit = h / (2 * d * Math.tan((STAGE_CAM.fov / 2) * Math.PI / 180));
+function stageMetrics(w: number, h: number, floor = h * 0.08, spots?: { dog: number; buddy: number }) {
+  const unit = h / (2 * STAGE_CAM.dist * Math.tan((STAGE_CAM.fov / 2) * Math.PI / 180));
   const groundY = h - floor;
-  const lookY = (h / 2 - floor) / unit; // aim the camera so y = 0 lands on the ground line
+  // aimed at lookY the feet land ~8% above the bottom; aim lower to lift them
+  const lookY = STAGE_CAM.lookY + (h * 0.08 - floor) / unit;
   const sx = (x: number) => w / 2 + x * unit;
   const toX = (f: number) => (f * w - w / 2) / unit;
   return { unit, groundY, sx, lookY, dogX: spots ? toX(spots.dog) : DOG_X, buddyX: spots ? toX(spots.buddy) : BUDDY_X };
@@ -316,16 +344,45 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
     return () => clearInterval(id);
   }, [pose, reduce, data, addFx]);
 
+  // Stage: a horizontal drag swings the camera around the meadow (springs
+  // back after a moment); the phone's tilt nudges it too.
+  const orbit = useRef(0);
+  const tilt = useRef(0);
+  const stageW = stage?.width ?? 0;
+  useEffect(() => {
+    if (!staged || reduce) return;
+    let sub: { remove: () => void } | null = null;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { Accelerometer } = require('expo-sensors');
+      Accelerometer.setUpdateInterval(60);
+      sub = Accelerometer.addListener(({ x }: { x: number }) => {
+        tilt.current += (Math.max(-1, Math.min(1, x)) - tilt.current) * 0.2;
+      });
+    } catch {}
+    return () => sub?.remove();
+  }, [staged, reduce]);
+
   const pan = useMemo(() => PanResponder.create({
     // capture: the tap layer above is the responder on touch-down, so take over only once it is a horizontal drag
     onMoveShouldSetPanResponderCapture: (_, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
-    onPanResponderGrant: () => { dragStart.current = ctl.current?.yaw.current ?? 0.35; moved.current = true; },
-    onPanResponderMove: (_, g) => { if (ctl.current) ctl.current.yaw.current = dragStart.current + g.dx / (size * 0.4); },
+    onPanResponderGrant: () => {
+      dragStart.current = staged ? orbit.current : ctl.current?.yaw.current ?? 0.35;
+      moved.current = true;
+    },
+    onPanResponderMove: (_, g) => {
+      if (staged) orbit.current = Math.max(-0.75, Math.min(0.75, dragStart.current - (g.dx / Math.max(1, stageW)) * 1.6));
+      else if (ctl.current) ctl.current.yaw.current = dragStart.current + g.dx / (size * 0.4);
+    },
     onPanResponderRelease: () => {
       moved.current = false;
-      setTimeout(() => { if (ctl.current && !moved.current) ctl.current.yaw.current = 0.35; }, 2500);
+      setTimeout(() => {
+        if (moved.current) return;
+        if (staged) orbit.current = 0;
+        else if (ctl.current) ctl.current.yaw.current = 0.35;
+      }, 2500);
     },
-  }), [size]);
+  }), [size, staged, stageW]);
 
   if (!ready || !data) return <>{fallback}</>;
 
@@ -341,12 +398,14 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
           <Canvas
             style={{ flex: 1 }}
             flat
+            shadows="percentage"
             gl={{ antialias: true }}
-            camera={{ fov: STAGE_CAM.fov, near: 0.05, far: 60, position: [0, m.lookY + 0.25, STAGE_CAM.pos[2]] }}
-            onCreated={({ gl, camera }) => {
+            camera={{ fov: STAGE_CAM.fov, near: 0.05, far: 60, position: [0, m.lookY + 0.6, STAGE_CAM.dist] }}
+            onCreated={({ gl, camera, scene }) => {
               try {
                 gl.setClearColor(0x8fd3ff, 1);
                 camera.lookAt(0, m.lookY, 0);
+                scene.fog = outdoor.fog;
                 instrument(gl);
               } catch (e) {
                 recordJsError('coach3d:created', e);
@@ -357,7 +416,8 @@ export const Coach3DScene = forwardRef<PetSpriteHandle, Props>(function Coach3DS
           >
             <Suspense fallback={null}>
               {outdoor ? <Meadow outdoor={outdoor} x={m.buddyX} night={pose === 'sleep'} buddyKind={stage.buddyKind} buddyStage={stage.buddyStage} animate={animate} buddyCtl={buddyCtl} plush={plush} /> : null}
-              <Coach data={data} pose={pose} animate={animate} ctl={ctl} x={m.dogX} shadow={dogShadow} />
+              <Coach data={data} pose={pose} animate={animate} ctl={ctl} x={m.dogX} shadow={dogShadow} castShadow />
+              <CameraRig lookY={m.lookY} animate={animate} orbit={orbit} tilt={tilt} />
             </Suspense>
           </Canvas>
         </View>
