@@ -462,6 +462,7 @@ const zhCN = {
     homeButton: '小家', homeBought: '买好了：{name}', homeNotEnough: '分数不够啦', homeNeedMore: '还差 {n} 分', homeBuyQ: '买下「{name}」？',
     homeBuyBody: '花 {n} 分，剩 {left} 分。买完马上换上，TA 也会看到。', homeBuy: '买', homeInUse: '使用中', homeUse: '换上',
     homeSlot_sofa: '沙发', homeSlot_rug: '地毯', homeSlot_wall: '墙纸', homeSlot_floor: '地板', homeSlot_lamp: '落地灯', homeSlot_plant: '植物', homeSlot_bed: '狗窝', homeSlot_table: '桌子',
+    heroLabel: '在一起', heroDays: '天', heroSince: '从 {date} 开始',
     annTitle: '我们的纪念日', annSub: '两个人都能看到和添加', annSince: '已经', annLeft: '还有', annToday: '就是今天', annPassed: '已经过去',
     annAdd: '＋ 添加纪念日', annName: '名字', annNamePh: '比如：第一次旅行', annDate: '日期', annYearly: '每年都提醒', annSave: '保存', annDelete: '删除', annDeleteQ: '删除这个纪念日？',
     milestoneDays: '在一起 {n} 天', milestoneYears: '{n} 周年', nextLabel: '{title} · 还有 {n} 天',

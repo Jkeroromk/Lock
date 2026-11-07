@@ -51,7 +51,7 @@ export function loadCoupleAssets(): Promise<PlushAssets> {
     pack.scene.traverse((o: any) => {
       if (o.isMesh && maps[texOf(o.name)]) pieces[o.name] = { geometry: o.geometry, map: maps[texOf(o.name)] };
     });
-    for (const k of ['room_floor', 'room_left', 'room_back', 'sofa', 'rug', 'lamp_base', 'lamp_shade', 'table', 'bed', 'plant_pot', 'plant_leaves', 'shelf', 'pouf', 'board_frame', 'photo_frame', 'door', 'wall_shelf']) {
+    for (const k of ['room_floor_q', 'room_corner', 'room_back_half', 'room_left_half', 'room_cap_back', 'room_cap_left', 'sofa', 'rug', 'lamp_base', 'lamp_shade', 'table', 'bed', 'plant_pot', 'plant_leaves', 'shelf', 'pouf', 'board_frame', 'photo_frame', 'door', 'wall_shelf']) {
       if (!pieces[k]) throw new Error(`couple pack: no ${k}`);
     }
     const person = (g: any, map: any): PlushPersonModel => ({ scene: g.scene, map });
