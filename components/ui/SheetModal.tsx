@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Easing, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 /**
  * A bottom sheet in a Modal: the dim backdrop fades in place while only the
@@ -17,6 +18,7 @@ export default function SheetModal({ visible, onClose, children, style, closeLab
   keyboard?: boolean;
 }) {
   const { height } = useWindowDimensions();
+  const sides = useSheetSides();
   const [mounted, setMounted] = useState(visible);
   const k = useRef(new Animated.Value(0)).current; // 0 hidden … 1 shown
 
@@ -41,7 +43,7 @@ export default function SheetModal({ visible, onClose, children, style, closeLab
       <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.18)', opacity: k }]}>
         <Pressable onPress={onClose} style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel={closeLabel} />
       </Animated.View>
-      <KeyboardAvoidingView enabled={keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} pointerEvents="box-none">
+      <KeyboardAvoidingView enabled={keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[{ flex: 1 }, sides]} pointerEvents="box-none">
         {sheet}
       </KeyboardAvoidingView>
     </Modal>

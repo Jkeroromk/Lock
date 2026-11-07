@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { updateProfile } from '@/services/api';
 import { toCompressedBase64 } from '@/lib/image';
 import UserAvatar from '@/components/ui/UserAvatar';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 
 // Status emoji: shown on the corner of the avatar, not instead of it.
@@ -40,6 +41,7 @@ interface EditProfileModalProps {
 export default function EditProfileModal({ visible, user, onSave, onCancel }: EditProfileModalProps) {
   const { t } = useTranslation();
   const colors = useTheme();
+  const sides = useSheetSides();
 
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
@@ -140,7 +142,7 @@ export default function EditProfileModal({ visible, user, onSave, onCancel }: Ed
   return (
     <Modal animationType="fade" transparent visible={visible} onRequestClose={onCancel}>
       <View style={{ flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)', paddingBottom: kb }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)', paddingBottom: kb, ...sides }}>
           <View style={{
             backgroundColor: colors.backgroundPrimary,
             borderTopLeftRadius: 32, borderTopRightRadius: 32,

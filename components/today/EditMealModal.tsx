@@ -6,6 +6,7 @@ import { useTranslation } from '@/i18n';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { useTheme } from '@/hooks/useTheme';
 import { updateMeal } from '@/services/api';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface Meal {
   id?: string;
@@ -25,6 +26,7 @@ interface Props {
 
 export default function EditMealModal({ meal, visible, onClose, onSaved }: Props) {
   const colors = useTheme();
+  const sides = useSheetSides();
   const { t } = useTranslation();
   const [foodName, setFoodName] = useState(meal.food_name);
   const [calories, setCalories] = useState(String(meal.calories));
@@ -60,7 +62,7 @@ export default function EditMealModal({ meal, visible, onClose, onSaved }: Props
   return (
     <Modal animationType="fade" transparent visible={visible} onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)', ...sides }}>
           <View style={{ backgroundColor: colors.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.borderPrimary, paddingHorizontal: DIMENSIONS.CARD_PADDING, paddingTop: DIMENSIONS.SPACING, paddingBottom: DIMENSIONS.SPACING * 1.5 }}>
             <View style={{ alignItems: 'center', marginBottom: DIMENSIONS.SPACING }}>
               <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.borderPrimary }} />

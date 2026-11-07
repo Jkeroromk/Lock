@@ -14,6 +14,7 @@ import { drinkOf, type DrinkKind } from '@/constants/drinks';
 import WaterBottle from '@/components/today/WaterBottle';
 import DrinkSheet from '@/components/today/DrinkSheet';
 import DrinkWheel from '@/components/today/DrinkWheel';
+import { useSheetSides } from '@/hooks/useSheetSides';
 
 interface WaterCardProps {
   waterMl: number;
@@ -198,6 +199,7 @@ function AmountModal({ visible, title, initial, min, max, onCancel, onSubmit }: 
   onSubmit: (ml: number) => void;
 }) {
   const c = useTheme();
+  const sides = useSheetSides();
   const { t } = useTranslation();
   const [value, setValue] = useState('');
 
@@ -210,7 +212,7 @@ function AmountModal({ visible, title, initial, min, max, onCancel, onSubmit }: 
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, ...sides }}>
         <Pressable onPress={onCancel} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', padding: 28 }}>
           <Pressable onPress={() => {}}>
             <HardShadow color={c.cardShadow} radius={RADIUS.hero}>

@@ -39,7 +39,7 @@ export default function ExercisePicker({ visible, onClose, onAdd, exclude = [] }
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : undefined} onRequestClose={close}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={Platform.OS === 'ios' ? ['bottom'] : ['top', 'bottom']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={Platform.OS === 'ios' ? ['bottom', 'left', 'right'] : ['top', 'bottom', 'left', 'right']}>
         <View style={{ paddingHorizontal: 18, paddingTop: 18, gap: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={{ fontSize: 26, fontWeight: '800', letterSpacing: -0.8, color: c.textPrimary }}>{t('train.libraryTitle')}</Text>

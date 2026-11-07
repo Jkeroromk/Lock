@@ -13,6 +13,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchLeaderboard, LeaderboardEntry } from '@/services/api';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
+import { useSheetSides } from '@/hooks/useSheetSides';
 import { useShallow } from 'zustand/react/shallow';
 
 // ── Shared Avatar ──────────────────────────────────────────────────────────────
@@ -155,6 +156,7 @@ function FriendCardModal({ entry, visible, onClose, colors, t }: {
   entry: LeaderboardEntry | null; visible: boolean; onClose: () => void; colors: any; t: (k: any, p?: any) => string;
 }) {
   const [mounted, setMounted] = useState(false);
+  const sides = useSheetSides();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(400)).current;
 
@@ -182,7 +184,7 @@ function FriendCardModal({ entry, visible, onClose, colors, t }: {
       </Animated.View>
 
       <Animated.View style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
+        position: 'absolute', bottom: 0, left: sides.paddingLeft, right: sides.paddingRight,
         backgroundColor: colors.backgroundPrimary,
         borderTopLeftRadius: 28, borderTopRightRadius: 28,
         paddingHorizontal: DIMENSIONS.CARD_PADDING,
