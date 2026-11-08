@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { TEXT_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
+import { TEXT_MODEL, fireworksChat, describeAiError } from '@/lib/fireworks';
 
 /**
  * Food names into one language for exports. Meals keep whatever language they
@@ -64,8 +64,15 @@ ${JSON.stringify(names)}`;
     reasoningEffort: 'low',
     timeoutMs: 40_000,
   });
-  const out = extractJson<unknown>(content);
-  if (!Array.isArray(out) || out.length !== names.length) throw new Error('length mismatch');
+  // The answer is a JSON array (extractJson only finds objects, which dropped every
+  // translation on 11-08). Take the outermost [...]; accept {"names": [...]} too.
+  const cleaned = content.replace(/```(?:json)?/g, '');
+  const start = cleaned.indexOf('[');
+  const end = cleaned.lastIndexOf(']');
+  if (start === -1 || end <= start) throw new Error(`No JSON array in AI response: ${content.slice(0, 200)}`);
+  const parsed: unknown = JSON.parse(cleaned.slice(start, end + 1));
+  const out = Array.isArray(parsed) ? parsed : [];
+  if (out.length !== names.length) throw new Error(`length mismatch: ${out.length} for ${names.length}`);
   return out.map((v) => (typeof v === 'string' && v.trim() && v.length <= 300 ? v.trim() : null));
 }
 

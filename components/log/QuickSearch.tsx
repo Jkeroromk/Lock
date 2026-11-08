@@ -9,6 +9,7 @@ import { FONTS } from '@/constants/fonts';
 import { portionsFor, type Portion } from '@/constants/foodPortions';
 import { describeMeal, fetchRecentFoods, searchFoods, type LibraryFood, type RecentFood } from '@/services/api';
 import type { FoodResult } from '@/components/log/ResultCard';
+import { useFoodNames } from '@/hooks/useFoodNames';
 
 export type QuickSource = 'search' | 'text';
 
@@ -66,14 +67,16 @@ export default function QuickSearch({ onPick, onAiError, quotaBadge, onQuotaPres
   }, [query]);
 
   const q = query.trim();
+  const displayName = (f: LibraryFood) => (language.startsWith('zh') ? f.name : f.nameEn || f.name);
+  // Recent foods in the app's language; picking one still logs it as it was logged before.
+  const recentName = useFoodNames((recents ?? []).slice(0, 30).map((r) => r.food));
+  // Matches what was logged or how it reads now ("apple" finds 苹果 · 1 个).
   const matchingRecents = useMemo(() => {
     if (!recents) return [];
     if (!q) return recents.slice(0, 12);
     const lower = q.toLowerCase();
-    return recents.filter((r) => r.food.toLowerCase().includes(lower)).slice(0, 5);
-  }, [recents, q]);
-
-  const displayName = (f: LibraryFood) => (language.startsWith('zh') ? f.name : f.nameEn || f.name);
+    return recents.filter((r) => r.food.toLowerCase().includes(lower) || recentName(r.food).toLowerCase().includes(lower)).slice(0, 5);
+  }, [recents, q, recentName]);
 
   const pickRecent = (r: RecentFood) => {
     Keyboard.dismiss();
@@ -140,7 +143,7 @@ export default function QuickSearch({ onPick, onAiError, quotaBadge, onQuotaPres
             {matchingRecents.map((r) => (
               <FoodRow
                 key={`r-${r.food}`}
-                title={r.food}
+                title={recentName(r.food)}
                 detail={`${Math.round(r.calories)} kcal · P ${Math.round(r.protein)}g · C ${Math.round(r.carbs)}g · F ${Math.round(r.fat)}g`}
                 badge={r.count > 1 ? t('quickLog.timesN', { n: String(r.count) }) : undefined}
                 imageUri={r.image_url ?? undefined}

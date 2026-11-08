@@ -10,6 +10,7 @@ import { deleteMeal } from '@/services/api';
 import { useStore } from '@/store/useStore';
 import EditMealModal from './EditMealModal';
 import { useShallow } from 'zustand/react/shallow';
+import { useFoodNames } from '@/hooks/useFoodNames';
 
 interface Meal {
   id?: string;
@@ -39,12 +40,14 @@ export default function MealsList({ meals }: MealsListProps) {
   const [brokenPhotos, setBrokenPhotos] = useState<Set<string>>(() => new Set());
 
   const totalCalories = meals.reduce((s, m) => s + m.calories, 0);
+  // Names in the app's language (display only; edit shows what was logged).
+  const displayName = useFoodNames(meals.map((m) => m.food_name));
 
   const handleDelete = (meal: Meal) => {
     if (!meal.id) return;
     const id = meal.id;
     setActiveMealId(null);
-    Alert.alert(t('weightTracker.deleteTitle'), `${meal.food_name}?`, [
+    Alert.alert(t('weightTracker.deleteTitle'), `${displayName(meal.food_name)}?`, [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.delete'), style: 'destructive',
@@ -121,7 +124,7 @@ export default function MealsList({ meals }: MealsListProps) {
                     )}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }} numberOfLines={1}>{meal.food_name}</Text>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: c.textPrimary }} numberOfLines={1}>{displayName(meal.food_name)}</Text>
                     <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, marginTop: 2 }} numberOfLines={1}>
                       P{Math.round(meal.protein)} C{Math.round(meal.carbs)} F{Math.round(meal.fat)}
                     </Text>

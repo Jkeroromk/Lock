@@ -56,7 +56,7 @@ const sections: LegalSection[] = [
         <p>We do not sell your personal data. We share data only with providers that operate the service on our behalf:</p>
         <List items={[
           <><B>Clerk</B> — sign-in and account security (including Sign in with Apple / Google)</>,
-          <><B>Fireworks AI</B> — analysing meal photos, nutrition labels and meals you describe in words, generating the AI review and AI workout plan from your recent meals, workouts and goals, and translating food names when you export your meals in one language. It receives only what is needed for that request, not your name or email</>,
+          <><B>Fireworks AI</B> — analysing meal photos, nutrition labels and meals you describe in words, generating the AI review and AI workout plan from your recent meals, workouts and goals, and translating your food names into one language (for exports, or when you switch the app&apos;s language). It receives only what is needed for that request, not your name or email</>,
           <><B>Supabase</B> — database and private photo storage</>,
           <><B>Vercel</B> — server hosting</>,
           <><B>RevenueCat</B> — subscription management</>,
