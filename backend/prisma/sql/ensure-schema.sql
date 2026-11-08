@@ -310,3 +310,22 @@ BEGIN
   END IF;
 END $$;
 ALTER TABLE "couple_purchases" ENABLE ROW LEVEL SECURITY;
+
+-- 2026-11-08: export — food names translated into one language, cached per
+-- user so repeat exports don't call the AI again. Deleted with the account.
+CREATE TABLE IF NOT EXISTS "food_name_translations" (
+  "user_id" TEXT NOT NULL,
+  "lang" TEXT NOT NULL,
+  "source" TEXT NOT NULL,
+  "translated" TEXT NOT NULL,
+  "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT now(),
+  CONSTRAINT "food_name_translations_pkey" PRIMARY KEY ("user_id", "lang", "source")
+);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'food_name_translations_user_id_fkey') THEN
+    ALTER TABLE "food_name_translations" ADD CONSTRAINT "food_name_translations_user_id_fkey"
+      FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
+ALTER TABLE "food_name_translations" ENABLE ROW LEVEL SECURITY;
