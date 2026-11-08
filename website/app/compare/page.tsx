@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function Compare() {
   return (
-    <SubpageShell eyebrow="Compare · 对比" title="Kero Lock vs Cal AI, MyFitnessPal, Lose It! & MacroFactor">
+    <SubpageShell wide>
       <CompareBody />
     </SubpageShell>
   );
