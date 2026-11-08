@@ -156,14 +156,17 @@ export default function WeightTrackerScreen() {
                 },
               ].map(({ label, value, diff }) => (
                 <View key={label} style={{
-                  flex: 1, borderRadius: 20, padding: DIMENSIONS.SPACING * 1.2,
+                  flex: 1, minWidth: 0, borderRadius: 20, paddingVertical: DIMENSIONS.SPACING * 1.2, paddingHorizontal: DIMENSIONS.SPACING,
                   backgroundColor: colors.cardBackground,
                   borderWidth: 1, borderColor: colors.borderPrimary,
                 }}>
-                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, marginBottom: 6 }}>
+                  <Text numberOfLines={1} style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, marginBottom: 6 }}>
                     {label}
                   </Text>
-                  <Text style={{
+                  {/* One line, shrinking to fit: narrow cards (Duo outer
+                      display, a half of the open Duo) broke "160.0" into
+                      "16 / 0. / 0". */}
+                  <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.4} style={{
                     fontSize: TYPOGRAPHY.titleL, fontWeight: '900',
                     color: diff === null ? colors.textPrimary
                       : diff < 0 ? '#10B981'
