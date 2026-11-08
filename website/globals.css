@@ -619,7 +619,8 @@
 
 /* ── buddy: live 3D stage ──────────────── */
 .stage3d { user-select: none; -webkit-user-select: none; position: relative; height: clamp(300px, 46vw, 520px); border-radius: 18px; border: 2px solid var(--line); overflow: hidden; background: linear-gradient(180deg, #8FD3FF 0%, #E4F6FF 62%, #A7DE80 62%); }
-.stage3d-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 62%; }
+.stage3d-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 62%; transition: opacity .6s ease; }
+.stage3d.ready .stage3d-poster { opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s linear .6s; }
 .stage3d-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; opacity: 0; transition: opacity .6s ease; cursor: grab; z-index: 1; }
 .stage3d-canvas:active { cursor: grabbing; }
 .stage3d.ready .stage3d-canvas { opacity: 1; }

@@ -125,12 +125,11 @@ class Rig {
 }
 
 export async function mountStage(host: HTMLElement, opts: StageOptions): Promise<StageHandle> {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.setClearColor(0x000000, 0);
   const canvas = renderer.domElement;
   canvas.className = 'stage3d-canvas';
   canvas.setAttribute('aria-hidden', 'true');
@@ -152,7 +151,51 @@ export async function mountStage(host: HTMLElement, opts: StageOptions): Promise
   fill.position.set(1.8, 1.4, -1.6);
   scene.add(hemi, sun, fill);
 
-  const disposables: { dispose: () => void }[] = [];
+  // ---------- the world around the meadow (app: outdoor.ts, DAY palette) ----------
+  // Sky: the app paints a gradient wall behind everything; the website stage is
+  // wider than a phone and turns further, so it is a dome here instead, with the
+  // same colours by elevation. Below the horizon it is the haze colour, so the
+  // fogged ground disc runs seamlessly into it.
+  const SKY_TOP = new THREE.Color('#8FD3FF'), SKY_LOW = new THREE.Color('#E4F6FF');
+  renderer.setClearColor(SKY_LOW, 1);
+  const skyGeo = new THREE.SphereGeometry(45, 32, 16);
+  {
+    const pos = skyGeo.attributes.position, col = new Float32Array(pos.count * 3), c = new THREE.Color();
+    const e0 = (1.8 * Math.PI) / 180, e1 = (41 * Math.PI) / 180; // wall bottom → top, seen from the camera
+    for (let i = 0; i < pos.count; i++) {
+      const e = Math.asin(Math.max(-1, Math.min(1, pos.getY(i) / 45)));
+      c.copy(SKY_LOW).lerp(SKY_TOP, Math.pow(Math.min(1, Math.max(0, (e - e0) / (e1 - e0))), 0.8));
+      col.set([c.r, c.g, c.b], i * 3);
+    }
+    skyGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  }
+  const skyMat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false, fog: false });
+  const sky = new THREE.Mesh(skyGeo, skyMat);
+  sky.renderOrder = -1;
+  // ground: a big flat disc under the felt mound, fading into the haze
+  const groundGeo = new THREE.CircleGeometry(30, 48);
+  const groundMat = new THREE.MeshLambertMaterial({ color: '#93D36B' });
+  const groundDisc = new THREE.Mesh(groundGeo, groundMat);
+  groundDisc.rotation.x = -Math.PI / 2;
+  groundDisc.receiveShadow = true;
+  // rolling hills on the horizon
+  const hillGeo = new THREE.SphereGeometry(1, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2);
+  const hillMats = ['#7FC75E', '#6CB851', '#8ACF68'].map((color) => new THREE.MeshLambertMaterial({ color }));
+  const hills = new THREE.Group();
+  for (const [x, z, w, h, ci] of [
+    [-6.5, -12, 7, 2.2, 0], [1.5, -13.5, 9, 2.8, 1], [8, -11.5, 6.5, 1.9, 2], [-1.8, -9.5, 5, 1.2, 2], [4.6, -8.8, 4, 0.9, 0],
+    // the website turns further than the app: a few more round the sides
+    [-11, -6, 6, 1.8, 1], [11.5, -5, 6.5, 2.0, 0], [-13, 1, 7, 2.2, 2], [13, 2, 6, 1.7, 1],
+  ] as const) {
+    const m = new THREE.Mesh(hillGeo, hillMats[ci]);
+    m.scale.set(w, h, w * 0.55);
+    m.position.set(x, 0, z);
+    if (Math.abs(x) > 9) m.rotation.y = Math.atan2(x, z); // side hills run round the centre
+    hills.add(m);
+  }
+  scene.add(sky, groundDisc, hills);
+
+  const disposables: { dispose: () => void }[] = [skyGeo, skyMat, groundGeo, groundMat, hillGeo, ...hillMats];
   const texLoader = new THREE.TextureLoader();
   const tex = async (name: string) => {
     const t = await texLoader.loadAsync(BASE + name);
@@ -292,7 +335,7 @@ export async function mountStage(host: HTMLElement, opts: StageOptions): Promise
     if (!down) return;
     const dx = e.clientX - down.x;
     if (Math.abs(dx) > 4) down.moved = true;
-    azTarget = Math.max(-0.8, Math.min(0.8, down.az - dx * 0.005));
+    azTarget = Math.max(-0.75, Math.min(0.75, down.az - dx * 0.005));
     lastTouch = performance.now();
   };
   const ray = new THREE.Raycaster();
