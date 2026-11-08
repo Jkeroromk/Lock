@@ -19,6 +19,7 @@ import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import { useCalorieGoal } from '@/hooks/useDailyGoals';
 import { useProteinTarget } from '@/hooks/useProteinTarget';
 import { useStore } from '@/store/useStore';
+import { exifTakenAt } from '@/store/useLogWhenStore';
 
 type Mode = 'photo' | 'label' | 'scan';
 
@@ -118,7 +119,9 @@ export default function CameraScreen() {
     setTimeout(() => router.navigate(p ? ({ pathname, params: p } as any) : pathname), 0);
   };
 
-  const sendPhoto = (uri: string) => goTo('/(tabs)/log', { imageUri: uri, imageMode: mode === 'label' ? 'label' : 'food' });
+  /** `takenAt`: when an album photo was taken, so a forgotten meal is dated by its photo (补记). */
+  const sendPhoto = (uri: string, takenAt?: string | null) =>
+    goTo('/(tabs)/log', { imageUri: uri, imageMode: mode === 'label' ? 'label' : 'food', ...(takenAt ? { takenAt } : {}) });
 
   /** 搜索: no photo (forgot to take one) — the Log tab's search mode (recent foods, library, describe it, 补记). */
   const openSearch = () => goTo('/(tabs)/log', { mode: 'search' });
@@ -146,9 +149,10 @@ export default function CameraScreen() {
       // slow picker, and converting HEIC → JPEG at quality 0.8 waits after picking.
       // The photo is downsized for analysis anyway.
       allowsEditing: false,
+      exif: true,
       preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
     });
-    if (!r.canceled && r.assets[0]) sendPhoto(r.assets[0].uri);
+    if (!r.canceled && r.assets[0]) sendPhoto(r.assets[0].uri, exifTakenAt(r.assets[0].exif as any));
   };
 
   const onBarcode = async ({ data }: { data: string }) => {

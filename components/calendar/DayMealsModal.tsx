@@ -12,6 +12,9 @@ import { fetchDayMeals, MealRecord } from '@/services/api';
 import { useSheetSides } from '@/hooks/useSheetSides';
 import { useShallow } from 'zustand/react/shallow';
 import { useFoodNames } from '@/hooks/useFoodNames';
+import { useRouter } from 'expo-router';
+import { Button } from '@/components/ui/bxc';
+import { MAX_BACKDATE_DAYS, daysAgo } from '@/store/useLogWhenStore';
 
 interface DayMealsModalProps {
   date: string | null; // YYYY-MM-DD, null = closed
@@ -31,6 +34,15 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
   const [fetchError, setFetchError] = useState(false);
   // Names in the app's language (display only).
   const displayName = useFoodNames(meals.map((m) => m.food_name));
+  const router = useRouter();
+  // 补记: this day (today included), up to 30 days back.
+  const ago = date ? (() => { const [y, m, d] = date.split('-').map(Number); return daysAgo(new Date(y, m - 1, d, 12)); })() : -1;
+  const canBackfill = ago >= 0 && ago < MAX_BACKDATE_DAYS;
+  const backfill = () => {
+    if (!date) return;
+    onClose();
+    router.navigate({ pathname: '/(tabs)/log', params: { day: date } } as any);
+  };
   const [mounted, setMounted] = useState(false);
   const slideAnim = useRef(new Animated.Value(600)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -152,6 +164,17 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
               </View>
             </View>
           )}
+
+          {canBackfill ? (
+            <View style={{ marginHorizontal: DIMENSIONS.CARD_PADDING, marginBottom: DIMENSIONS.SPACING }}>
+              <Button
+                label={ago === 0 ? t('quickLog.logThisDay') : t('quickLog.backfillThisDay')}
+                icon="add"
+                variant={meals.length ? 'outline' : 'primary'}
+                onPress={backfill}
+              />
+            </View>
+          ) : null}
 
           <ScrollView
             showsVerticalScrollIndicator={false}

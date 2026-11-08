@@ -2,13 +2,14 @@ import { View, ScrollView, Image, ActivityIndicator, Alert, TouchableOpacity } f
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Appear, Button, Corners, RADIUS, STROKE, ScreenHeader, Sticker } from '@/components/ui/bxc';
+import { Appear, Button, Card, Corners, Label, RADIUS, STROKE, ScreenHeader, Sticker } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
 import { analyzeFoodImage, logMeal } from '@/services/api';
 import { detectLiquidMl, addWater } from '@/services/waterTracker';
@@ -28,7 +29,7 @@ import { calorieGoalNow } from '@/hooks/useDailyGoals';
 import { useShallow } from 'zustand/react/shallow';
 import QuickSearch, { type QuickSource } from '@/components/log/QuickSearch';
 import LogWhenPicker, { whenLabel } from '@/components/log/LogWhenPicker';
-import { eatenAtFor, isOtherDay, useLogWhenStore } from '@/store/useLogWhenStore';
+import { MAX_BACKDATE_DAYS, daysAgo, eatenAtFor, exifTakenAt, isOtherDay, useLogWhenStore } from '@/store/useLogWhenStore';
 
 /**
  * The 记录 tab. One layer, no mode switch (photo, label and barcode all live
@@ -69,14 +70,15 @@ export default function LogScreen() {
   const [recentKey, setRecentKey] = useState(0);
   const listLogging = useMealLogging();
   // 补记: the day / meal the next save goes to.
-  const { dayOffset, slot } = useLogWhenStore(useShallow((st) => ({ dayOffset: st.dayOffset, slot: st.slot })));
+  const { dayOffset, slot, at } = useLogWhenStore(useShallow((st) => ({ dayOffset: st.dayOffset, slot: st.slot, at: st.at })));
   const otherDay = isOtherDay(dayOffset);
-  const backdated = !(dayOffset === 0 && slot === 'now');
+  const backdated = !!at || !(dayOffset === 0 && slot === 'now');
 
   // From the camera: a photo (analysed straight away), a barcode it couldn't find,
   // or 「搜索」 (start a fresh search).
-  const { imageUri, imageMode, manualCode, mode: modeParam } =
-    useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string; mode?: string }>();
+  // `day` (YYYY-MM-DD): 补记 from the calendar. `takenAt` (ISO): when a photo from the album was taken.
+  const { imageUri, imageMode, manualCode, mode: modeParam, day: dayParam, takenAt } =
+    useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string; mode?: string; day?: string; takenAt?: string }>();
   const [autoAnalyze, setAutoAnalyze] = useState(false);
 
   const clearAll = () => { setImage(null); setResult(null); setIsEditing(false); setAnalyzing(false); };
@@ -104,8 +106,48 @@ export default function LogScreen() {
     setResult(null);
     setIsEditing(false);
     setAutoAnalyze(true);
-    router.setParams({ imageUri: undefined, imageMode: undefined } as any);
+    applyPhotoTime(takenAt);
+    router.setParams({ imageUri: undefined, imageMode: undefined, takenAt: undefined } as any);
   }, [imageUri]);
+
+  // 补记 from the calendar: that day is preset, then a photo from the album or a search.
+  useEffect(() => {
+    if (!dayParam || !/^\d{4}-\d{2}-\d{2}$/.test(dayParam)) return;
+    const [y, m, d] = dayParam.split('-').map(Number);
+    const off = daysAgo(new Date(y, m - 1, d, 12));
+    clearAll();
+    const when = useLogWhenStore.getState();
+    when.reset();
+    if (off > 0 && off < MAX_BACKDATE_DAYS) when.setDay(off);
+    router.setParams({ day: undefined } as any);
+  }, [dayParam]);
+
+  /** A photo's own time decides when it was eaten (taken in the last few minutes = now). */
+  function applyPhotoTime(iso?: string | null) {
+    if (!iso) return;
+    const t0 = new Date(iso).getTime();
+    if (Number.isNaN(t0) || Date.now() - t0 < 30 * 60_000) return;
+    useLogWhenStore.getState().setAt(iso);
+  }
+
+  /** 补记 with a photo from the album: analysed straight away, dated by the photo. */
+  const pickFromLibrary = async () => {
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: false,
+      exif: true,
+      preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
+    });
+    const asset = !r.canceled ? r.assets[0] : null;
+    if (!asset) return;
+    setImageKind('food');
+    setSource('photo');
+    setImage(asset.uri);
+    setResult(null);
+    setIsEditing(false);
+    setAutoAnalyze(true);
+    applyPhotoTime(exifTakenAt(asset.exif as any));
+  };
 
   const openCamera = (mode?: 'scan') => router.push(mode ? ({ pathname: '/camera', params: { mode } } as any) : '/camera');
 
@@ -196,8 +238,8 @@ export default function LogScreen() {
     const detectedMl = detectLiquidMl(result.food);
     // Water is only tracked for today: drinks saved to an earlier day aren't offered.
     const liquidMl = !otherDay && detectedMl > 0 && (await askCountAsWater(result.food, detectedMl)) ? detectedMl : 0;
-    const eatenAt = eatenAtFor(dayOffset, slot);
-    const savedTo = backdated ? whenLabel(dayOffset, slot, t, language) : '';
+    const eatenAt = eatenAtFor(dayOffset, slot, at);
+    const savedTo = backdated ? whenLabel(dayOffset, slot, t, language, at) : '';
     setSaving(true);
     const before = todaysCalories();
     try {
@@ -261,7 +303,7 @@ export default function LogScreen() {
 
   const logAll = async () => {
     const when = backdated
-      ? { eatenAt: eatenAtFor(dayOffset, slot), label: whenLabel(dayOffset, slot, t, language), otherDay }
+      ? { eatenAt: eatenAtFor(dayOffset, slot, at), label: whenLabel(dayOffset, slot, t, language, at), otherDay }
       : undefined;
     if (await listLogging.logAll(when)) {
       setListOpen(false);
@@ -274,8 +316,17 @@ export default function LogScreen() {
   const header = (
     <>
       <ScreenHeader title={t('tabs.log')} />
-      {!image && !result ? (
+      {!image && !result && !backdated ? (
         <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: -8, marginBottom: 14 }}>{t('quickLog.caption')}</Text>
+      ) : null}
+      {/* 补记: which day and meal, and the photo you took then. */}
+      {!image && !result && backdated ? (
+        <Card padding={14} style={{ marginBottom: 14, gap: 12 }}>
+          <Label>{t('quickLog.backfillTitle')}</Label>
+          <LogWhenPicker />
+          <Button label={t('quickLog.fromAlbum')} icon="images-outline" onPress={pickFromLibrary} />
+          <Text style={{ fontSize: 12, lineHeight: 17, color: c.textSecondary }}>{t('quickLog.backfillHint')}</Text>
+        </Card>
       ) : null}
       <CartBar onOpen={() => setListOpen(true)} />
     </>

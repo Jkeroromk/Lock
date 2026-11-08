@@ -765,6 +765,12 @@ const enUS = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    backfillTitle: "Add to an earlier time",
+    fromAlbum: "Choose a photo",
+    backfillHint: "Pick the photo you took of that meal and it is logged at the time it was taken. No photo? Search or describe it below.",
+    photoTime: "Photo",
+    logThisDay: "Log a meal",
+    backfillThisDay: "Add a meal to this day",
     retake: "Retake",
     caption: "No photo? Tap something you've had before, search the food library, or describe what you ate.",
     placeholder: "Search foods, or describe what you ate",

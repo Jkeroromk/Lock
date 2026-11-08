@@ -677,6 +677,12 @@ const jaJP = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    backfillTitle: "あとから記録",
+    fromAlbum: "写真を選ぶ",
+    backfillHint: "その食事の写真を選ぶと、撮影時刻で記録されます。写真がなければ下で検索するか一文で入力。",
+    photoTime: "撮影",
+    logThisDay: "食事を記録",
+    backfillThisDay: "この日に記録",
     retake: "撮り直す",
     caption: "写真がなくても記録できます。最近食べたものをタップ、食品を検索、または食べたものを一文で。",
     placeholder: "食品を検索、または食べたものを入力",

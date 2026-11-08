@@ -686,6 +686,12 @@ const koKR = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    backfillTitle: "나중에 기록",
+    fromAlbum: "사진 선택",
+    backfillHint: "그 식사 때 찍은 사진을 고르면 찍은 시간으로 기록돼요. 사진이 없으면 아래에서 검색하거나 한 문장으로 적어 보세요.",
+    photoTime: "사진",
+    logThisDay: "식사 기록",
+    backfillThisDay: "이 날에 기록",
     retake: "다시 찍기",
     caption: "사진이 없어도 기록할 수 있어요. 최근 먹은 음식을 탭하거나, 음식을 검색하거나, 먹은 것을 한 문장으로 적어 보세요.",
     placeholder: "음식 검색 또는 먹은 것 입력",
