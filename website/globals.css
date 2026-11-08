@@ -618,12 +618,12 @@
 @media (prefers-reduced-motion: reduce) { .floater { animation: none; } .fill { transition: none; } }
 
 /* ── buddy: live 3D stage ──────────────── */
-.stage3d { position: relative; height: clamp(300px, 46vw, 520px); border-radius: 18px; border: 2px solid var(--line); overflow: hidden; background: linear-gradient(180deg, #8FD3FF 0%, #E4F6FF 62%, #A7DE80 62%); }
+.stage3d { user-select: none; -webkit-user-select: none; position: relative; height: clamp(300px, 46vw, 520px); border-radius: 18px; border: 2px solid var(--line); overflow: hidden; background: linear-gradient(180deg, #8FD3FF 0%, #E4F6FF 62%, #A7DE80 62%); }
 .stage3d-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 62%; }
 .stage3d-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; opacity: 0; transition: opacity .6s ease; cursor: grab; z-index: 1; }
 .stage3d-canvas:active { cursor: grabbing; }
 .stage3d.ready .stage3d-canvas { opacity: 1; }
-.stage3d .bubble { z-index: 2; left: auto; right: 16px; top: 16px; max-width: min(60%, 340px); }
+.stage3d .bubble { pointer-events: none; z-index: 2; left: auto; right: 16px; top: 16px; max-width: min(60%, 340px); }
 .stage3d .bubble::after { left: auto; right: 40px; }
 .stage-hint { position: absolute; z-index: 2; left: 14px; bottom: 14px; padding: 6px 10px; border-radius: 10px; background: rgba(10, 10, 10, .72); color: #F2F1EC; font-size: 11px; opacity: 0; transition: opacity .4s ease .4s; pointer-events: none; }
 .stage3d.ready .stage-hint { opacity: 1; }

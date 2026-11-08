@@ -365,7 +365,7 @@ export const COPY = {
     },
     couple: {
       eyebrow: '情侣空间',
-      title: '两个人，一起 lock in。',
+      title: '两个人，一起 lock\u00a0in。',
       sub: '和另一半绑定。互相看到对方的今天，互相提醒，记下在一起的日子，再把两个人每天的成长值攒起来，布置一个豆豆住的毛绒小家。',
       me: '你',
       partner: '小林',
