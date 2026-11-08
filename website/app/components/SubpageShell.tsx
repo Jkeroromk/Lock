@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 
 /** Header + footer shared by /privacy, /terms and /support, in the B×C style. */
-export function SubpageShell({ eyebrow, title, sub, children }: { eyebrow: string; title: string; sub?: ReactNode; children: ReactNode }) {
+/** `title` can be left out when the page draws its own heading; `wide` gives it the full site width. */
+export function SubpageShell({ eyebrow, title, sub, wide, children }: { eyebrow?: string; title?: string; sub?: ReactNode; wide?: boolean; children: ReactNode }) {
   return (
     <div className="site min-h-screen">
       <header className="nav scrolled">
@@ -18,9 +19,9 @@ export function SubpageShell({ eyebrow, title, sub, children }: { eyebrow: strin
         </div>
       </header>
 
-      <main className="wrap" style={{ maxWidth: 760, paddingTop: 72, paddingBottom: 96 }}>
-        <p className="eyebrow">{eyebrow}</p>
-        <h1 className="h2" style={{ marginBottom: 14, maxWidth: 'none' }}>{title}</h1>
+      <main className="wrap" style={{ maxWidth: wide ? 1120 : 760, paddingTop: wide ? 56 : 72, paddingBottom: 96 }}>
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        {title && <h1 className="h2" style={{ marginBottom: 14, maxWidth: 'none' }}>{title}</h1>}
         {sub && <div className="lead" style={{ marginBottom: 48 }}>{sub}</div>}
         {children}
       </main>

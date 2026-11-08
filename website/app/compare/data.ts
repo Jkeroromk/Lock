@@ -19,65 +19,78 @@ export const APP_NAMES: Record<AppId, string> = {
   macrofactor: 'MacroFactor',
 };
 
-/** Cell: text plus the source ids (footnotes) it rests on. */
-type Cell = { v: T; src?: string[]; good?: boolean };
+/**
+ * What you get without paying.
+ * free: included at $0 · limited: some of it at $0 · paid: subscription only · none: not offered.
+ */
+export type Level = 'free' | 'limited' | 'paid' | 'none';
+type Mark = { level: Level; v: T; src?: string[] };
 
-export const ROWS: { label: T; cells: Record<AppId, Cell> }[] = [
-  {
-    label: { en: 'Price (US)', zh: '价格（美区）' },
-    cells: {
-      kero: { v: { en: '$39.99 / year or $9.99 / month', zh: '$39.99 / 年 或 $9.99 / 月' }, good: true },
-      calai: { v: { en: 'App Store lists plans from $2.99 to $29.99', zh: 'App Store 列出的方案 $2.99–$29.99' }, src: ['calai-store'] },
-      mfp: { v: { en: 'Premium $79.99 / year · Premium+ $99.99 / year or $24.99 / month', zh: 'Premium $79.99 / 年 · Premium+ $99.99 / 年或 $24.99 / 月' }, src: ['mfp-premium'] },
-      loseit: { v: { en: 'Premium from $39.99 / year (other plans listed)', zh: 'Premium $39.99 / 年起（另有其他方案）' }, src: ['loseit-store'] },
-      macrofactor: { v: { en: '$71.99 / year, $47.99 / 6 months or $11.99 / month', zh: '$71.99 / 年、$47.99 / 半年 或 $11.99 / 月' }, src: ['mf-site'] },
-    },
-  },
-  {
-    label: { en: 'Try it first', zh: '先试用' },
-    cells: {
-      kero: { v: { en: 'First week is Pro, free. No card needed', zh: '首周 Pro 免费，无需绑卡' }, good: true },
-      calai: { v: { en: '3-day trial, payment details up front', zh: '3 天试用，需先填付款信息' }, src: ['calai-eesel'] },
-      mfp: { v: { en: '7-day trial for new members', zh: '新用户 7 天试用' }, src: ['mfp-premium'] },
-      loseit: { v: { en: 'Free version (see below)', zh: '有免费版（见下）' }, src: ['loseit-store'] },
-      macrofactor: { v: { en: '7-day trial', zh: '7 天试用' }, src: ['mf-site'] },
-    },
-  },
-  {
-    label: { en: 'Free version', zh: '免费版' },
-    cells: {
-      kero: { v: { en: 'Yes, for good: 3 AI scans a day, unlimited barcode and manual logging, workouts', zh: '永久免费：每天 3 次 AI 识别，条码和手动记录不限次，训练也免费' }, good: true },
-      calai: { v: { en: 'Basic logging; AI photo scans need a subscription', zh: '基础记录；AI 拍照识别需订阅' }, src: ['calai-eesel'] },
-      mfp: { v: { en: 'Yes; barcode and meal scan are Premium', zh: '有；扫条码和拍照识别属于 Premium' }, src: ['mfp-premium'] },
-      loseit: { v: { en: 'Yes; barcode, photo and voice logging are Premium', zh: '有；扫条码、拍照和语音记录属于 Premium' }, src: ['loseit-store'] },
-      macrofactor: { v: { en: 'No free version', zh: '没有免费版' }, src: ['mf-site'] },
-    },
-  },
-  {
-    label: { en: 'AI photo logging', zh: 'AI 拍照记录' },
-    cells: {
-      kero: { v: { en: 'Yes: 3 a day free, unlimited with Pro', zh: '有：免费每天 3 次，Pro 不限' }, good: true },
-      calai: { v: { en: 'Yes, with a subscription', zh: '有，需订阅' }, src: ['calai-store', 'calai-eesel'] },
-      mfp: { v: { en: 'Yes, Premium (Meal Scan)', zh: '有，Premium（Meal Scan）' }, src: ['mfp-premium'] },
-      loseit: { v: { en: 'Yes, Premium', zh: '有，Premium' }, src: ['loseit-store'] },
-      macrofactor: { v: { en: 'Yes', zh: '有' }, src: ['mf-site'] },
-    },
-  },
-  {
-    label: { en: 'Barcode scanner', zh: '扫条码' },
-    cells: {
-      kero: { v: { en: 'Free, unlimited', zh: '免费，不限次数' }, good: true },
-      calai: { v: { en: 'Free', zh: '免费' }, src: ['calai-eesel'] },
-      mfp: { v: { en: 'Premium', zh: 'Premium' }, src: ['mfp-premium'] },
-      loseit: { v: { en: 'Premium', zh: 'Premium' }, src: ['loseit-store'] },
-      macrofactor: { v: { en: 'Yes (paid app)', zh: '有（付费 App）' }, src: ['mf-site'] },
-    },
-  },
+export const FREE_COLUMNS: { id: 'version' | 'photo' | 'barcode'; label: T }[] = [
+  { id: 'version', label: { en: 'Free version', zh: '免费版' } },
+  { id: 'photo', label: { en: 'AI photo logging', zh: 'AI 拍照记录' } },
+  { id: 'barcode', label: { en: 'Barcode scanner', zh: '扫条码' } },
 ];
+
+export const FREE_BOARD: Record<AppId, Record<'version' | 'photo' | 'barcode', Mark>> = {
+  kero: {
+    version: { level: 'free', v: { en: 'Yes', zh: '有' } },
+    photo: { level: 'free', v: { en: '3 a day', zh: '每天 3 次' } },
+    barcode: { level: 'free', v: { en: 'Unlimited', zh: '不限次' } },
+  },
+  calai: {
+    version: { level: 'limited', v: { en: 'Basic', zh: '基础' }, src: ['calai-eesel'] },
+    photo: { level: 'paid', v: { en: 'Paid', zh: '付费' }, src: ['calai-eesel'] },
+    barcode: { level: 'free', v: { en: 'Free', zh: '免费' }, src: ['calai-eesel'] },
+  },
+  mfp: {
+    version: { level: 'free', v: { en: 'Yes', zh: '有' }, src: ['mfp-premium'] },
+    photo: { level: 'paid', v: { en: 'Premium', zh: 'Premium' }, src: ['mfp-premium'] },
+    barcode: { level: 'paid', v: { en: 'Premium', zh: 'Premium' }, src: ['mfp-premium'] },
+  },
+  loseit: {
+    version: { level: 'free', v: { en: 'Yes', zh: '有' }, src: ['loseit-store'] },
+    photo: { level: 'paid', v: { en: 'Premium', zh: 'Premium' }, src: ['loseit-store'] },
+    barcode: { level: 'paid', v: { en: 'Premium', zh: 'Premium' }, src: ['loseit-store'] },
+  },
+  macrofactor: {
+    version: { level: 'none', v: { en: 'No', zh: '无' }, src: ['mf-site'] },
+    photo: { level: 'paid', v: { en: 'Paid', zh: '付费' }, src: ['mf-site'] },
+    barcode: { level: 'paid', v: { en: 'Paid', zh: '付费' }, src: ['mf-site'] },
+  },
+};
+
+/** What each costs (US) and how you can try it. */
+export const PRICES: Record<AppId, { price: T; trial: T; src?: string[] }> = {
+  kero: {
+    price: { en: '$39.99 a year, or $9.99 a month', zh: '每年 $39.99，或每月 $9.99' },
+    trial: { en: 'First week is Pro, free. No card needed.', zh: '首周 Pro 免费，不用绑卡。' },
+  },
+  calai: {
+    price: { en: 'Plans from $2.99 to $29.99 on the App Store', zh: 'App Store 上的方案 $2.99–$29.99' },
+    trial: { en: '3-day trial, payment details first', zh: '3 天试用，需先填付款信息' },
+    src: ['calai-store', 'calai-eesel'],
+  },
+  mfp: {
+    price: { en: 'Premium $79.99 a year. Premium+ $99.99 a year or $24.99 a month', zh: 'Premium 每年 $79.99；Premium+ 每年 $99.99 或每月 $24.99' },
+    trial: { en: '7-day trial for new members', zh: '新用户 7 天试用' },
+    src: ['mfp-premium'],
+  },
+  loseit: {
+    price: { en: 'Premium from $39.99 a year', zh: 'Premium 每年 $39.99 起' },
+    trial: { en: 'Free version to start', zh: '可先用免费版' },
+    src: ['loseit-store'],
+  },
+  macrofactor: {
+    price: { en: '$71.99 a year, $47.99 for 6 months, or $11.99 a month', zh: '每年 $71.99、半年 $47.99，或每月 $11.99' },
+    trial: { en: '7-day trial', zh: '7 天试用' },
+    src: ['mf-site'],
+  },
+};
 
 export const SOURCES: { id: string; label: string; url: string }[] = [
   { id: 'calai-store', label: 'Cal AI – Calorie Tracker, US App Store listing (in-app purchases)', url: 'https://apps.apple.com/us/app/cal-ai-calorie-tracker/id6480417616' },
-  { id: 'calai-eesel', label: 'eesel AI, “Cal AI pricing 2026: Free plan vs premium” (June 16, 2026)', url: 'https://www.eesel.ai/en/blog/cal-ai-pricing' },
+  { id: 'calai-eesel', label: 'eesel AI, “Cal AI pricing 2026: Free plan vs premium” (June 16, 2026, third-party)', url: 'https://www.eesel.ai/en/blog/cal-ai-pricing' },
   { id: 'mfp-premium', label: 'MyFitnessPal Premium page', url: 'https://www.myfitnesspal.com/premium' },
   { id: 'loseit-store', label: 'Lose It! – Calorie Counter, US App Store listing (features and in-app purchases)', url: 'https://apps.apple.com/us/app/lose-it-calorie-counter/id297368629' },
   { id: 'mf-site', label: 'MacroFactor website', url: 'https://macrofactor.com/macrofactor/' },
