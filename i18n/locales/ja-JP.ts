@@ -365,7 +365,7 @@ const jaJP = {
   },
   about: {
     title: 'Lockについて', version: 'バージョン',
-    description: 'Lockは、毎日のカロリー追跡・食事記録・健康データ監視・友達との目標チャレンジを支援するフィットネス＆食事管理アプリです。',
+    description: 'Lockは、毎日のカロリー追跡・食事記録・健康データ監視・プランに沿ったトレーニング・バディ育成・友達やパートナーとの記録を支援するフィットネス＆食事管理アプリです。',
     legal: '法的情報', privacyPolicy: 'プライバシーポリシー', termsOfService: '利用規約',
     contact: 'お問い合わせ', contactEmail: 'support@jkeroro.com',
     madeWith: '❤️ を込めて制作', copyright: '© 2026 Lock. All rights reserved.',
@@ -390,7 +390,7 @@ const jaJP = {
     bestValue: 'おすすめ',
     upgradeToMax: 'Maxにアップグレード',
     yearly: '年額プラン', monthlyPlan: '月額プラン', perMonth: '月あたり{price}', save: '{pct}%お得', freeTrialBadge: '{days}日間無料', startTrial: '{days}日間の無料トライアルを開始', subscribe: '登録する', trialThen: '{days}日間無料、その後{price}/年。いつでも解約できます。', billedThen: '{price}/{period}。いつでも解約できます。', trialReminderNote: 'トライアル終了の2日前にお知らせします', trialReminderTitle: '無料トライアル終了まであと2日', trialReminderBody: 'その後 Lock Pro は {price}/年 で更新されます。設定 → Apple アカウント → サブスクリプション からいつでも解約できます。',
-    freeFeatures: ['最初の1週間はProが無料 · その後は1日3回のAIスキャン', '週1回のAI食事分析', 'バーコード・手入力は無制限', 'トレーニング・体重グラフ・チャレンジ・データエクスポート', '友達は無制限 · 招待するとふたりとも+5回'],
+    freeFeatures: ['最初の1週間はProが無料 · その後は1日3回のAIスキャン', '週1回のAI食事分析', 'バーコード・手入力は無制限', 'トレーニング・体重グラフ・カップルスペース・データエクスポート', '友達は無制限 · 招待するとふたりとも+5回'],
     proFeatures: ['無料プランの全機能', 'AIスキャン無制限（無料：1日3回）', 'AI食事×トレーニング分析が無制限（無料：週1回）', 'AIトレーニングプランをいつでも作り直し'],
     maxFeatures: ['Proの全機能', '毎週自動AIレポート', 'AIカスタム栄養プラン', '優先サポート'],
   },
