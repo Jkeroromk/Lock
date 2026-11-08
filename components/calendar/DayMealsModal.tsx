@@ -11,6 +11,7 @@ import { DIMENSIONS, TYPOGRAPHY } from '@/constants';
 import { fetchDayMeals, MealRecord } from '@/services/api';
 import { useSheetSides } from '@/hooks/useSheetSides';
 import { useShallow } from 'zustand/react/shallow';
+import { useFoodNames } from '@/hooks/useFoodNames';
 
 interface DayMealsModalProps {
   date: string | null; // YYYY-MM-DD, null = closed
@@ -28,6 +29,8 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
   // Old meals point at photo files the phone has since cleared; show the icon instead of a blank square.
   const [brokenPhotos, setBrokenPhotos] = useState<Set<string>>(() => new Set());
   const [fetchError, setFetchError] = useState(false);
+  // Names in the app's language (display only).
+  const displayName = useFoodNames(meals.map((m) => m.food_name));
   const [mounted, setMounted] = useState(false);
   const slideAnim = useRef(new Animated.Value(600)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -219,7 +222,7 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
                     fontSize: TYPOGRAPHY.bodyS, fontWeight: '800',
                     color: colors.textPrimary, marginBottom: 3,
                   }} numberOfLines={1}>
-                    {meal.food_name}
+                    {displayName(meal.food_name)}
                   </Text>
                   <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.6 }}>
                     {meal.protein > 0 && (
