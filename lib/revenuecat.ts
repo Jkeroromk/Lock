@@ -23,6 +23,23 @@ export async function identifyUser(userId: string): Promise<void> {
   await Purchases.logIn(userId);
 }
 
+/**
+ * The onboarding "how did you hear about us" answer, so RevenueCat charts can
+ * split conversion by source. $mediaSource is RevenueCat's reserved attribution
+ * field; acquisition_source keeps the raw answer.
+ */
+export async function setAcquisitionSource(source: string): Promise<void> {
+  try {
+    await Purchases.setAttributes({ acquisition_source: source });
+    await Purchases.setMediaSource(source);
+  } catch {}
+}
+
+/** Which paywall the user last saw, so RevenueCat can split purchases by paywall. */
+export async function tagPaywall(reason: string): Promise<void> {
+  try { await Purchases.setAttributes({ last_paywall: reason }); } catch {}
+}
+
 export async function resetUser(): Promise<void> {
   try { await Purchases.logOut(); } catch {}
 }

@@ -6,6 +6,7 @@ import { isAdmin } from '@/lib/admin';
 import { getUniqueFriendCode, getUniqueInviteCode } from '@/lib/invite-code';
 import { liveStreaks } from '@/lib/local-day';
 import { USERNAME_RE, cleanMultiline, cleanText, isReservedUsername } from '@/lib/sanitize';
+import { cleanAcquisitionSource } from '@/lib/acquisition';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,6 +109,7 @@ export async function PUT(request: NextRequest) {
       name, username, bio, avatarEmoji, avatarImage, showGender,
       height, age, weight, gender, goal,
       exerciseFrequency, expectedTimeframe, hasCompletedOnboarding, goalSettings,
+      acquisitionSource, acquisitionDetail,
     } = body as Record<string, unknown>;
 
     let cleanUsername: string | null | undefined;
@@ -142,7 +144,7 @@ export async function PUT(request: NextRequest) {
 
     const shortText = (v: unknown) => cleanText(v, 40);
     const h = height !== undefined ? numberField(height, 50, 300) : undefined;
-    const a = age !== undefined ? numberField(age, 5, 120) : undefined;
+    const a = age !== undefined ? numberField(age, 13, 120) : undefined; // 13+: Terms and Privacy Policy
     const w = weight !== undefined ? numberField(weight, 20, 500, 2) : undefined;
 
     const data = {
@@ -161,6 +163,9 @@ export async function PUT(request: NextRequest) {
       ...(expectedTimeframe !== undefined && { expectedTimeframe: shortText(expectedTimeframe) }),
       ...(typeof hasCompletedOnboarding === 'boolean' && { hasCompletedOnboarding }),
       ...(goalSettings !== undefined && { goalSettings: cleanGoalSettings(goalSettings) }),
+      // Onboarding survey; only known answers are stored.
+      ...(cleanAcquisitionSource(acquisitionSource) && { acquisitionSource: cleanAcquisitionSource(acquisitionSource) }),
+      ...(acquisitionDetail !== undefined && { acquisitionDetail: cleanText(acquisitionDetail, 60) }),
     };
 
     const user = await prisma.user.upsert({

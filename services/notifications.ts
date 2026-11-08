@@ -54,13 +54,16 @@ export const requestNotificationPermissions = async (): Promise<boolean> => {
 };
 
 const TRIAL_REMINDER_ID = 'trial-reminder';
+const PRO_WEEK_REMINDER_ID = 'pro-week-reminder';
+/** One-off reminders that the daily meal reminders must not wipe. */
+const KEEP_IDS = new Set([TRIAL_REMINDER_ID, PRO_WEEK_REMINDER_ID]);
 
-/** Cancels scheduled notifications except the free-trial reminder. */
+/** Cancels scheduled notifications except the free-trial and Pro-week reminders. */
 const cancelScheduledExceptTrial = async (): Promise<void> => {
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   await Promise.all(
     scheduled
-      .filter((n) => n.identifier !== TRIAL_REMINDER_ID)
+      .filter((n) => !KEEP_IDS.has(n.identifier))
       .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
   );
 };
@@ -136,6 +139,36 @@ export const scheduleTrialReminder = async (
       },
     });
   } catch {}
+};
+
+/**
+ * "Your free Pro week ends tomorrow", a day before the account's first-week Pro
+ * ends. Never asks for permission (that only happens where the user turns
+ * reminders on); without it this does nothing. Safe to call on every launch.
+ */
+export const scheduleProWeekReminder = async (
+  trialEndsAt: number,
+  content: { title: string; body: string },
+): Promise<void> => {
+  if (isExpoGo || !Device.isDevice) return;
+  const at = trialEndsAt - 24 * 60 * 60 * 1000;
+  if (at <= Date.now() + 60 * 1000) return;
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') return;
+    const existing = await Notifications.getAllScheduledNotificationsAsync();
+    if (existing.some((n) => n.identifier === PRO_WEEK_REMINDER_ID)) return;
+    await Notifications.scheduleNotificationAsync({
+      identifier: PRO_WEEK_REMINDER_ID,
+      content,
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(at) },
+    });
+  } catch {}
+};
+
+/** Drops the Pro-week reminder (after subscribing, or on sign-out). */
+export const cancelProWeekReminder = async (): Promise<void> => {
+  try { await Notifications.cancelScheduledNotificationAsync(PRO_WEEK_REMINDER_ID); } catch {}
 };
 
 export const getNotificationPermissionStatus = async (): Promise<boolean> => {

@@ -32,7 +32,7 @@ const sections: LegalSection[] = [
     content: (
       <>
         <p><B>Free:</B> every new account gets Lock Pro for its first 7 days (no card needed), then 3 AI scans per day; one AI diet review per week; unlimited barcode and manual logging; workout plans and logging; the weight curve, the couple space and data export; unlimited friends.</p>
-        <p><B>Lock Pro:</B> unlimited AI scans, unlimited AI diet reviews, and redoing your AI workout plan anytime. Lock Pro is an auto-renewing subscription, offered yearly ($39.99 in the US) or monthly ($7.99 in the US). Prices in other countries are shown in the App Store before you buy.</p>
+        <p><B>Lock Pro:</B> unlimited AI scans, unlimited AI diet reviews, and redoing your AI workout plan anytime. Lock Pro is an auto-renewing subscription, offered yearly ($39.99 in the US) or monthly ($9.99 in the US). Prices in other countries are shown in the App Store before you buy.</p>
         <List items={[
           'The first-week Pro trial is free and ends on its own; nothing is charged unless you subscribe',
           'Payment is charged to your Apple ID account at confirmation of purchase',

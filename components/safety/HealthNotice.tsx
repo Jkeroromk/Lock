@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/i18n';
 import { useStore } from '@/store/useStore';
 import { healthAckKey } from '@/constants/safety';
+import { usePaywallStore } from '@/store/usePaywallStore';
 
 /**
  * Shown once per account on this device: Lock is not medical advice, talk to a
@@ -22,18 +23,22 @@ export default function HealthNotice() {
   const userId = useStore((s) => s.user?.id);
   const [visible, setVisible] = useState(false);
 
+  // Lets the paywall wait until this notice is gone, so two full-screen modals never stack.
+  const show = () => { usePaywallStore.getState().setHealthNoticeOpen(true); setVisible(true); };
+
   useEffect(() => {
     if (!userId) return;
     let alive = true;
     AsyncStorage.getItem(healthAckKey(userId))
-      .then((v) => { if (alive && v !== 'true') setVisible(true); })
-      .catch(() => { if (alive) setVisible(true); });
+      .then((v) => { if (alive && v !== 'true') show(); })
+      .catch(() => { if (alive) show(); });
     return () => { alive = false; };
   }, [userId]);
 
   const accept = () => {
     if (userId) AsyncStorage.setItem(healthAckKey(userId), 'true').catch(() => {});
     setVisible(false);
+    usePaywallStore.getState().setHealthNoticeOpen(false);
   };
 
   if (!visible) return null;

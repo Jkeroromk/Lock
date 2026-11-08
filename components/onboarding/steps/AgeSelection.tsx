@@ -4,7 +4,8 @@ import WheelPicker from '@/components/onboarding/WheelPicker';
 import StepHeader from '@/components/onboarding/StepHeader';
 
 // 选项数组
-const ageOptions = Array.from({ length: 111 }, (_, i) => i + 10); // 10-120 岁
+// Starts at 13, the minimum age in the Terms and Privacy Policy (i18n/legal.ts).
+const ageOptions = Array.from({ length: 108 }, (_, i) => i + 13); // 13-120 岁
 
 interface AgeSelectionProps {
   age: number;
