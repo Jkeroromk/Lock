@@ -661,6 +661,7 @@ const jaJP = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    retake: "撮り直す",
     caption: "写真がなくても記録できます。最近食べたものをタップ、食品を検索、または食べたものを一文で。",
     placeholder: "食品を検索、または食べたものを入力",
     clear: "クリア",

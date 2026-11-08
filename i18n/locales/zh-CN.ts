@@ -844,6 +844,7 @@ const zhCN = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    retake: "重拍一张",
     caption: "没拍照也能记：点最近吃过的、搜食物库，或者写一句吃了什么。",
     placeholder: "搜索食物，或写下吃了什么",
     clear: "清空",

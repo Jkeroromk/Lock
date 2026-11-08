@@ -118,7 +118,7 @@ export default function WorkoutDoneScreen() {
               <Button
                 icon="camera"
                 label={t('train.logMeal')}
-                onPress={() => router.replace('/(tabs)/log')}
+                onPress={() => router.replace('/camera')}
                 style={{ marginTop: 14 }}
               />
             ) : null}

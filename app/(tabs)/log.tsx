@@ -1,29 +1,24 @@
-import {
-  View, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert,
-} from 'react-native';
+import { View, ScrollView, Image, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useStore } from '@/store/useStore';
 import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
-import { Appear, Button, Corners, Label, RADIUS, STROKE, ScreenHeader, Segmented, Sticker } from '@/components/ui/bxc';
+import { Appear, Button, Corners, RADIUS, STROKE, ScreenHeader, Sticker } from '@/components/ui/bxc';
 import { useTheme } from '@/hooks/useTheme';
-import { analyzeFoodImage, logMeal, lookupBarcode } from '@/services/api';
+import { analyzeFoodImage, logMeal } from '@/services/api';
 import { detectLiquidMl, addWater } from '@/services/waterTracker';
 import { calorieLevel, isWarning, todaysCalories } from '@/lib/calorieStatus';
 import { makeMealThumbnail } from '@/lib/image';
 import { showToast } from '@/components/ui/Toast';
 import { getQuota, proTrialDaysLeft } from '@/lib/plans';
-import BarcodeScanner from '@/components/log/BarcodeScanner';
 import ResultCard, { FoodResult } from '@/components/log/ResultCard';
-import ImagePickerButtons from '@/components/log/ImagePickerButtons';
 import { CartBar, CartSheet } from '@/components/log/MealCart';
-import { useMealCartStore } from '@/store/useMealCartStore';
+import { useMealCartStore, type CartItem } from '@/store/useMealCartStore';
 import { useMealLogging } from '@/hooks/useMealLogging';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
@@ -35,11 +30,14 @@ import QuickSearch, { type QuickSource } from '@/components/log/QuickSearch';
 import LogWhenPicker, { whenLabel } from '@/components/log/LogWhenPicker';
 import { eatenAtFor, isOtherDay, useLogWhenStore } from '@/store/useLogWhenStore';
 
-type LogMode = 'photo' | 'search' | 'barcode' | 'label';
-
-// 搜索: for meals nobody photographed (recent foods, the food library, or a sentence for AI).
-const MODES: LogMode[] = ['photo', 'search', 'barcode', 'label'];
-
+/**
+ * The 记录 tab. One layer, no mode switch (photo, label and barcode all live
+ * on the camera page now):
+ * - a photo from the camera → analysed here → result card;
+ * - a barcode the camera couldn't find → typed in here;
+ * - otherwise: search — recent foods, the food library, "describe it" (AI).
+ * Every result can be saved now or to an earlier day / meal (补记).
+ */
 export default function LogScreen() {
   const tabInset = useTabBarInset();
   const { twoPane, kind } = useDeviceLayout();
@@ -58,39 +56,40 @@ export default function LogScreen() {
     : (t('log.freeQuotaBadge' as any) as string).replace('{quota}', String(aiQuota))
       + (bonusScans > 0 ? (t('log.bonusBadge' as any) as string).replace('{n}', String(bonusScans)) : '');
 
-  const [mode, setMode] = useState<LogMode>('photo');
   const [image, setImage] = useState<string | null>(null);
+  const [imageKind, setImageKind] = useState<'food' | 'label'>('food');
   const [analyzing, setAnalyzing] = useState(false);
-  const [lookingUp, setLookingUp] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<FoodResult | null>(null);
+  // Where the result came from: the list shows its icon, and only photos keep a thumbnail.
+  const [source, setSource] = useState<CartItem['source']>('search');
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({ food: '', calories: '', protein: '', carbs: '', fat: '' });
   const [listOpen, setListOpen] = useState(false);
-  const listLogging = useMealLogging();
-  // 搜索 mode: where the current result came from, and a key to reload "recent" after saving.
-  const [quickSource, setQuickSource] = useState<QuickSource>('search');
   const [recentKey, setRecentKey] = useState(0);
+  const listLogging = useMealLogging();
   // 补记: the day / meal the next save goes to.
   const { dayOffset, slot } = useLogWhenStore(useShallow((st) => ({ dayOffset: st.dayOffset, slot: st.slot })));
   const otherDay = isOtherDay(dayOffset);
   const backdated = !(dayOffset === 0 && slot === 'now');
 
-  // Photo taken from the yellow camera button in the tab bar arrives as a param.
-  const { imageUri, imageMode, manualCode, mode: modeParam } = useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string; mode?: string }>();
-  // A photo from our camera is analysed straight away (no extra tap).
-  const [autoAnalyze, setAutoAnalyze] = useState<'food' | 'label' | null>(null);
-  // 搜索 from the camera page (meals nobody photographed).
+  // From the camera: a photo (analysed straight away), a barcode it couldn't find,
+  // or 「搜索」 (start a fresh search).
+  const { imageUri, imageMode, manualCode, mode: modeParam } =
+    useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string; mode?: string }>();
+  const [autoAnalyze, setAutoAnalyze] = useState(false);
+
+  const clearAll = () => { setImage(null); setResult(null); setIsEditing(false); setAnalyzing(false); };
+
   useEffect(() => {
     if (modeParam !== 'search') return;
-    handleModeChange('search');
+    clearAll();
     router.setParams({ mode: undefined } as any);
   }, [modeParam]);
-  // Camera found no product for a barcode: type it in here.
   useEffect(() => {
     if (!manualCode) return;
-    setMode('barcode');
     setImage(null);
+    setSource('barcode');
     setResult({ food: manualCode, calories: 0, protein: 0, carbs: 0, fat: 0, confidence: 1 });
     setEditedData({ food: manualCode, calories: '0', protein: '0', carbs: '0', fat: '0' });
     setIsEditing(true);
@@ -98,37 +97,17 @@ export default function LogScreen() {
   }, [manualCode]);
   useEffect(() => {
     if (!imageUri) return;
-    const m = imageMode === 'label' ? 'label' : 'photo';
-    setMode(m);
+    const k = imageMode === 'label' ? 'label' : 'food';
+    setImageKind(k);
+    setSource(k === 'label' ? 'label' : 'photo');
     setImage(imageUri);
     setResult(null);
-    setAutoAnalyze(m === 'label' ? 'label' : 'food');
     setIsEditing(false);
+    setAutoAnalyze(true);
     router.setParams({ imageUri: undefined, imageMode: undefined } as any);
   }, [imageUri]);
 
-  const pickImage = async () => {
-    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!granted) { Alert.alert(t('common.error'), t('log.needPermission')); return; }
-    const r = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
-      // No crop step and no re-encoding: on iOS the crop option forces the old,
-      // slow picker, and converting HEIC → JPEG at quality 0.8 waits after picking.
-      // The photo is downsized for analysis anyway.
-      allowsEditing: false,
-      preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
-    });
-    if (!r.canceled && r.assets[0]) { setImage(r.assets[0].uri); setResult(null); }
-  };
-
-  const takePhoto = async () => {
-    const { granted } = await ImagePicker.requestCameraPermissionsAsync();
-    if (!granted) { Alert.alert(t('common.error'), t('log.needPermission')); return; }
-    const r = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [4, 3], quality: 0.8 });
-    if (!r.canceled && r.assets[0]) { setImage(r.assets[0].uri); setResult(null); }
-  };
-
-  const clearImage = () => { setImage(null); setResult(null); setIsEditing(false); };
+  const openCamera = (mode?: 'scan') => router.push(mode ? ({ pathname: '/camera', params: { mode } } as any) : '/camera');
 
   const setResultWithEdit = (r: FoodResult) => {
     setResult(r);
@@ -136,29 +115,40 @@ export default function LogScreen() {
     setIsEditing(false);
   };
 
-  useEffect(() => {
-    if (!autoAnalyze || !image || analyzing || result) return;
-    const m = autoAnalyze;
-    setAutoAnalyze(null);
-    analyzeImage(m);
-  }, [autoAnalyze, image]);
-
   const showAiLimit = () => {
     Alert.alert(
       t('log.aiLimitTitle' as any),
       (t('log.aiLimitMsg' as any) as string).replace('{quota}', String(aiQuota)),
       [
-        // Barcode lookups and the food library are never limited, so offer barcode first.
-        { text: t('log.scanBarcodeInstead' as any), onPress: () => handleModeChange('barcode') },
+        // Barcode lookups and the food library are never limited, so offer the scanner first.
+        { text: t('log.scanBarcodeInstead' as any), onPress: () => openCamera('scan') },
         { text: t('log.upgradeBtn' as any), onPress: () => router.push('/(tabs)/settings/pricing') },
         { text: t('log.laterBtn' as any), style: 'cancel' },
       ]
     );
   };
 
-  /** A food from 搜索 mode (recent, library, AI sentence or manual) → the result card. */
+  const analyzeImage = async () => {
+    if (!image) return;
+    setAnalyzing(true);
+    try {
+      setResultWithEdit(await analyzeFoodImage(image, language, imageKind));
+    } catch (error: any) {
+      if (error?.code === 'AI_LIMIT_REACHED' || error?.message?.includes('AI_LIMIT_REACHED')) showAiLimit();
+      else Alert.alert(t('log.analysisFailed'), error.message || t('log.analysisFailed'));
+    } finally { setAnalyzing(false); }
+  };
+
+  useEffect(() => {
+    if (!autoAnalyze || !image || analyzing || result) return;
+    setAutoAnalyze(false);
+    analyzeImage();
+  }, [autoAnalyze, image]);
+
+  /** A food from search (recent, library, AI sentence or manual) → the result card. */
   const handleQuickPick = (r: FoodResult, opts: { source: QuickSource; edit?: boolean }) => {
-    setQuickSource(opts.source);
+    setImage(null);
+    setSource(opts.source);
     setResultWithEdit(r);
     if (opts.edit) setIsEditing(true);
   };
@@ -169,37 +159,6 @@ export default function LogScreen() {
     else Alert.alert(t('log.analysisFailed'), t('quickLog.aiFailed'));
   };
 
-  const analyzeImage = async (analysisMode: 'food' | 'label') => {
-    if (!image) return;
-    setAnalyzing(true);
-    try {
-      const analysis = await analyzeFoodImage(image, language, analysisMode);
-      setResultWithEdit(analysis);
-    } catch (error: any) {
-      if (error?.code === 'AI_LIMIT_REACHED' || error?.message?.includes('AI_LIMIT_REACHED')) {
-        showAiLimit();
-      } else {
-        Alert.alert(t('log.analysisFailed'), error.message || t('log.analysisFailed'));
-      }
-    } finally { setAnalyzing(false); }
-  };
-
-  const handleBarcodeScan = async (code: string) => {
-    if (lookingUp) return;
-    setLookingUp(true);
-    try {
-      const found = await lookupBarcode(code, language);
-      if (found) { setResultWithEdit(found); }
-      else {
-        Alert.alert(t('log.productNotFound' as any), (t('log.productNotFoundMsg' as any) as string).replace('{code}', code), [
-          { text: t('log.manualEntry' as any), onPress: () => { setResult({ food: code, calories: 0, protein: 0, carbs: 0, fat: 0, confidence: 1 }); setEditedData({ food: code, calories: '0', protein: '0', carbs: '0', fat: '0' }); setIsEditing(true); } },
-          { text: t('log.rescan' as any), style: 'cancel' },
-        ]);
-      }
-    } catch { Alert.alert(t('log.lookupFailed' as any), t('log.lookupFailedMsg' as any)); }
-    finally { setLookingUp(false); }
-  };
-
   const handleCancelEdit = () => {
     setIsEditing(false);
     if (result) setEditedData({ food: result.food, calories: String(result.calories), protein: String(result.protein), carbs: String(result.carbs), fat: String(result.fat) });
@@ -207,7 +166,18 @@ export default function LogScreen() {
 
   const handleSaveEdit = () => {
     if (!result) return;
-    setResult({ ...result, food: editedData.food || result.food, calories: parseFloat(editedData.calories) || result.calories, protein: parseFloat(editedData.protein) || result.protein, carbs: parseFloat(editedData.carbs) || result.carbs, fat: parseFloat(editedData.fat) || result.fat });
+    const num = (v: string, fallback: number) => {
+      const n = parseFloat(v.replace(',', '.'));
+      return Number.isFinite(n) && n >= 0 ? n : fallback;
+    };
+    setResult({
+      ...result,
+      food: editedData.food.trim() || result.food,
+      calories: num(editedData.calories, result.calories),
+      protein: num(editedData.protein, result.protein),
+      carbs: num(editedData.carbs, result.carbs),
+      fat: num(editedData.fat, result.fat),
+    });
     setIsEditing(false);
   };
 
@@ -242,7 +212,7 @@ export default function LogScreen() {
       const saved = result;
       if (liquidMl > 0) await addWater(liquidMl);
 
-      clearImage(); setResult(null); refreshToday();
+      clearAll(); refreshToday();
       useLogWhenStore.getState().reset();
       setRecentKey((k) => k + 1);
       if (otherDay) {
@@ -271,18 +241,17 @@ export default function LogScreen() {
     finally { setSaving(false); }
   };
 
-  /** Put the current result on the list and get ready for the next scan. */
+  /** Put the current result on the list and get ready for the next one. */
   const addToList = async () => {
     if (!result) return;
     const r = result;
-    const thumb = mode === 'photo' && image ? await makeMealThumbnail(image) : null;
-    const cart = useMealCartStore.getState();
-    cart.add({
+    const thumb = source === 'photo' && image ? await makeMealThumbnail(image) : null;
+    useMealCartStore.getState().add({
       food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat,
-      source: mode === 'search' ? quickSource : mode, thumbUri: thumb?.uri ?? r.imageUrl, thumbBase64: thumb?.base64,
+      source, thumbUri: thumb?.uri ?? r.imageUrl, thumbBase64: thumb?.base64,
     });
     const n = useMealCartStore.getState().items.length;
-    clearImage(); setResult(null); setLookingUp(false);
+    clearAll();
     showToast({
       message: t('log.addedToList', { food: r.food }),
       detail: t('log.listCount', { n: String(n) }),
@@ -302,48 +271,25 @@ export default function LogScreen() {
     }
   };
 
-  const handleModeChange = (newMode: LogMode) => { setMode(newMode); clearImage(); setResult(null); setLookingUp(false); };
-
-  const modeCaption = mode === 'barcode' ? t('log.barcodeScanDesc' as any)
-    : mode === 'label' ? t('log.labelScanDesc' as any)
-    : mode === 'search' ? t('quickLog.caption')
-    : t('log.takeOrSelect');
-
-  const resultCard = result ? (
-    <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} when={<LogWhenPicker />} hidePreview={otherDay} /></Appear>
-  ) : null;
-
   const header = (
     <>
       <ScreenHeader title={t('tabs.log')} />
-      <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: -8, marginBottom: 14 }}>{modeCaption}</Text>
-      <Segmented
-        value={mode}
-        onChange={handleModeChange}
-        options={MODES.map((key) => ({ key, label: t(`log.${key}Short` as any) }))}
-        style={{ marginBottom: 14 }}
-      />
+      {!image && !result ? (
+        <Text style={{ fontSize: 14, lineHeight: 20, color: c.textSecondary, marginTop: -8, marginBottom: 14 }}>{t('quickLog.caption')}</Text>
+      ) : null}
       <CartBar onOpen={() => setListOpen(true)} />
     </>
   );
 
-  const barcodeMedia = lookingUp ? (
-    <View style={{ height: 300, borderRadius: RADIUS.card, borderWidth: STROKE.card, borderColor: c.borderPrimary, backgroundColor: c.cardBackground, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator size="large" color={c.textPrimary} />
-      <Label style={{ marginTop: 14 }}>{t('log.lookingUp' as any)}</Label>
-    </View>
-  ) : result ? null : (
-    <BarcodeScanner onScanned={handleBarcodeScan} />
-  );
-  const rescan = result && !isEditing ? (
-    <Button label={t('log.rescan' as any)} icon="barcode-outline" variant="outline" onPress={() => { setResult(null); setLookingUp(false); }} />
+  const resultCard = result ? (
+    <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} when={<LogWhenPicker />} hidePreview={otherDay} /></Appear>
   ) : null;
 
   // On the big Duo screens a 4:3 photo across the whole width is taller than
   // the screen; give it a fixed height there.
   const photoStyle = kind === 'innerTall' ? { width: '100%' as const, height: 340 } : { width: '100%' as const, aspectRatio: 4 / 3 };
   const photo = image ? (
-    <View style={{ borderRadius: RADIUS.card, overflow: 'hidden', borderWidth: STROKE.card, borderColor: c.borderPrimary }}>
+    <View style={{ borderRadius: RADIUS.card, overflow: 'hidden', borderWidth: STROKE.card, borderColor: c.borderPrimary, marginBottom: 14 }}>
       <Image source={{ uri: image }} style={photoStyle} resizeMode="cover" accessibilityIgnoresInvertColors />
       <Corners />
       {analyzing ? (
@@ -356,35 +302,39 @@ export default function LogScreen() {
       ) : null}
     </View>
   ) : null;
-  const analyzeControls = image && !result ? (
+
+  // A photo that hasn't been analysed (analysis failed or was cancelled): try again.
+  const analyzeControls = image && !result && !analyzing ? (
     <>
       {aiQuota !== -1 && (
         <TouchableOpacity
           onPress={() => router.push('/(tabs)/settings/pricing')}
           accessibilityRole="button"
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'center', minHeight: 44, paddingHorizontal: 12, marginTop: 6 }}
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, alignSelf: 'center', minHeight: 44, paddingHorizontal: 12 }}
         >
           <Ionicons name="flash" size={13} color={c.textSecondary} />
           <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary }}>{quotaBadge}</Text>
         </TouchableOpacity>
       )}
       <Button
-        label={mode === 'label' ? t('log.extractNutrition' as any) : t('log.analyzeFood')}
-        icon={mode === 'label' ? 'scan' : 'sparkles'}
-        loading={analyzing}
-        onPress={() => analyzeImage(mode === 'label' ? 'label' : 'food')}
-        style={{ marginTop: aiQuota !== -1 ? 0 : 14 }}
+        label={imageKind === 'label' ? t('log.extractNutrition' as any) : t('log.analyzeFood')}
+        icon={imageKind === 'label' ? 'scan' : 'sparkles'}
+        onPress={analyzeImage}
+        style={{ marginBottom: 14 }}
       />
     </>
   ) : null;
-  const pickers = !image ? <ImagePickerButtons mode={mode as 'photo' | 'label'} onTakePhoto={takePhoto} onPickImage={pickImage} /> : null;
-  const otherPhoto = image && !isEditing && !analyzing ? (
-    <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} style={{ marginTop: 14 }} />
+
+  // Done with this one: another photo (camera) or back to search.
+  const afterButtons = (image || result) && !isEditing && !analyzing ? (
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      {image ? (
+        <Button label={t('quickLog.retake')} icon="camera-outline" variant="outline" onPress={() => { clearAll(); openCamera(); }} style={{ flex: 1 }} />
+      ) : null}
+      <Button label={t('quickLog.searchAgain')} icon="search-outline" variant="outline" onPress={clearAll} style={{ flex: 1 }} />
+    </View>
   ) : null;
 
-  const cartSheet = <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={listLogging.logging} when={<LogWhenPicker />} />;
-
-  // 搜索 mode: the search list until a food is chosen, then its result card.
   const quickSearch = (
     <QuickSearch
       onPick={handleQuickPick}
@@ -394,43 +344,30 @@ export default function LogScreen() {
       refreshKey={recentKey}
     />
   );
-  const searchAgain = result && !isEditing ? (
-    <Button label={t('quickLog.searchAgain')} icon="search-outline" variant="outline" onPress={() => setResult(null)} />
-  ) : null;
+  // Kept mounted (just hidden) so "换一个" comes back to the same search.
+  const hiddenWhenBusy = { display: image || result ? 'none' as const : 'flex' as const };
 
-  // Open iPhone Duo (or a wide window): the photo / scanner on the left page,
-  // the analysis and its buttons on the right page, so the result is never
-  // pushed below a full-width photo.
+  const cartSheet = <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={listLogging.logging} when={<LogWhenPicker />} />;
+
+  // Open iPhone Duo (or a wide window): photo or search on the left page,
+  // the result and its buttons on the right.
   if (twoPane) {
     return (
       <TabFocusFade>
       <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
         <TwoPane
           left={
-            <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
               {header}
-              {mode === 'search' ? quickSearch : mode === 'barcode' ? barcodeMedia : (photo ?? pickers)}
+              {photo}
+              {image ? null : quickSearch}
             </ScrollView>
           }
           right={
             <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
-              {mode === 'search' ? (
-                <>
-                  {resultCard}
-                  {searchAgain}
-                </>
-              ) : mode === 'barcode' ? (
-                <>
-                  {resultCard}
-                  {rescan}
-                </>
-              ) : (
-                <>
-                  {analyzeControls}
-                  {resultCard}
-                  {otherPhoto}
-                </>
-              )}
+              {analyzeControls}
+              {resultCard}
+              {afterButtons}
             </ScrollView>
           }
         />
@@ -443,44 +380,13 @@ export default function LogScreen() {
   return (
     <TabFocusFade>
     <SafeAreaView style={{ flex: 1, backgroundColor: c.backgroundPrimary }} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset, flexGrow: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         {header}
-
-        {/* Barcode mode */}
-        {mode === 'barcode' && (
-          <>
-            {barcodeMedia}
-            {resultCard}
-            {rescan}
-          </>
-        )}
-
-        {/* Search mode */}
-        {mode === 'search' && (
-          <>
-            {resultCard}
-            {searchAgain}
-            {/* Kept mounted (just hidden) so "换一个" comes back to the same search. */}
-            <View style={{ display: result ? 'none' : 'flex' }}>{quickSearch}</View>
-          </>
-        )}
-
-        {/* Photo / Label modes */}
-        {(mode === 'photo' || mode === 'label') && (
-          <>
-            {image && (
-              <View style={{ marginBottom: 14 }}>
-                {photo}
-                {analyzeControls}
-              </View>
-            )}
-            {resultCard}
-            {pickers}
-            {image && !isEditing && !analyzing && (
-              <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} />
-            )}
-          </>
-        )}
+        {photo}
+        {analyzeControls}
+        {resultCard}
+        {afterButtons}
+        <View style={hiddenWhenBusy}>{quickSearch}</View>
       </ScrollView>
       {cartSheet}
     </SafeAreaView>

@@ -681,6 +681,7 @@ const zhTW = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    retake: "重拍一張",
     caption: "沒拍照也能記：點最近吃過的、搜尋食物庫，或寫一句吃了什麼。",
     placeholder: "搜尋食物，或寫下吃了什麼",
     clear: "清空",
