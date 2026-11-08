@@ -27,8 +27,12 @@ export async function GET(request: NextRequest) {
 
     // ── Step 1: 查本地数据库（中文食物 + 已缓存的 USDA 结果）────────────────
     const localResults = await prisma.food.findMany({
+      // English names too, so "apple" finds 苹果.
       where: {
-        name: { contains: query, mode: 'insensitive' },
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { nameEn: { contains: query, mode: 'insensitive' } },
+        ],
       },
       orderBy: [
         // 本地数据优先

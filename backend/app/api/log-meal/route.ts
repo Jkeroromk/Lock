@@ -9,6 +9,8 @@ import { trustedTimeZone } from '@/lib/timezone';
 import { startOfLocalDay } from '@/lib/local-day';
 import { localDayKey, shiftDay } from '@/lib/pet';
 
+const MAX_BACKDATE_MS = 30 * 86_400_000;
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await authenticateRequest();
@@ -16,7 +18,19 @@ export async function POST(request: NextRequest) {
     const { userId } = authResult;
 
     const body = await request.json();
-    const { food_name, calories, protein, carbs, fat, image_url, thumbnail } = body;
+    const { food_name, calories, protein, carbs, fat, image_url, thumbnail, eaten_at } = body;
+
+    // 补记: when the meal was eaten. Up to 30 days back, never in the future
+    // (a few minutes of clock skew are allowed and clamped to now).
+    let eatenAt: Date | null = null;
+    if (eaten_at !== undefined && eaten_at !== null) {
+      const at = typeof eaten_at === 'string' ? new Date(eaten_at) : null;
+      const now = Date.now();
+      if (!at || Number.isNaN(at.getTime()) || at.getTime() > now + 10 * 60_000 || at.getTime() < now - MAX_BACKDATE_MS) {
+        return NextResponse.json({ error: 'Invalid meal time' }, { status: 400 });
+      }
+      eatenAt = at.getTime() > now ? new Date(now) : at;
+    }
 
     if (!food_name || calories === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -64,6 +78,7 @@ export async function POST(request: NextRequest) {
         carbs: nutrition.carbs ?? 0,
         fat: nutrition.fat ?? 0,
         imageUrl: image_url || null,
+        ...(eatenAt ? { createdAt: eatenAt, updatedAt: new Date() } : {}),
       },
     });
 
@@ -76,7 +91,13 @@ export async function POST(request: NextRequest) {
     }
 
     // ── 自动更新 Streak ──────────────────────────────────────────────────────
-    await updateStreak(userId, await trustedTimeZone(userId, request));
+    const tz = await trustedTimeZone(userId, request);
+    if (eatenAt && localDayKey(eatenAt, tz) !== localDayKey(new Date(), tz)) {
+      // A meal added to an earlier day can join two runs: count again from scratch.
+      await recomputeStreak(userId, tz);
+    } else {
+      await updateStreak(userId, tz);
+    }
     // ────────────────────────────────────────────────────────────────────────
 
     // ── 同步挑战进度（fire-and-forget，不阻塞响应）──────────────────────────
@@ -134,4 +155,25 @@ async function updateStreak(userId: string, tz: string): Promise<void> {
       });
     }
   }, { isolationLevel: 'Serializable' });
+}
+
+/**
+ * Streak counted from the meals themselves: consecutive local days with at
+ * least one meal, ending today (or yesterday, when today has none yet).
+ * Used after 补记, where the "first meal today" shortcut above doesn't hold.
+ */
+async function recomputeStreak(userId: string, tz: string): Promise<void> {
+  const rows = await prisma.$queryRaw<{ day: string }[]>`
+    SELECT DISTINCT to_char(created_at AT TIME ZONE ${tz}, 'YYYY-MM-DD') AS day
+    FROM meals
+    WHERE user_id = ${userId} AND created_at >= now() - interval '400 days'`;
+  const days = new Set(rows.map((r) => r.day));
+  const today = localDayKey(new Date(), tz);
+  let day = days.has(today) ? today : shiftDay(today, -1);
+  let streak = 0;
+  while (days.has(day)) {
+    streak += 1;
+    day = shiftDay(day, -1);
+  }
+  await prisma.user.update({ where: { id: userId }, data: { streak } });
 }

@@ -43,12 +43,17 @@ export function useMealLogging() {
     ], { cancelable: true, onDismiss: () => resolve(false) });
   });
 
-  const toastSaved = (message: string, kcal: number, before: number, waterMl: number) => {
+  /** `savedTo`: "昨天 · 晚餐" when the meal went to an earlier day (no over-goal warning for today then). */
+  const toastSaved = (message: string, kcal: number, before: number, waterMl: number, savedTo?: string) => {
     const { calorieWarnings, user: me } = useStore.getState();
     const goal = calorieGoalNow();
     const after = before + kcal;
-    const overGoal = calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
+    const overGoal = !savedTo && calorieWarnings && isWarning(calorieLevel(after, goal, me?.goal));
     const water = waterMl > 0 ? (t('water.autoAdded' as any) as string).replace('{ml}', String(waterMl)) : '';
+    if (savedTo) {
+      showToast({ message, detail: [t('quickLog.savedTo', { when: savedTo }), `${kcal.toLocaleString()} kcal`, water].filter(Boolean).join(' · ') });
+      return;
+    }
     showToast({
       message,
       detail: overGoal
@@ -93,15 +98,19 @@ export function useMealLogging() {
     }
   };
 
-  /** Logs every item on the list, each as its own meal; failures stay on the list. Returns true when all saved. */
-  const logAll = async (): Promise<boolean> => {
+  /**
+   * Logs every item on the list, each as its own meal; failures stay on the list. Returns true when all saved.
+   * `when`: 补记 time (ISO), its label and whether it's another day, for meals eaten earlier.
+   */
+  const logAll = async (when?: { eatenAt?: string; label?: string; otherDay?: boolean }): Promise<boolean> => {
     const items = useMealCartStore.getState().items;
     if (!items.length || logging) return false;
     const drinks = items
       .map((it) => ({ it, ml: Math.round(detectLiquidMl(it.food) * it.servings) }))
       .filter((d) => d.ml > 0);
     const drinkMl = drinks.reduce((sum, d) => sum + d.ml, 0);
-    const countWater = drinkMl > 0 && (await askCountAsWater(drinks.map((d) => d.it.food).join(', '), drinkMl));
+    // Water is only tracked for today, so drinks from an earlier day aren't offered.
+    const countWater = drinkMl > 0 && !when?.otherDay && (await askCountAsWater(drinks.map((d) => d.it.food).join(', '), drinkMl));
     setLogging(true);
     const before = todaysCalories();
     const done: string[] = [];
@@ -116,6 +125,7 @@ export function useMealLogging() {
           fat: r1(it.fat * it.servings),
           image_url: it.thumbUri || '',
           thumbnail: it.thumbBase64,
+          eaten_at: when?.eatenAt,
         });
         done.push(it.id);
         kcal += Math.round(it.calories * it.servings);
@@ -132,7 +142,7 @@ export function useMealLogging() {
       Alert.alert(t('log.saveFailed'), t('log.logAllPartial', { n: String(failed) }));
       return false;
     }
-    toastSaved(t('log.loggedAll', { n: String(done.length) }), kcal, before, loggedMl);
+    toastSaved(t('log.loggedAll', { n: String(done.length) }), kcal, before, loggedMl, when?.label);
     return true;
   };
 

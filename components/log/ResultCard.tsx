@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TextInput } from '@/components/ui/Text';
@@ -33,12 +34,16 @@ interface Props {
   onSaveMeal: () => void;
   /** Put this result on the 待记录 list and go scan the next one. */
   onAddToList?: () => void;
+  /** 补记 row ("什么时候吃的"), shown above the buttons. */
+  when?: ReactNode;
+  /** Hide the "today after this" preview (e.g. when saving to an earlier day). */
+  hidePreview?: boolean;
 }
 
 const MACROS = ['protein', 'carbs', 'fat'] as const;
 
 /** AI / barcode result: hero card with kcal, macro bars (share of today's target) and save. */
-export default function ResultCard({ result, isEditing, editedData, saving, onEdit, onCancelEdit, onSaveEdit, onChange, onSaveMeal, onAddToList }: Props) {
+export default function ResultCard({ result, isEditing, editedData, saving, onEdit, onCancelEdit, onSaveEdit, onChange, onSaveMeal, onAddToList, when, hidePreview }: Props) {
   const c = useTheme();
   const { t } = useTranslation();
   const user = useStore((st) => st.user);
@@ -125,7 +130,7 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
       </View>
 
       {/* What today looks like after saving this */}
-      {!isEditing && projected.enabled ? (
+      {!isEditing && !hidePreview && projected.enabled ? (
         <View
           style={{
             flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14, paddingVertical: 9, paddingHorizontal: 12,
@@ -140,6 +145,8 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
           </Text>
         </View>
       ) : null}
+
+      {!isEditing && when ? <View style={{ marginTop: 14 }}>{when}</View> : null}
 
       {/* Actions */}
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
