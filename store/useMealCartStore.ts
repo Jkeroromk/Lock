@@ -16,7 +16,7 @@ export interface CartItem {
   carbs: number;
   fat: number;
   servings: number;
-  source: 'photo' | 'label' | 'barcode';
+  source: 'photo' | 'label' | 'barcode' | 'search' | 'text';
   /** Small photo kept in the app's documents folder, plus its base64 for upload. */
   thumbUri?: string;
   thumbBase64?: string;

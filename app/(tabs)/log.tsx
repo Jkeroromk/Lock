@@ -31,10 +31,14 @@ import { useDeviceLayout } from '@/hooks/useDeviceLayout';
 import TwoPane from '@/components/layout/TwoPane';
 import { calorieGoalNow } from '@/hooks/useDailyGoals';
 import { useShallow } from 'zustand/react/shallow';
+import QuickSearch, { type QuickSource } from '@/components/log/QuickSearch';
+import LogWhenPicker, { whenLabel } from '@/components/log/LogWhenPicker';
+import { eatenAtFor, isOtherDay, useLogWhenStore } from '@/store/useLogWhenStore';
 
-type LogMode = 'photo' | 'label' | 'barcode';
+type LogMode = 'photo' | 'search' | 'barcode' | 'label';
 
-const MODES: LogMode[] = ['photo', 'label', 'barcode'];
+// 搜索: for meals nobody photographed (recent foods, the food library, or a sentence for AI).
+const MODES: LogMode[] = ['photo', 'search', 'barcode', 'label'];
 
 export default function LogScreen() {
   const tabInset = useTabBarInset();
@@ -64,6 +68,13 @@ export default function LogScreen() {
   const [editedData, setEditedData] = useState({ food: '', calories: '', protein: '', carbs: '', fat: '' });
   const [listOpen, setListOpen] = useState(false);
   const listLogging = useMealLogging();
+  // 搜索 mode: where the current result came from, and a key to reload "recent" after saving.
+  const [quickSource, setQuickSource] = useState<QuickSource>('search');
+  const [recentKey, setRecentKey] = useState(0);
+  // 补记: the day / meal the next save goes to.
+  const { dayOffset, slot } = useLogWhenStore(useShallow((st) => ({ dayOffset: st.dayOffset, slot: st.slot })));
+  const otherDay = isOtherDay(dayOffset);
+  const backdated = !(dayOffset === 0 && slot === 'now');
 
   // Photo taken from the yellow camera button in the tab bar arrives as a param.
   const { imageUri, imageMode, manualCode } = useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string }>();
@@ -126,6 +137,32 @@ export default function LogScreen() {
     analyzeImage(m);
   }, [autoAnalyze, image]);
 
+  const showAiLimit = () => {
+    Alert.alert(
+      t('log.aiLimitTitle' as any),
+      (t('log.aiLimitMsg' as any) as string).replace('{quota}', String(aiQuota)),
+      [
+        // Barcode lookups and the food library are never limited, so offer barcode first.
+        { text: t('log.scanBarcodeInstead' as any), onPress: () => handleModeChange('barcode') },
+        { text: t('log.upgradeBtn' as any), onPress: () => router.push('/(tabs)/settings/pricing') },
+        { text: t('log.laterBtn' as any), style: 'cancel' },
+      ]
+    );
+  };
+
+  /** A food from 搜索 mode (recent, library, AI sentence or manual) → the result card. */
+  const handleQuickPick = (r: FoodResult, opts: { source: QuickSource; edit?: boolean }) => {
+    setQuickSource(opts.source);
+    setResultWithEdit(r);
+    if (opts.edit) setIsEditing(true);
+  };
+
+  const handleQuickAiError = (error: Error) => {
+    if (error.message.includes('AI_LIMIT_REACHED')) showAiLimit();
+    else if (error.message.includes('NOT_FOOD')) Alert.alert(t('quickLog.notFoodTitle'), t('quickLog.notFoodMsg'));
+    else Alert.alert(t('log.analysisFailed'), t('quickLog.aiFailed'));
+  };
+
   const analyzeImage = async (analysisMode: 'food' | 'label') => {
     if (!image) return;
     setAnalyzing(true);
@@ -134,16 +171,7 @@ export default function LogScreen() {
       setResultWithEdit(analysis);
     } catch (error: any) {
       if (error?.code === 'AI_LIMIT_REACHED' || error?.message?.includes('AI_LIMIT_REACHED')) {
-        Alert.alert(
-          t('log.aiLimitTitle' as any),
-          (t('log.aiLimitMsg' as any) as string).replace('{quota}', String(aiQuota)),
-          [
-            // Barcode lookups are never limited, so offer that first.
-            { text: t('log.scanBarcodeInstead' as any), onPress: () => handleModeChange('barcode') },
-            { text: t('log.upgradeBtn' as any), onPress: () => router.push('/(tabs)/settings/pricing') },
-            { text: t('log.laterBtn' as any), style: 'cancel' },
-          ]
-        );
+        showAiLimit();
       } else {
         Alert.alert(t('log.analysisFailed'), error.message || t('log.analysisFailed'));
       }
@@ -190,7 +218,10 @@ export default function LogScreen() {
     if (!result) return;
     if (isEditing) { handleSaveEdit(); return; }
     const detectedMl = detectLiquidMl(result.food);
-    const liquidMl = detectedMl > 0 && (await askCountAsWater(result.food, detectedMl)) ? detectedMl : 0;
+    // Water is only tracked for today: drinks saved to an earlier day aren't offered.
+    const liquidMl = !otherDay && detectedMl > 0 && (await askCountAsWater(result.food, detectedMl)) ? detectedMl : 0;
+    const eatenAt = eatenAtFor(dayOffset, slot);
+    const savedTo = backdated ? whenLabel(dayOffset, slot, t, language) : '';
     setSaving(true);
     const before = todaysCalories();
     try {
@@ -200,11 +231,22 @@ export default function LogScreen() {
         // Barcode products have no photo of ours; use the product's own picture.
         image_url: thumb?.uri || result.imageUrl || '',
         thumbnail: thumb?.base64, // stored server-side so the photo shows on every device
+        eaten_at: eatenAt,
       });
       const saved = result;
       if (liquidMl > 0) await addWater(liquidMl);
 
       clearImage(); setResult(null); refreshToday();
+      useLogWhenStore.getState().reset();
+      setRecentKey((k) => k + 1);
+      if (otherDay) {
+        // Not today: Today's ring doesn't change, so stay here and say where it went.
+        showToast({
+          message: `${t('log.savedToast' as any)} · ${saved.food}`,
+          detail: `${t('quickLog.savedTo', { when: savedTo })} · ${Math.round(saved.calories)} kcal`,
+        });
+        return;
+      }
       // Back to Today so the ring fills up; a toast instead of an OK-only alert.
       router.navigate('/(tabs)/today');
       const { calorieWarnings, user: me } = useStore.getState();
@@ -216,7 +258,7 @@ export default function LogScreen() {
         message: `${t('log.savedToast' as any)} · ${saved.food}`,
         detail: overGoal
           ? [t('calorieWarn.toastOver' as any, { kcal: (after - goal).toLocaleString() }), water].filter(Boolean).join(' · ')
-          : water || `${Math.round(saved.calories)} kcal`,
+          : [savedTo ? t('quickLog.savedTo', { when: savedTo }) : '', water || `${Math.round(saved.calories)} kcal`].filter(Boolean).join(' · '),
         icon: overGoal ? 'warning' : undefined,
       });
     } catch (error: any) { Alert.alert(t('log.saveFailed'), error.message || t('log.saveFailed')); }
@@ -231,7 +273,7 @@ export default function LogScreen() {
     const cart = useMealCartStore.getState();
     cart.add({
       food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat,
-      source: mode, thumbUri: thumb?.uri ?? r.imageUrl, thumbBase64: thumb?.base64,
+      source: mode === 'search' ? quickSource : mode, thumbUri: thumb?.uri ?? r.imageUrl, thumbBase64: thumb?.base64,
     });
     const n = useMealCartStore.getState().items.length;
     clearImage(); setResult(null); setLookingUp(false);
@@ -243,18 +285,26 @@ export default function LogScreen() {
   };
 
   const logAll = async () => {
-    if (await listLogging.logAll()) {
+    const when = backdated
+      ? { eatenAt: eatenAtFor(dayOffset, slot), label: whenLabel(dayOffset, slot, t, language), otherDay }
+      : undefined;
+    if (await listLogging.logAll(when)) {
       setListOpen(false);
-      router.navigate('/(tabs)/today');
+      useLogWhenStore.getState().reset();
+      setRecentKey((k) => k + 1);
+      if (!otherDay) router.navigate('/(tabs)/today');
     }
   };
 
   const handleModeChange = (newMode: LogMode) => { setMode(newMode); clearImage(); setResult(null); setLookingUp(false); };
 
-  const modeCaption = mode === 'barcode' ? t('log.barcodeScanDesc' as any) : mode === 'label' ? t('log.labelScanDesc' as any) : t('log.takeOrSelect');
+  const modeCaption = mode === 'barcode' ? t('log.barcodeScanDesc' as any)
+    : mode === 'label' ? t('log.labelScanDesc' as any)
+    : mode === 'search' ? t('quickLog.caption')
+    : t('log.takeOrSelect');
 
   const resultCard = result ? (
-    <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} /></Appear>
+    <Appear><ResultCard result={result} isEditing={isEditing} editedData={editedData} saving={saving} onEdit={() => setIsEditing(true)} onCancelEdit={handleCancelEdit} onSaveEdit={handleSaveEdit} onChange={(k, v) => setEditedData(d => ({ ...d, [k]: v }))} onSaveMeal={saveMeal} onAddToList={addToList} when={<LogWhenPicker />} hidePreview={otherDay} /></Appear>
   ) : null;
 
   const header = (
@@ -326,7 +376,21 @@ export default function LogScreen() {
     <Button label={t('log.selectOtherPhoto')} icon="images-outline" variant="outline" onPress={clearImage} style={{ marginTop: 14 }} />
   ) : null;
 
-  const cartSheet = <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={listLogging.logging} />;
+  const cartSheet = <CartSheet visible={listOpen} onClose={() => setListOpen(false)} onLogAll={logAll} logging={listLogging.logging} when={<LogWhenPicker />} />;
+
+  // 搜索 mode: the search list until a food is chosen, then its result card.
+  const quickSearch = (
+    <QuickSearch
+      onPick={handleQuickPick}
+      onAiError={handleQuickAiError}
+      quotaBadge={aiQuota !== -1 ? quotaBadge : null}
+      onQuotaPress={() => router.push('/(tabs)/settings/pricing')}
+      refreshKey={recentKey}
+    />
+  );
+  const searchAgain = result && !isEditing ? (
+    <Button label={t('quickLog.searchAgain')} icon="search-outline" variant="outline" onPress={() => setResult(null)} />
+  ) : null;
 
   // Open iPhone Duo (or a wide window): the photo / scanner on the left page,
   // the analysis and its buttons on the right page, so the result is never
@@ -339,12 +403,17 @@ export default function LogScreen() {
           left={
             <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: tabInset }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {header}
-              {mode === 'barcode' ? barcodeMedia : (photo ?? pickers)}
+              {mode === 'search' ? quickSearch : mode === 'barcode' ? barcodeMedia : (photo ?? pickers)}
             </ScrollView>
           }
           right={
             <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 16, paddingBottom: tabInset }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
-              {mode === 'barcode' ? (
+              {mode === 'search' ? (
+                <>
+                  {resultCard}
+                  {searchAgain}
+                </>
+              ) : mode === 'barcode' ? (
                 <>
                   {resultCard}
                   {rescan}
@@ -380,8 +449,18 @@ export default function LogScreen() {
           </>
         )}
 
+        {/* Search mode */}
+        {mode === 'search' && (
+          <>
+            {resultCard}
+            {searchAgain}
+            {/* Kept mounted (just hidden) so "换一个" comes back to the same search. */}
+            <View style={{ display: result ? 'none' : 'flex' }}>{quickSearch}</View>
+          </>
+        )}
+
         {/* Photo / Label modes */}
-        {mode !== 'barcode' && (
+        {(mode === 'photo' || mode === 'label') && (
           <>
             {image && (
               <View style={{ marginBottom: 14 }}>

@@ -22,6 +22,8 @@ export interface MealData {
   image_url: string;
   /** Base64 JPEG thumbnail; the server keeps it in Supabase Storage. */
   thumbnail?: string;
+  /** 补记: when it was eaten (ISO). Omitted = now. */
+  eaten_at?: string;
 }
 
 export interface MealRecord {
@@ -250,4 +252,51 @@ export const fetchMonthlyData = async (year: number, month: number): Promise<Mon
 export const fetchAllMealsForExport = async (): Promise<MealExportRecord[]> => {
   const res = await api.get<MealExportRecord[]>('/api/meals/export');
   return res.data;
+};
+
+/** A food from the library (per 100 g). */
+export interface LibraryFood {
+  id: string;
+  name: string;
+  nameEn: string | null;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  source: 'LOCAL' | 'USDA' | string;
+}
+
+export const searchFoods = async (q: string): Promise<LibraryFood[]> => {
+  const res = await api.get<{ results: LibraryFood[] }>('/api/food-search', { params: { q } });
+  return res.data.results ?? [];
+};
+
+/** Something this person has logged before, per single serving. */
+export interface RecentFood {
+  food: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  count: number;
+  last_at: string;
+  /** Display only (may be a signed URL that expires). */
+  image_url: string | null;
+  /** True when image_url is a product photo that can be saved with the meal again. */
+  reuse_image: boolean;
+}
+
+export const fetchRecentFoods = async (): Promise<RecentFood[]> => {
+  const res = await api.get<{ items: RecentFood[] }>('/api/meals/recent');
+  return res.data.items ?? [];
+};
+
+/** "一个苹果加两片吐司" → nutrition. Uses the daily AI allowance. Throws Error('AI_LIMIT_REACHED' | 'NOT_FOOD' | …). */
+export const describeMeal = async (text: string, lang?: string): Promise<FoodAnalysis> => {
+  try {
+    const res = await api.post<FoodAnalysis>('/api/ai/describe-meal', { text, lang: lang ?? 'en-US' }, { timeout: 60_000 });
+    return res.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.error || 'Analysis failed');
+  }
 };

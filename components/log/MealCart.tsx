@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View, Modal, ScrollView, Image, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +14,8 @@ const SOURCE_ICON: Record<CartItem['source'], string> = {
   photo: 'camera-outline',
   label: 'document-text-outline',
   barcode: 'barcode-outline',
+  search: 'search-outline',
+  text: 'sparkles-outline',
 };
 
 /** Ink strip under the mode switch: "3 items · 540 kcal" → opens the list. */
@@ -80,11 +82,13 @@ function Stepper({ value, onChange }: { value: number; onChange: (v: number) => 
 }
 
 /** The list itself: each item with servings, remove, totals, and "log all". */
-export function CartSheet({ visible, onClose, onLogAll, logging }: {
+export function CartSheet({ visible, onClose, onLogAll, logging, when }: {
   visible: boolean;
   onClose: () => void;
   onLogAll: () => void;
   logging: boolean;
+  /** 补记 row, above "log all". */
+  when?: ReactNode;
 }) {
   const c = useTheme();
   const { t } = useTranslation();
@@ -163,6 +167,7 @@ export function CartSheet({ visible, onClose, onLogAll, logging }: {
                 <Label style={{ fontSize: 10 }}>KCAL</Label>
               </View>
             </View>
+            {when}
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
               <Button label={t('log.keepScanning')} variant="outline" onPress={onClose} style={{ flex: 1 }} />
               <Button
