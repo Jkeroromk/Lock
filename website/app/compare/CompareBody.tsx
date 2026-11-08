@@ -120,7 +120,7 @@ export function CompareBody() {
           </div>
           {APPS.map((a: AppId, i) => (
             <div key={a} role="row" className={`cmp-row${a === 'kero' ? ' is-kero' : ''}`} style={{ '--i': i } as import('react').CSSProperties}>
-              <span role="rowheader" className="cmp-name">{APP_NAMES[a]}</span>
+              <span role="rowheader" className="cmp-name">{APP_NAMES[a]}<span className="cmp-ref-row"><Refs ids={Array.from(new Set(FREE_COLUMNS.flatMap((c) => FREE_BOARD[a][c.id].src ?? [])))} /></span></span>
               {FREE_COLUMNS.map((c) => {
                 const m = FREE_BOARD[a][c.id];
                 return (
@@ -130,7 +130,7 @@ export function CompareBody() {
                       <span>{m.v[lang]}</span>
                       <span className="sr">({u.legend[m.level]})</span>
                     </span>
-                    <Refs ids={m.src} />
+                    <span className="cmp-ref-cell"><Refs ids={m.src} /></span>
                   </span>
                 );
               })}
