@@ -11,7 +11,7 @@ const sections: LegalSection[] = [
     title: 'Service Description',
     content: (
       <>
-        <p>Lock provides AI food recognition and calorie tracking, workout planning and logging, weight tracking, health data monitoring (steps, active energy), social features (friends, leaderboards, challenges, buddies), an Apple Watch app and Live Activities for workouts (Lock 1.1 and later) and personalised diet and training analysis.</p>
+        <p>Lock provides AI food recognition and calorie tracking, workout planning and logging, weight tracking, health data monitoring (steps, active energy), social features (friends, leaderboards, buddies), a couple space for two linked friends, an Apple Watch app and Live Activities for workouts and personalised diet and training analysis.</p>
         <p>Content provided by Lock is for informational purposes only and does not constitute medical advice.</p>
       </>
     ),
@@ -20,7 +20,7 @@ const sections: LegalSection[] = [
     title: 'Account Registration',
     content: (
       <List items={[
-        'You must be at least 13 years old',
+        'You must be at least 18 years old',
         'You are responsible for keeping your credentials secure',
         'Do not share your account with others',
         'Report unauthorised access to us immediately',
@@ -31,7 +31,7 @@ const sections: LegalSection[] = [
     title: 'Subscriptions & Payments',
     content: (
       <>
-        <p><B>Free:</B> every new account gets Lock Pro for its first 7 days (no card needed), then 3 AI scans per day; one AI diet review per week; unlimited barcode and manual logging; workout plans and logging; the weight curve, challenges and data export; unlimited friends.</p>
+        <p><B>Free:</B> every new account gets Lock Pro for its first 7 days (no card needed), then 3 AI scans per day; one AI diet review per week; unlimited barcode and manual logging; workout plans and logging; the weight curve, the couple space and data export; unlimited friends.</p>
         <p><B>Lock Pro:</B> unlimited AI scans, unlimited AI diet reviews, and redoing your AI workout plan anytime. Lock Pro is an auto-renewing subscription, offered yearly ($39.99 in the US) or monthly ($7.99 in the US). Prices in other countries are shown in the App Store before you buy.</p>
         <List items={[
           'The first-week Pro trial is free and ends on its own; nothing is charged unless you subscribe',
@@ -47,7 +47,7 @@ const sections: LegalSection[] = [
     title: 'User Content & Zero Tolerance',
     content: (
       <>
-        <p>You are responsible for the profile information, buddy and coach names, and challenges you create. Lock has <B>zero tolerance for objectionable content and abusive users</B>. You agree not to post or send:</p>
+        <p>You are responsible for the profile information, buddy and coach names, and the anniversaries and other content you add to a couple space. Lock has <B>zero tolerance for objectionable content and abusive users</B>. You agree not to post or send:</p>
         <List items={[
           'Sexual, nude or sexually suggestive content',
           'Harassment, bullying, threats or hate speech',
@@ -78,9 +78,11 @@ const sections: LegalSection[] = [
         <p>Calorie estimates and diet suggestions from Lock are for reference only and are not professional medical advice.</p>
         <List items={[
           'AI-recognised food data may contain errors',
-          'Consult a doctor before starting a new diet or exercise plan',
+          'Consult a doctor or registered dietitian before starting a new diet or exercise plan',
+          'If you have, or have had, an eating disorder, talk to a professional before tracking calories',
           'Workout plans, suggested weight increases and calorie burn estimates are general guidance; train within your own limits',
           'We are not liable for health issues arising from reliance on app data',
+          <>The sources behind Lock&apos;s calorie, protein, water and step targets are listed on <a href="/sources" className="underline underline-offset-4">Sources &amp; methods</a></>,
         ]} />
       </>
     ),
@@ -116,7 +118,7 @@ export default function TermsOfService() {
   return (
     <LegalPage
       title="Terms of Service"
-      lastUpdated="October 25, 2026"
+      lastUpdated="November 8, 2026"
       intro={<p>By downloading, installing or using Lock, you agree to be bound by these Terms of Service. If you do not agree, do not use the app.</p>}
       sections={sections}
     />

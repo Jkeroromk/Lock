@@ -83,6 +83,9 @@ const I = {
   arrowUp: (s = 14) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" /></svg>
   ),
+  search: (s = 14) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
+  ),
   heart: (s = 14) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
   ),
@@ -150,6 +153,7 @@ function Nav({ t, toggleLang, dark, toggleDark }: { t: T; toggleLang: () => void
           <a href="#train">{t.nav.train}</a>
           <a href="#watch">{t.nav.watch}</a>
           <a href="#buddy">{t.nav.buddy}</a>
+          <a href="#couple">{t.nav.couple}</a>
           <a href="#pricing">{t.nav.pricing}</a>
           <a href="#faq">{t.nav.faq}</a>
         </nav>
@@ -300,9 +304,7 @@ function How({ t }: { t: T }) {
 function Features({ t }: { t: T }) {
   const f = t.features;
   const [dialRef, dialIn] = useInView<HTMLDivElement>(0.3);
-  const logged = [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 27, 28, 29, 30];
-  const hit = [2, 3, 7, 9, 10, 14, 16, 17, 21, 22, 23, 24, 28, 29];
-  const today = 30;
+  const [waterRef, waterIn] = useInView<HTMLDivElement>(0.3);
   return (
     <section className="sec wrap" id="features">
       <Reveal><p className="eyebrow">{f.eyebrow}</p></Reveal>
@@ -348,34 +350,42 @@ function Features({ t }: { t: T }) {
           </div>
         </Reveal>
 
-        {/* calendar */}
+        {/* search + log later */}
         <Reveal className="cell c5 card">
-          <div className="cell-txt"><h3>{f.cal.t}</h3><p>{f.cal.d}</p></div>
-          <div className="cal">
-            <div className="cal-head mono"><span>{f.cal.month}</span><span className="legend"><i className="lg l" />{f.cal.legend[0]}<i className="lg h" />{f.cal.legend[1]}</span></div>
-            <div className="cal-grid" aria-hidden="true">
-              {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                <span key={d} className={`${hit.includes(d) ? 'h' : logged.includes(d) ? 'l' : ''} ${d === today ? 'td' : ''}`} />
+          <div className="cell-txt"><h3>{f.quick.t}</h3><p>{f.quick.d}</p></div>
+          <div className="quick" aria-hidden="true">
+            <div className="q-search">{I.search(16)}<span className="q-ph">{f.quick.ph}</span><span className="q-ai mono">{I.spark(11)} AI</span></div>
+            <p className="mono small q-label">{f.quick.recent}</p>
+            <ul className="q-list">
+              {f.quick.items.map(([n, k]) => (
+                <li key={n}><span className="q-n">{n}</span><span className="mono tnum">{k}</span><span className="q-plus">{I.plus(13)}</span></li>
               ))}
+            </ul>
+            <div className="q-when">
+              <span className="mono small">{f.quick.when}</span>
+              <div className="q-chips">{f.quick.days.map((d, i) => <span key={d} className={i === 1 ? 'on' : ''}>{d}</span>)}</div>
+              <div className="q-chips">{f.quick.meals.map((m, i) => <span key={m} className={i === 1 ? 'on' : ''}>{m}</span>)}</div>
             </div>
-            <p className="cal-sum mono">
-              <span><b className="tnum">{logged.length}</b> {f.cal.summary[0]}</span>
-              <span><b className="tnum">{hit.length}</b> {f.cal.summary[1]}</span>
-            </p>
           </div>
         </Reveal>
 
         {/* water */}
         <Reveal delay={1} className="cell c7 card inverse">
           <div className="cell-txt"><h3>{f.water.t}</h3><p>{f.water.d}</p></div>
-          <div className="water">
-            <div className="glasses" aria-hidden="true">
-              {Array.from({ length: 8 }, (_, i) => <span key={i} className={i < 5 ? 'f' : ''}>{I.drop(20)}</span>)}
-              <button className="add" tabIndex={-1} aria-hidden="true">{I.plus(16)}</button>
+          <div className="water2" ref={waterRef}>
+            <div className="bottle" aria-hidden="true">
+              <span className="cap" />
+              <div className="glass">
+                <div className="fill" style={{ height: waterIn ? '64%' : '12%' }}>
+                  <img className="floater" src="/stage/cat-float.webp" alt="" width={84} height={84} loading="lazy" />
+                </div>
+              </div>
+              <p className="b-amt mono"><b className="tnum">1.6</b> {f.water.of} 2.5 L</p>
             </div>
-            <div className="ask">
-              <p>{f.water.ask}</p>
-              <div className="ask-btns"><span className="b y">{f.water.yes}</span><span className="b">{f.water.no}</span></div>
+            <div className="drinks" aria-hidden="true">
+              {f.water.drinks.map((d, i) => (
+                <span key={d} className={`drink ${i === 3 ? 'on' : ''}`}><b>{d}</b><i className="mono">{f.water.counts[i]}</i></span>
+              ))}
             </div>
             <div className="health mono">
               <span>{I.steps(15)} {f.water.steps} <b className="tnum">7,420</b></span>
@@ -504,7 +514,7 @@ function Watch({ t }: { t: T }) {
   const [ref, seen] = useInView<HTMLDivElement>(0.3);
   return (
     <section className="sec wrap" id="watch">
-      <Reveal><p className="eyebrow">{w.eyebrow} <span className="new-tag">{w.tag}</span></p></Reveal>
+      <Reveal><p className="eyebrow">{w.eyebrow}</p></Reveal>
       <Reveal delay={1} as="h2"><span className="h2">{w.title}</span></Reveal>
       <Reveal delay={2}><p className="lead train-lead">{w.sub}</p></Reveal>
       <div className="bento" ref={ref}>
@@ -558,13 +568,8 @@ function Buddy({ t }: { t: T }) {
       <Reveal delay={1} as="h2"><span className="h2">{b.title}</span></Reveal>
       <Reveal delay={2}><p className="lead train-lead">{b.sub}</p></Reveal>
       <div className="bento" ref={ref}>
-        <Reveal className="cell c7 card buddy-cell">
-          <div className="scene" aria-hidden="true">
-            <span className="bubble">{b.bubble}</span>
-            <img className={`coach ${seen ? 'hop' : ''}`} src="/pet/coach_cheer.webp" alt="" width={190} height={190} />
-            <img className="pet" src="/pet/corgi_2.webp" alt="" width={150} height={150} />
-            <span className="floor" />
-          </div>
+        <Reveal className="cell c12 card buddy-cell">
+          <BuddyStage bubble={b.bubble} hint={b.hint} />
           <div className="buddy-meta">
             <div className="bm-name">
               <b>{b.buddyName}</b>
@@ -576,7 +581,7 @@ function Buddy({ t }: { t: T }) {
             </div>
           </div>
         </Reveal>
-        <Reveal delay={1} className="cell c5 card">
+        <Reveal className="cell c5 card">
           <div className="cell-txt"><h3>{b.today}</h3></div>
           <ul className="grow-list">
             {b.rows.map(([k, v], i) => (
@@ -588,23 +593,107 @@ function Buddy({ t }: { t: T }) {
             ))}
           </ul>
         </Reveal>
-        <Reveal className="cell c12 card stages-cell">
+        <Reveal delay={1} className="cell c7 card">
           <div className="cell-txt"><h3>{b.stagesT}</h3><p>{b.stagesD}</p></div>
-          <div className="stages" aria-hidden="true">
-            {['corgi', 'cat', 'penguin'].map((k) => (
-              <div key={k} className="stage-row">
-                {[1, 2, 3].map((n) => (
-                  <figure key={n}>
-                    <img src={`/pet/${k}_${n}.webp`} alt="" width={96} height={96} loading="lazy" />
-                    {k === 'corgi' && <figcaption className="mono small">{b.stages[n - 1]}</figcaption>}
-                  </figure>
-                ))}
-              </div>
-            ))}
-          </div>
+          <figure className="stages3d">
+            <img src="/stage/cat-stages.webp" alt="" width={781} height={289} loading="lazy" />
+            <figcaption className="mono small">{b.stages.map((x) => <span key={x}>{x}</span>)}</figcaption>
+          </figure>
           <p className="mono small kinds">{b.kinds}</p>
         </Reveal>
       </div>
+    </section>
+  );
+}
+
+/** The live 3D meadow: the static render shows first; three.js loads when the section comes near. */
+function BuddyStage({ bubble, hint }: { bubble: string; hint: string }) {
+  const host = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const el = host.current;
+    if (!el) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const conn = (navigator as any).connection;
+    if (conn?.saveData) return;
+    const probe = document.createElement('canvas');
+    if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) return;
+    let cancelled = false;
+    let handle: { dispose: () => void } | null = null;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const io = new IntersectionObserver(async ([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      try {
+        const { mountStage } = await import('./stage3d');
+        if (cancelled) return;
+        const h = await mountStage(el, { animate: !reduced, onReady: () => { if (!cancelled) setReady(true); } });
+        if (cancelled) h.dispose(); else handle = h;
+      } catch (err) {
+        console.warn('[stage3d] staying on the picture:', err);
+      }
+    }, { rootMargin: '600px 0px' });
+    io.observe(el);
+    return () => { cancelled = true; io.disconnect(); handle?.dispose(); };
+  }, []);
+  return (
+    <div className={`stage3d ${ready ? 'ready' : ''}`} ref={host}>
+      <img className="stage3d-poster" src="/stage/meadow.webp" srcSet="/stage/meadow-800.webp 800w, /stage/meadow.webp 1600w" sizes="(max-width: 900px) 100vw, 1150px" alt="" width={1600} height={1000} />
+      <span className="bubble">{bubble}</span>
+      <span className="stage-hint mono small">{hint}</span>
+    </div>
+  );
+}
+
+/* ── Couple space ─────────────────────── */
+function Couple({ t }: { t: T }) {
+  const c = t.couple;
+  return (
+    <section className="sec wrap" id="couple">
+      <Reveal><p className="eyebrow">{c.eyebrow}</p></Reveal>
+      <Reveal delay={1} as="h2"><span className="h2">{c.title}</span></Reveal>
+      <Reveal delay={2}><p className="lead train-lead">{c.sub}</p></Reveal>
+      <div className="bento">
+        <Reveal className="cell c7 card">
+          <div className="duo-today" aria-hidden="true">
+            <span />
+            <b className="dt-h">{c.me} <i className="mono">{c.today}</i></b>
+            <b className="dt-h partner">{c.partner} <i className="mono">{c.today}</i></b>
+            {c.rows.map((r, i) => (
+              <div key={r} className="dt-row">
+                <span className="mono small">{r}</span>
+                <span className="tnum">{c.meVals[i]}</span>
+                <span className="tnum">{c.partnerVals[i]}</span>
+              </div>
+            ))}
+          </div>
+          <div className="cell-txt"><h3>{c.nudgesT}</h3><p>{c.nudgesD}</p></div>
+          <div className="nudges" aria-hidden="true">
+            {c.nudges.map((n, i) => <span key={n} className={i === 3 ? 'love' : ''}>{i === 3 ? I.heart(13) : null}{n}</span>)}
+          </div>
+        </Reveal>
+        <Reveal delay={1} className="cell c5 card days-cell">
+          <div className="cell-txt"><h3>{c.daysT}</h3></div>
+          <div className="board-days" aria-hidden="true">
+            <p className="bd-num tnum">{c.days}</p>
+            <p className="mono small bd-label">{c.daysLabel}</p>
+            <p className="bd-next">{c.next}</p>
+            <ul>
+              {c.ann.map(([n, d]) => <li key={n}><span>{n}</span><span className="mono small">{d}</span></li>)}
+            </ul>
+          </div>
+        </Reveal>
+        <Reveal className="cell c12 card home-cell">
+          <img className="home-dog" src="/stage/doudou.webp" alt="" width={240} height={240} loading="lazy" />
+          <div className="home-txt">
+            <div className="cell-txt"><h3>{c.homeT}</h3><p>{c.homeD}</p></div>
+            <div className="shop" aria-hidden="true">
+              {c.shop.map(([n, p]) => <span key={n}><b>{n}</b><i className="mono">{p} {c.points}</i></span>)}
+            </div>
+          </div>
+        </Reveal>
+      </div>
+      <Reveal><p className="req mono small">{c.foot}</p></Reveal>
     </section>
   );
 }
@@ -709,7 +798,7 @@ function Faq({ t }: { t: T }) {
               </button>
             </h3>
             <div className="qa-a" id={`qa-${i}`} role="region" aria-labelledby={`qq-${i}`}>
-              <div><p>{it.a}</p></div>
+              <div><p>{it.a}{'link' in it && it.link ? <> <a className="qa-link" href={it.link.href}>{it.link.label} {I.arrow(14)}</a></> : null}</p></div>
             </div>
           </div>
         ))}
@@ -757,10 +846,10 @@ function Footer({ t }: { t: T }) {
       </div>
       <div className="wrap foot-links">
         <nav className="foot-row" aria-label={f.product}>
-          <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#train">{t.nav.train}</a><a href="#watch">{t.nav.watch}</a><a href="#buddy">{t.nav.buddy}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
+          <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#train">{t.nav.train}</a><a href="#watch">{t.nav.watch}</a><a href="#buddy">{t.nav.buddy}</a><a href="#couple">{t.nav.couple}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
         </nav>
         <nav className="foot-row foot-legal" aria-label={f.company}>
-          <a href="/support">{f.links.support}</a><a href="/privacy">{f.links.privacy}</a><a href="/terms">{f.links.terms}</a>
+          <a href="/support">{f.links.support}</a><a href="/sources">{f.links.sources}</a><a href="/privacy">{f.links.privacy}</a><a href="/terms">{f.links.terms}</a>
         </nav>
       </div>
       <div className="wrap foot-base mono">
@@ -814,6 +903,7 @@ export default function LockPage() {
         <Train t={t} />
         <Watch t={t} />
         <Buddy t={t} />
+        <Couple t={t} />
         <Social t={t} />
         <Pricing t={t} />
         <Faq t={t} />
