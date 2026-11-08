@@ -263,13 +263,15 @@ export default function GoalsModal({ visible, onClose }: GoalsModalProps) {
                     style={{ flexBasis: '22%', flexGrow: 1 }}
                   />
                 ))}
-                <Chip
-                  label={t('goals.adaptive')}
-                  selected={settings.stepMode === 'adaptive'}
-                  onPress={() => patch({ stepMode: 'adaptive' })}
-                  style={{ flexBasis: '100%' }}
-                />
               </View>
+              {/* Its own row: as a flexBasis-100% item in the wrapping row it
+                  came out wider than the sheet on the narrow outer display. */}
+              <Chip
+                label={t('goals.adaptive')}
+                selected={settings.stepMode === 'adaptive'}
+                onPress={() => patch({ stepMode: 'adaptive' })}
+                style={{ marginTop: 6 }}
+              />
               {settings.stepMode === 'fixed' ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 18, marginTop: 12 }}>
                   <StepButton icon="remove" onPress={() => patch({ steps: clamp(fixedSteps - 500, 1000, 50000) })} label="−500" />

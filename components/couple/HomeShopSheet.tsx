@@ -70,7 +70,7 @@ export default function HomeShopSheet({ visible, onClose, home, onChanged }: {
   const items = HOME_ITEMS.filter((i) => i.slot === slot);
 
   return (
-    <SheetModal visible={visible} onClose={onClose} closeLabel={t('common.close')} style={{ maxHeight: '78%', width: '100%', maxWidth: 560, alignSelf: 'center' }}>
+    <SheetModal visible={visible} onClose={onClose} dim={0.25} closeLabel={t('common.close')} style={{ maxHeight: '78%', width: '100%', maxWidth: 560, alignSelf: 'center' }}>
       <View style={{
         width: '100%', flexShrink: 1,
         backgroundColor: c.backgroundPrimary, borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 2, borderColor: c.ink,

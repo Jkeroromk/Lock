@@ -7,7 +7,7 @@ import { useSheetSides } from '@/hooks/useSheetSides';
  * sheet slides up. (Modal's own animationType="slide" slides the backdrop too,
  * so a big dark band rides up with the sheet.)
  */
-export default function SheetModal({ visible, onClose, children, style, closeLabel, keyboard = false }: {
+export default function SheetModal({ visible, onClose, children, style, closeLabel, keyboard = false, dim = 0.5 }: {
   visible: boolean;
   onClose: () => void;
   children: ReactNode;
@@ -16,6 +16,12 @@ export default function SheetModal({ visible, onClose, children, style, closeLab
   closeLabel?: string;
   /** Lift the sheet above the keyboard (forms). */
   keyboard?: boolean;
+  /**
+   * Backdrop darkness (0–1). Dark enough by default that the page behind
+   * recedes and the sheet holds the focus; lighter only where the page
+   * behind is part of the task (e.g. placing furniture in the room).
+   */
+  dim?: number;
 }) {
   const { height } = useWindowDimensions();
   const sides = useSheetSides();
@@ -40,7 +46,7 @@ export default function SheetModal({ visible, onClose, children, style, closeLab
   );
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
-      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.18)', opacity: k }]}>
+      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: `rgba(0,0,0,${dim})`, opacity: k }]}>
         <Pressable onPress={onClose} style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel={closeLabel} />
       </Animated.View>
       <KeyboardAvoidingView enabled={keyboard} behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[{ flex: 1 }, sides]} pointerEvents="box-none">
