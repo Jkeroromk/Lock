@@ -15,6 +15,7 @@ import {
 import { useStore, Gender, Goal, ExerciseFrequency, ExpectedTimeframe } from '@/store/useStore';
 import { updateProfile } from '@/services/api';
 import { defaultSettings } from '@/lib/goals';
+import { setAcquisitionSource } from '@/lib/revenuecat';
 
 interface OnboardingData {
   height: number;
@@ -24,6 +25,9 @@ interface OnboardingData {
   goal: Goal | null;
   exerciseFrequency: ExerciseFrequency | null;
   expectedTimeframe: ExpectedTimeframe | null;
+  /** "How did you hear about Kero Lock?" (constants/acquisition.ts) */
+  acquisitionSource?: string | null;
+  acquisitionDetail?: string;
 }
 
 interface UseOnboardingAnimationProps {
@@ -119,7 +123,11 @@ export function useOnboardingAnimation({
       goal: onboardingData.goal ?? undefined,
       exerciseFrequency: onboardingData.exerciseFrequency ?? undefined,
       expectedTimeframe: onboardingData.expectedTimeframe ?? undefined,
+      acquisitionSource: onboardingData.acquisitionSource ?? undefined,
+      acquisitionDetail: onboardingData.acquisitionSource === 'other' ? onboardingData.acquisitionDetail?.trim() || undefined : undefined,
     };
+    // Also on the RevenueCat customer, so conversion can be split by source.
+    if (onboardingData.acquisitionSource) setAcquisitionSource(onboardingData.acquisitionSource);
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         if (attempt > 0) await new Promise(r => setTimeout(r, 400));

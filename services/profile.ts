@@ -27,6 +27,9 @@ export interface UserProfile {
   isAdmin?: boolean;
   /** Daily goal settings (lib/goals.ts GoalSettings), synced across devices. */
   goalSettings?: unknown;
+  /** Onboarding answer to "How did you hear about Kero Lock?" (constants/acquisition.ts). */
+  acquisitionSource?: string | null;
+  acquisitionDetail?: string | null;
 }
 
 export const fetchProfile = async (): Promise<UserProfile> => {
@@ -68,4 +71,18 @@ export const deleteAccount = async (appleAuthorizationCode?: string | null): Pro
   await api.delete('/api/user/delete', {
     data: appleAuthorizationCode ? { appleAuthorizationCode } : undefined,
   });
+};
+
+/** What the user did during their free Pro week (for the "Pro week is over" paywall). */
+export interface ProWeekRecap {
+  meals: number;
+  photoMeals: number;
+  daysLogged: number;
+  workouts: number;
+  trialEndsAt: string;
+}
+
+export const fetchProWeekRecap = async (): Promise<ProWeekRecap> => {
+  const response = await api.get<ProWeekRecap>('/api/user/recap');
+  return response.data;
 };

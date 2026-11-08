@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFriendRequestsStore } from '@/store/useFriendRequestsStore';
 import { Text } from '@/components/ui/Text';
 import HealthNotice from '@/components/safety/HealthNotice';
+import PaywallHost from '@/components/paywall/PaywallHost';
 import { FONTS } from '@/constants/fonts';
 import { useDeviceLayout, RAIL_WIDTH, railColumnWidth, STATUS_COLUMN_HEIGHT, INNER_PAGE_TOP, INNER_PAGE_SIDE } from '@/hooks/useDeviceLayout';
 
@@ -510,8 +511,9 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-    {/* Age requirement + health disclaimer, once per account (App Review 1.4.1). */}
+    {/* Health disclaimer, once per account (App Review 1.4.1); then the paywalls. */}
     <HealthNotice />
+    <PaywallHost />
     </>
   );
 }

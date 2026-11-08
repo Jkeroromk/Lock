@@ -329,3 +329,7 @@ BEGIN
   END IF;
 END $$;
 ALTER TABLE "food_name_translations" ENABLE ROW LEVEL SECURITY;
+
+-- 2026-11-08: onboarding "how did you hear about Kero Lock?" answer.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "acquisition_source" TEXT;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "acquisition_detail" TEXT;

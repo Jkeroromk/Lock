@@ -23,6 +23,7 @@ const STEPS = [
   'goal',
   'exerciseFrequency',
   'expectedTimeframe',
+  'source', // how did you hear about Kero Lock
   'invite', // optional: a friend's invite code
 ] as const;
 
@@ -72,6 +73,8 @@ export default function OnboardingScreen() {
       goal: onboardingData.goal,
       exerciseFrequency: onboardingData.exerciseFrequency,
       expectedTimeframe: onboardingData.expectedTimeframe,
+      acquisitionSource: onboardingData.acquisitionSource,
+      acquisitionDetail: onboardingData.acquisitionDetail,
     },
   });
 
@@ -107,6 +110,8 @@ export default function OnboardingScreen() {
         return onboardingData.exerciseFrequency !== null;
       case 'expectedTimeframe':
         return onboardingData.expectedTimeframe !== null;
+      case 'source':
+        return onboardingData.acquisitionSource !== null;
       case 'invite':
         return true;
       default:
@@ -199,6 +204,10 @@ export default function OnboardingScreen() {
             setExpectedTimeframe={onboardingData.setExpectedTimeframe}
             themeMode={onboardingData.themeMode}
             setThemeMode={handleThemeChange}
+            acquisitionSource={onboardingData.acquisitionSource}
+            setAcquisitionSource={onboardingData.setAcquisitionSource}
+            acquisitionDetail={onboardingData.acquisitionDetail}
+            setAcquisitionDetail={onboardingData.setAcquisitionDetail}
           />
         </View>
 

@@ -8,6 +8,8 @@ import ExerciseFrequencySelection from './steps/ExerciseFrequencySelection';
 import ExpectedTimeframeSelection from './steps/ExpectedTimeframeSelection';
 import ThemeSelection from './steps/ThemeSelection';
 import InviteCodeStep from './steps/InviteCodeStep';
+import SourceSelection from './steps/SourceSelection';
+import type { AcquisitionSource } from '@/constants/acquisition';
 
 interface OnboardingStepsProps {
   step: string;
@@ -45,6 +47,11 @@ interface OnboardingStepsProps {
   // Theme
   themeMode: ThemeMode | null;
   setThemeMode: (value: ThemeMode) => void;
+  // How did you hear about us
+  acquisitionSource: AcquisitionSource | null;
+  setAcquisitionSource: (value: AcquisitionSource) => void;
+  acquisitionDetail: string;
+  setAcquisitionDetail: (value: string) => void;
 }
 
 export default function OnboardingSteps({
@@ -75,6 +82,10 @@ export default function OnboardingSteps({
   setExpectedTimeframe,
   themeMode,
   setThemeMode,
+  acquisitionSource,
+  setAcquisitionSource,
+  acquisitionDetail,
+  setAcquisitionDetail,
 }: OnboardingStepsProps) {
   switch (step) {
     case 'height':
@@ -140,6 +151,16 @@ export default function OnboardingSteps({
         <ExpectedTimeframeSelection
           expectedTimeframe={expectedTimeframe}
           setExpectedTimeframe={setExpectedTimeframe}
+        />
+      );
+
+    case 'source':
+      return (
+        <SourceSelection
+          source={acquisitionSource}
+          setSource={setAcquisitionSource}
+          detail={acquisitionDetail}
+          setDetail={setAcquisitionDetail}
         />
       );
 

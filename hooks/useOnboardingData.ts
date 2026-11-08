@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Gender, Goal, ExerciseFrequency, ExpectedTimeframe, ThemeMode } from '@/store/useStore';
+import type { AcquisitionSource } from '@/constants/acquisition';
 
 export function useOnboardingData() {
   const [height, setHeight] = useState(170); // 始终以 cm 存储
@@ -15,6 +16,9 @@ export function useOnboardingData() {
   const [exerciseFrequency, setExerciseFrequency] = useState<ExerciseFrequency | null>(null);
   const [expectedTimeframe, setExpectedTimeframe] = useState<ExpectedTimeframe | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode | null>(null);
+  // No default: we want the real answer, not whatever was preselected.
+  const [acquisitionSource, setAcquisitionSource] = useState<AcquisitionSource | null>(null);
+  const [acquisitionDetail, setAcquisitionDetail] = useState('');
 
   // 初始化默认值
   useEffect(() => {
@@ -129,6 +133,10 @@ export function useOnboardingData() {
     setExpectedTimeframe,
     themeMode,
     setThemeMode,
+    acquisitionSource,
+    setAcquisitionSource,
+    acquisitionDetail,
+    setAcquisitionDetail,
   };
 }
 

@@ -31,6 +31,7 @@ export function SubpageShell({ eyebrow, title, sub, children }: { eyebrow: strin
           <span style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
             <a href="/support">Support</a>
             <a href="/sources">Sources</a>
+            <a href="/compare">Compare</a>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
             <a href="https://jkeroro.com">jkeroro.com</a>

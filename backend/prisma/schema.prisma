@@ -42,6 +42,8 @@ model User {
   goalSettings    Json?    @map("goal_settings") // daily calorie / step goal settings (app lib/goals.ts)
   timeZone        String?   @map("time_zone")        // IANA zone the daily limits use (lib/timezone.ts); not taken from each request
   timeZoneSetAt   DateTime? @map("time_zone_set_at") @db.Timestamptz(6)
+  acquisitionSource String? @map("acquisition_source") // onboarding "how did you hear about us" (lib/acquisition.ts)
+  acquisitionDetail String? @map("acquisition_detail") // free text when the answer is "other"
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 

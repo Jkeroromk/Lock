@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { usePaywallStore } from '@/store/usePaywallStore';
 import { useStore } from '@/store/useStore';
 import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTranslation } from '@/i18n';
@@ -157,18 +158,8 @@ export default function LogScreen() {
     setIsEditing(false);
   };
 
-  const showAiLimit = () => {
-    Alert.alert(
-      t('log.aiLimitTitle' as any),
-      (t('log.aiLimitMsg' as any) as string).replace('{quota}', String(aiQuota)),
-      [
-        // Barcode lookups and the food library are never limited, so offer the scanner first.
-        { text: t('log.scanBarcodeInstead' as any), onPress: () => openCamera('scan') },
-        { text: t('log.upgradeBtn' as any), onPress: () => router.push('/(tabs)/settings/pricing') },
-        { text: t('log.laterBtn' as any), style: 'cancel' },
-      ]
-    );
-  };
+  // Today's free scans are used up: the scan-limit paywall (free ways to log, when scans come back, Pro).
+  const showAiLimit = () => usePaywallStore.getState().open('limit');
 
   const analyzeImage = async () => {
     if (!image) return;
