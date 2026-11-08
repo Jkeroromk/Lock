@@ -77,9 +77,15 @@ export default function LogScreen() {
   const backdated = !(dayOffset === 0 && slot === 'now');
 
   // Photo taken from the yellow camera button in the tab bar arrives as a param.
-  const { imageUri, imageMode, manualCode } = useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string }>();
+  const { imageUri, imageMode, manualCode, mode: modeParam } = useLocalSearchParams<{ imageUri?: string; imageMode?: string; manualCode?: string; mode?: string }>();
   // A photo from our camera is analysed straight away (no extra tap).
   const [autoAnalyze, setAutoAnalyze] = useState<'food' | 'label' | null>(null);
+  // 搜索 from the camera page (meals nobody photographed).
+  useEffect(() => {
+    if (modeParam !== 'search') return;
+    handleModeChange('search');
+    router.setParams({ mode: undefined } as any);
+  }, [modeParam]);
   // Camera found no product for a barcode: type it in here.
   useEffect(() => {
     if (!manualCode) return;

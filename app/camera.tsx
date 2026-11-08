@@ -120,6 +120,9 @@ export default function CameraScreen() {
 
   const sendPhoto = (uri: string) => goTo('/(tabs)/log', { imageUri: uri, imageMode: mode === 'label' ? 'label' : 'food' });
 
+  /** 搜索: no photo (forgot to take one) — the Log tab's search mode (recent foods, library, describe it, 补记). */
+  const openSearch = () => goTo('/(tabs)/log', { mode: 'search' });
+
   const takePhoto = async () => {
     if (!camRef.current || taking) return;
     setTaking(true);
@@ -484,6 +487,19 @@ export default function CameraScreen() {
                     </Pressable>
                   );
                 })}
+                <Pressable
+                  onPress={openSearch}
+                  accessibilityRole="button"
+                  accessibilityHint={t('quickLog.caption')}
+                  style={{
+                    flex: side ? undefined : 1, height: side ? 56 : 50, paddingHorizontal: 16, borderRadius: side ? 18 : 25,
+                    borderWidth: 2, borderColor: LINE, backgroundColor: 'transparent',
+                    flexDirection: 'row', alignItems: 'center', justifyContent: side ? 'flex-start' : 'center', gap: 10,
+                  }}
+                >
+                  <Ionicons name="search-outline" size={20} color={MUTED} />
+                  <Text style={{ fontSize: side ? 17 : 15, fontWeight: '700', color: MUTED }}>{t('log.searchShort')}</Text>
+                </Pressable>
               </View>
               <Text style={{ fontSize: 15, lineHeight: 21, color: MUTED }}>{hint}</Text>
               {dayCard}
@@ -535,12 +551,22 @@ export default function CameraScreen() {
               onPress={() => switchMode(m)}
               accessibilityRole="tab"
               accessibilityState={{ selected: on }}
-              style={{ height: 36, paddingHorizontal: 18, borderRadius: 18, backgroundColor: on ? YELLOW : 'transparent', justifyContent: 'center' }}
+              style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: on ? YELLOW : 'transparent', justifyContent: 'center' }}
             >
               <Text style={{ fontSize: 15, fontWeight: on ? '800' : '700', color: on ? INK : MUTED }}>{modeLabel(m)}</Text>
             </Pressable>
           );
         })}
+        {/* Not a camera mode: opens the Log tab's search, for meals nobody photographed. */}
+        <Pressable
+          onPress={openSearch}
+          accessibilityRole="button"
+          accessibilityHint={t('quickLog.caption')}
+          style={{ height: 36, paddingHorizontal: 14, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 5 }}
+        >
+          <Ionicons name="search-outline" size={15} color={MUTED} />
+          <Text style={{ fontSize: 15, fontWeight: '700', color: MUTED }}>{t('log.searchShort')}</Text>
+        </Pressable>
       </View>
 
       {/* Controls */}
