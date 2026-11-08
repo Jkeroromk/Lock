@@ -670,6 +670,7 @@ const koKR = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    retake: "다시 찍기",
     caption: "사진이 없어도 기록할 수 있어요. 최근 먹은 음식을 탭하거나, 음식을 검색하거나, 먹은 것을 한 문장으로 적어 보세요.",
     placeholder: "음식 검색 또는 먹은 것 입력",
     clear: "지우기",

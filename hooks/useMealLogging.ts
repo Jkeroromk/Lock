@@ -24,6 +24,13 @@ export interface LoggableFood {
 
 const r1 = (v: number) => Math.round(v * 10) / 10;
 
+/** 补记: when the meal was eaten, its label ("昨天 · 晚餐"), and whether that's another day. */
+export interface LogWhen {
+  eatenAt?: string;
+  label?: string;
+  otherDay?: boolean;
+}
+
 /**
  * Saving meals from anywhere (log tab, camera): one food, or everything on
  * the 待记录 list. Asks once whether drinks count as water, refreshes Today
@@ -63,7 +70,7 @@ export function useMealLogging() {
     });
   };
 
-  const save = (f: LoggableFood) => {
+  const save = (f: LoggableFood, eatenAt?: string) => {
     const n = f.servings ?? 1;
     return logMeal({
       food_name: n === 1 ? f.food : `${f.food} ×${n}`,
@@ -73,22 +80,24 @@ export function useMealLogging() {
       fat: r1(f.fat * n),
       image_url: f.imageUri || '',
       thumbnail: f.thumbBase64,
+      eaten_at: eatenAt,
     });
   };
 
-  /** Logs one food now. Returns true when saved. */
-  const logOne = async (f: LoggableFood): Promise<boolean> => {
+  /** Logs one food (now, or at `when` for 补记). Returns true when saved. */
+  const logOne = async (f: LoggableFood, when?: LogWhen): Promise<boolean> => {
     if (logging) return false;
     const n = f.servings ?? 1;
     const detected = Math.round(detectLiquidMl(f.food) * n);
-    const waterMl = detected > 0 && (await askCountAsWater(f.food, detected)) ? detected : 0;
+    // Water is only tracked for today, so drinks from an earlier day aren't offered.
+    const waterMl = detected > 0 && !when?.otherDay && (await askCountAsWater(f.food, detected)) ? detected : 0;
     setLogging(true);
     const before = todaysCalories();
     try {
-      await save(f);
+      await save(f, when?.eatenAt);
       if (waterMl > 0) await addWater(waterMl).catch(() => {});
       refreshToday();
-      toastSaved(`${t('log.savedToast' as any)} · ${f.food}`, Math.round(f.calories * n), before, waterMl);
+      toastSaved(`${t('log.savedToast' as any)} · ${f.food}`, Math.round(f.calories * n), before, waterMl, when?.label);
       return true;
     } catch (error: any) {
       Alert.alert(t('log.saveFailed'), error?.message || t('log.saveFailed'));
@@ -102,7 +111,7 @@ export function useMealLogging() {
    * Logs every item on the list, each as its own meal; failures stay on the list. Returns true when all saved.
    * `when`: 补记 time (ISO), its label and whether it's another day, for meals eaten earlier.
    */
-  const logAll = async (when?: { eatenAt?: string; label?: string; otherDay?: boolean }): Promise<boolean> => {
+  const logAll = async (when?: LogWhen): Promise<boolean> => {
     const items = useMealCartStore.getState().items;
     if (!items.length || logging) return false;
     const drinks = items

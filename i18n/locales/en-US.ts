@@ -749,6 +749,7 @@ const enUS = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    retake: "Retake",
     caption: "No photo? Tap something you've had before, search the food library, or describe what you ate.",
     placeholder: "Search foods, or describe what you ate",
     clear: "Clear",
