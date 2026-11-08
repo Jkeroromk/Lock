@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, Image, Linking, TouchableOpacity } from 'react-native';
+import { View, Image, Linking, TouchableOpacity, Pressable } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { getLastJsError, clearLastJsError, type JsErrorRecord } from '@/lib/crashlog';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -14,6 +14,7 @@ import { getAppIconOption, getCurrentAppIcon } from '@/lib/appIcon';
 import SettingItem from '@/components/settings/SettingItem';
 import SettingsPage, { SettingsSection } from '@/components/settings/SettingsPage';
 import HealthDisclaimer from '@/components/safety/HealthDisclaimer';
+import { useStore } from '@/store/useStore';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -36,8 +37,14 @@ export default function AboutScreen() {
   // expo-updates keeps its own log of fatal JS errors (what crashed the app),
   // written natively, so it survives even when our JS handler never ran.
   const [updateErrors, setUpdateErrors] = useState<string[]>([]);
+  // Diagnostics are for us, not for everyone (or App Review): admin accounts see
+  // them; anyone else can tap the version line 5 times to show them this visit.
+  const isAdmin = useStore((s) => !!s.user?.isAdmin);
+  const [versionTaps, setVersionTaps] = useState(0);
+  const showDiagnostics = isAdmin || versionTaps >= 5;
   useFocusEffect(useCallback(() => {
     setAppIcon(getAppIconOption(getCurrentAppIcon()));
+    if (!showDiagnostics) return;
     getLastJsError().then(setLastError);
     if (Updates.isEnabled) {
       Updates.readLogEntriesAsync(7 * 24 * 3600 * 1000)
@@ -47,7 +54,7 @@ export default function AboutScreen() {
         })
         .catch(() => {});
     }
-  }, []));
+  }, [showDiagnostics]));
 
   return (
     <SettingsPage title={t('about.title')}>
@@ -58,12 +65,14 @@ export default function AboutScreen() {
           </HardShadow>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 30, fontWeight: '800', letterSpacing: -1.2, color: c.textPrimary }}>Lock in.</Text>
-            <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 2, textTransform: 'uppercase' }}>
-              {t('about.version')} {APP_VERSION}
-            </Text>
-            <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary, marginTop: 2, opacity: 0.7 }}>
-              {BUILD_INFO}
-            </Text>
+            <Pressable onPress={() => setVersionTaps((n) => n + 1)} accessible={false}>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary, marginTop: 2, textTransform: 'uppercase' }}>
+                {t('about.version')} {APP_VERSION}
+              </Text>
+              <Text style={{ fontFamily: FONTS.mono, fontSize: 10, color: c.textSecondary, marginTop: 2, opacity: 0.7 }}>
+                {BUILD_INFO}
+              </Text>
+            </Pressable>
           </View>
         </View>
         <Text style={{ fontSize: 15, lineHeight: 22, color: c.textSecondary, marginTop: 14 }}>{t('about.description')}</Text>
@@ -77,7 +86,7 @@ export default function AboutScreen() {
       <SettingItem icon="document-text-outline" title={t('about.termsOfService')} onPress={() => router.push('/(tabs)/settings/terms-of-service')} />
       <SettingItem icon="mail-outline" title={t('about.contact')} value={t('about.contactEmail')} onPress={() => Linking.openURL(`mailto:${t('about.contactEmail')}`)} />
 
-      {lastError ? (
+      {showDiagnostics && lastError ? (
         // Diagnostics for testers: the last JS error that crashed the app (or that a feature recovered from).
         <Card padding={14} style={{ marginTop: 16 }}>
           <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, textTransform: 'uppercase' }}>
@@ -97,7 +106,7 @@ export default function AboutScreen() {
           </View>
         </Card>
       ) : null}
-      {updateErrors.length ? (
+      {showDiagnostics && updateErrors.length ? (
         <Card padding={14} style={{ marginTop: 16 }}>
           <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, textTransform: 'uppercase' }}>Update log · errors</Text>
           <Text selectable style={{ fontFamily: FONTS.mono, fontSize: 10, lineHeight: 14, color: c.textPrimary, marginTop: 6 }}>
