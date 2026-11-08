@@ -36,7 +36,7 @@ export const FREE_BOARD: Record<AppId, Record<'version' | 'photo' | 'barcode', M
   kero: {
     version: { level: 'free', v: { en: 'Yes', zh: '有' } },
     photo: { level: 'free', v: { en: '3 a day', zh: '每天 3 次' } },
-    barcode: { level: 'free', v: { en: 'Unlimited', zh: '不限次' } },
+    barcode: { level: 'free', v: { en: 'Free', zh: '免费' } },
   },
   calai: {
     version: { level: 'limited', v: { en: 'Basic', zh: '基础' }, src: ['calai-eesel'] },

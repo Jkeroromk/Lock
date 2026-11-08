@@ -14,7 +14,7 @@ export function SubpageShell({ eyebrow, title, sub, wide, children }: { eyebrow?
           </a>
           <div className="nav-act">
             <ThemeToggle />
-            <a href="/" className="btn btn-ghost btn-sm">← Home</a>
+            <a href="/" className="btn btn-ghost btn-sm" aria-label="Home">←<span> Home</span></a>
           </div>
         </div>
       </header>

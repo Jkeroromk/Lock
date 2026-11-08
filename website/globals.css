@@ -671,6 +671,7 @@
 /* ── /compare ─────────────────────────── */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .cmp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 44px; }
+.cmp-head .chip-btn { flex: none; white-space: nowrap; }
 .cmp-title { font-size: clamp(42px, 6.6vw, 88px); font-weight: 800; line-height: .94; letter-spacing: -.045em; margin: 0; max-width: 11ch; }
 .cmp.lang-zh .cmp-title { letter-spacing: -.01em; line-height: 1.08; max-width: 9em; }
 .cmp-lead { font-size: clamp(17px, 1.5vw, 19px); line-height: 1.55; color: var(--fg-2); max-width: 36em; margin: 22px 0 0; }
@@ -714,7 +715,7 @@
 .cmp-price dd { margin: 0; display: grid; gap: 4px; }
 .cmp-price-v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .cmp-price-t { font-size: 15px; color: var(--fg-2); }
-.cmp-price.is-kero { background: color-mix(in srgb, var(--accent) 34%, transparent); margin: 0 -18px; padding: 22px 18px; border-radius: 16px; border-bottom-color: transparent; }
+.cmp-price.is-kero { background: color-mix(in srgb, var(--accent) 34%, transparent); margin: 10px -18px 0; padding: 22px 18px; border-radius: 16px; border-bottom-color: transparent; }
 
 .cmp-other { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; }
 .cmp-other > div { padding: 20px 0; border-top: 2px solid var(--line-soft); }
@@ -723,7 +724,7 @@
 
 .cmp-cta { margin-top: 104px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px 56px; align-items: end; background: var(--inv-bg); color: var(--inv-fg); border-radius: 28px; padding: clamp(28px, 5vw, 56px); box-shadow: 8px 8px 0 var(--accent); }
 .dark .cmp-cta { box-shadow: 8px 8px 0 var(--accent); }
-.cmp-cta h2 { font-size: clamp(34px, 4.6vw, 60px); font-weight: 800; line-height: .98; letter-spacing: -.04em; margin: 0; max-width: 10ch; }
+.cmp-cta h2 { font-size: clamp(34px, 4.6vw, 60px); font-weight: 800; line-height: .98; letter-spacing: -.04em; margin: 0; max-width: 12ch; }
 .cmp.lang-zh .cmp-cta h2 { letter-spacing: -.01em; line-height: 1.12; max-width: 8em; }
 .cmp-cta ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-column: 2; grid-row: 1 / span 2; align-self: center; }
 .cmp-cta li { display: flex; align-items: flex-start; gap: 12px; font-size: 17px; line-height: 1.45; }
@@ -742,7 +743,8 @@
   .cmp-row-head { min-height: 52px; }
   .cmp-col { font-size: 12px; }
   .cmp-name { font-size: 15px; }
-  .cmp-mark { font-size: 12px; gap: 5px; padding: 3px 7px 3px 6px; min-height: 30px; border-radius: 9px; }
+  .cmp-mark { font-size: 12px; gap: 5px; padding: 3px 7px 3px 6px; min-height: 30px; border-radius: 9px; max-width: 100%; }
+  .cmp-cell { flex-wrap: wrap; }
   .cmp-mark svg { width: 13px; height: 13px; }
   .cmp-ref { margin-left: 2px; font-size: 10px; }
   .cmp-board { box-shadow: 5px 5px 0 var(--shadow); border-radius: 18px; }
