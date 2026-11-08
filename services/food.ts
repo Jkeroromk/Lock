@@ -254,6 +254,26 @@ export const fetchAllMealsForExport = async (): Promise<MealExportRecord[]> => {
   return res.data;
 };
 
+/**
+ * Meals for the CSV export, limited to local days `from`..`to` (YYYY-MM-DD,
+ * inclusive; omit for everything) and with food names translated into `lang`
+ * (omit to keep them as logged). `complete` is false when some names couldn't
+ * be translated and kept their logged name.
+ */
+export const fetchMealsForExport = async (opts: { from?: string; to?: string; lang?: string }): Promise<{
+  meals: MealExportRecord[];
+  translated: boolean;
+  complete: boolean;
+}> => {
+  const params: Record<string, string> = { v: '2' };
+  if (opts.from) params.from = opts.from;
+  if (opts.to) params.to = opts.to;
+  if (opts.lang) params.lang = opts.lang;
+  // Translating hundreds of names can take a while.
+  const res = await api.get('/api/meals/export', { params, timeout: 90_000 });
+  return res.data;
+};
+
 /** A food from the library (per 100 g). */
 export interface LibraryFood {
   id: string;
