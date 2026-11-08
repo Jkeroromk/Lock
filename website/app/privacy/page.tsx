@@ -13,9 +13,11 @@ const sections: LegalSection[] = [
       <>
         <p><B>Account information:</B> your email address, name, username, bio and profile picture, and the body details you enter during setup (height, weight, age, gender, goal, exercise frequency).</p>
         <p><B>Meal data:</B> the meals you log — food names, calories and macros. Photos you take for calorie analysis, and meals you describe in words (for example &ldquo;an apple and two slices of toast&rdquo;), are sent to our AI provider, Fireworks AI, to estimate their calories and macros. When you save a meal, a small thumbnail of its photo is kept in private storage so it can show in your log. Only you can see it. Deleting the meal deletes its thumbnail.</p>
-        <p><B>Buddy and social data:</B> the names you give your coach and buddy, its growth (from workouts, steps and logged meals), the pats you and your friends send, your friends list and the challenges you create or join.</p>
+        <p><B>Buddy and social data:</B> the names you give your coach and buddy, its growth (from workouts, steps and logged meals), the pats you and your friends send, and your friends list.</p>
+        <p><B>Couple space:</B> if you link with a friend as a couple, the link itself (who invited whom and when it was accepted), the &ldquo;together since&rdquo; date and anniversaries you add, the nudges you send each other, your shared growth points, and the furniture you buy for your shared home.</p>
         <p><B>Health data:</B> with your permission, step count and active energy from Apple Health, and, if you use the Apple Watch app, heart rate during a workout (see &ldquo;Apple Health&rdquo; below).</p>
         <p><B>Training data:</B> your weekly workout plan and the workouts you log — exercises, sets, reps, weights and duration.</p>
+        <p><B>Water:</B> the drinks you log (type and amount), stored with your account so your history and your couple space stay in sync.</p>
         <p><B>Weight records</B> you choose to log, your unit preference (kg or lb), and a <B>push notification token</B> if you enable reminders.</p>
         <p><B>Purchases:</B> your subscription status (Free or Pro). Payments are processed by Apple; we never see your payment details.</p>
       </>
@@ -27,7 +29,8 @@ const sections: LegalSection[] = [
       <List items={[
         "Provide Lock's core features: AI food recognition, calorie and macro tracking, workout planning and logging, and diet and training analysis",
         'Calculate your daily calorie goals and show your progress',
-        'Run social features — friends, leaderboards, challenges and buddies, including notifying a friend when you pat their buddy',
+        'Run social features — friends, leaderboards and buddies, including notifying a friend when you pat their buddy',
+        'Run the couple space — showing your partner your day, and sending the nudges you choose to send as push notifications',
         'Send meal reminders and friend notifications you opt in to',
         'Verify and manage your subscription',
         'Keep the service secure and enforce our Terms of Service',
@@ -39,7 +42,7 @@ const sections: LegalSection[] = [
     content: (
       <>
         <p>Lock reads your step count and active energy from Apple HealthKit, only after you grant permission, to display your daily activity in the app and to grow your buddy.</p>
-        <p>If you use Lock on Apple Watch (Lock 1.1 and later), the watch app reads your heart rate and active energy during a workout to show them on the watch, and saves the finished strength workout to Apple Health. Heart rate stays on your devices; it is not sent to Lock&apos;s servers.</p>
+        <p>If you use Lock on Apple Watch, the watch app reads your heart rate and active energy during a workout to show them on the watch, and saves the finished strength workout to Apple Health. Heart rate stays on your devices; it is not sent to Lock&apos;s servers.</p>
         <List items={[
           'HealthKit data is used only for health and fitness features inside Lock',
           'It is never used for advertising or marketing',
@@ -69,13 +72,22 @@ const sections: LegalSection[] = [
   {
     title: 'What Your Friends Can See',
     content: (
-      <p>Social features are friends-only. Your friends can see your display name, username, avatar, status, today&apos;s calorie total, streak, your buddy (its name, kind and stage) and the challenges you create or join. Your meals, meal photos, workouts and weight are not shared with friends. You can remove friends and block users; blocked users can no longer see you, find you in search or send you friend requests.</p>
+      <p>Social features are friends-only. Your friends can see your display name, username, avatar, status, today&apos;s calorie total, streak, and your buddy (its name, kind and stage). Your meals, meal photos, workouts and weight are not shared with friends. You can remove friends and block users; blocked users can no longer see you, find you in search or send you friend requests.</p>
+    ),
+  },
+  {
+    title: 'What Your Partner Can See',
+    content: (
+      <>
+        <p>The couple space is opt-in. Only a friend can invite you, and nothing is shared until you accept. While you are linked, your partner can see your name and avatar, and today&apos;s totals against your goals: calories, protein, water, steps and whether you trained. They also see the nudges you send, your shared anniversaries, growth points and home.</p>
+        <p>Your partner does not see your individual meals, meal photos, the details of your workouts or your weight. Either of you can unlink at any time in the couple space; after that, neither of you can see the other&apos;s day.</p>
+      </>
     ),
   },
   {
     title: 'Data Retention & Deletion',
     content: (
-      <p>Your data is kept while your account is active. You can delete your account at any time in <span className="text-foreground">Settings → Account &amp; Security → Delete Account</span>. This immediately and permanently deletes your account and all associated data (meals, meal photos, workouts, weight and health records, your buddy, friends and challenges), and, if you signed in with Apple, revokes Lock&apos;s Sign in with Apple access. Deleting your account does not cancel an App Store subscription; cancel it in your Apple ID settings. You can also export your meal history from Settings at any time. To stop the free first week of Pro from being claimed again with the same email, we keep a one-way hash of your email address and the date it first signed up after you delete your account; it cannot be turned back into your email. You can request deletion at any time by emailing <Mail />.</p>
+      <p>Your data is kept while your account is active. You can delete your account at any time in <span className="text-foreground">Settings → Account &amp; Security → Delete Account</span>. This immediately and permanently deletes your account and all associated data (meals, meal photos, workouts, weight and health records, your buddy, friends, water log and couple space), and, if you signed in with Apple, revokes Lock&apos;s Sign in with Apple access. Deleting your account does not cancel an App Store subscription; cancel it in your Apple ID settings. You can also export your meal history from Settings at any time. To stop the free first week of Pro from being claimed again with the same email, we keep a one-way hash of your email address and the date it first signed up after you delete your account; it cannot be turned back into your email. You can request deletion at any time by emailing <Mail />.</p>
     ),
   },
   {
@@ -90,7 +102,7 @@ const sections: LegalSection[] = [
   },
   {
     title: "Children's Privacy",
-    content: <p>Lock is not directed at children under 13, and we do not knowingly collect personal information from them. If you believe a child has provided us data, contact us and we will delete it.</p>,
+    content: <p>Lock is for adults 18 and older. It is not directed at children, and we do not knowingly collect personal information from anyone under 18. If you believe someone under 18 has provided us data, contact us and we will delete it.</p>,
   },
   {
     title: 'Changes to This Policy',
