@@ -16,5 +16,8 @@ export const ACQUISITION_ICONS: Record<AcquisitionSource, string> = {
   other: 'ellipsis-horizontal',
 };
 
-/** Kero Lock on the App Store (used in invite messages). */
-export const APP_STORE_URL = 'https://apps.apple.com/app/id6762630080';
+/**
+ * Kero Lock on the App Store, for invite messages. pt/ct make it an App Store
+ * campaign link, so installs from invites show up under Analytics → Campaigns.
+ */
+export const APP_STORE_URL = 'https://apps.apple.com/app/apple-store/id6762630080?pt=128801549&ct=invite&mt=8';

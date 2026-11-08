@@ -1,4 +1,5 @@
-export const APPSTORE_URL = 'https://apps.apple.com/app/id6762630080';
+/** App Store campaign link (ct=website), so installs from the site show up under Analytics → Campaigns. */
+export const APPSTORE_URL = 'https://apps.apple.com/app/apple-store/id6762630080?pt=128801549&ct=website&mt=8';
 
 /* Free / Pro lists mirror the in-app pricing copy (i18n freeFeatures / proFeatures)
    and backend/lib/plans.ts in the app repo. Keep them in sync when limits change.

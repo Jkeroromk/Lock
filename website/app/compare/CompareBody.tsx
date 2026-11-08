@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { APPSTORE_URL } from '../components/copy';
 import { APPS, APP_NAMES, CHECKED, PICK_OTHER, ROWS, SOURCES, type AppId, type Lang } from './data';
+
+/** Campaign link (ct=compare): installs from this page show up separately in App Analytics. */
+const APPSTORE_URL = 'https://apps.apple.com/app/apple-store/id6762630080?pt=128801549&ct=compare&mt=8';
 
 const UI = {
   en: {
