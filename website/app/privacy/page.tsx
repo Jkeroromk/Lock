@@ -12,7 +12,7 @@ const sections: LegalSection[] = [
     content: (
       <>
         <p><B>Account information:</B> your email address, name, username, bio and profile picture, and the body details you enter during setup (height, weight, age, gender, goal, exercise frequency).</p>
-        <p><B>Meal data:</B> the meals you log — food names, calories and macros. Photos you take for calorie analysis are sent to our AI provider to be analysed. When you save a meal, a small thumbnail of its photo is kept in private storage so it can show in your log. Only you can see it. Deleting the meal deletes its thumbnail.</p>
+        <p><B>Meal data:</B> the meals you log — food names, calories and macros. Photos you take for calorie analysis, and meals you describe in words (for example &ldquo;an apple and two slices of toast&rdquo;), are sent to our AI provider, Fireworks AI, to estimate their calories and macros. When you save a meal, a small thumbnail of its photo is kept in private storage so it can show in your log. Only you can see it. Deleting the meal deletes its thumbnail.</p>
         <p><B>Buddy and social data:</B> the names you give your coach and buddy, its growth (from workouts, steps and logged meals), the pats you and your friends send, your friends list and the challenges you create or join.</p>
         <p><B>Health data:</B> with your permission, step count and active energy from Apple Health, and, if you use the Apple Watch app, heart rate during a workout (see &ldquo;Apple Health&rdquo; below).</p>
         <p><B>Training data:</B> your weekly workout plan and the workouts you log — exercises, sets, reps, weights and duration.</p>
@@ -56,7 +56,7 @@ const sections: LegalSection[] = [
         <p>We do not sell your personal data. We share data only with providers that operate the service on our behalf:</p>
         <List items={[
           <><B>Clerk</B> — sign-in and account security (including Sign in with Apple / Google)</>,
-          <><B>Fireworks AI</B> — analysing meal photos and nutrition labels, and generating the AI review from your recent meals, workouts and goals</>,
+          <><B>Fireworks AI</B> — analysing meal photos, nutrition labels and meals you describe in words, and generating the AI review and AI workout plan from your recent meals, workouts and goals. It receives only what is needed for that request, not your name or email</>,
           <><B>Supabase</B> — database and private photo storage</>,
           <><B>Vercel</B> — server hosting</>,
           <><B>RevenueCat</B> — subscription management</>,
@@ -75,7 +75,7 @@ const sections: LegalSection[] = [
   {
     title: 'Data Retention & Deletion',
     content: (
-      <p>Your data is kept while your account is active. You can delete your account at any time in <span className="text-foreground">Settings → Account &amp; Security → Delete Account</span>. This immediately and permanently deletes your account and all associated data (meals, meal photos, workouts, weight and health records, your buddy, friends and challenges), and, if you signed in with Apple, revokes Lock&apos;s Sign in with Apple access. Deleting your account does not cancel an App Store subscription; cancel it in your Apple ID settings. Pro members can also export their meal history from Settings. You can request deletion at any time by emailing <Mail />.</p>
+      <p>Your data is kept while your account is active. You can delete your account at any time in <span className="text-foreground">Settings → Account &amp; Security → Delete Account</span>. This immediately and permanently deletes your account and all associated data (meals, meal photos, workouts, weight and health records, your buddy, friends and challenges), and, if you signed in with Apple, revokes Lock&apos;s Sign in with Apple access. Deleting your account does not cancel an App Store subscription; cancel it in your Apple ID settings. You can also export your meal history from Settings at any time. To stop the free first week of Pro from being claimed again with the same email, we keep a one-way hash of your email address and the date it first signed up after you delete your account; it cannot be turned back into your email. You can request deletion at any time by emailing <Mail />.</p>
     ),
   },
   {
@@ -106,7 +106,7 @@ export default function PrivacyPolicy() {
   return (
     <LegalPage
       title="Privacy Policy"
-      lastUpdated="October 25, 2026"
+      lastUpdated="November 8, 2026"
       intro={<p>Lock (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) values your privacy. This policy explains what we collect, how we use it, and the choices you have when you use the Lock mobile app.</p>}
       sections={sections}
     />
