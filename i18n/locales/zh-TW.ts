@@ -697,6 +697,12 @@ const zhTW = {
   },
   // Log tab 搜索 mode and 补记 (meals nobody photographed).
   quickLog: {
+    backfillTitle: "補記",
+    fromAlbum: "從相簿選照片",
+    backfillHint: "選那一餐拍的照片，會按照片的拍攝時間記；沒有照片就在下面搜尋或寫一句。",
+    photoTime: "照片時間",
+    logThisDay: "記一餐",
+    backfillThisDay: "補記這一天",
     retake: "重拍一張",
     caption: "沒拍照也能記：點最近吃過的、搜尋食物庫，或寫一句吃了什麼。",
     placeholder: "搜尋食物，或寫下吃了什麼",

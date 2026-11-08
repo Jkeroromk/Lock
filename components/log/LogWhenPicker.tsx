@@ -23,8 +23,14 @@ export function dayLabel(offset: number, t: (k: string) => string, language: str
   }
 }
 
-/** "现在" / "今天 · 午餐" / "昨天 · 晚餐". */
-export function whenLabel(dayOffset: number, slot: MealSlot, t: (k: string) => string, language: string): string {
+/** "19:42" in the app's language. */
+export function clockLabel(iso: string, language: string): string {
+  try { return new Date(iso).toLocaleTimeString(language, { hour: 'numeric', minute: '2-digit' }); } catch { return iso.slice(11, 16); }
+}
+
+/** "现在" / "今天 · 午餐" / "昨天 · 晚餐" / "昨天 · 19:42" (a photo's time). */
+export function whenLabel(dayOffset: number, slot: MealSlot, t: (k: string) => string, language: string, at?: string | null): string {
+  if (at) return `${dayLabel(dayOffset, t, language)} · ${clockLabel(at, language)}`;
   if (dayOffset === 0 && slot === 'now') return t('quickLog.now');
   return `${dayLabel(dayOffset, t, language)} · ${t(`quickLog.${slot}`)}`;
 }
@@ -36,11 +42,14 @@ export function whenLabel(dayOffset: number, slot: MealSlot, t: (k: string) => s
 export default function LogWhenPicker({ style }: { style?: any }) {
   const c = useTheme();
   const { t, language } = useTranslation();
-  const { dayOffset, slot, setDay, setSlot } = useLogWhenStore(
-    useShallow((s) => ({ dayOffset: s.dayOffset, slot: s.slot, setDay: s.setDay, setSlot: s.setSlot })),
+  const { dayOffset, slot, at, setDay, setSlot } = useLogWhenStore(
+    useShallow((s) => ({ dayOffset: s.dayOffset, slot: s.slot, at: s.at, setDay: s.setDay, setSlot: s.setSlot })),
   );
   const [open, setOpen] = useState(false);
-  const backdated = !(dayOffset === 0 && slot === 'now');
+  const backdated = !!at || !(dayOffset === 0 && slot === 'now');
+  // Today + 6 as chips, plus the chosen day when it's further back (from the calendar or a photo).
+  const days = Array.from({ length: BACKDATE_DAYS }, (_, i) => i);
+  if (dayOffset >= BACKDATE_DAYS) days.push(dayOffset);
   const now = new Date();
 
   return (
@@ -54,12 +63,12 @@ export default function LogWhenPicker({ style }: { style?: any }) {
         onPress={() => setOpen((o) => !o)}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={`${t('quickLog.whenLabel')}: ${whenLabel(dayOffset, slot, t, language)}`}
+        accessibilityLabel={`${t('quickLog.whenLabel')}: ${whenLabel(dayOffset, slot, t, language, at)}`}
         style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, paddingHorizontal: 12 }}
       >
         <Ionicons name={backdated ? 'time' : 'time-outline'} size={16} color={c.textPrimary} />
         <Text style={{ flex: 1, fontSize: 13, color: c.textSecondary }}>{t('quickLog.whenLabel')}</Text>
-        <Text style={{ fontSize: 14, fontWeight: '800', color: c.textPrimary }}>{whenLabel(dayOffset, slot, t, language)}</Text>
+        <Text style={{ fontSize: 14, fontWeight: '800', color: c.textPrimary }}>{whenLabel(dayOffset, slot, t, language, at)}</Text>
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={16} color={c.textPrimary} />
       </Pressable>
 
@@ -67,14 +76,17 @@ export default function LogWhenPicker({ style }: { style?: any }) {
         <View style={{ paddingHorizontal: 12, paddingBottom: 12, gap: 10 }}>
           <Label style={{ fontSize: 10 }}>{t('quickLog.day')}</Label>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }} keyboardShouldPersistTaps="handled">
-            {Array.from({ length: BACKDATE_DAYS }, (_, i) => (
+            {days.map((i) => (
               <Chip key={i} label={dayLabel(i, t, language)} selected={dayOffset === i} onPress={() => setDay(i)} style={{ paddingHorizontal: 12 }} />
             ))}
           </ScrollView>
           <Label style={{ fontSize: 10 }}>{t('quickLog.meal')}</Label>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {at ? (
+              <Chip label={`${t('quickLog.photoTime')} ${clockLabel(at, language)}`} selected style={{ paddingHorizontal: 12 }} />
+            ) : null}
             {dayOffset === 0 ? (
-              <Chip label={t('quickLog.now')} selected={slot === 'now'} onPress={() => setSlot('now')} style={{ paddingHorizontal: 12 }} />
+              <Chip label={t('quickLog.now')} selected={!at && slot === 'now'} onPress={() => setSlot('now')} style={{ paddingHorizontal: 12 }} />
             ) : null}
             {SLOTS.map((s) => {
               // Today: a meal that hasn't come yet can't be picked.
@@ -84,7 +96,7 @@ export default function LogWhenPicker({ style }: { style?: any }) {
                 <Chip
                   key={s}
                   label={t(`quickLog.${s}`)}
-                  selected={slot === s}
+                  selected={!at && slot === s}
                   disabled={future}
                   onPress={() => setSlot(s)}
                   style={{ paddingHorizontal: 12, opacity: future ? 0.35 : 1 }}
@@ -95,7 +107,7 @@ export default function LogWhenPicker({ style }: { style?: any }) {
           {backdated ? (
             <Text style={{ fontSize: 12, lineHeight: 17, color: c.textSecondary }}>
               {t('quickLog.whenNote', {
-                time: slotDate(dayOffset, slot).toLocaleTimeString(language, { hour: 'numeric', minute: '2-digit' }),
+                time: at ? clockLabel(at, language) : slotDate(dayOffset, slot).toLocaleTimeString(language, { hour: 'numeric', minute: '2-digit' }),
               })}
             </Text>
           ) : null}
