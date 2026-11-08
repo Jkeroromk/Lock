@@ -849,7 +849,7 @@ function Footer({ t }: { t: T }) {
           <a href="#how">{t.nav.how}</a><a href="#features">{t.nav.features}</a><a href="#train">{t.nav.train}</a><a href="#watch">{t.nav.watch}</a><a href="#buddy">{t.nav.buddy}</a><a href="#couple">{t.nav.couple}</a><a href="#pricing">{t.nav.pricing}</a><a href="#faq">{t.nav.faq}</a>
         </nav>
         <nav className="foot-row foot-legal" aria-label={f.company}>
-          <a href="/support">{f.links.support}</a><a href="/sources">{f.links.sources}</a><a href="/privacy">{f.links.privacy}</a><a href="/terms">{f.links.terms}</a>
+          <a href="/support">{f.links.support}</a><a href="/sources">{f.links.sources}</a><a href="/compare">{f.links.compare}</a><a href="/privacy">{f.links.privacy}</a><a href="/terms">{f.links.terms}</a>
         </nav>
       </div>
       <div className="wrap foot-base mono">
