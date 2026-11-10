@@ -709,6 +709,17 @@ const zhTW = {
     support: "支援頁面",
     online: "在網頁上查看",
   },
+  micros: {
+    fiber: "膳食纖維",
+    sodium: "鈉",
+    fiberUnit: "膳食纖維 (g)",
+    sodiumUnit: "鈉 (mg)",
+    unknown: "未知",
+    noneYet: "從現在起記錄的餐會顯示膳食纖維和鈉。",
+    fromMeals: "來自 {n}/{total} 餐（其餘沒有資料）",
+    sodiumOver: "鈉超過每日上限了。湯底、醬料和泡麵是常見來源。",
+    mealHighSodium: "這一餐佔每日鈉上限的 {pct}%。",
+  },
   sources: {
     title: "參考來源",
     intro: "Lock 的熱量、營養素、飲水和步數目標都出自這些資料。點開可以查看原文。",
@@ -726,6 +737,9 @@ const zhTW = {
     useGeneral: "健康飲食指南",
     useFoodData: "食物搜尋的營養資料",
     useBarcode: "包裝食品（條碼）的營養資料",
+    useFiber: "每日膳食纖維目標（每 1000 kcal 14 g）",
+    useSodium: "每日鈉上限（2300 mg）",
+    useDailyValue: "食品標示上膳食纖維和鈉的每日參考值",
   },
   perm: {
     denied: "Lock 的相機權限已關閉，可以在「設定」裡開啟。",

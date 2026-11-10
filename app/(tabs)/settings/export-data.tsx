@@ -23,13 +23,13 @@ const LANGS: LanguageCode[] = ['zh-CN', 'zh-TW', 'en-US', 'ja-JP', 'ko-KR'];
 
 /** Column headers in the export's language (not necessarily the app's). */
 const HEADERS: Record<LanguageCode, {
-  date: string; time: string; food: string; kcal: string; protein: string; carbs: string; fat: string; weight: string; note: string;
+  date: string; time: string; food: string; kcal: string; protein: string; carbs: string; fat: string; fiber: string; sodium: string; weight: string; note: string;
 }> = {
-  'zh-CN': { date: '日期', time: '时间', food: '食物', kcal: '热量 (kcal)', protein: '蛋白质 (g)', carbs: '碳水 (g)', fat: '脂肪 (g)', weight: '体重', note: '备注' },
-  'zh-TW': { date: '日期', time: '時間', food: '食物', kcal: '熱量 (kcal)', protein: '蛋白質 (g)', carbs: '碳水 (g)', fat: '脂肪 (g)', weight: '體重', note: '備註' },
-  'en-US': { date: 'Date', time: 'Time', food: 'Food', kcal: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', weight: 'Weight', note: 'Note' },
-  'ja-JP': { date: '日付', time: '時刻', food: '食品', kcal: 'カロリー (kcal)', protein: 'たんぱく質 (g)', carbs: '炭水化物 (g)', fat: '脂質 (g)', weight: '体重', note: 'メモ' },
-  'ko-KR': { date: '날짜', time: '시간', food: '음식', kcal: '칼로리 (kcal)', protein: '단백질 (g)', carbs: '탄수화물 (g)', fat: '지방 (g)', weight: '체중', note: '메모' },
+  'zh-CN': { date: '日期', time: '时间', food: '食物', kcal: '热量 (kcal)', protein: '蛋白质 (g)', carbs: '碳水 (g)', fat: '脂肪 (g)', fiber: '膳食纤维 (g)', sodium: '钠 (mg)', weight: '体重', note: '备注' },
+  'zh-TW': { date: '日期', time: '時間', food: '食物', kcal: '熱量 (kcal)', protein: '蛋白質 (g)', carbs: '碳水 (g)', fat: '脂肪 (g)', fiber: '膳食纖維 (g)', sodium: '鈉 (mg)', weight: '體重', note: '備註' },
+  'en-US': { date: 'Date', time: 'Time', food: 'Food', kcal: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', fiber: 'Fiber (g)', sodium: 'Sodium (mg)', weight: 'Weight', note: 'Note' },
+  'ja-JP': { date: '日付', time: '時刻', food: '食品', kcal: 'カロリー (kcal)', protein: 'たんぱく質 (g)', carbs: '炭水化物 (g)', fat: '脂質 (g)', fiber: '食物繊維 (g)', sodium: 'ナトリウム (mg)', weight: '体重', note: 'メモ' },
+  'ko-KR': { date: '날짜', time: '시간', food: '음식', kcal: '칼로리 (kcal)', protein: '단백질 (g)', carbs: '탄수화물 (g)', fat: '지방 (g)', fiber: '식이섬유 (g)', sodium: '나트륨 (mg)', weight: '체중', note: '메모' },
 };
 
 const csvCell = (v: string | number) => {
@@ -100,10 +100,11 @@ export default function ExportDataScreen() {
         return;
       }
       const lines = [
-        csvLine([headers.date, headers.time, headers.food, headers.kcal, headers.protein, headers.carbs, headers.fat]),
+        csvLine([headers.date, headers.time, headers.food, headers.kcal, headers.protein, headers.carbs, headers.fat, headers.fiber, headers.sodium]),
         ...res.meals.map((m) => {
           const d = new Date(m.created_at);
-          return csvLine([dayKey(d), hhmm(d), m.food_name ?? '', m.calories, m.protein, m.carbs, m.fat]);
+          // Unknown fiber/sodium stays an empty cell, not 0.
+          return csvLine([dayKey(d), hhmm(d), m.food_name ?? '', m.calories, m.protein, m.carbs, m.fat, m.fiber ?? '', m.sodium ?? '']);
         }),
       ];
       await shareFile(`lock_meals${fileSuffix()}.csv`, lines.join('\n'), t('exportData.shareTitle'));

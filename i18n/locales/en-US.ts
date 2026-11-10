@@ -777,6 +777,17 @@ const enUS = {
     support: "Support page",
     online: "Read it on the web",
   },
+  micros: {
+    fiber: "Fiber",
+    sodium: "Sodium",
+    fiberUnit: "Fiber (g)",
+    sodiumUnit: "Sodium (mg)",
+    unknown: "Not known",
+    noneYet: "Fiber and sodium show up for meals logged from now on.",
+    fromMeals: "From {n} of {total} meals (the rest have no data)",
+    sodiumOver: "Over the daily sodium limit. Broth, sauces and instant noodles are common sources.",
+    mealHighSodium: "This meal is {pct}% of the day's sodium limit.",
+  },
   sources: {
     title: "Sources & methods",
     intro: "Where Lock's calorie, macro, water and step numbers come from. Tap a source to open it.",
@@ -794,6 +805,9 @@ const enUS = {
     useGeneral: "Healthy eating guidance",
     useFoodData: "Food search nutrition data",
     useBarcode: "Packaged food (barcode) nutrition data",
+    useFiber: "Daily fiber target (14 g per 1,000 kcal)",
+    useSodium: "Daily sodium limit (2,300 mg)",
+    useDailyValue: "Fiber and sodium Daily Values on food labels",
   },
   perm: {
     denied: "Camera access is off for Lock. You can turn it on in Settings.",

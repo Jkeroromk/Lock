@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const { userId } = authResult;
 
     const body = await request.json();
-    const { food_name, calories, protein, carbs, fat, image_url, thumbnail, eaten_at } = body;
+    const { food_name, calories, protein, carbs, fat, fiber, sodium, image_url, thumbnail, eaten_at } = body;
 
     // 补记: when the meal was eaten. Up to 30 days back, never in the future
     // (a few minutes of clock skew are allowed and clamped to now).
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const nutrition = parseNutrition({ calories, protein, carbs, fat });
+    const nutrition = parseNutrition({ calories, protein, carbs, fat, fiber, sodium });
     if (!nutrition) {
       return NextResponse.json({ error: 'Invalid nutrition values' }, { status: 400 });
     }
@@ -77,6 +77,8 @@ export async function POST(request: NextRequest) {
         protein: nutrition.protein ?? 0,
         carbs: nutrition.carbs ?? 0,
         fat: nutrition.fat ?? 0,
+        fiber: nutrition.fiber ?? null,
+        sodium: nutrition.sodium ?? null,
         imageUrl: image_url || null,
         ...(eatenAt ? { createdAt: eatenAt, updatedAt: new Date() } : {}),
       },

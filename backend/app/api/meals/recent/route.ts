@@ -31,12 +31,12 @@ export async function GET() {
       where: { userId, createdAt: { gte: new Date(Date.now() - DAYS * 86_400_000) } },
       orderBy: { createdAt: 'desc' },
       take: MAX_ROWS,
-      select: { foodName: true, calories: true, protein: true, carbs: true, fat: true, imageUrl: true, createdAt: true },
+      select: { foodName: true, calories: true, protein: true, carbs: true, fat: true, fiber: true, sodium: true, imageUrl: true, createdAt: true },
     });
 
     const groups = new Map<string, {
       name: string; count: number; last: Date;
-      calories: number; protein: number; carbs: number; fat: number; imageUrl: string | null;
+      calories: number; protein: number; carbs: number; fat: number; fiber: number | null; sodium: number | null; imageUrl: string | null;
     }>();
     for (const r of rows) {
       const [name, n] = splitServings(r.foodName);
@@ -50,6 +50,8 @@ export async function GET() {
         name, count: 1, last: r.createdAt,
         calories: Math.round(Number(r.calories || 0) / n),
         protein: r1(r.protein), carbs: r1(r.carbs), fat: r1(r.fat),
+        fiber: r.fiber === null ? null : r1(r.fiber),
+        sodium: r.sodium === null ? null : Math.round(Number(r.sodium) / n),
         imageUrl: r.imageUrl,
       });
     }
@@ -64,6 +66,8 @@ export async function GET() {
       protein: g.protein,
       carbs: g.carbs,
       fat: g.fat,
+      fiber: g.fiber,
+      sodium: g.sodium,
       count: g.count,
       last_at: g.last.toISOString(),
       // For display only (signed URLs expire).

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { type DayTotals, emptyDay, addMicros } from '@/lib/nutrition';
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgo = new Date(localStartMidnight.getTime() + tzOffset * 60 * 1000);
 
     const meals = await prisma.meal.findMany({
-      select: { createdAt: true, calories: true, protein: true, carbs: true, fat: true },
+      select: { createdAt: true, calories: true, protein: true, carbs: true, fat: true, fiber: true, sodium: true },
       where: {
         userId,
         createdAt: { gte: sevenDaysAgo },
@@ -34,15 +35,16 @@ export async function GET(request: NextRequest) {
     });
 
     // Group meals by local date: meal UTC → local = UTC - tzOffset
-    const dailyMap: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
+    const dailyMap: Record<string, DayTotals> = {};
     meals.forEach((meal) => {
       const localMs = new Date(meal.createdAt).getTime() - tzOffset * 60 * 1000;
       const date = new Date(localMs).toISOString().split('T')[0];
-      if (!dailyMap[date]) dailyMap[date] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+      if (!dailyMap[date]) dailyMap[date] = emptyDay();
       dailyMap[date].calories += Number(meal.calories || 0);
       dailyMap[date].protein += Number(meal.protein || 0);
       dailyMap[date].carbs += Number(meal.carbs || 0);
       dailyMap[date].fat += Number(meal.fat || 0);
+      addMicros(dailyMap[date], meal);
     });
 
     // Build 7-day array using local Date constructor (no UTC drift)
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
       const dateStr = localDateStr(d);
       days.push({
         date: dateStr,
-        ...(dailyMap[dateStr] || { calories: 0, protein: 0, carbs: 0, fat: 0 }),
+        ...(dailyMap[dateStr] || emptyDay()),
       });
     }
 

@@ -41,9 +41,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
     }
-    const { food_name, calories, protein, carbs, fat } = body;
+    const { food_name, calories, protein, carbs, fat, fiber, sodium } = body;
 
-    const nutrition = parseNutrition({ calories, protein, carbs, fat });
+    const nutrition = parseNutrition({ calories, protein, carbs, fat, fiber, sodium });
     if (!nutrition) {
       return NextResponse.json({ error: 'Invalid nutrition values' }, { status: 400 });
     }
@@ -61,6 +61,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         ...(nutrition.protein !== undefined && { protein: nutrition.protein }),
         ...(nutrition.carbs !== undefined && { carbs: nutrition.carbs }),
         ...(nutrition.fat !== undefined && { fat: nutrition.fat }),
+        // null clears a value back to "not known".
+        ...(fiber === null ? { fiber: null } : nutrition.fiber !== undefined && { fiber: nutrition.fiber }),
+        ...(sodium === null ? { sodium: null } : nutrition.sodium !== undefined && { sodium: nutrition.sodium }),
       },
     });
 

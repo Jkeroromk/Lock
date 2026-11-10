@@ -11,6 +11,7 @@ import { useStore } from '@/store/useStore';
 import EditMealModal from './EditMealModal';
 import { useShallow } from 'zustand/react/shallow';
 import { useFoodNames } from '@/hooks/useFoodNames';
+import { SODIUM_LIMIT_MG, microsLine } from '@/lib/micros';
 
 interface Meal {
   id?: string;
@@ -19,6 +20,8 @@ interface Meal {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number | null;
+  sodium?: number | null;
   image_url?: string | null;
 }
 
@@ -128,6 +131,11 @@ export default function MealsList({ meals }: MealsListProps) {
                     <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, marginTop: 2 }} numberOfLines={1}>
                       P{Math.round(meal.protein)} C{Math.round(meal.carbs)} F{Math.round(meal.fat)}
                     </Text>
+                    {meal.fiber != null || meal.sodium != null ? (
+                      <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: meal.sodium != null && meal.sodium >= SODIUM_LIMIT_MG / 2 ? c.danger : c.textSecondary, marginTop: 1 }} numberOfLines={1}>
+                        {microsLine(meal, t)}
+                      </Text>
+                    ) : null}
                   </View>
                   <Text style={{ fontSize: 20, fontWeight: '800', color: c.textPrimary }}>{Math.round(meal.calories)}</Text>
                 </TouchableOpacity>

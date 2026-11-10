@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function row(m: { id: string; foodName: string; calories: unknown; protein: unknown; carbs: unknown; fat: unknown; createdAt: Date }) {
+function row(m: { id: string; foodName: string; calories: unknown; protein: unknown; carbs: unknown; fat: unknown; fiber: unknown; sodium: unknown; createdAt: Date }) {
   return {
     id: m.id,
     food_name: m.foodName,
@@ -72,6 +72,8 @@ function row(m: { id: string; foodName: string; calories: unknown; protein: unkn
     protein: Number(m.protein || 0),
     carbs: Number(m.carbs || 0),
     fat: Number(m.fat || 0),
+    fiber: m.fiber === null || m.fiber === undefined ? null : Number(m.fiber),
+    sodium: m.sodium === null || m.sodium === undefined ? null : Number(m.sodium),
     created_at: m.createdAt,
   };
 }

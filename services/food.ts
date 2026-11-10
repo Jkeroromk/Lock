@@ -8,6 +8,10 @@ export interface FoodAnalysis {
   protein: number;
   carbs: number;
   fat: number;
+  /** g; undefined/null when not known. */
+  fiber?: number | null;
+  /** mg; undefined/null when not known. */
+  sodium?: number | null;
   confidence: number;
   /** Product photo (barcode lookups). */
   imageUrl?: string;
@@ -19,6 +23,8 @@ export interface MealData {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number;
+  sodium?: number;
   image_url: string;
   /** Base64 JPEG thumbnail; the server keeps it in Supabase Storage. */
   thumbnail?: string;
@@ -33,11 +39,23 @@ export interface MealRecord {
   protein: number;
   carbs: number;
   fat: number;
+  /** null = not known (older meals, foods without data). */
+  fiber?: number | null;
+  sodium?: number | null;
   image_url: string;
   created_at: string;
 }
 
-export interface WeeklyDay {
+/** fiber/sodium only count meals that have them; fiberMeals/sodiumMeals/meals say how many. */
+interface DayMicros {
+  fiber?: number;
+  sodium?: number;
+  fiberMeals?: number;
+  sodiumMeals?: number;
+  meals?: number;
+}
+
+export interface WeeklyDay extends DayMicros {
   date: string;
   calories: number;
   protein: number;
@@ -46,7 +64,7 @@ export interface WeeklyDay {
 }
 
 export interface MonthlyData {
-  [dateString: string]: {
+  [dateString: string]: DayMicros & {
     calories: number;
     protein: number;
     carbs: number;
@@ -61,6 +79,8 @@ export interface MealExportRecord {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number | null;
+  sodium?: number | null;
   created_at: string;
 }
 
@@ -100,7 +120,7 @@ export const deleteMeal = async (mealId: string): Promise<void> => {
 
 export const updateMeal = async (
   mealId: string,
-  data: Partial<{ food_name: string; calories: number; protein: number; carbs: number; fat: number }>,
+  data: Partial<{ food_name: string; calories: number; protein: number; carbs: number; fat: number; fiber: number | null; sodium: number | null }>,
 ): Promise<void> => {
   try {
     await api.patch(`/api/meals/${mealId}`, data);
@@ -139,27 +159,41 @@ export const lookupBarcode = async (barcode: string, lang?: string): Promise<Foo
     };
 
     const servingG = offNum(product.serving_quantity);
+    // OFF keeps sodium in grams; salt (g) × 0.4 = sodium (g) when only salt is given.
+    const sodiumMg = (basis: string) => {
+      const na = offNum(n[`sodium_${basis}`]);
+      if (na !== undefined) return na * 1000;
+      const salt = offNum(n[`salt_${basis}`]);
+      return salt !== undefined ? salt * 400 : undefined;
+    };
     const per100 = {
       calories: kcal('100g'),
       protein: offNum(n.proteins_100g),
       carbs: offNum(n.carbohydrates_100g),
       fat: offNum(n.fat_100g),
+      fiber: offNum(n.fiber_100g),
+      sodium: sodiumMg('100g'),
     };
     const perServing = {
       calories: kcal('serving'),
       protein: offNum(n.proteins_serving),
       carbs: offNum(n.carbohydrates_serving),
       fat: offNum(n.fat_serving),
+      fiber: offNum(n.fiber_serving),
+      sodium: sodiumMg('serving'),
     };
     const scale = servingG && servingG > 0 && servingG < 2000 ? servingG / 100 : null;
 
-    let values: { calories?: number; protein?: number; carbs?: number; fat?: number };
+    let values: { calories?: number; protein?: number; carbs?: number; fat?: number; fiber?: number; sodium?: number };
     let basisLabel: string;
     if (perServing.calories !== undefined || scale) {
       // One serving: use the label's per-serving figure, else scale per-100 g.
       const pick = (k: keyof typeof per100) =>
         perServing[k] ?? (scale && per100[k] !== undefined ? per100[k]! * scale : undefined);
-      values = { calories: pick('calories'), protein: pick('protein'), carbs: pick('carbs'), fat: pick('fat') };
+      values = {
+        calories: pick('calories'), protein: pick('protein'), carbs: pick('carbs'), fat: pick('fat'),
+        fiber: pick('fiber'), sodium: pick('sodium'),
+      };
       basisLabel = String(product.serving_size || (servingG ? `${servingG} g` : '')).trim();
     } else {
       values = per100;
@@ -192,6 +226,9 @@ export const lookupBarcode = async (barcode: string, lang?: string): Promise<Foo
       protein: r1(protein),
       carbs: r1(carbs),
       fat: r1(fat),
+      // Unknown stays unknown: many products don't list fiber.
+      fiber: values.fiber !== undefined ? r1(values.fiber) : null,
+      sodium: values.sodium !== undefined ? Math.round(values.sodium) : null,
       confidence: values.calories !== undefined ? 0.95 : 0.6,
       imageUrl: typeof imageUrl === 'string' && imageUrl.startsWith('https://') ? imageUrl : undefined,
     };
@@ -283,6 +320,9 @@ export interface LibraryFood {
   protein: number;
   carbs: number;
   fat: number;
+  /** g / mg per 100 g; null when the library has no value. */
+  fiber?: number | null;
+  sodium?: number | null;
   source: 'LOCAL' | 'USDA' | string;
 }
 
@@ -298,6 +338,8 @@ export interface RecentFood {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number | null;
+  sodium?: number | null;
   count: number;
   last_at: string;
   /** Display only (may be a signed URL that expires). */

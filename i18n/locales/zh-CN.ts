@@ -872,6 +872,17 @@ const zhCN = {
     support: "支持页面",
     online: "在网页上查看",
   },
+  micros: {
+    fiber: "膳食纤维",
+    sodium: "钠",
+    fiberUnit: "膳食纤维 (g)",
+    sodiumUnit: "钠 (mg)",
+    unknown: "未知",
+    noneYet: "从现在起记录的餐会显示膳食纤维和钠。",
+    fromMeals: "来自 {n}/{total} 餐（其余没有数据）",
+    sodiumOver: "钠超过每日上限了。汤底、酱料和方便面是常见来源。",
+    mealHighSodium: "这一餐占每日钠上限的 {pct}%。",
+  },
   sources: {
     title: "参考来源",
     intro: "Lock 的热量、营养素、饮水和步数目标都出自这些资料。点开可以查看原文。",
@@ -889,6 +900,9 @@ const zhCN = {
     useGeneral: "健康饮食指南",
     useFoodData: "食物搜索的营养数据",
     useBarcode: "包装食品（条形码）的营养数据",
+    useFiber: "每日膳食纤维目标（每 1000 kcal 14 g）",
+    useSodium: "每日钠上限（2300 mg）",
+    useDailyValue: "食品标签上膳食纤维和钠的每日参考值",
   },
   perm: {
     denied: "Lock 的相机权限已关闭，可以在「设置」里打开。",

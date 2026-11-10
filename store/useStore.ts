@@ -50,6 +50,9 @@ interface Meal {
   protein: number;
   carbs: number;
   fat: number;
+  /** null = not known (older meals, foods without data). */
+  fiber?: number | null;
+  sodium?: number | null;
   image_url: string;
   created_at: string;
 }

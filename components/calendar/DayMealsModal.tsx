@@ -15,6 +15,8 @@ import { useFoodNames } from '@/hooks/useFoodNames';
 import { useRouter } from 'expo-router';
 import { Button } from '@/components/ui/bxc';
 import { MAX_BACKDATE_DAYS, daysAgo } from '@/store/useLogWhenStore';
+import { FONTS } from '@/constants/fonts';
+import { SODIUM_LIMIT_MG, fiberTarget, formatG, formatMg, microsLine, sumMicros } from '@/lib/micros';
 
 interface DayMealsModalProps {
   date: string | null; // YYYY-MM-DD, null = closed
@@ -84,6 +86,7 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
     return localDate.toLocaleDateString(language, { month: 'long', day: 'numeric', weekday: 'long' });
   };
 
+  const micros = sumMicros(meals);
   const progress = dailyCalorieGoal > 0 ? Math.min((totalCalories / dailyCalorieGoal) * 100, 100) : 0;
 
   return (
@@ -119,15 +122,24 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
             paddingTop: DIMENSIONS.SPACING * 0.8,
             paddingBottom: DIMENSIONS.SPACING * 0.4,
           }}>
-            <View>
-              <Text style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}>
+            <View style={{ flex: 1, minWidth: 0, paddingRight: 12 }}>
+              <Text
+                accessibilityRole="header"
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+                style={{ fontSize: TYPOGRAPHY.title, fontWeight: '900', color: colors.textPrimary }}
+              >
                 {date ? formatDate(date) : ''}
               </Text>
             </View>
             <TouchableOpacity
               onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close' as any)}
+              hitSlop={8}
               style={{
-                width: 32, height: 32, borderRadius: 16,
+                width: 36, height: 36, borderRadius: 18, flexShrink: 0,
                 backgroundColor: colors.cardBackgroundSecondary,
                 alignItems: 'center', justifyContent: 'center',
                 borderWidth: 1, borderColor: colors.borderPrimary,
@@ -148,7 +160,7 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
             }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: DIMENSIONS.SPACING * 0.5 }}>
                 <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  {t('today.todayCalories')}
+                  {t('log.calories')}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
                   <Text style={{ fontSize: TYPOGRAPHY.numberS, fontWeight: '900', color: colors.textPrimary }}>
@@ -162,6 +174,17 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
               <View style={{ height: 6, borderRadius: 3, backgroundColor: colors.cardBackgroundSecondary, overflow: 'hidden' }}>
                 <View style={{ height: '100%', width: `${progress}%`, borderRadius: 3, backgroundColor: colors.textPrimary }} />
               </View>
+              {micros.fiberMeals + micros.sodiumMeals > 0 ? (
+                <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: colors.textSecondary, marginTop: DIMENSIONS.SPACING * 0.6 }}>
+                  {[
+                    micros.fiberMeals > 0 && `${t('micros.fiber' as any)} ${formatG(micros.fiber)}/${fiberTarget(dailyCalorieGoal)} g`,
+                    micros.sodiumMeals > 0 && `${t('micros.sodium' as any)} ${formatMg(micros.sodium)}/${formatMg(SODIUM_LIMIT_MG)} mg`,
+                  ].filter(Boolean).join('   ')}
+                  {Math.min(micros.fiberMeals, micros.sodiumMeals) < micros.meals
+                    ? `\n${t('micros.fromMeals' as any, { n: String(Math.max(micros.fiberMeals, micros.sodiumMeals)), total: String(micros.meals) })}`
+                    : ''}
+                </Text>
+              ) : null}
             </View>
           )}
 
@@ -264,6 +287,11 @@ export default function DayMealsModal({ date, onClose }: DayMealsModalProps) {
                       </Text>
                     )}
                   </View>
+                  {meal.fiber != null || meal.sodium != null ? (
+                    <Text numberOfLines={1} style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', marginTop: 2, color: meal.sodium != null && meal.sodium >= SODIUM_LIMIT_MG / 2 ? colors.danger : colors.textSecondary }}>
+                      {microsLine(meal, t)}
+                    </Text>
+                  ) : null}
                 </View>
 
                 {/* Calories */}

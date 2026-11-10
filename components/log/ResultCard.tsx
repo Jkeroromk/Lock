@@ -10,6 +10,7 @@ import { useCalorieGoal } from '@/hooks/useDailyGoals';
 import { FONTS } from '@/constants/fonts';
 import { Bar, Button, Card, IconButton, Label, RADIUS, STROKE } from '@/components/ui/bxc';
 import { macroTargets } from '@/components/today/CaloriesCard';
+import { SODIUM_LIMIT_MG, fiberTarget, formatG, formatMg } from '@/lib/micros';
 
 export interface FoodResult {
   food: string;
@@ -17,6 +18,10 @@ export interface FoodResult {
   protein: number;
   carbs: number;
   fat: number;
+  /** g; null/undefined = not known. */
+  fiber?: number | null;
+  /** mg; null/undefined = not known. */
+  sodium?: number | null;
   confidence: number;
   /** Product photo from a barcode lookup. */
   imageUrl?: string;
@@ -25,7 +30,7 @@ export interface FoodResult {
 interface Props {
   result: FoodResult;
   isEditing: boolean;
-  editedData: { food: string; calories: string; protein: string; carbs: string; fat: string };
+  editedData: { food: string; calories: string; protein: string; carbs: string; fat: string; fiber: string; sodium: string };
   saving: boolean;
   onEdit: () => void;
   onCancelEdit: () => void;
@@ -129,6 +134,48 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
         ))}
       </View>
 
+      {/* Fiber and sodium: share of the day's fiber target / sodium limit */}
+      {isEditing ? (
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
+          {(['fiber', 'sodium'] as const).map((key) => (
+            <View key={key} style={{ flex: 1 }}>
+              <Label style={{ fontSize: 10 }}>{t(`micros.${key}Unit` as any)}</Label>
+              <TextInput
+                value={editedData[key]}
+                onChangeText={(v) => onChange(key, v)}
+                keyboardType="numeric"
+                placeholder={t('micros.unknown' as any)}
+                placeholderTextColor={c.textSecondary}
+                accessibilityLabel={t(`micros.${key}Unit` as any)}
+                style={[inputStyle, { fontSize: 18, fontWeight: '800', marginTop: 4 }]}
+              />
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 14 }}>
+          <MicroCell
+            label={t('micros.fiber' as any)}
+            value={result.fiber == null ? null : `${formatG(result.fiber)} g`}
+            progress={result.fiber == null ? 0 : result.fiber / fiberTarget(calorieGoal)}
+            unknown={t('micros.unknown' as any)}
+          />
+          <MicroCell
+            label={t('micros.sodium' as any)}
+            value={result.sodium == null ? null : `${formatMg(result.sodium)} mg`}
+            progress={result.sodium == null ? 0 : result.sodium / SODIUM_LIMIT_MG}
+            // Half the day's sodium in one meal is worth a look.
+            high={result.sodium != null && result.sodium >= SODIUM_LIMIT_MG / 2}
+            unknown={t('micros.unknown' as any)}
+          />
+        </View>
+      )}
+      {!isEditing && result.sodium != null && result.sodium >= SODIUM_LIMIT_MG / 2 ? (
+        <Text style={{ fontSize: 12, lineHeight: 17, color: c.textSecondary, marginTop: 6 }}>
+          {t('micros.mealHighSodium' as any, { pct: String(Math.round((result.sodium / SODIUM_LIMIT_MG) * 100)) })}
+        </Text>
+      ) : null}
+
       {/* What today looks like after saving this */}
       {!isEditing && !hidePreview && projected.enabled ? (
         <View
@@ -178,5 +225,27 @@ export default function ResultCard({ result, isEditing, editedData, saving, onEd
         )}
       </View>
     </Card>
+  );
+}
+
+/** Fiber or sodium in one meal: value plus its share of the day's target/limit. */
+function MicroCell({ label, value, progress, high, unknown }: {
+  label: string;
+  value: string | null;
+  progress: number;
+  high?: boolean;
+  unknown: string;
+}) {
+  const c = useTheme();
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
+        <Label style={{ fontSize: 10 }}>{label}</Label>
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 12, fontWeight: '700', color: value ? (high ? c.danger : c.textPrimary) : c.textSecondary }}>
+          {value ?? unknown}
+        </Text>
+      </View>
+      <Bar progress={Math.min(1, progress)} height={6} color={high ? c.danger : undefined} style={{ marginTop: 4, opacity: value ? 1 : 0.35 }} />
+    </View>
   );
 }

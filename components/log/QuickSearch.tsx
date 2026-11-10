@@ -8,6 +8,7 @@ import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { portionsFor, type Portion } from '@/constants/foodPortions';
 import { describeMeal, fetchRecentFoods, searchFoods, type LibraryFood, type RecentFood } from '@/services/api';
+import { scaleMicros } from '@/lib/micros';
 import type { FoodResult } from '@/components/log/ResultCard';
 import { useFoodNames } from '@/hooks/useFoodNames';
 
@@ -81,7 +82,8 @@ export default function QuickSearch({ onPick, onAiError, quotaBadge, onQuotaPres
   const pickRecent = (r: RecentFood) => {
     Keyboard.dismiss();
     onPick({
-      food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat, confidence: 1,
+      food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat,
+      fiber: r.fiber, sodium: r.sodium, confidence: 1,
       imageUrl: r.reuse_image && r.image_url ? r.image_url : undefined,
     }, { source: 'search' });
   };
@@ -92,7 +94,7 @@ export default function QuickSearch({ onPick, onAiError, quotaBadge, onQuotaPres
     setDescribing(true);
     try {
       const r = await describeMeal(q, language);
-      onPick({ food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat, confidence: r.confidence }, { source: 'text' });
+      onPick({ ...r, confidence: r.confidence }, { source: 'text' });
     } catch (e: any) {
       onAiError(e instanceof Error ? e : new Error(String(e?.message ?? e)));
     } finally {
@@ -275,6 +277,7 @@ function PortionPicker({ food, name, onBack, onConfirm }: {
     protein: r1(food.protein * f),
     carbs: r1(food.carbs * f),
     fat: r1(food.fat * f),
+    ...scaleMicros(food, f),
   };
 
   const confirm = () => {

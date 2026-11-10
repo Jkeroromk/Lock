@@ -111,6 +111,18 @@ export async function GET(request: NextRequest) {
     const totalCarbs = Math.round(meals.reduce((s, m) => s + Number(m.carbs || 0), 0));
     const totalFat = Math.round(meals.reduce((s, m) => s + Number(m.fat || 0), 0));
 
+    // Fiber and sodium, from the meals that have them (older meals and some foods don't).
+    const loggedDays = new Set(meals.map((m) => dayKeyIn(m.createdAt, timeZone))).size || 1;
+    const withFiber = meals.filter((m) => m.fiber !== null);
+    const withSodium = meals.filter((m) => m.sodium !== null);
+    const fiberPerDay = Math.round(withFiber.reduce((s, m) => s + Number(m.fiber), 0) / loggedDays);
+    const sodiumPerDay = Math.round(withSodium.reduce((s, m) => s + Number(m.sodium), 0) / loggedDays);
+    const fiberGoal = user?.gender === 'female' ? 25 : user?.gender === 'male' ? 38 : 30;
+    const microsLine = [
+      withFiber.length > 0 && `膳食纤维：有数据的 ${withFiber.length}/${meals.length} 餐，按记录天数平均每日约 ${fiberPerDay}g（参考：每 1000kcal 约 14g，成人每日约 ${fiberGoal}g）`,
+      withSodium.length > 0 && `钠：有数据的 ${withSodium.length}/${meals.length} 餐，平均每日约 ${sodiumPerDay}mg（建议每日不超过 2300mg）`,
+    ].filter(Boolean).join('；');
+
     const userContext = [
       user?.goal && `目标: ${GOAL_LABELS[user.goal] || user.goal}`,
       user?.weight && `体重: ${user.weight}kg`,
@@ -177,10 +189,10 @@ export async function GET(request: NextRequest) {
 用户资料：${userContext || '未知'}
 近7天饮食记录：${mealSummary}
 近7天营养摄入：平均每日${avgCalories}kcal，蛋白质共${totalProtein}g，碳水共${totalCarbs}g，脂肪共${totalFat}g
-近7天运动数据（来自 Apple Health）：${healthContext}
+${microsLine ? `${microsLine}\n` : ''}近7天运动数据（来自 Apple Health）：${healthContext}
 ${trainingContext}
 
-请把饮食和训练结合起来看（例如训练日蛋白质够不够、练得多的时候热量是否跟上、练后吃了什么），给出简洁、实用的建议，尽量引用具体的天数或数字。返回 JSON 格式（只返回 JSON，不要其他文字）：
+请把饮食和训练结合起来看（例如训练日蛋白质够不够、练得多的时候热量是否跟上、练后吃了什么），给出简洁、实用的建议，尽量引用具体的天数或数字。如果有纤维或钠的数据，且纤维明显偏低或钠明显偏高，用一条饮食建议指出来，并给出具体的替换（例如方便面汤少喝一半、加一份蔬菜或豆类）；纤维和钠是估算值，不要说得太绝对。返回 JSON 格式（只返回 JSON，不要其他文字）：
 {
   "summary": "一句话总结近期饮食状况（不超过25字）",
   "suggestions": ["饮食建议1（不超过25字）", "饮食建议2（不超过25字）", "饮食建议3（不超过25字）"],

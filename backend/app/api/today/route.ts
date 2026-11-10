@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { signMealPhotos } from '@/lib/meal-photos';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { optNum } from '@/lib/nutrition';
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,6 +47,8 @@ export async function GET(request: NextRequest) {
         protein: Number(m.protein || 0),
         carbs: Number(m.carbs || 0),
         fat: Number(m.fat || 0),
+        fiber: optNum(m.fiber),
+        sodium: optNum(m.sodium),
         image_url: m.imageUrl,
         created_at: m.createdAt,
       })), userId),

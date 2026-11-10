@@ -698,6 +698,17 @@ const koKR = {
     support: "지원 페이지",
     online: "웹에서 보기",
   },
+  micros: {
+    fiber: "식이섬유",
+    sodium: "나트륨",
+    fiberUnit: "식이섬유 (g)",
+    sodiumUnit: "나트륨 (mg)",
+    unknown: "알 수 없음",
+    noneYet: "지금부터 기록하는 식사에 식이섬유와 나트륨이 표시돼요.",
+    fromMeals: "{total}끼 중 {n}끼 기준 (나머지는 데이터 없음)",
+    sodiumOver: "나트륨이 하루 상한을 넘었어요. 국물, 소스, 라면이 흔한 원인이에요.",
+    mealHighSodium: "이 식사가 하루 나트륨 상한의 {pct}%예요.",
+  },
   sources: {
     title: "출처 및 계산 방법",
     intro: "Lock의 칼로리, 영양소, 수분, 걸음 수 목표는 아래 자료를 근거로 해요. 눌러서 원문을 볼 수 있어요.",
@@ -715,6 +726,9 @@ const koKR = {
     useGeneral: "건강한 식생활 지침",
     useFoodData: "음식 검색 영양 데이터",
     useBarcode: "포장 식품(바코드) 영양 데이터",
+    useFiber: "하루 식이섬유 목표 (1000 kcal당 14 g)",
+    useSodium: "하루 나트륨 상한 (2300 mg)",
+    useDailyValue: "식품 라벨의 식이섬유·나트륨 1일 기준치",
   },
   perm: {
     denied: "Lock의 카메라 접근이 꺼져 있어요. 설정에서 켤 수 있어요.",
