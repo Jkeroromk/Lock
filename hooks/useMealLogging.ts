@@ -8,6 +8,7 @@ import { detectLiquidMl, addWater } from '@/services/waterTracker';
 import { calorieLevel, isWarning, todaysCalories } from '@/lib/calorieStatus';
 import { calorieGoalNow } from '@/hooks/useDailyGoals';
 import { showToast } from '@/components/ui/Toast';
+import { scaleMicros } from '@/lib/micros';
 
 export interface LoggableFood {
   food: string;
@@ -15,6 +16,9 @@ export interface LoggableFood {
   protein: number;
   carbs: number;
   fat: number;
+  /** Per serving; null/undefined when not known. */
+  fiber?: number | null;
+  sodium?: number | null;
   servings?: number;
   /** https product photo, or a local file:// thumbnail. */
   imageUri?: string;
@@ -78,6 +82,7 @@ export function useMealLogging() {
       protein: r1(f.protein * n),
       carbs: r1(f.carbs * n),
       fat: r1(f.fat * n),
+      ...scaleMicros(f, n),
       image_url: f.imageUri || '',
       thumbnail: f.thumbBase64,
       eaten_at: eatenAt,
@@ -132,6 +137,7 @@ export function useMealLogging() {
           protein: r1(it.protein * it.servings),
           carbs: r1(it.carbs * it.servings),
           fat: r1(it.fat * it.servings),
+          ...scaleMicros(it, it.servings),
           image_url: it.thumbUri || '',
           thumbnail: it.thumbBase64,
           eaten_at: when?.eatenAt,

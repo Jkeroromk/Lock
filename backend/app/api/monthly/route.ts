@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authenticateRequest } from '@/lib/auth';
+import { type DayTotals, emptyDay, addMicros } from '@/lib/nutrition';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     const startOfNextMonth = new Date(new Date(Date.UTC(year, month, 1)).getTime() + tzOffset * 60 * 1000);
 
     const meals = await prisma.meal.findMany({
-      select: { createdAt: true, calories: true, protein: true, carbs: true, fat: true },
+      select: { createdAt: true, calories: true, protein: true, carbs: true, fat: true, fiber: true, sodium: true },
       where: {
         userId,
         createdAt: {
@@ -29,16 +30,17 @@ export async function GET(request: NextRequest) {
     });
 
     // Sum meals per date string
-    const dailyMap: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
+    const dailyMap: Record<string, DayTotals> = {};
     meals.forEach((meal) => {
       const date = new Date(new Date(meal.createdAt).getTime() - tzOffset * 60 * 1000).toISOString().split('T')[0];
       if (!dailyMap[date]) {
-        dailyMap[date] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+        dailyMap[date] = emptyDay();
       }
       dailyMap[date].calories += Number(meal.calories || 0);
       dailyMap[date].protein += Number(meal.protein || 0);
       dailyMap[date].carbs += Number(meal.carbs || 0);
       dailyMap[date].fat += Number(meal.fat || 0);
+      addMicros(dailyMap[date], meal);
     });
 
     return NextResponse.json(dailyMap);

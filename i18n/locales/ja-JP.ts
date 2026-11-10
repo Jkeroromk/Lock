@@ -689,6 +689,17 @@ const jaJP = {
     support: "サポートページ",
     online: "Web で読む",
   },
+  micros: {
+    fiber: "食物繊維",
+    sodium: "ナトリウム",
+    fiberUnit: "食物繊維 (g)",
+    sodiumUnit: "ナトリウム (mg)",
+    unknown: "不明",
+    noneYet: "今後記録する食事から食物繊維とナトリウムが表示されます。",
+    fromMeals: "{total}食中{n}食から（他はデータなし）",
+    sodiumOver: "ナトリウムが1日の上限を超えています。スープ、ソース、インスタント麺がよくある原因です。",
+    mealHighSodium: "この食事で1日のナトリウム上限の{pct}%です。",
+  },
   sources: {
     title: "出典と計算方法",
     intro: "Lock のカロリー、栄養素、水分、歩数の目標はこれらの資料に基づいています。タップすると原典を開きます。",
@@ -706,6 +717,9 @@ const jaJP = {
     useGeneral: "健康的な食事のガイドライン",
     useFoodData: "食品検索の栄養データ",
     useBarcode: "包装食品（バーコード）の栄養データ",
+    useFiber: "1日の食物繊維目標（1000 kcalあたり14 g）",
+    useSodium: "1日のナトリウム上限（2300 mg）",
+    useDailyValue: "食品表示の食物繊維とナトリウムの1日参考値",
   },
   perm: {
     denied: "Lock のカメラへのアクセスがオフです。「設定」でオンにできます。",

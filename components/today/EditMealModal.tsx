@@ -15,6 +15,8 @@ interface Meal {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number | null;
+  sodium?: number | null;
 }
 
 interface Props {
@@ -33,7 +35,15 @@ export default function EditMealModal({ meal, visible, onClose, onSaved }: Props
   const [protein, setProtein] = useState(String(meal.protein));
   const [carbs, setCarbs] = useState(String(meal.carbs));
   const [fat, setFat] = useState(String(meal.fat));
+  // Empty = not known.
+  const [fiber, setFiber] = useState(meal.fiber == null ? '' : String(meal.fiber));
+  const [sodium, setSodium] = useState(meal.sodium == null ? '' : String(meal.sodium));
   const [saving, setSaving] = useState(false);
+
+  const optional = (v: string) => {
+    const n = parseFloat(v.replace(',', '.'));
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  };
 
   const handleSave = async () => {
     if (!meal.id) return;
@@ -45,6 +55,8 @@ export default function EditMealModal({ meal, visible, onClose, onSaved }: Props
         protein: parseFloat(protein) || 0,
         carbs: parseFloat(carbs) || 0,
         fat: parseFloat(fat) || 0,
+        fiber: optional(fiber),
+        sodium: optional(sodium),
       });
       onSaved(); onClose();
     } catch (err: any) {
@@ -92,6 +104,26 @@ export default function EditMealModal({ meal, visible, onClose, onSaved }: Props
                 <View key={m.label} style={{ flex: 1 }}>
                   <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>{m.label}</Text>
                   <TextInput value={m.val} onChangeText={m.set} keyboardType="numeric" style={{ ...fieldStyle, textAlign: 'center' }} placeholderTextColor={colors.textSecondary} />
+                </View>
+              ))}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: DIMENSIONS.SPACING * 0.5, marginTop: -DIMENSIONS.SPACING * 0.4, marginBottom: DIMENSIONS.SPACING * 1.2 }}>
+              {[
+                { label: t('micros.fiberUnit' as any), val: fiber, set: setFiber },
+                { label: t('micros.sodiumUnit' as any), val: sodium, set: setSodium },
+              ].map((m) => (
+                <View key={m.label} style={{ flex: 1 }}>
+                  <Text style={{ fontSize: TYPOGRAPHY.bodyXXS, fontWeight: '600', color: colors.textSecondary, textAlign: 'center', marginBottom: 4 }}>{m.label}</Text>
+                  <TextInput
+                    value={m.val}
+                    onChangeText={m.set}
+                    keyboardType="numeric"
+                    placeholder={t('micros.unknown' as any)}
+                    accessibilityLabel={m.label}
+                    style={{ ...fieldStyle, textAlign: 'center' }}
+                    placeholderTextColor={colors.textSecondary}
+                  />
                 </View>
               ))}
             </View>

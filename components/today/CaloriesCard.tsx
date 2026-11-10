@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { macroTargets } from '@/lib/macros';
 import { useProteinTarget } from '@/hooks/useProteinTarget';
 import { Text } from '@/components/ui/Text';
@@ -11,12 +11,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { calorieLevel } from '@/lib/calorieStatus';
 import { useCalorieGoal } from '@/hooks/useDailyGoals';
 import { useShallow } from 'zustand/react/shallow';
+import { useRouter } from 'expo-router';
+import { SODIUM_LIMIT_MG, fiberTarget, formatG, formatMg, type MicrosTotal } from '@/lib/micros';
 
 interface CaloriesCardProps {
   todayCalories: number;
   protein: number;
   carbs: number;
   fat: number;
+  /** Today's fiber and sodium (only meals that have values count). */
+  micros?: MicrosTotal;
 }
 
 export { macroTargets } from '@/lib/macros';
@@ -43,7 +47,7 @@ function MacroRow({ label, value, target, badge }: { label: string; value: numbe
   );
 }
 
-export default function CaloriesCard({ todayCalories, protein, carbs, fat }: CaloriesCardProps) {
+export default function CaloriesCard({ todayCalories, protein, carbs, fat, micros }: CaloriesCardProps) {
   const { t } = useTranslation();
   const c = useTheme();
   const { calorieWarnings, user } = useStore(useShallow((st) => ({ calorieWarnings: st.calorieWarnings, user: st.user })));
@@ -101,6 +105,8 @@ export default function CaloriesCard({ todayCalories, protein, carbs, fat }: Cal
         </View>
       </View>
 
+      {micros && micros.meals > 0 ? <MicrosRow micros={micros} calorieGoal={goal} /> : null}
+
       {warn ? (
         <View
           accessibilityRole="alert"
@@ -126,5 +132,65 @@ export default function CaloriesCard({ todayCalories, protein, carbs, fat }: Cal
         </Text>
       ) : null}
     </Card>
+  );
+}
+
+/**
+ * Fiber (a target to reach) and sodium (a limit to stay under). Many foods
+ * have no data, so the totals say how many of today's meals they come from.
+ * Tapping opens Sources & methods, where both numbers are cited.
+ */
+function MicrosRow({ micros, calorieGoal }: { micros: MicrosTotal; calorieGoal: number }) {
+  const { t } = useTranslation();
+  const c = useTheme();
+  const router = useRouter();
+  const fiberGoal = fiberTarget(calorieGoal);
+  const anyFiber = micros.fiberMeals > 0;
+  const anySodium = micros.sodiumMeals > 0;
+  const sodiumOver = micros.sodium > SODIUM_LIMIT_MG;
+  const partial = Math.min(micros.fiberMeals, micros.sodiumMeals) < micros.meals;
+  const covered = Math.max(micros.fiberMeals, micros.sodiumMeals);
+
+  const cell = (label: string, value: string, progress: number, danger: boolean, known: boolean) => (
+    <View style={{ flex: 1 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
+        <Label>{label}</Label>
+        <Text numberOfLines={1} style={{ fontFamily: FONTS.mono, fontWeight: '500', fontSize: 11, color: known ? (danger ? c.danger : c.textPrimary) : c.textSecondary }}>
+          {value}
+        </Text>
+      </View>
+      <Bar progress={Math.min(1, progress)} color={danger ? c.danger : undefined} style={{ marginTop: 5, opacity: known ? 1 : 0.35 }} />
+    </View>
+  );
+
+  return (
+    <Pressable
+      onPress={() => router.push('/(tabs)/settings/sources')}
+      accessibilityRole="button"
+      accessibilityHint={t('sources.title')}
+      style={{ marginTop: 14, paddingTop: 12, borderTopWidth: 1.5, borderTopColor: c.divider }}
+    >
+      <View style={{ flexDirection: 'row', gap: 14 }}>
+        {cell(
+          t('micros.fiber' as any),
+          anyFiber ? `${formatG(micros.fiber)}/${fiberGoal}g` : `—/${fiberGoal}g`,
+          anyFiber ? micros.fiber / fiberGoal : 0, false, anyFiber,
+        )}
+        {cell(
+          t('micros.sodium' as any),
+          anySodium ? `${formatMg(micros.sodium)}/${formatMg(SODIUM_LIMIT_MG)}mg` : `—/${formatMg(SODIUM_LIMIT_MG)}mg`,
+          anySodium ? micros.sodium / SODIUM_LIMIT_MG : 0, sodiumOver, anySodium,
+        )}
+      </View>
+      {!anyFiber && !anySodium ? (
+        <Text style={{ fontSize: 12, lineHeight: 17, color: c.textSecondary, marginTop: 8 }}>{t('micros.noneYet' as any)}</Text>
+      ) : partial ? (
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 11, color: c.textSecondary, marginTop: 8 }}>
+          {t('micros.fromMeals' as any, { n: String(covered), total: String(micros.meals) })}
+        </Text>
+      ) : sodiumOver ? (
+        <Text style={{ fontSize: 12, lineHeight: 17, color: c.textSecondary, marginTop: 8 }}>{t('micros.sodiumOver' as any)}</Text>
+      ) : null}
+    </Pressable>
   );
 }

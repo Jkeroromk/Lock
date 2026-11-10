@@ -58,6 +58,24 @@ export const SOURCES: Source[] = [
     url: 'https://pubmed.ncbi.nlm.nih.gov/35247352/',
   },
   {
+    id: 'dri-fiber',
+    use: 'useFiber',
+    citation: 'National Academies. Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat, Fatty Acids, Cholesterol, Protein, and Amino Acids. 2005. Adequate Intake for total fiber: 14 g per 1,000 kcal.',
+    url: 'https://nap.nationalacademies.org/catalog/10490',
+  },
+  {
+    id: 'dri-sodium',
+    use: 'useSodium',
+    citation: 'National Academies of Sciences, Engineering, and Medicine. Dietary Reference Intakes for Sodium and Potassium. 2019. Chronic Disease Risk Reduction Intake: reduce sodium if above 2,300 mg per day.',
+    url: 'https://nap.nationalacademies.org/catalog/25353',
+  },
+  {
+    id: 'fda-dv',
+    use: 'useDailyValue',
+    citation: 'U.S. Food and Drug Administration. Daily Value on the Nutrition and Supplement Facts Labels (dietary fiber 28 g, sodium 2,300 mg).',
+    url: 'https://www.fda.gov/food/nutrition-facts-label/daily-value-nutrition-and-supplement-facts-labels',
+  },
+  {
     id: 'compendium',
     use: 'useExercise',
     citation: 'Herrmann SD, et al. 2024 Adult Compendium of Physical Activities: a third update of the energy costs of human activities. J Sport Health Sci. 2024.',

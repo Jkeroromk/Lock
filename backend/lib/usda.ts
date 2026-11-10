@@ -13,6 +13,8 @@ const NUTRIENT_IDS = {
   PROTEIN:  1003, // Protein
   CARBS:    1005, // Carbohydrate, by difference
   FAT:      1004, // Total lipid (fat)
+  FIBER:    1079, // Fiber, total dietary (g)
+  SODIUM:   1093, // Sodium, Na (mg)
 } as const;
 
 export interface UsdaFoodItem {
@@ -22,6 +24,10 @@ export interface UsdaFoodItem {
   protein: number;
   carbs: number;
   fat: number;
+  /** g per 100 g; null when USDA has no value. */
+  fiber: number | null;
+  /** mg per 100 g; null when USDA has no value. */
+  sodium: number | null;
 }
 
 /**
@@ -55,6 +61,11 @@ export async function searchUsda(query: string, maxResults = 5): Promise<UsdaFoo
       const n = (item.foodNutrients ?? []).find((fn: any) => fn.nutrientId === id);
       return n ? Math.round(Number(n.value) * 10) / 10 : 0;
     };
+    const optional = (id: number): number | null => {
+      const n = (item.foodNutrients ?? []).find((fn: any) => fn.nutrientId === id);
+      const v = n ? Number(n.value) : NaN;
+      return Number.isFinite(v) && v >= 0 ? Math.round(v * 10) / 10 : null;
+    };
 
     foods.push({
       fdcId: String(item.fdcId),
@@ -63,6 +74,8 @@ export async function searchUsda(query: string, maxResults = 5): Promise<UsdaFoo
       protein:  getNutrient(NUTRIENT_IDS.PROTEIN),
       carbs:    getNutrient(NUTRIENT_IDS.CARBS),
       fat:      getNutrient(NUTRIENT_IDS.FAT),
+      fiber:    optional(NUTRIENT_IDS.FIBER),
+      sodium:   optional(NUTRIENT_IDS.SODIUM),
     });
   }
 

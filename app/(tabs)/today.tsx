@@ -12,6 +12,7 @@ import { loadWater, addWater, undoLastWater, loadWaterGoal, saveWaterGoal, onWat
 import { drinkOf, drinkAmounts, type DrinkKind } from '@/constants/drinks';
 import { logMeal } from '@/services/api';
 import CaloriesCard from '@/components/today/CaloriesCard';
+import { sumMicros } from '@/lib/micros';
 import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
 import MealsList from '@/components/today/MealsList';
@@ -170,6 +171,7 @@ export default function TodayScreen() {
       protein={macros.protein}
       carbs={macros.carbs}
       fat={macros.fat}
+      micros={sumMicros(todayMeals)}
     />
     </Appear>
   );

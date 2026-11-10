@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { usePaywallStore } from '@/store/usePaywallStore';
+import { scaleMicros } from '@/lib/micros';
 import { useStore } from '@/store/useStore';
 import { useRefreshRewards } from '@/hooks/useRefreshRewards';
 import { useTranslation } from '@/i18n';
@@ -40,6 +41,12 @@ import { MAX_BACKDATE_DAYS, daysAgo, eatenAtFor, exifTakenAt, isOtherDay, useLog
  * - otherwise: search — recent foods, the food library, "describe it" (AI).
  * Every result can be saved now or to an earlier day / meal (补记).
  */
+/** The edit form's text fields for a result (fiber/sodium empty when not known). */
+const editFields = (r: FoodResult) => ({
+  food: r.food, calories: String(r.calories), protein: String(r.protein), carbs: String(r.carbs), fat: String(r.fat),
+  fiber: r.fiber == null ? '' : String(r.fiber), sodium: r.sodium == null ? '' : String(r.sodium),
+});
+
 export default function LogScreen() {
   const tabInset = useTabBarInset();
   const { twoPane, kind } = useDeviceLayout();
@@ -66,7 +73,7 @@ export default function LogScreen() {
   // Where the result came from: the list shows its icon, and only photos keep a thumbnail.
   const [source, setSource] = useState<CartItem['source']>('search');
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({ food: '', calories: '', protein: '', carbs: '', fat: '' });
+  const [editedData, setEditedData] = useState({ food: '', calories: '', protein: '', carbs: '', fat: '', fiber: '', sodium: '' });
   const [listOpen, setListOpen] = useState(false);
   const [recentKey, setRecentKey] = useState(0);
   const listLogging = useMealLogging();
@@ -94,7 +101,7 @@ export default function LogScreen() {
     setImage(null);
     setSource('barcode');
     setResult({ food: manualCode, calories: 0, protein: 0, carbs: 0, fat: 0, confidence: 1 });
-    setEditedData({ food: manualCode, calories: '0', protein: '0', carbs: '0', fat: '0' });
+    setEditedData({ food: manualCode, calories: '0', protein: '0', carbs: '0', fat: '0', fiber: '', sodium: '' });
     setIsEditing(true);
     router.setParams({ manualCode: undefined } as any);
   }, [manualCode]);
@@ -154,7 +161,7 @@ export default function LogScreen() {
 
   const setResultWithEdit = (r: FoodResult) => {
     setResult(r);
-    setEditedData({ food: r.food, calories: String(r.calories), protein: String(r.protein), carbs: String(r.carbs), fat: String(r.fat) });
+    setEditedData(editFields(r));
     setIsEditing(false);
   };
 
@@ -194,7 +201,7 @@ export default function LogScreen() {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    if (result) setEditedData({ food: result.food, calories: String(result.calories), protein: String(result.protein), carbs: String(result.carbs), fat: String(result.fat) });
+    if (result) setEditedData(editFields(result));
   };
 
   const handleSaveEdit = () => {
@@ -203,6 +210,10 @@ export default function LogScreen() {
       const n = parseFloat(v.replace(',', '.'));
       return Number.isFinite(n) && n >= 0 ? n : fallback;
     };
+    const optional = (v: string) => {
+      const n = parseFloat(v.replace(',', '.'));
+      return Number.isFinite(n) && n >= 0 ? n : null;
+    };
     setResult({
       ...result,
       food: editedData.food.trim() || result.food,
@@ -210,6 +221,9 @@ export default function LogScreen() {
       protein: num(editedData.protein, result.protein),
       carbs: num(editedData.carbs, result.carbs),
       fat: num(editedData.fat, result.fat),
+      // Left empty = not known.
+      fiber: optional(editedData.fiber),
+      sodium: optional(editedData.sodium),
     });
     setIsEditing(false);
   };
@@ -237,6 +251,7 @@ export default function LogScreen() {
       const thumb = image ? await makeMealThumbnail(image) : null;
       await logMeal({
         food_name: result.food, calories: result.calories, protein: result.protein, carbs: result.carbs, fat: result.fat,
+        ...scaleMicros(result, 1),
         // Barcode products have no photo of ours; use the product's own picture.
         image_url: thumb?.uri || result.imageUrl || '',
         thumbnail: thumb?.base64, // stored server-side so the photo shows on every device
@@ -281,6 +296,7 @@ export default function LogScreen() {
     const thumb = source === 'photo' && image ? await makeMealThumbnail(image) : null;
     useMealCartStore.getState().add({
       food: r.food, calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat,
+      fiber: r.fiber, sodium: r.sodium,
       source, thumbUri: thumb?.uri ?? r.imageUrl, thumbBase64: thumb?.base64,
     });
     const n = useMealCartStore.getState().items.length;

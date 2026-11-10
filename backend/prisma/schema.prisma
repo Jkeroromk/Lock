@@ -76,6 +76,8 @@ model Meal {
   protein   Decimal? @default(0) @db.Decimal(10, 2)
   carbs     Decimal? @default(0) @db.Decimal(10, 2)
   fat       Decimal? @default(0) @db.Decimal(10, 2)
+  fiber     Decimal? @db.Decimal(10, 2) // g; null = not known (older meals, foods without data)
+  sodium    Decimal? @db.Decimal(10, 2) // mg; null = not known
   imageUrl  String?  @map("image_url")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -254,6 +256,8 @@ model Food {
   protein   Decimal  @default(0) @db.Decimal(10, 2)  // g per 100g
   carbs     Decimal  @default(0) @db.Decimal(10, 2)  // g per 100g
   fat       Decimal  @default(0) @db.Decimal(10, 2)  // g per 100g
+  fiber     Decimal? @db.Decimal(10, 2)              // g per 100g (USDA); null = not known
+  sodium    Decimal? @db.Decimal(10, 2)              // mg per 100g (USDA); null = not known
   source    String   @default("LOCAL")               // LOCAL | USDA
   fdcId     String?  @unique @map("fdc_id")          // USDA FoodData Central ID
   cachedAt  DateTime? @map("cached_at") @db.Timestamptz(6)

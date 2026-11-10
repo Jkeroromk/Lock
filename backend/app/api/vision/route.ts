@@ -3,6 +3,7 @@ import { authenticateRequest } from '@/lib/auth';
 import { checkAndIncrementAiQuota } from '@/lib/ai-rate-limit';
 import { trustedTimeZone } from '@/lib/timezone';
 import { VISION_MODEL, fireworksChat, extractJson, describeAiError } from '@/lib/fireworks';
+import { MICROS_PROMPT_FIELDS, cleanMicros, sumKnown } from '@/lib/nutrition';
 
 // Vercel rejects request bodies over 4.5 MB before they reach us; the app
 // downsizes photos to ~1024px (~200 KB), so this is only a sanity cap.
@@ -15,6 +16,8 @@ interface VisionItem {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number;
+  sodium?: number;
 }
 
 interface VisionResponse {
@@ -25,6 +28,8 @@ interface VisionResponse {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number;
+  sodium?: number;
   confidence: number;
 }
 
@@ -84,19 +89,23 @@ export async function POST(request: NextRequest) {
   "protein": <number in grams per serving>,
   "carbs": <number in grams per serving>,
   "fat": <number in grams per serving>,
+  "fiber": <number — dietary fiber in grams per serving>,
+  "sodium": <number — sodium in milligrams per serving>,
   "confidence": <number between 0 and 1>
 }
 
 Instructions:
 - Find the serving size first and use per-serving values (not per 100g).
 - If only per-100g values are present, use those.
-- Look for: Calories/Energy, Total Fat, Total Carbohydrate, Protein.
+- Look for: Calories/Energy, Total Fat, Total Carbohydrate, Protein, Dietary Fiber, Sodium.
+- Sodium must be in milligrams. If the label gives salt in grams instead, sodium mg = salt g × 400.
+- If fiber or sodium is not on the label, use null for it.
 - Return only the JSON, no other text.`
       : `Analyze this meal photo. Identify EVERY separate food that is part of the meal, not just the biggest one.
 Return JSON in exactly this format:
 {
   "items": [
-    { "name": "<food name>", "portion": "<count and/or estimated grams, e.g. '2 eggs (~100 g)'>", "calories": <number>, "protein": <grams>, "carbs": <grams>, "fat": <grams> }
+    { "name": "<food name>", "portion": "<count and/or estimated grams, e.g. '2 eggs (~100 g)'>", "calories": <number>, "protein": <grams>, "carbs": <grams>, "fat": <grams>, ${MICROS_PROMPT_FIELDS} }
   ],
   "confidence": <number between 0 and 1>
 }
@@ -105,6 +114,7 @@ Rules:
 - List each food on its own: e.g. pumpkin on one plate and eggs plus yam on another are three items.
 - Count pieces (2 eggs, 3 dumplings) and estimate each portion from its size; a dinner plate is about 22 cm across.
 - Nutrition values are for the whole visible portion of that item, not per 100 g.
+- Estimate sodium from typical preparation: sauces, soups, broth, cured meat, cheese, instant noodles and restaurant food are high in sodium.
 - Leave out: sealed or unopened packages and drink cartons, screens, decorations, utensils, empty containers. Include a drink only if it is poured into a glass or cup.
 - If the photo shows a single dish, return one item.
 ${langInstruction}
@@ -135,8 +145,11 @@ Return only the JSON, no other text.`;
         : [];
       let food: string;
       let totals: { calories: number; protein: number; carbs: number; fat: number };
+      let micros: { fiber?: number; sodium?: number };
       if (items.length > 0) {
         food = joinNames(items.map((it) => it.name.trim()), lang);
+        const each = items.map((it) => cleanMicros(it));
+        micros = cleanMicros({ fiber: sumKnown(each, (m) => m.fiber), sodium: sumKnown(each, (m) => m.sodium) });
         totals = items.reduce(
           (t, it) => ({
             calories: t.calories + Math.max(0, num(it.calories)),
@@ -152,6 +165,7 @@ Return only the JSON, no other text.`;
           calories: num(analysis.calories), protein: num(analysis.protein),
           carbs: num(analysis.carbs), fat: num(analysis.fat),
         };
+        micros = cleanMicros(analysis);
       } else {
         throw new Error(`Invalid AI response: ${content.slice(0, 200)}`);
       }
@@ -162,6 +176,7 @@ Return only the JSON, no other text.`;
         protein: Math.round(totals.protein),
         carbs: Math.round(totals.carbs),
         fat: Math.round(totals.fat),
+        ...micros,
         items: items.map((it) => ({
           name: it.name.trim(),
           portion: typeof it.portion === 'string' ? it.portion : undefined,
@@ -169,6 +184,7 @@ Return only the JSON, no other text.`;
           protein: Math.round(num(it.protein)),
           carbs: Math.round(num(it.carbs)),
           fat: Math.round(num(it.fat)),
+          ...cleanMicros(it),
         })),
         confidence: Math.min(1, Math.max(0, num(analysis.confidence) || 0.5)),
         remaining: quota.remaining,

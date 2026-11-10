@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
         protein: true,
         carbs: true,
         fat: true,
+        fiber: true,
+        sodium: true,
         source: true,
         fdcId: true,
       },
@@ -79,6 +81,8 @@ export async function GET(request: NextRequest) {
                   protein:  u.protein,
                   carbs:    u.carbs,
                   fat:      u.fat,
+                  fiber:    u.fiber,
+                  sodium:   u.sodium,
                   cachedAt: new Date(),
                 },
                 create: {
@@ -87,6 +91,8 @@ export async function GET(request: NextRequest) {
                   protein:  u.protein,
                   carbs:    u.carbs,
                   fat:      u.fat,
+                  fiber:    u.fiber,
+                  sodium:   u.sodium,
                   source:   'USDA',
                   fdcId:    u.fdcId,
                   cachedAt: new Date(),
@@ -107,6 +113,8 @@ export async function GET(request: NextRequest) {
               protein:  u.protein,
               carbs:    u.carbs,
               fat:      u.fat,
+              fiber:    u.fiber,
+              sodium:   u.sodium,
               source:   'USDA',
             });
           }
@@ -130,6 +138,8 @@ function formatFood(food: {
   protein: any;
   carbs: any;
   fat: any;
+  fiber: any;
+  sodium: any;
   source: string;
   fdcId: string | null;
 }) {
@@ -141,6 +151,9 @@ function formatFood(food: {
     protein:  Math.round(Number(food.protein) * 10) / 10,
     carbs:    Math.round(Number(food.carbs) * 10) / 10,
     fat:      Math.round(Number(food.fat) * 10) / 10,
+    // Per 100 g like the rest; null = not known (most local foods).
+    fiber:    food.fiber === null ? null : Math.round(Number(food.fiber) * 10) / 10,
+    sodium:   food.sodium === null ? null : Math.round(Number(food.sodium)),
     source:   food.source,
   };
 }

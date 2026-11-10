@@ -333,3 +333,9 @@ ALTER TABLE "food_name_translations" ENABLE ROW LEVEL SECURITY;
 -- 2026-11-08: onboarding "how did you hear about Kero Lock?" answer.
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "acquisition_source" TEXT;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "acquisition_detail" TEXT;
+
+-- 2026-11-10: fiber (g) and sodium (mg) per meal and per 100 g of food. NULL = not known.
+ALTER TABLE "meals" ADD COLUMN IF NOT EXISTS "fiber" DECIMAL(10,2);
+ALTER TABLE "meals" ADD COLUMN IF NOT EXISTS "sodium" DECIMAL(10,2);
+ALTER TABLE "foods" ADD COLUMN IF NOT EXISTS "fiber" DECIMAL(10,2);
+ALTER TABLE "foods" ADD COLUMN IF NOT EXISTS "sodium" DECIMAL(10,2);

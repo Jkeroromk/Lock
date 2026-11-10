@@ -13,6 +13,7 @@ import { useTranslation } from '@/i18n';
 import { FONTS } from '@/constants/fonts';
 import { lookupBarcode, type FoodAnalysis } from '@/services/api';
 import { useMealCartStore, cartTotals } from '@/store/useMealCartStore';
+import { formatG, formatMg } from '@/lib/micros';
 import { useMealLogging } from '@/hooks/useMealLogging';
 import { useTheme } from '@/hooks/useTheme';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
@@ -184,6 +185,7 @@ export default function CameraScreen() {
     if (!found) return;
     useMealCartStore.getState().add({
       food: found.food, calories: found.calories, protein: found.protein, carbs: found.carbs, fat: found.fat,
+      fiber: found.fiber, sodium: found.sodium,
       servings, source: 'barcode', thumbUri: found.imageUrl,
     });
     setAdded(found.food);
@@ -370,6 +372,14 @@ export default function CameraScreen() {
           </View>
         ))}
       </View>
+      {found.fiber != null || found.sodium != null ? (
+        <Text style={{ fontFamily: FONTS.mono, fontSize: 12, color: c.textSecondary }}>
+          {[
+            found.fiber != null && `${t('micros.fiber' as any)} ${formatG(found.fiber * servings)} g`,
+            found.sodium != null && `${t('micros.sodium' as any)} ${formatMg(found.sodium * servings)} mg`,
+          ].filter(Boolean).join('   ')}
+        </Text>
+      ) : null}
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text style={{ fontSize: 13, color: c.textSecondary }}>{t('camera.servings')}</Text>

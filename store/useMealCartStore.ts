@@ -15,6 +15,9 @@ export interface CartItem {
   protein: number;
   carbs: number;
   fat: number;
+  /** Per serving; undefined/null when not known. */
+  fiber?: number | null;
+  sodium?: number | null;
   servings: number;
   source: 'photo' | 'label' | 'barcode' | 'search' | 'text';
   /** Small photo kept in the app's documents folder, plus its base64 for upload. */
