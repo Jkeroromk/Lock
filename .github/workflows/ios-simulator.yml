@@ -1,0 +1,59 @@
+# Builds a Release app for the iOS Simulator (production API, live Clerk key)
+# and uploads it as a workflow artifact. Used for App Store screenshots:
+# unzip, then drag Lock.app onto a booted Simulator window.
+#
+# Run it by hand: Actions → "iOS → Simulator app" → Run workflow.
+# Uses `eas build --local` (no EAS quota) and needs no signing credentials.
+name: iOS → Simulator app
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: xcode-27
+    timeout-minutes: 90
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 27.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
+          xcodebuild -version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Build (Release, simulator)
+        run: |
+          set -o pipefail
+          eas build --platform ios --profile screenshots --local --non-interactive --output "$RUNNER_TEMP/lock-sim.tar.gz" 2>&1 | tee "$RUNNER_TEMP/eas.log"
+
+      - name: Errors
+        if: failure()
+        run: |
+          [ -f "$RUNNER_TEMP/eas.log" ] || exit 0
+          grep -E "(error|fatal error|Error):" "$RUNNER_TEMP/eas.log" | sort -u | head -30 | while read -r l; do echo "::error title=eas build::$(echo "$l" | cut -c1-400)"; done
+
+      - name: Unpack
+        run: |
+          mkdir -p "$RUNNER_TEMP/app" && tar -xzf "$RUNNER_TEMP/lock-sim.tar.gz" -C "$RUNNER_TEMP/app"
+          ls "$RUNNER_TEMP/app"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lock-simulator-app
+          path: ${{ runner.temp }}/app
+          retention-days: 14
