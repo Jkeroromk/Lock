@@ -14,11 +14,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icons/icon-open-lock.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0A0A0A"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -118,7 +113,8 @@
           "motionPermission": "Lock uses motion to make the water in your hydration bottle move as you tilt the phone."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-status-bar"
     ],
     "scheme": "lock",
     "extra": {

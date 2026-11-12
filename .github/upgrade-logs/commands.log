@@ -1,23 +1,37 @@
-$ npm view @react-three/fiber@^9.8.2 version peerDependencies
-version = '9.8.2'
-peerDependencies = {
-  expo: '>=43.0',
-  react: '>=19 <19.4',
-  three: '>=0.156',
-  'expo-gl': '>=11.0',
-  'react-dom': '>=19 <19.4',
-  'expo-asset': '>=8.4',
-  'react-native': '>=0.78',
-  'expo-file-system': '>=11.0'
-}
-$ npm install @react-three/fiber@^9.8.2
+$ npx expo install --fix
+The following packages should be updated for best compatibility with the installed expo version:
+  expo@58.0.21 - expected version: ~58.0.25
+  expo-apple-authentication@58.0.2 - expected version: ~58.0.3
+  expo-asset@58.0.19 - expected version: ~58.0.21
+  expo-auth-session@58.0.16 - expected version: ~58.0.18
+  expo-constants@58.0.14 - expected version: ~58.0.16
+  expo-font@58.0.11 - expected version: ~58.0.12
+  expo-haptics@58.0.7 - expected version: ~58.0.8
+  expo-linear-gradient@58.0.3 - expected version: ~58.0.4
+  expo-linking@58.0.15 - expected version: ~58.0.17
+  expo-notifications@58.1.7 - expected version: ~58.1.9
+  expo-router@58.0.28 - expected version: ~58.0.31
+  expo-secure-store@58.0.2 - expected version: ~58.0.3
+  expo-sensors@58.0.4 - expected version: ~58.0.5
+  expo-status-bar@58.0.4 - expected version: ~58.0.5
+  expo-updates@58.0.19 - expected version: ~58.0.22
+  expo-web-browser@58.0.7 - expected version: ~58.0.8
+  react-native-safe-area-context@5.10.1 - expected version: ~5.11.1
+Your project may not work correctly until you install the expected versions of the packages.
+› Installing 17 SDK 58.0.0 compatible native modules using npm
+> npm install
 
-up to date, audited 999 packages in 2s
+> lock@1.0.0 postinstall
+> node scripts/patch-native-libs.mjs
 
-123 packages are looking for funding
+[patch-native-libs] already patched: node_modules/react-native-health/RCTAppleHealthKit/RCTAppleHealthKit.m
+
+added 5 packages, removed 15 packages, changed 59 packages, and audited 988 packages in 8s
+
+122 packages are looking for funding
   run `npm fund` for details
 
-35 vulnerabilities (1 low, 18 moderate, 15 high, 1 critical)
+32 vulnerabilities (1 low, 17 moderate, 13 high, 1 critical)
 
 To address issues that do not require attention, run:
   npm audit fix
@@ -29,174 +43,102 @@ Some issues need review, and may require choosing
 a different dependency.
 
 Run `npm audit` for details.
-$ npm ls react react-reconciler @react-three/fiber
+› Running npx expo install under the updated expo version
+> expo install --fix
+The following packages should be updated for best compatibility with the installed expo version:
+  expo-apple-authentication@58.0.2 - expected version: ~58.0.3
+  expo-auth-session@58.0.16 - expected version: ~58.0.18
+  expo-haptics@58.0.7 - expected version: ~58.0.8
+  expo-linear-gradient@58.0.3 - expected version: ~58.0.4
+  expo-linking@58.0.15 - expected version: ~58.0.17
+  expo-notifications@58.1.7 - expected version: ~58.1.9
+  expo-router@58.0.28 - expected version: ~58.0.31
+  expo-secure-store@58.0.2 - expected version: ~58.0.3
+  expo-sensors@58.0.4 - expected version: ~58.0.5
+  expo-status-bar@58.0.4 - expected version: ~58.0.5
+  expo-updates@58.0.19 - expected version: ~58.0.22
+  expo-web-browser@58.0.7 - expected version: ~58.0.8
+  react-native-safe-area-context@5.10.1 - expected version: ~5.11.1
+Your project may not work correctly until you install the expected versions of the packages.
+› Installing 13 SDK 58.0.0 compatible native modules using npm
+> npm install
+
+> lock@1.0.0 postinstall
+> node scripts/patch-native-libs.mjs
+
+[patch-native-libs] already patched: node_modules/react-native-health/RCTAppleHealthKit/RCTAppleHealthKit.m
+
+added 1 package, changed 15 packages, and audited 989 packages in 4s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+31 vulnerabilities (1 low, 16 moderate, 13 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+› Added config plugin: expo-status-bar
+$ npm pkg set "overrides.react-native-health.@expo/config-plugins=~58.0.11"
+$ npm install
+
+> lock@1.0.0 postinstall
+> node scripts/patch-native-libs.mjs
+
+[patch-native-libs] already patched: node_modules/react-native-health/RCTAppleHealthKit/RCTAppleHealthKit.m
+
+removed 30 packages, and audited 959 packages in 2s
+
+116 packages are looking for funding
+  run `npm fund` for details
+
+29 vulnerabilities (1 low, 14 moderate, 13 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+$ npm ls @expo/fingerprint @expo/config-plugins
 lock@1.0.0 /home/runner/work/Lock/Lock
-├─┬ @clerk/clerk-expo@2.19.31
-│ ├─┬ @clerk/clerk-js@5.125.7
-│ │ ├─┬ @base-org/account@2.0.1
-│ │ │ └─┬ zustand@5.0.3
-│ │ │   └── react@19.3.0 deduped
-│ │ ├─┬ @emotion/react@11.11.1
-│ │ │ ├─┬ @emotion/use-insertion-effect-with-fallbacks@1.2.0
-│ │ │ │ └── react@19.3.0 deduped
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @floating-ui/react-dom@2.1.8
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @floating-ui/react@0.27.12
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @solana/wallet-adapter-react@0.15.39
-│ │ │ ├─┬ @solana/wallet-standard-wallet-adapter-react@1.1.4
-│ │ │ │ └── react@19.3.0 deduped
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ input-otp@1.4.2
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ qrcode.react@4.2.0
-│ │ │ └── react@19.3.0 deduped
-│ │ └── react@19.3.0 deduped
-│ ├─┬ @clerk/clerk-react@5.61.4
-│ │ └── react@19.3.0 deduped
-│ ├─┬ @clerk/shared@3.47.4
-│ │ ├── react@19.3.0 deduped
-│ │ └─┬ swr@2.3.4
-│ │   └── react@19.3.0 deduped
-│ └── react@19.3.0 deduped
-├─┬ @expo/vector-icons@15.0.3
-│ └── react@19.3.0 deduped
-├─┬ @quidone/react-native-wheel-picker@1.6.1
-│ └── react@19.3.0 deduped
-├─┬ @react-three/fiber@9.8.2
-│ ├─┬ its-fine@2.1.1
-│ │ └── react@19.3.0 deduped
-│ ├─┬ react-use-measure@2.1.7
-│ │ └── react@19.3.0 deduped
-│ ├── react@19.3.0 deduped
-│ ├─┬ suspend-react@0.1.3
-│ │ └── react@19.3.0 deduped
-│ ├─┬ use-sync-external-store@1.6.0
-│ │ └── react@19.3.0 deduped
-│ └─┬ zustand@5.0.16
-│   └── react@19.3.0 deduped
-├─┬ @rozhkov/react-useful-hooks@1.0.10
-│ └── react@19.3.0 deduped
-├─┬ expo-alternate-app-icons@8.0.0
-│ └── react@19.3.0 deduped
-├─┬ expo-apple-authentication@58.0.2
-│ └── react@19.3.0 deduped
-├─┬ expo-asset@58.0.19
-│ └── react@19.3.0 deduped
-├─┬ expo-auth-session@58.0.16
-│ └── react@19.3.0 deduped
-├─┬ expo-camera@58.0.14
-│ └── react@19.3.0 deduped
-├─┬ expo-clipboard@58.0.4
-│ └── react@19.3.0 deduped
-├─┬ expo-font@58.0.11
-│ └── react@19.3.0 deduped
-├─┬ expo-gl@58.0.4
-│ └── react@19.3.0 deduped
-├─┬ expo-hinge@58.0.2
-│ └── react@19.3.0 deduped
-├─┬ expo-image-manipulator@58.0.16
-│ └── react@19.3.0 deduped
-├─┬ expo-linear-gradient@58.0.3
-│ └── react@19.3.0 deduped
-├─┬ expo-linking@58.0.15
-│ └── react@19.3.0 deduped
-├─┬ expo-notifications@58.1.7
-│ └── react@19.3.0 deduped
-├─┬ expo-router@58.0.28
-│ ├─┬ @expo/log-box@58.0.13
-│ │ └── react@19.3.0 deduped
-│ ├─┬ @expo/metro-runtime@58.0.15
-│ │ └── react@19.3.0 deduped
-│ ├─┬ @radix-ui/react-slot@1.2.0
-│ │ ├─┬ @radix-ui/react-compose-refs@1.1.2
-│ │ │ └── react@19.3.0 deduped
-│ │ └── react@19.3.0 deduped
-│ ├─┬ @radix-ui/react-tabs@1.1.13
-│ │ ├─┬ @radix-ui/react-context@1.1.2
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @radix-ui/react-direction@1.1.1
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @radix-ui/react-id@1.1.1
-│ │ │ ├─┬ @radix-ui/react-use-layout-effect@1.1.1
-│ │ │ │ └── react@19.3.0 deduped
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @radix-ui/react-presence@1.1.5
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @radix-ui/react-primitive@2.1.3
-│ │ │ ├─┬ @radix-ui/react-slot@1.2.3
-│ │ │ │ └── react@19.3.0 deduped
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @radix-ui/react-roving-focus@1.1.11
-│ │ │ ├─┬ @radix-ui/react-collection@1.1.7
-│ │ │ │ ├─┬ @radix-ui/react-slot@1.2.3
-│ │ │ │ │ └── react@19.3.0 deduped
-│ │ │ │ └── react@19.3.0 deduped
-│ │ │ ├─┬ @radix-ui/react-use-callback-ref@1.1.1
-│ │ │ │ └── react@19.3.0 deduped
-│ │ │ └── react@19.3.0 deduped
-│ │ ├─┬ @radix-ui/react-use-controllable-state@1.2.2
-│ │ │ ├─┬ @radix-ui/react-use-effect-event@0.0.2
-│ │ │ │ └── react@19.3.0 deduped
-│ │ │ └── react@19.3.0 deduped
-│ │ └── react@19.3.0 deduped
-│ ├─┬ @react-native-masked-view/masked-view@0.3.2
-│ │ └── react@19.3.0 deduped
-│ ├─┬ expo-glass-effect@58.0.5
-│ │ └── react@19.3.0 deduped
-│ ├─┬ react-native-drawer-layout@4.2.12
-│ │ ├── react@19.3.0 deduped
-│ │ └─┬ use-latest-callback@0.2.6
-│ │   └── react@19.3.0 deduped
-│ └── react@19.3.0 deduped
-├─┬ expo-status-bar@58.0.4
-│ └── react@19.3.0 deduped
-├─┬ expo-updates@58.0.19
-│ └── react@19.3.0 deduped
-├─┬ expo@58.0.21
-│ ├─┬ @expo/cli@58.1.17
-│ │ └─┬ @expo/router-server@58.0.19
-│ │   └── react@19.3.0 deduped
-│ ├─┬ @expo/devtools@58.0.2
-│ │ └── react@19.3.0 deduped
-│ ├─┬ @expo/dom-webview@58.0.2
-│ │ └── react@19.3.0 deduped
-│ ├─┬ expo-keep-awake@58.0.3
-│ │ └── react@19.3.0 deduped
-│ ├─┬ expo-modules-core@58.0.28
-│ │ └── react@19.3.0 deduped
-│ └── react@19.3.0 deduped
-├─┬ nativewind@4.2.1
-│ └─┬ react-native-css-interop@0.2.1
-│   └── react@19.3.0 deduped
-├─┬ react-dom@19.3.0
-│ └── react@19.3.0 deduped
-├─┬ react-native-gesture-handler@3.3.0
-│ └── react@19.3.0 deduped
-├─┬ react-native-purchases@10.16.0
-│ └── react@19.3.0 deduped
-├─┬ react-native-reanimated@4.7.1
-│ ├─┬ react-native-is-edge-to-edge@1.3.1
-│ │ └── react@19.3.0 deduped
-│ └── react@19.3.0 deduped
-├─┬ react-native-safe-area-context@5.10.1
-│ └── react@19.3.0 deduped
-├─┬ react-native-screens@4.30.1
-│ ├─┬ react-freeze@1.0.4
-│ │ └── react@19.3.0 deduped
-│ └── react@19.3.0 deduped
-├─┬ react-native-svg@15.16.0
-│ └── react@19.3.0 deduped
-├─┬ react-native-wheel-picker-expo@0.5.4
-│ └── react@19.3.0 deduped
-├─┬ react-native-worklets@0.13.0
-│ └── react@19.3.0 deduped
-├─┬ react-native@0.88.1
-│ ├─┬ @react-native/virtualized-lists@0.88.1
-│ │ └── react@19.3.0 deduped
-│ └── react@19.3.0 deduped
-├── react@19.3.0
-└─┬ zustand@4.5.7
-  └── react@19.3.0 deduped
+├─┬ @bacons/apple-targets@5.0.0
+│ └─┬ @expo/prebuild-config@55.0.22
+│   ├── @expo/config-plugins@55.0.12
+│   └─┬ @expo/config@55.0.21
+│     └── @expo/config-plugins@55.0.12
+├─┬ expo@58.0.25
+│ ├─┬ @expo/cli@58.1.20
+│ │ ├── @expo/config-plugins@58.0.13 deduped
+│ │ ├─┬ @expo/config@58.0.12
+│ │ │ └── @expo/config-plugins@58.0.13 deduped
+│ │ ├─┬ @expo/inline-modules@0.2.10
+│ │ │ └── @expo/config-plugins@58.0.13 deduped
+│ │ └─┬ @expo/prebuild-config@58.0.20
+│ │   ├── @expo/config-plugins@58.0.13 deduped
+│ │   └─┬ @expo/config@58.0.12
+│ │     └── @expo/config-plugins@58.0.13 deduped
+│ ├── @expo/config-plugins@58.0.13 overridden
+│ ├─┬ @expo/config@58.0.12
+│ │ └── @expo/config-plugins@58.0.13 deduped
+│ ├── @expo/fingerprint@0.21.10
+│ ├─┬ @expo/local-build-cache-provider@58.0.12
+│ │ └─┬ @expo/config@58.0.12
+│ │   └── @expo/config-plugins@58.0.13 deduped
+│ └─┬ @expo/metro-config@58.0.22
+│   └─┬ @expo/config@58.0.12
+│     └── @expo/config-plugins@58.0.13 deduped
+└─┬ react-native-health@1.19.0 overridden
+  └── @expo/config-plugins@58.0.13 deduped
 
