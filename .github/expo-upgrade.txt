@@ -1,7 +1,11 @@
 # One command per line, run in order by .github/workflows/expo-upgrade.yml
-# Batch 7: react-three-fiber for React 19.3. 9.1.2's react-reconciler 0.31 only
-# matches React 19.0; 19.2 changed the reconciler internals (R3F 9.5) and 19.3
-# needs R3F 9.8.2+. With the old pair, any <Canvas> crashes on render.
-npm view @react-three/fiber@^9.8.2 version peerDependencies
-npm install @react-three/fiber@^9.8.2
-npm ls react react-reconciler @react-three/fiber
+# Batch 8: expo-doctor cleanup.
+# 1) Align SDK 58 packages with the versions Expo expects (17 patch/minor bumps,
+#    incl. react-native-safe-area-context 5.10 -> 5.11).
+# 2) Dedupe @expo/fingerprint: react-native-health 1.19 pins the old
+#    @expo/config-plugins 7.x, which pulls @expo/fingerprint 0.6. Its config
+#    plugin isn't in app.json "plugins", so pointing it at the SDK 58 copy is safe.
+npx expo install --fix
+npm pkg set "overrides.react-native-health.@expo/config-plugins=~58.0.11"
+npm install
+npm ls @expo/fingerprint @expo/config-plugins
