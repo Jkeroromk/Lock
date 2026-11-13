@@ -102,7 +102,7 @@ const sections: LegalSection[] = [
   },
   {
     title: "Children's Privacy",
-    content: <p>Lock is for adults 18 and older. It is not directed at children, and we do not knowingly collect personal information from anyone under 18. If you believe someone under 18 has provided us data, contact us and we will delete it.</p>,
+    content: <p>Lock is for people aged 13 and older. It is not directed at children, and we do not knowingly collect personal information from anyone under 13. If you believe a child under 13 has provided us data, contact us and we will delete it.</p>,
   },
   {
     title: 'Changes to This Policy',
@@ -118,7 +118,7 @@ export default function PrivacyPolicy() {
   return (
     <LegalPage
       title="Privacy Policy"
-      lastUpdated="November 8, 2026"
+      lastUpdated="November 13, 2026"
       intro={<p>Lock (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) values your privacy. This policy explains what we collect, how we use it, and the choices you have when you use the Lock mobile app.</p>}
       sections={sections}
     />

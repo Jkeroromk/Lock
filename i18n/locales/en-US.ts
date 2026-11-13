@@ -445,7 +445,7 @@ const enUS = {
   about: {
     title: 'About Lock',
     version: 'Version',
-    description: 'Lock is an intelligent fitness and diet management app that helps you track daily calories, log meals, monitor health data, and challenge health goals with friends.',
+    description: 'Lock is an intelligent fitness and diet management app that helps you track daily calories, log meals, monitor health data, and train with a plan, raise a buddy, and lock in with friends or your partner.',
     legal: 'Legal',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
@@ -508,7 +508,7 @@ const enUS = {
     bestValue: 'Best Value',
     upgradeToMax: 'Upgrade to Max',
     yearly: 'Yearly', monthlyPlan: 'Monthly', perMonth: '{price}/mo', save: 'Save {pct}%', freeTrialBadge: '{days} days free', startTrial: 'Start {days}-day free trial', subscribe: 'Subscribe', trialThen: '{days} days free, then {price}/year. Cancel anytime.', billedThen: '{price} per {period}. Cancel anytime.', trialReminderNote: "We'll remind you 2 days before your trial ends.", trialReminderTitle: 'Your free trial ends in 2 days', trialReminderBody: 'Lock Pro renews at {price}/year after that. Cancel anytime in Settings → Apple ID → Subscriptions.',
-    freeFeatures: ['Your first week is Pro, free · then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Workouts, weight curve, data export', 'Unlimited friends · invite one, you both get +5 scans'],
+    freeFeatures: ['Your first week is Pro, free · then 3 AI scans / day', '1 AI diet review / week', 'Unlimited barcode & manual logging', 'Workouts, weight curve, couple space, data export', 'Unlimited friends · invite one, you both get +5 scans'],
     proFeatures: ['Everything in Free', 'Unlimited AI scans (Free: 3 / day)', 'Unlimited AI diet × training reviews (Free: 1 / week)', 'Redo your AI workout plan anytime'],
     maxFeatures: ['Everything in Pro', 'Weekly auto AI report', 'AI custom nutrition plan', 'Priority customer support'],
   },
