@@ -85,7 +85,9 @@ jobs:
       # a production update must never replace the screenshot bundle.
       - name: Fresh JS bundle
         run: |
-          APP=$(ls -d "$RUNNER_TEMP"/simapp/*.app | head -1)
+          # eas build --local unpacks to Release-iphonesimulator/<name>.app
+          APP=$(find "$RUNNER_TEMP/simapp" -maxdepth 3 -type d -name '*.app' -path '*iphonesimulator*' | head -1)
+          [ -n "$APP" ] || { echo "::error::No simulator .app"; find "$RUNNER_TEMP/simapp" -maxdepth 3; exit 1; }
           echo "APP=$APP" >> "$GITHUB_ENV"
           npx expo export:embed --platform ios --dev false --reset-cache \
             --entry-file node_modules/expo-router/entry.js \
