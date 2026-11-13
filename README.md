@@ -46,23 +46,6 @@ Free to start: every new account gets its first week of Pro. After that the free
 | Services | Clerk (auth), RevenueCat (subscriptions), Fireworks AI (vision and text models), USDA FoodData Central, Apple HealthKit |
 | Delivery | EAS Build, TestFlight, EAS Update (OTA), GitHub Actions |
 
-## Repository layout
-
-```
-app/            Expo Router screens (tabs, camera, workout, couple, pet, legal…)
-components/     UI components grouped by feature
-constants/      Theme tokens, exercises, portions, pets
-hooks/ lib/ services/ store/   App logic, API client, state
-i18n/           Locales for the five supported languages
-assets/         Fonts, icons, buddy and couple-space art, 3D models
-targets/        Apple Watch app and Live Activity (Swift)
-modules/        Local Expo native modules
-backend/        Next.js API, Prisma schema and migrations
-website/        Marketing site
-scripts/        Build helpers and automated App Store screenshots
-.github/        CI: type check, iOS builds, TestFlight, OTA updates, screenshots
-```
-
 ## License
 
 Copyright © 2026 Jkeroro. **All rights reserved.**
