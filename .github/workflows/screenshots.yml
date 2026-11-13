@@ -7,13 +7,19 @@
 #   raw/<device>/<lang>/<shot>.jpg      what the simulator showed
 #   posters/<locale>/<device>/NN-*.jpg  ready for App Store Connect
 #
-# Run: Actions → "App Store screenshots" → Run workflow.
+# Run: Actions → "App Store screenshots" → Run workflow (tick "upload" to
+# also replace the screenshots in App Store Connect).
 # The native app is cached by its inputs; JS-only changes reuse it and just
 # swap in a fresh JS bundle, so most runs skip the long native build.
 name: App Store screenshots
 
 on:
   workflow_dispatch:
+    inputs:
+      upload:
+        description: Also upload the posters to App Store Connect (the version must be editable)
+        type: boolean
+        default: false
   push:
     branches: [feat/auto-screenshots]
     paths:
@@ -121,3 +127,11 @@ jobs:
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" screenshots-output
           echo "### Pushed to screenshots-output" >> "$GITHUB_STEP_SUMMARY"
           find posters -name '*.jpg' | sort >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload to App Store Connect
+        if: inputs.upload
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: node scripts/screenshots/upload.mjs "$RUNNER_TEMP/posters"
