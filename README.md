@@ -63,29 +63,6 @@ scripts/        Build helpers and automated App Store screenshots
 .github/        CI: type check, iOS builds, TestFlight, OTA updates, screenshots
 ```
 
-## Running locally
-
-Requires Node 22, Xcode and an Expo development build (the app uses native modules, so Expo Go won't work).
-
-```bash
-# App
-npm install
-cp .env.example .env.local        # fill in API URL, Clerk and RevenueCat keys
-npx expo run:ios                  # or: npx expo start --dev-client
-
-# Backend
-cd backend
-npm install
-cp .env.example .env.local        # Clerk, Fireworks, USDA, Postgres, RevenueCat
-npx prisma generate
-npm run dev                       # http://localhost:3000
-
-# Website
-cd website
-npm install
-npm run dev                       # http://localhost:3001
-```
-
 ## License
 
 Copyright © 2026 Jkeroro. **All rights reserved.**
