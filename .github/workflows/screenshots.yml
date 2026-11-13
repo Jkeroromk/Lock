@@ -24,14 +24,6 @@ on:
         description: Only these shots (space separated, e.g. "couple train"); empty = all
         type: string
         default: ''
-  push:
-    branches: [feat/auto-screenshots]
-    paths:
-      - 'screenshot/**'
-      - 'scripts/screenshots/**'
-      - '.github/workflows/screenshots.yml'
-      - 'app/**'
-      - 'components/**'
 
 concurrency:
   group: screenshots
