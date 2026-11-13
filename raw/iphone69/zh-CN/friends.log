@@ -1,0 +1,2 @@
+Timestamp               Ty Process[PID:TID]
+2026-11-13 07:26:17.718 Df Lock[53961:22cce] [dev.expo.modules:expo-updates] 🟡 {"timestamp":1794554777000,"message":"The expo-updates system is explicitly disabled. To enable it, set the enabled setting to true.","code":"InitializationError","level":"warn"}

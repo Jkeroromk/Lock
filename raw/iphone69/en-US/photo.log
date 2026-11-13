@@ -1,0 +1,4 @@
+Timestamp               Ty Process[PID:TID]
+2026-11-13 07:26:17.718 Df Lock[53961:22cce] [dev.expo.modules:expo-updates] 🟡 {"timestamp":1794554777000,"message":"The expo-updates system is explicitly disabled. To enable it, set the enabled setting to true.","code":"InitializationError","level":"warn"}
+2026-11-13 07:26:31.878 Df Lock[54725:234c4] [dev.expo.modules:expo-updates] 🟡 {"message":"The expo-updates system is explicitly disabled. To enable it, set the enabled setting to true.","code":"InitializationError","timestamp":1794554791000,"level":"warn"}
+2026-11-13 07:26:46.741 Df Lock[55532:23cfd] [dev.expo.modules:expo-updates] 🟡 {"level":"warn","timestamp":1794554806000,"message":"The expo-updates system is explicitly disabled. To enable it, set the enabled setting to true.","code":"InitializationError"}
