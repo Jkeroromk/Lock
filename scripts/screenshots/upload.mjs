@@ -1,6 +1,7 @@
 // Uploads the posters to App Store Connect, replacing the screenshots of the
-// version that's being prepared (it must be editable: Prepare for Submission,
-// Developer Rejected, Rejected or Metadata Rejected).
+// version that's being prepared. If that version is waiting for review, it is
+// taken out of review first and submitted again once the new screenshots
+// have processed (it goes back to the end of the review queue).
 //
 //   node scripts/screenshots/upload.mjs <posters dir> [version]
 //
@@ -20,6 +21,8 @@ const version = versionArg || JSON.parse(fs.readFileSync('app.json', 'utf8')).ex
 const TYPES = { iphone69: 'APP_IPHONE_67', duo: 'APP_IPHONE_DUO' };
 const EMPTY = ['APP_IPHONE_61'];
 const EDITABLE = ['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED'];
+const WITHDRAWABLE = ['WAITING_FOR_REVIEW'];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function token() {
   let key = process.env.ASC_PRIVATE_KEY ?? '';
@@ -43,12 +46,31 @@ async function asc(method, url, body) {
   return text ? JSON.parse(text) : null;
 }
 
-const versions = await asc('GET', `/v1/apps/${APP_ID}/appStoreVersions?filter[platform]=IOS&filter[versionString]=${version}&limit=5`);
-const v = versions.data[0];
-if (!v) throw new Error(`No iOS version ${version}`);
-const state = v.attributes.appVersionState ?? v.attributes.appStoreState;
+async function getVersion() {
+  const versions = await asc('GET', `/v1/apps/${APP_ID}/appStoreVersions?filter[platform]=IOS&filter[versionString]=${version}&limit=5`);
+  const v = versions.data[0];
+  if (!v) throw new Error(`No iOS version ${version}`);
+  return { v, state: v.attributes.appVersionState ?? v.attributes.appStoreState };
+}
+
+let { v, state } = await getVersion();
+let resubmit = false;
+if (WITHDRAWABLE.includes(state)) {
+  const subs = (await asc('GET', `/v1/apps/${APP_ID}/reviewSubmissions?filter[platform]=IOS&filter[state]=WAITING_FOR_REVIEW&limit=5`)).data;
+  if (!subs.length) throw new Error(`Version ${version} is ${state} but no waiting review submission was found`);
+  for (const sub of subs) {
+    await asc('PATCH', `/v1/reviewSubmissions/${sub.id}`, { data: { type: 'reviewSubmissions', id: sub.id, attributes: { canceled: true } } });
+    console.log(`Took review submission ${sub.id} out of review`);
+  }
+  resubmit = true;
+  for (let i = 0; i < 60 && !EDITABLE.includes(state); i++) {
+    await sleep(10_000);
+    ({ v, state } = await getVersion());
+  }
+  console.log(`Version ${version} is now ${state}`);
+}
 if (!EDITABLE.includes(state)) {
-  console.log(`::warning::Version ${version} is ${state}; screenshots can't change now. Remove it from review first, then run again.`);
+  console.log(`::warning::Version ${version} is ${state}; screenshots can't change now.`);
   process.exit(0);
 }
 const locs = (await asc('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations?limit=50`)).data;
@@ -110,21 +132,50 @@ for (const loc of locs) {
   }
 }
 
-// Apple processes uploads asynchronously; report anything it rejected.
-await new Promise((r) => setTimeout(r, 20_000));
+// Apple processes uploads asynchronously: wait until every screenshot is
+// COMPLETE, and stop on anything it rejected.
 let failed = 0;
-for (const loc of locs) {
-  const sets = (await asc('GET', `/v1/appStoreVersionLocalizations/${loc.id}/appScreenshotSets?limit=50`)).data;
-  for (const set of sets) {
-    const shots = (await asc('GET', `/v1/appScreenshotSets/${set.id}/appScreenshots?limit=50`)).data;
-    for (const s of shots) {
-      const st = s.attributes.assetDeliveryState;
-      if (st?.state === 'FAILED') {
-        failed++;
-        console.log(`::error::${loc.attributes.locale} ${set.attributes.screenshotDisplayType} ${s.attributes.fileName}: ${JSON.stringify(st.errors)}`);
+for (let i = 0; i < 40; i++) {
+  await sleep(15_000);
+  failed = 0;
+  let pending = 0;
+  for (const loc of locs) {
+    const sets = (await asc('GET', `/v1/appStoreVersionLocalizations/${loc.id}/appScreenshotSets?limit=50`)).data;
+    for (const set of sets) {
+      const shots = (await asc('GET', `/v1/appScreenshotSets/${set.id}/appScreenshots?limit=50`)).data;
+      for (const s of shots) {
+        const st = s.attributes.assetDeliveryState?.state;
+        if (st === 'FAILED') {
+          failed++;
+          console.log(`::error::${loc.attributes.locale} ${set.attributes.screenshotDisplayType} ${s.attributes.fileName}: ${JSON.stringify(s.attributes.assetDeliveryState.errors)}`);
+        } else if (st !== 'COMPLETE') pending++;
       }
     }
   }
+  console.log(`processing: ${pending} pending, ${failed} failed`);
+  if (failed || !pending) break;
 }
 if (failed) process.exit(1);
+
+if (resubmit) {
+  // Reuse an unsubmitted draft submission if App Store Connect kept one.
+  let sub = (await asc('GET', `/v1/apps/${APP_ID}/reviewSubmissions?filter[platform]=IOS&filter[state]=READY_FOR_REVIEW&limit=5`)).data[0];
+  if (!sub) {
+    sub = (await asc('POST', '/v1/reviewSubmissions', {
+      data: { type: 'reviewSubmissions', attributes: { platform: 'IOS' },
+        relationships: { app: { data: { type: 'apps', id: APP_ID } } } },
+    })).data;
+  }
+  const items = (await asc('GET', `/v1/reviewSubmissions/${sub.id}/items?include=appStoreVersion&limit=20`)).data;
+  if (!items.some((it) => it.relationships?.appStoreVersion?.data?.id === v.id)) {
+    await asc('POST', '/v1/reviewSubmissionItems', {
+      data: { type: 'reviewSubmissionItems',
+        relationships: { reviewSubmission: { data: { type: 'reviewSubmissions', id: sub.id } },
+          appStoreVersion: { data: { type: 'appStoreVersions', id: v.id } } } },
+    });
+  }
+  await asc('PATCH', `/v1/reviewSubmissions/${sub.id}`, { data: { type: 'reviewSubmissions', id: sub.id, attributes: { submitted: true } } });
+  ({ state } = await getVersion());
+  console.log(`Submitted ${version} for review again (${state})`);
+}
 console.log('Done.');
