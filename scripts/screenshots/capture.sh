@@ -35,8 +35,9 @@ for d in json.load(sys.stdin)["devicetypes"]:
 wait_ready() { # $1 = udid, $2 = shot. The app writes Documents/shot-ready when the
   # screen is up (screenshot/index.tsx). Returns 1 if it never does.
   local f i
-  f="$(xcrun simctl get_app_container "$1" "$BUNDLE" data)/Documents/shot-ready"
   for i in $(seq 1 90); do
+    # Resolved every time: the data container may not exist yet right after install.
+    f="$(xcrun simctl get_app_container "$1" "$BUNDLE" data 2>/dev/null)/Documents/shot-ready"
     if [ "$(cat "$f" 2>/dev/null)" = "$2" ]; then sleep 1; return 0; fi
     sleep 1
   done
@@ -97,7 +98,10 @@ capture_device() { # $1 = folder name, $2 = simulator device type name
         if wait_ready "$udid" "$shot"; then ok=1; break; fi
         echo "  $lang/$shot not ready after 90 s (try $try)"
       done
-      [ $ok = 1 ] || echo "::warning::$name $lang/$shot never signalled ready; capturing anyway"
+      if [ $ok != 1 ]; then
+        echo "::warning::$name $lang/$shot never signalled ready; capturing anyway"
+        echo "$name/$lang/$shot" >> "$OUT/NOT_READY"
+      fi
       shoot "$udid" "$OUT/$name/$lang/$shot.png"
       # App log lines from this shot, for debugging screens that come out wrong.
       xcrun simctl spawn "$udid" log show --last 50s --style compact \

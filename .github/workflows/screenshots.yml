@@ -141,4 +141,9 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
-        run: node scripts/screenshots/upload.mjs "$RUNNER_TEMP/posters"
+        run: |
+          # Never replace the store screenshots with a shot that may be half loaded.
+          if [ -f "$RUNNER_TEMP/raw/NOT_READY" ]; then
+            echo "::error::Not uploading; these shots never signalled ready:"; cat "$RUNNER_TEMP/raw/NOT_READY"; exit 1
+          fi
+          node scripts/screenshots/upload.mjs "$RUNNER_TEMP/posters"

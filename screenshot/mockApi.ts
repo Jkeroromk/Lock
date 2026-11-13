@@ -48,6 +48,10 @@ const WRITE: Record<string, Handler> = {
 /** Small wait so loading states settle the way they do on a phone. */
 const latency = (path: string) => (path === '/api/vision' ? 900 : 120);
 
+/** Resolves once the photo has been "analyzed" (the photo shot waits on it). */
+let visionAnswered: () => void = () => {};
+export const visionDone = new Promise<void>((r) => { visionAnswered = r; });
+
 export const mockAdapter: AxiosAdapter = async (config: InternalAxiosRequestConfig) => {
   const url = new URL(config.url ?? '/', 'https://screenshot.local');
   const params = new URLSearchParams(url.search);
@@ -65,6 +69,7 @@ export const mockAdapter: AxiosAdapter = async (config: InternalAxiosRequestConf
     data = [];
   }
   await new Promise((r) => setTimeout(r, latency(path)));
+  if (path === '/api/vision' || path === '/api/ai/describe-meal') setTimeout(visionAnswered, 0);
   const res: AxiosResponse = { data, status: 200, statusText: 'OK', headers: {}, config, request: null };
   return res;
 };

@@ -17,7 +17,7 @@ import { api } from '@/services/client';
 import { useStore } from '@/store/useStore';
 import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { healthAckKey } from '@/constants/safety';
-import { mockAdapter } from './mockApi';
+import { mockAdapter, visionDone } from './mockApi';
 import { DEMO, DEMO_USER_ID } from './fixtures';
 import { dayTitle } from '@/components/train/dayTitle';
 import { useTranslation } from '@/i18n';
@@ -121,7 +121,9 @@ async function settle() {
   const coach = () => require('@/components/pet/coachModel').loadCoachAssets();
   if (SHOT === 'buddy') await Promise.all([safe(coach), safe(() => require('@/components/pet/stage/meadowAssets').loadMeadow())]);
   if (SHOT === 'couple') await Promise.all([safe(coach), safe(() => require('@/components/couple/room/plushAssets').loadCoupleAssets())]);
-  await sleep(SHOT === 'buddy' || SHOT === 'couple' ? 8000 : SHOT === 'photo' ? 6000 : 3000);
+  // The photo shot shows the analysis result, not the spinner.
+  if (SHOT === 'photo') await Promise.race([visionDone, sleep(60_000)]);
+  await sleep(SHOT === 'buddy' || SHOT === 'couple' ? 8000 : SHOT === 'photo' ? 4000 : 3000);
 }
 
 /** Waits for the app to land on Today, then opens the requested screen. */
