@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       upload:
-        description: Also upload the posters to App Store Connect (the version must be editable)
+        description: Also upload the posters to App Store Connect (a version waiting for review is taken out and submitted again)
         type: boolean
         default: false
       shots:
