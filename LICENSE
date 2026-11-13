@@ -1,0 +1,35 @@
+Copyright (c) 2026 Jkeroro. All rights reserved.
+
+This repository contains the source code, designs, artwork, 3D models,
+copy and other materials for Kero Lock ("Lock"), a commercial application
+distributed on the Apple App Store.
+
+The materials are made publicly visible for reference only. No license is
+granted to use, copy, modify, merge, publish, distribute, sublicense, sell,
+or create derivative works from any part of this repository, in whole or in
+part, without prior written permission from the copyright holder.
+
+In particular, you may not build, publish or distribute this application,
+or any application substantially derived from it, on any app store,
+website or other channel.
+
+The names "Lock", "Kero Lock" and "Lock in AI", the Lock icons, the buddy
+characters (including 豆豆 / the Bichon coach) and related branding are
+not licensed for any use.
+
+Viewing and forking this repository on GitHub is permitted only to the
+extent required by the GitHub Terms of Service; doing so does not grant any
+of the rights listed above.
+
+Third-party components keep their own licenses:
+  - Open-source dependencies listed in package.json files are licensed under
+    their respective terms.
+  - Bricolage Grotesque and Geist Mono fonts are licensed under the SIL Open
+    Font License 1.1 (see assets/fonts/OFL-*.txt).
+
+THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+MATERIALS OR THEIR USE.
+
+For licensing or other enquiries: https://lock.jkeroro.com/support
