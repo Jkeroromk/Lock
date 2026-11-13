@@ -40,6 +40,17 @@ wait_for() { # $1 = shot
   esac
 }
 
+shoot() { # $1 = udid, $2 = out .png. Multi-display devices (iPhone Duo):
+  # the primary display goes to $2, every other display to $2 minus .png + -<name>.png
+  local err
+  if err=$(xcrun simctl io "$1" screenshot "$2" 2>&1 >/dev/null); then return 0; fi
+  if ! grep -q 'Cannot choose between' <<<"$err"; then echo "$err" >&2; return 1; fi
+  grep -oE -- '--display=[0-9]+ +[^ ]+ \([^)]*\)' <<<"$err" | while read -r opt dname kind; do
+    if [[ "$kind" == "(primary)" ]]; then f="$2"; else f="${2%.png}-${dname,,}.png"; fi
+    xcrun simctl io "$1" screenshot "$opt" "$f" >/dev/null 2>&1 || echo "::warning::$dname screenshot failed"
+  done
+}
+
 capture_device() { # $1 = folder name, $2 = simulator device type name
   local name="$1" type_name="$2" type udid
   type=$(devtype "$type_name")
@@ -78,7 +89,7 @@ capture_device() { # $1 = folder name, $2 = simulator device type name
       sleep 1
       xcrun simctl launch "$udid" "$BUNDLE" -kshot "$shot" -klang "$lang" -AppleLanguages "($applang)" >/dev/null
       wait_for "$shot"
-      xcrun simctl io "$udid" screenshot "$OUT/$name/$lang/$shot.png" >/dev/null
+      shoot "$udid" "$OUT/$name/$lang/$shot.png"
       echo "  $lang/$shot ✓"
     done
   done
@@ -86,5 +97,8 @@ capture_device() { # $1 = folder name, $2 = simulator device type name
   xcrun simctl shutdown "$udid" || true
 }
 
-capture_device iphone69 "iPhone 17 Pro Max"
-capture_device duo "iPhone Duo"
+# One device failing must not cost the other's shots.
+capture_device iphone69 "iPhone 17 Pro Max" || echo "::error::iphone69 capture failed"
+capture_device duo "iPhone Duo" || echo "::error::duo capture failed"
+ls -R "$OUT"
+[ -n "$(find "$OUT" -name '*.png' -print -quit)" ] || { echo "::error::No screenshots"; exit 1; }
