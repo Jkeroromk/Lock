@@ -1,0 +1,121 @@
+# App Store screenshots, end to end, no phone needed:
+# builds the app in screenshot mode (demo account, made-up data; see
+# screenshot/ and lib/screenshotMode.ts), opens each screen on an
+# iPhone 17 Pro Max and an iPhone Duo simulator in Simplified Chinese and
+# English, captures them, turns them into posters (scripts/screenshots/), and
+# pushes everything to the `screenshots-output` branch:
+#   raw/<device>/<lang>/<shot>.jpg      what the simulator showed
+#   posters/<locale>/<device>/NN-*.jpg  ready for App Store Connect
+#
+# Run: Actions → "App Store screenshots" → Run workflow.
+# The native app is cached by its inputs; JS-only changes reuse it and just
+# swap in a fresh JS bundle, so most runs skip the long native build.
+name: App Store screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/auto-screenshots]
+    paths:
+      - 'screenshot/**'
+      - 'scripts/screenshots/**'
+      - '.github/workflows/screenshots.yml'
+      - 'app/**'
+      - 'components/**'
+
+concurrency:
+  group: screenshots
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    runs-on: xcode-27
+    timeout-minutes: 150
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # Same public values as the `screenshots` profile in eas.json.
+      EXPO_PUBLIC_API_URL: https://api.jkeroro.com
+      EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ
+      EXPO_PUBLIC_REVENUECAT_IOS_KEY: appl_xujnPHwLbUdCCSVIRMNLCcsBroN
+      EXPO_PUBLIC_SCREENSHOT_MODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 27.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
+          xcodebuild -version
+          xcrun simctl list runtimes | grep iOS || true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Restore simulator app
+        id: app-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/simapp
+          key: shots-app-${{ hashFiles('package-lock.json', 'app.json', 'eas.json', 'targets/**', 'scripts/patch-native-libs.mjs') }}
+
+      - name: Build simulator app (native)
+        if: steps.app-cache.outputs.cache-hit != 'true'
+        run: |
+          set -o pipefail
+          npm install -g eas-cli@latest
+          eas build --platform ios --profile screenshots --local --non-interactive --output "$RUNNER_TEMP/sim.tar.gz" 2>&1 | tee "$RUNNER_TEMP/eas.log" | tail -200
+          mkdir -p "$RUNNER_TEMP/simapp"
+          tar -xzf "$RUNNER_TEMP/sim.tar.gz" -C "$RUNNER_TEMP/simapp"
+          ls "$RUNNER_TEMP/simapp"
+
+      - name: Save simulator app
+        if: steps.app-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/simapp
+          key: ${{ steps.app-cache.outputs.cache-primary-key }}
+
+      # Fresh JS for this commit (screenshot mode on), and no OTA updates:
+      # a production update must never replace the screenshot bundle.
+      - name: Fresh JS bundle
+        run: |
+          APP=$(ls -d "$RUNNER_TEMP"/simapp/*.app | head -1)
+          echo "APP=$APP" >> "$GITHUB_ENV"
+          npx expo export:embed --platform ios --dev false --reset-cache \
+            --entry-file node_modules/expo-router/entry.js \
+            --bundle-output "$APP/main.jsbundle" --assets-dest "$APP"
+          plutil -replace EXUpdatesEnabled -bool NO "$APP/Expo.plist" || true
+          grep -c "SCREENSHOT_MODE" "$APP/main.jsbundle" || true
+
+      - name: Capture
+        run: bash scripts/screenshots/capture.sh "$APP" "$RUNNER_TEMP/raw"
+
+      - name: Posters
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium
+          node scripts/screenshots/posters.mjs "$RUNNER_TEMP/raw" "$RUNNER_TEMP/posters"
+
+      - name: Publish to the screenshots-output branch
+        run: |
+          pub="$RUNNER_TEMP/pub"; mkdir -p "$pub"
+          cp -R "$RUNNER_TEMP/posters" "$pub/posters"
+          # Raw shots as JPEG to keep the branch small (review only).
+          (cd "$RUNNER_TEMP/raw" && find . -name '*.png' | while read -r f; do
+            mkdir -p "$pub/raw/$(dirname "$f")"
+            sips -s format jpeg -s formatOptions 82 "$f" --out "$pub/raw/${f%.png}.jpg" >/dev/null
+          done)
+          cd "$pub"
+          printf 'Screenshots for %s (%s)\n' "$GITHUB_SHA" "$(date -u +%FT%TZ)" > README.md
+          git init -q -b screenshots-output
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -qm "Screenshots for ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" screenshots-output
+          echo "### Pushed to screenshots-output" >> "$GITHUB_STEP_SUMMARY"
+          find posters -name '*.jpg' | sort >> "$GITHUB_STEP_SUMMARY"

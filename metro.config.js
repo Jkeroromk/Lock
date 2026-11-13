@@ -18,6 +18,36 @@ config.resolver.extraNodeModules = {
   'react-dom': require.resolve('react-dom'),
 };
 
-module.exports = withNativeWind(config, { input: './global.css' });
+const finalConfig = withNativeWind(config, { input: './global.css' });
+
+// App Store screenshot builds (EXPO_PUBLIC_SCREENSHOT_MODE=1, see
+// .github/workflows/screenshots.yml): swap a few modules for the demo-account
+// versions in screenshot/. Normal builds never include anything from there.
+if (process.env.EXPO_PUBLIC_SCREENSHOT_MODE === '1') {
+  const path = require('path');
+  const at = (p) => path.join(__dirname, p);
+  const swaps = {
+    [at('lib/screenshotMode.ts')]: at('screenshot/index.tsx'),
+    [at('services/health.ts')]: at('screenshot/health.ts'),
+    [at('services/notifications.ts')]: at('screenshot/notifications.ts'),
+    [at('lib/revenuecat.ts')]: at('screenshot/revenuecat.ts'),
+  };
+  const shotDir = at('screenshot') + path.sep;
+  const upstream = finalConfig.resolver.resolveRequest;
+  finalConfig.resolver.resolveRequest = (context, moduleName, platform) => {
+    // The demo versions may import the real modules they wrap.
+    const fromShot = (context.originModulePath || '').startsWith(shotDir);
+    if (!fromShot && (moduleName === '@clerk/clerk-expo' || moduleName === '@clerk/clerk-expo/resource-cache')) {
+      return { type: 'sourceFile', filePath: at('screenshot/clerk.tsx') };
+    }
+    const res = upstream ? upstream(context, moduleName, platform) : context.resolveRequest(context, moduleName, platform);
+    if (!fromShot && res && res.type === 'sourceFile' && swaps[res.filePath]) {
+      return { type: 'sourceFile', filePath: swaps[res.filePath] };
+    }
+    return res;
+  };
+}
+
+module.exports = finalConfig;
 
 
