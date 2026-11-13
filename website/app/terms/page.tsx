@@ -20,7 +20,7 @@ const sections: LegalSection[] = [
     title: 'Account Registration',
     content: (
       <List items={[
-        'You must be at least 18 years old',
+        'You must be at least 13 years old',
         'You are responsible for keeping your credentials secure',
         'Do not share your account with others',
         'Report unauthorised access to us immediately',
@@ -118,7 +118,7 @@ export default function TermsOfService() {
   return (
     <LegalPage
       title="Terms of Service"
-      lastUpdated="November 8, 2026"
+      lastUpdated="November 13, 2026"
       intro={<p>By downloading, installing or using Lock, you agree to be bound by these Terms of Service. If you do not agree, do not use the app.</p>}
       sections={sections}
     />

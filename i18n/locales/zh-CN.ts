@@ -540,7 +540,7 @@ const zhCN = {
   about: {
     title: '关于 Lock',
     version: '版本',
-    description: 'Lock 是一款专注于健身与饮食管理的智能 App，帮助你追踪每日卡路里、记录餐食、监测健康数据，与好友共同挑战健康目标。',
+    description: 'Lock 是一款专注于健身与饮食管理的智能 App，帮助你追踪每日卡路里、记录餐食、监测健康数据，按计划训练、养一只伙伴，和好友或另一半一起 lock in。',
     legal: '法律信息',
     privacyPolicy: '隐私政策',
     termsOfService: '服务条款',
@@ -603,7 +603,7 @@ const zhCN = {
     bestValue: '超值推荐',
     upgradeToMax: '升级到 Max',
     yearly: '年付', monthlyPlan: '月付', perMonth: '{price}/月', save: '省 {pct}%', freeTrialBadge: '免费试用 {days} 天', startTrial: '开始 {days} 天免费试用', subscribe: '订阅', trialThen: '前 {days} 天免费，之后 {price}/年。可随时取消。', billedThen: '{price}/{period}。可随时取消。', trialReminderNote: '试用结束前 2 天会提醒你', trialReminderTitle: '免费试用还剩 2 天', trialReminderBody: '之后 Lock Pro 按 {price}/年 续费。可在 设置 → Apple 账户 → 订阅 中随时取消。',
-    freeFeatures: ['首周 Pro 全功能免费 · 之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练、体重曲线、数据导出', '好友不限 · 邀请好友双方各 +5 次'],
+    freeFeatures: ['首周 Pro 全功能免费 · 之后每天 3 次 AI 识别', '每周 1 次 AI 饮食分析', '条码与手动记录不限次数', '训练、体重曲线、情侣空间、数据导出', '好友不限 · 邀请好友双方各 +5 次'],
     proFeatures: ['包含免费版全部功能', '无限 AI 识别（免费版每天 3 次）', '无限「饮食 × 训练」AI 分析（免费版每周 1 次）', 'AI 训练计划随时重新生成'],
     maxFeatures: ['包含 Pro 全部功能', '每周自动 AI 饮食报告', 'AI 自定义营养目标', '优先客户支持'],
   },
