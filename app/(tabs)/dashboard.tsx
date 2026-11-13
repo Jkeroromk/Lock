@@ -28,7 +28,7 @@ export default function DashboardScreen() {
   const { twoPane, tabletop } = useDeviceLayout();
   const { t } = useTranslation();
   const colors = useTheme();
-  const { addFriend: deepLinkCode, requests: showRequests } = useLocalSearchParams<{ addFriend?: string; requests?: string }>();
+  const { addFriend: deepLinkCode, requests: showRequests, tab: tabParam } = useLocalSearchParams<{ addFriend?: string; requests?: string; tab?: string }>();
 
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   // Stood up like a laptop the buddy's room is the top half, so its tab comes first.
@@ -46,6 +46,14 @@ export default function DashboardScreen() {
       refreshRequests();
     }
   }, [showRequests]);
+
+  // `tab=pet` / `tab=friends`: open on that tab (links, App Store screenshots).
+  useEffect(() => {
+    if (tabParam === 'pet' || tabParam === 'friends') {
+      setActiveTab(tabParam);
+      setTableTab(tabParam);
+    }
+  }, [tabParam]);
 
   useEffect(() => {
     if (deepLinkCode) {

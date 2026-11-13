@@ -21,6 +21,7 @@ import { initRevenueCat, identifyUser, resetUser } from '@/lib/revenuecat';
 import { registerAndSavePushToken } from '@/services/notifications';
 import BootSplash from '@/components/ui/BootSplash';
 import { installCrashLog } from '@/lib/crashlog';
+import { ScreenshotDirector } from '@/lib/screenshotMode';
 import '../global.css';
 
 // 记录让 app 闪退的 JS 错误（设置 → 关于 里可以看到）
@@ -126,6 +127,7 @@ export default function RootLayout() {
         <UpdateNotifier />
         <WorkoutBridge />
         <SocialBridge />
+        <ScreenshotDirector />
         <StatusBar style={colors.backgroundPrimary === '#0A0A0A' ? 'light' : 'dark'} />
       </ClerkProvider>
     </GestureHandlerRootView>
