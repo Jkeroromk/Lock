@@ -34,7 +34,8 @@ for d in json.load(sys.stdin)["devicetypes"]:
 
 wait_for() { # $1 = shot
   case "$1" in
-    buddy|couple) sleep 30 ;;
+    buddy) sleep 30 ;;
+    couple) sleep 45 ;;
     photo) sleep 22 ;;
     *) sleep 16 ;;
   esac
@@ -46,7 +47,7 @@ shoot() { # $1 = udid, $2 = out .png. Multi-display devices (iPhone Duo):
   if err=$(xcrun simctl io "$1" screenshot "$2" 2>&1 >/dev/null); then return 0; fi
   if ! grep -q 'Cannot choose between' <<<"$err"; then echo "$err" >&2; return 1; fi
   grep -oE -- '--display=[0-9]+ +[^ ]+ \([^)]*\)' <<<"$err" | while read -r opt dname kind; do
-    if [[ "$kind" == "(primary)" ]]; then f="$2"; else f="${2%.png}-${dname,,}.png"; fi
+    if [[ "$kind" == "(primary)" ]]; then f="$2"; else f="${2%.png}-$(tr "[:upper:]" "[:lower:]" <<<"$dname").png"; fi
     xcrun simctl io "$1" screenshot "$opt" "$f" >/dev/null 2>&1 || echo "::warning::$dname screenshot failed"
   done
 }
@@ -90,6 +91,10 @@ capture_device() { # $1 = folder name, $2 = simulator device type name
       xcrun simctl launch "$udid" "$BUNDLE" -kshot "$shot" -klang "$lang" -AppleLanguages "($applang)" >/dev/null
       wait_for "$shot"
       shoot "$udid" "$OUT/$name/$lang/$shot.png"
+      # App log lines from this shot, for debugging screens that come out wrong.
+      xcrun simctl spawn "$udid" log show --last 50s --style compact \
+        --predicate 'process == "Lock" AND (eventMessage CONTAINS[c] "javascript" OR eventMessage CONTAINS[c] "warn" OR eventMessage CONTAINS[c] "error")' \
+        > "$OUT/$name/$lang/$shot.log" 2>/dev/null || true
       echo "  $lang/$shot ✓"
     done
   done

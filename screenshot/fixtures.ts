@@ -100,6 +100,10 @@ export const recentFoods = () => ({
     { food: tr({ zh: '番茄鸡蛋面', en: 'Tomato & egg noodles' }), calories: 520, protein: 21, carbs: 78, fat: 13, fiber: 4, sodium: 1150, count: 4 },
     { food: tr({ zh: '蛋白奶昔', en: 'Protein shake' }), calories: 180, protein: 30, carbs: 8, fat: 3, fiber: 1, sodium: 210, count: 9 },
     { food: tr({ zh: '苹果 · 1 个', en: 'Apple · 1 medium' }), calories: 94, protein: 1, carbs: 25, fat: 0, fiber: 4, sodium: 2, count: 5 },
+    { food: tr({ zh: '牛肉饭（半份饭）', en: 'Beef rice bowl (half rice)' }), calories: 610, protein: 34, carbs: 72, fat: 19, fiber: 3, sodium: 980, count: 3 },
+    { food: tr({ zh: '希腊酸奶 + 蓝莓', en: 'Greek yogurt + blueberries' }), calories: 210, protein: 18, carbs: 24, fat: 5, fiber: 2, sodium: 70, count: 7 },
+    { food: tr({ zh: '三文鱼饭团 · 2 个', en: 'Salmon onigiri · 2' }), calories: 380, protein: 16, carbs: 64, fat: 6, fiber: 2, sodium: 820, count: 2 },
+    { food: tr({ zh: '燕麦拿铁（中杯）', en: 'Oat latte (medium)' }), calories: 140, protein: 3, carbs: 20, fat: 5, fiber: 1, sodium: 110, count: 8 },
   ].map((x, i) => ({ ...x, last_at: at(18, 0, i + 1), image_url: null, reuse_image: false })),
 });
 

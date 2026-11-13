@@ -20,6 +20,10 @@ on:
         description: Also upload the posters to App Store Connect (the version must be editable)
         type: boolean
         default: false
+      shots:
+        description: Only these shots (space separated, e.g. "couple train"); empty = all
+        type: string
+        default: ''
   push:
     branches: [feat/auto-screenshots]
     paths:
@@ -102,6 +106,8 @@ jobs:
           grep -c "SCREENSHOT_MODE" "$APP/main.jsbundle" || true
 
       - name: Capture
+        env:
+          SHOTS: ${{ inputs.shots }}
         run: bash scripts/screenshots/capture.sh "$APP" "$RUNNER_TEMP/raw"
 
       - name: Posters
@@ -118,7 +124,8 @@ jobs:
           (cd "$RUNNER_TEMP/raw" && find . -name '*.png' | while read -r f; do
             mkdir -p "$pub/raw/$(dirname "$f")"
             sips -s format jpeg -s formatOptions 82 "$f" --out "$pub/raw/${f%.png}.jpg" >/dev/null
-          done)
+          done
+          find . -name '*.log' -exec rsync -R {} "$pub/raw/" \;)
           cd "$pub"
           printf 'Screenshots for %s (%s)\n' "$GITHUB_SHA" "$(date -u +%FT%TZ)" > README.md
           git init -q -b screenshots-output

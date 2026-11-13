@@ -18,6 +18,10 @@ import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { healthAckKey } from '@/constants/safety';
 import { mockAdapter } from './mockApi';
 import { DEMO, DEMO_USER_ID } from './fixtures';
+import { dayTitle } from '@/components/train/dayTitle';
+import { useTranslation } from '@/i18n';
+
+type T = (key: string, params?: Record<string, any>) => string;
 
 export const SCREENSHOT_MODE = true;
 
@@ -57,7 +61,7 @@ function applyPrefs() {
 if (useStore.persist.hasHydrated()) applyPrefs();
 else useStore.persist.onFinishHydration(applyPrefs);
 
-async function openShot() {
+async function openShot(t: T) {
   await seeded;
   const ws = useWorkoutStore.getState();
   ws.ensureUser(DEMO_USER_ID);
@@ -77,7 +81,7 @@ async function openShot() {
       await useWorkoutStore.getState().load();
       const dow = new Date().getDay();
       const day = useWorkoutStore.getState().plan[String(dow)];
-      useWorkoutStore.getState().start({ planDay: dow, title: null, day });
+      useWorkoutStore.getState().start({ planDay: dow, title: day ? dayTitle(day, dow, t) : null, day });
       useWorkoutStore.getState().toggleSet(0, 0);
       useWorkoutStore.getState().toggleSet(0, 1);
       useWorkoutStore.getState().startRest(90);
@@ -105,11 +109,14 @@ async function openShot() {
 export function ScreenshotDirector(): null {
   const pathname = usePathname();
   const started = useRef(false);
+  const { t } = useTranslation();
+  const tRef = useRef<T>(t);
+  tRef.current = t;
   useEffect(() => {
     if (started.current || pathname !== '/today') return;
     started.current = true;
     setTimeout(() => {
-      openShot().catch((e) => console.warn('[screenshot]', e));
+      openShot(tRef.current).catch((e) => console.warn('[screenshot]', e));
     }, 1500);
   }, [pathname]);
   return null;
