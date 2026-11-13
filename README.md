@@ -46,46 +46,6 @@ Free to start: every new account gets its first week of Pro. After that the free
 | Services | Clerk (auth), RevenueCat (subscriptions), Fireworks AI (vision and text models), USDA FoodData Central, Apple HealthKit |
 | Delivery | EAS Build, TestFlight, EAS Update (OTA), GitHub Actions |
 
-## Repository layout
-
-```
-app/            Expo Router screens (tabs, camera, workout, couple, pet, legal…)
-components/     UI components grouped by feature
-constants/      Theme tokens, exercises, portions, pets
-hooks/ lib/ services/ store/   App logic, API client, state
-i18n/           Locales for the five supported languages
-assets/         Fonts, icons, buddy and couple-space art, 3D models
-targets/        Apple Watch app and Live Activity (Swift)
-modules/        Local Expo native modules
-backend/        Next.js API, Prisma schema and migrations
-website/        Marketing site
-scripts/        Build helpers and automated App Store screenshots
-.github/        CI: type check, iOS builds, TestFlight, OTA updates, screenshots
-```
-
-## Running locally
-
-Requires Node 22, Xcode and an Expo development build (the app uses native modules, so Expo Go won't work).
-
-```bash
-# App
-npm install
-cp .env.example .env.local        # fill in API URL, Clerk and RevenueCat keys
-npx expo run:ios                  # or: npx expo start --dev-client
-
-# Backend
-cd backend
-npm install
-cp .env.example .env.local        # Clerk, Fireworks, USDA, Postgres, RevenueCat
-npx prisma generate
-npm run dev                       # http://localhost:3000
-
-# Website
-cd website
-npm install
-npm run dev                       # http://localhost:3001
-```
-
 ## License
 
 Copyright © 2026 Jkeroro. **All rights reserved.**
