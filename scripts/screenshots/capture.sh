@@ -32,13 +32,15 @@ for d in json.load(sys.stdin)["devicetypes"]:
     if d["name"]==want: print(d["identifier"]); break' "$1"
 }
 
-wait_for() { # $1 = shot
-  case "$1" in
-    buddy) sleep 30 ;;
-    couple) sleep 45 ;;
-    photo) sleep 22 ;;
-    *) sleep 16 ;;
-  esac
+wait_ready() { # $1 = udid, $2 = shot. The app writes Documents/shot-ready when the
+  # screen is up (screenshot/index.tsx). Returns 1 if it never does.
+  local f i
+  f="$(xcrun simctl get_app_container "$1" "$BUNDLE" data)/Documents/shot-ready"
+  for i in $(seq 1 90); do
+    if [ "$(cat "$f" 2>/dev/null)" = "$2" ]; then sleep 1; return 0; fi
+    sleep 1
+  done
+  return 1
 }
 
 shoot() { # $1 = udid, $2 = out .png. Multi-display devices (iPhone Duo):
@@ -79,17 +81,23 @@ capture_device() { # $1 = folder name, $2 = simulator device type name
   xcrun simctl privacy "$udid" grant camera "$BUNDLE" || true
 
   # First launch warms up (fonts, 3D, caches) and is not kept.
-  xcrun simctl launch "$udid" "$BUNDLE" -kshot today -klang en-US >/dev/null
-  sleep 40
+  xcrun simctl launch "$udid" "$BUNDLE" -kshot buddy -klang en-US >/dev/null
+  wait_ready "$udid" buddy || echo "warm-up never signalled ready"
 
   for lang in "${LANGS[@]}"; do
     local applang; applang=$([ "$lang" = zh-CN ] && echo zh-Hans || echo en)
     mkdir -p "$OUT/$name/$lang"
     for shot in "${SHOTS[@]}"; do
-      xcrun simctl terminate "$udid" "$BUNDLE" >/dev/null 2>&1 || true
-      sleep 1
-      xcrun simctl launch "$udid" "$BUNDLE" -kshot "$shot" -klang "$lang" -AppleLanguages "($applang)" >/dev/null
-      wait_for "$shot"
+      local try ok=0
+      for try in 1 2 3; do
+        xcrun simctl terminate "$udid" "$BUNDLE" >/dev/null 2>&1 || true
+        rm -f "$(xcrun simctl get_app_container "$udid" "$BUNDLE" data)/Documents/shot-ready"
+        sleep 1
+        xcrun simctl launch "$udid" "$BUNDLE" -kshot "$shot" -klang "$lang" -AppleLanguages "($applang)" >/dev/null
+        if wait_ready "$udid" "$shot"; then ok=1; break; fi
+        echo "  $lang/$shot not ready after 90 s (try $try)"
+      done
+      [ $ok = 1 ] || echo "::warning::$name $lang/$shot never signalled ready; capturing anyway"
       shoot "$udid" "$OUT/$name/$lang/$shot.png"
       # App log lines from this shot, for debugging screens that come out wrong.
       xcrun simctl spawn "$udid" log show --last 50s --style compact \

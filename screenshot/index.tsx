@@ -11,6 +11,7 @@ import { useEffect, useRef } from 'react';
 import { Platform, Settings } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Asset } from 'expo-asset';
+import { File, Paths } from 'expo-file-system';
 import { router, usePathname } from 'expo-router';
 import { api } from '@/services/client';
 import { useStore } from '@/store/useStore';
@@ -38,6 +39,14 @@ function launchArg(key: string, fallback: string): string {
 
 const SHOT = launchArg('kshot', 'today');
 const LANG = launchArg('klang', 'en-US') === 'zh-CN' ? 'zh-CN' : 'en-US';
+
+// capture.sh polls for this file instead of guessing how long a screen takes.
+const readyFile = () => new File(Paths.document, 'shot-ready');
+try { if (readyFile().exists) readyFile().delete(); } catch {}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+async function markReady() {
+  try { readyFile().write(SHOT); } catch (e) { console.warn('[screenshot] ready marker', e); }
+}
 
 // Local state the demo day needs, and every first-run prompt already dismissed.
 const seeded = Promise.all([
@@ -105,6 +114,16 @@ async function openShot(t: T) {
   }
 }
 
+/** Waits until the screen has drawn: 3D scenes get their models, then time to animate in. */
+async function settle() {
+  const safe = (load: () => Promise<unknown>) => Promise.resolve().then(load).catch((e) => console.warn('[screenshot] assets', e));
+  // Required lazily, like the screens do, so three.js isn't pulled in at startup.
+  const coach = () => require('@/components/pet/coachModel').loadCoachAssets();
+  if (SHOT === 'buddy') await Promise.all([safe(coach), safe(() => require('@/components/pet/stage/meadowAssets').loadMeadow())]);
+  if (SHOT === 'couple') await Promise.all([safe(coach), safe(() => require('@/components/couple/room/plushAssets').loadCoupleAssets())]);
+  await sleep(SHOT === 'buddy' || SHOT === 'couple' ? 8000 : SHOT === 'photo' ? 6000 : 3000);
+}
+
 /** Waits for the app to land on Today, then opens the requested screen. */
 export function ScreenshotDirector(): null {
   const pathname = usePathname();
@@ -116,7 +135,10 @@ export function ScreenshotDirector(): null {
     if (started.current || pathname !== '/today') return;
     started.current = true;
     setTimeout(() => {
-      openShot(tRef.current).catch((e) => console.warn('[screenshot]', e));
+      openShot(tRef.current)
+        .catch((e) => console.warn('[screenshot]', e))
+        .then(settle)
+        .then(markReady);
     }, 1500);
   }, [pathname]);
   return null;
