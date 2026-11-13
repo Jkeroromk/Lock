@@ -59,7 +59,7 @@ export const COPY = {
         days: ['Today', 'Yesterday', 'Thu'],
         meals: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
       },
-      water: { t: 'Water, your way.', d: 'Your buddy floats in the bottle as it fills. Spin the drink wheel: tea, coffee, milk and juice each count for how much they really hydrate, and lattes, juice and soda add their calories too. Steps and active energy sync from Apple Health.', drinks: ['Water', 'Tea', 'Coffee', 'Latte', 'Juice', 'Sports'], counts: ['100%', '90%', '80%', '90%', '90%', '95%'], of: 'of', steps: 'Steps', energy: 'Active energy' },
+      water: { t: 'Water, your way.', d: 'Your buddy floats in the bottle as it fills. Spin the drink wheel: tea, coffee, milk and juice each count for how much they really hydrate, and lattes, milk, juice, sports drinks and soda add their calories too. Steps and active energy sync from Apple Health.', drinks: ['Water', 'Tea', 'Coffee', 'Latte', 'Juice', 'Sports'], counts: ['100%', '90%', '80%', '90%', '90%', '95%'], of: 'of', steps: 'Steps', energy: 'Active energy' },
     },
     social: {
       eyebrow: 'Social',
@@ -270,7 +270,7 @@ export const COPY = {
         days: ['今天', '昨天', '周四'],
         meals: ['早餐', '午餐', '加餐', '晚餐'],
       },
-      water: { t: '喝水，按你的方式。', d: '水越喝越满，你的伙伴就浮在瓶子里。转一下饮品轮盘：茶、咖啡、牛奶、果汁按真实补水量来算，拿铁、果汁、汽水还会顺便记上热量。步数和活动能量从 Apple 健康自动同步。', drinks: ['水', '茶', '咖啡', '拿铁', '果汁', '运动饮料'], counts: ['100%', '90%', '80%', '90%', '90%', '95%'], of: '/', steps: '步数', energy: '活动能量' },
+      water: { t: '喝水，按你的方式。', d: '水越喝越满，你的伙伴就浮在瓶子里。转一下饮品轮盘：茶、咖啡、牛奶、果汁按真实补水量来算，拿铁、牛奶、果汁、运动饮料和汽水还会顺便记上热量。步数和活动能量从 Apple 健康自动同步。', drinks: ['水', '茶', '咖啡', '拿铁', '果汁', '运动饮料'], counts: ['100%', '90%', '80%', '90%', '90%', '95%'], of: '/', steps: '步数', energy: '活动能量' },
     },
     social: {
       eyebrow: '社交',
