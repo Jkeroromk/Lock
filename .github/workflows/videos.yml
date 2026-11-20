@@ -1,0 +1,127 @@
+# Promo videos, end to end, no phone needed: builds the app in screenshot mode
+# (demo account; see screenshot/index.tsx), records the scenes listed in a spec
+# (marketing/video/specs/*.json) on an iPhone 17 Pro Max simulator
+# (scripts/videos/record.sh), adds captions, the brand frame and the Kero Lock
+# end card (scripts/videos/compose.mjs), and pushes the results to the
+# `videos-output` branch (latest run only): videos/<spec name>/<id>-<lang>.mp4
+# (+ a still per scene).
+#
+# Run: Actions → "Promo videos" → Run workflow (pick a spec), or push to a
+# videos/** branch (renders marketing/video/specs/sample.json unless VIDEO_SPEC is set).
+name: Promo videos
+
+on:
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: Spec file
+        type: string
+        default: marketing/video/specs/sample.json
+  push:
+    branches: ['videos/**']
+
+concurrency:
+  group: videos-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  videos:
+    runs-on: xcode-27
+    timeout-minutes: 150
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # Same public values as the `screenshots` profile in eas.json.
+      EXPO_PUBLIC_API_URL: https://api.jkeroro.com
+      EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ
+      EXPO_PUBLIC_REVENUECAT_IOS_KEY: appl_xujnPHwLbUdCCSVIRMNLCcsBroN
+      EXPO_PUBLIC_SCREENSHOT_MODE: '1'
+      SPEC: ${{ inputs.spec || 'marketing/video/specs/sample.json' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 27.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
+          xcodebuild -version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Same native app as the screenshot workflow (same cache key), so a JS-only
+      # change never rebuilds it.
+      - name: Restore simulator app
+        id: app-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/simapp
+          key: shots-app-${{ hashFiles('package-lock.json', 'app.json', 'eas.json', 'targets/**', 'scripts/patch-native-libs.mjs') }}
+
+      - name: Build simulator app (native)
+        if: steps.app-cache.outputs.cache-hit != 'true'
+        run: |
+          set -o pipefail
+          npm install -g eas-cli@latest
+          eas build --platform ios --profile screenshots --local --non-interactive --output "$RUNNER_TEMP/sim.tar.gz" 2>&1 | tee "$RUNNER_TEMP/eas.log" | tail -200
+          mkdir -p "$RUNNER_TEMP/simapp"
+          tar -xzf "$RUNNER_TEMP/sim.tar.gz" -C "$RUNNER_TEMP/simapp"
+
+      - name: Save simulator app
+        if: steps.app-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/simapp
+          key: ${{ steps.app-cache.outputs.cache-primary-key }}
+
+      - name: Fresh JS bundle
+        run: |
+          APP=$(find "$RUNNER_TEMP/simapp" -maxdepth 3 -type d -name '*.app' -path '*iphonesimulator*' | head -1)
+          [ -n "$APP" ] || { echo "::error::No simulator .app"; exit 1; }
+          echo "APP=$APP" >> "$GITHUB_ENV"
+          npx expo export:embed --platform ios --dev false --reset-cache \
+            --entry-file node_modules/expo-router/entry.js \
+            --bundle-output "$APP/main.jsbundle" --assets-dest "$APP"
+          plutil -replace EXUpdatesEnabled -bool NO "$APP/Expo.plist" || true
+
+      - name: Record
+        run: bash scripts/videos/record.sh "$APP" "$SPEC" "$RUNNER_TEMP/rec"
+
+      - name: Compose
+        run: |
+          command -v ffmpeg >/dev/null || brew install ffmpeg
+          npm install --no-save playwright@1.56.1
+          npx playwright install chromium
+          node scripts/videos/compose.mjs "$SPEC" "$RUNNER_TEMP/rec" "$RUNNER_TEMP/out"
+
+      - name: Keep the recordings for debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promo-videos
+          path: |
+            ${{ runner.temp }}/out
+            ${{ runner.temp }}/rec/*.json
+            ${{ runner.temp }}/rec/*.log
+          retention-days: 14
+
+      - name: Publish to the videos-output branch
+        run: |
+          # One force-pushed commit with just this run's videos (like screenshots-output),
+          # so old MP4s never pile up in git history.
+          name=$(basename "$SPEC" .json)
+          pub="$RUNNER_TEMP/pub"; mkdir -p "$pub/videos/$name"
+          cp "$RUNNER_TEMP"/out/* "$pub/videos/$name/"
+          cd "$pub"
+          printf 'Promo videos: %s from %s (%s)\n' "$name" "${GITHUB_SHA::7}" "$(date -u +%FT%TZ)" > README.md
+          git init -q -b videos-output
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -qm "Videos: $name (${GITHUB_SHA::7})"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" videos-output
+          echo "### Pushed to videos-output/videos/$name" >> "$GITHUB_STEP_SUMMARY"
+          ls "videos/$name" >> "$GITHUB_STEP_SUMMARY"

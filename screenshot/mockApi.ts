@@ -34,6 +34,7 @@ const GET: Record<string, Handler> = {
 
 const WRITE: Record<string, Handler> = {
   '/api/vision': () => F.visionResult(),
+  '/api/log-meal': (_q, body) => F.addLoggedMeal(body ?? {}),
   '/api/ai/describe-meal': () => F.visionResult(),
   '/api/pet/sync': () => F.pet(),
   '/api/pet/setup': () => F.pet(),

@@ -64,8 +64,24 @@ const MEALS: { name: L; kcal: number; p: number; c: number; f: number; fiber: nu
   { name: { zh: '燕麦拿铁', en: 'Oat latte' }, kcal: 140, p: 3, c: 18, f: 6, fiber: 1, sodium: 95, h: 15, m: 10 },
 ];
 
-export const todayMeals = () =>
-  MEALS.map((x, i) => ({
+/** Meals "saved" during a promo video (POST /api/log-meal), shown after the demo day's own. */
+const demoMeal = (m: Record<string, any>, i: number) => ({
+  id: `demo-logged-${i}`,
+  food_name: String(m.food_name ?? ''),
+  calories: Number(m.calories) || 0,
+  protein: Number(m.protein) || 0,
+  carbs: Number(m.carbs) || 0,
+  fat: Number(m.fat) || 0,
+  fiber: Number(m.fiber) || 0,
+  sodium: Number(m.sodium) || 0,
+  image_url: String(m.image_url ?? ''),
+  created_at: String(m.eaten_at ?? new Date().toISOString()),
+});
+
+export const loggedMeals: ReturnType<typeof demoMeal>[] = [];
+
+export const todayMeals = () => [
+  ...MEALS.map((x, i) => ({
     id: `demo-meal-${i}`,
     food_name: tr(x.name),
     calories: x.kcal,
@@ -76,7 +92,14 @@ export const todayMeals = () =>
     sodium: x.sodium,
     image_url: '',
     created_at: at(x.h, x.m),
-  }));
+  })),
+  ...loggedMeals,
+];
+
+export const addLoggedMeal = (m: Record<string, any>) => {
+  loggedMeals.push(demoMeal(m, loggedMeals.length));
+  return { ok: true };
+};
 
 export const today_ = () => {
   const meals = todayMeals();

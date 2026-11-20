@@ -23,6 +23,7 @@ import ResultCard, { FoodResult } from '@/components/log/ResultCard';
 import { CartBar, CartSheet } from '@/components/log/MealCart';
 import { useMealCartStore, type CartItem } from '@/store/useMealCartStore';
 import { useMealLogging } from '@/hooks/useMealLogging';
+import { registerShotAction } from '@/lib/screenshotMode';
 import TabFocusFade from '@/components/ui/TabFocusFade';
 import { useTabBarInset } from '@/hooks/useTabBarInset';
 import { useDeviceLayout } from '@/hooks/useDeviceLayout';
@@ -288,6 +289,8 @@ export default function LogScreen() {
     } catch (error: any) { Alert.alert(t('log.saveFailed'), error.message || t('log.saveFailed')); }
     finally { setSaving(false); }
   };
+  // Promo videos (screenshot builds only) tap "Save" through this.
+  useEffect(() => { registerShotAction('saveMeal', saveMeal); });
 
   /** Put the current result on the list and get ready for the next one. */
   const addToList = async () => {

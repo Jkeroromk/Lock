@@ -1,0 +1,15 @@
+{
+  "note": "Sample to test the pipeline. The photo result is the demo fixture (screenshot/fixtures.ts visionResult), not a real analysis yet: do not post until it is replaced with a real result.",
+  "videos": [
+    {
+      "id": "V1",
+      "langs": ["en", "zh"],
+      "scenes": [
+        { "scene": "today", "ms": 2200, "caption": { "en": "POV: you stopped *guessing* calories", "zh": "不再*瞎猜*热量了" } },
+        { "scene": "photo", "ms": 3200, "caption": { "en": "Snap it.", "zh": "拍一下" } },
+        { "scene": "save", "ms": 3000, "caption": { "en": "*Logged.* The ring fills up.", "zh": "*记好了*，圆环涨一截" } },
+        { "scene": "buddy", "ms": 4200, "caption": { "en": "…and my buddy grows with every log", "zh": "每记一次，伙伴就长大一点" } }
+      ]
+    }
+  ]
+}
