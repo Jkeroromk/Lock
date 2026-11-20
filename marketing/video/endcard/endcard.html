@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: 'Bricolage'; src: url('../../../assets/fonts/BricolageGrotesque-ExtraBold.ttf'); font-weight: 800; }
+  @font-face { font-family: 'Bricolage'; src: url('../../../assets/fonts/BricolageGrotesque-Bold.ttf'); font-weight: 700; }
+  @font-face { font-family: 'GeistMono'; src: url('../../../assets/fonts/GeistMono-SemiBold.ttf'); font-weight: 600; }
+  html, body { margin: 0; width: 1080px; height: 1920px; background: #0A0A0A; overflow: hidden; }
+  body { font-family: 'Bricolage', 'Noto Sans CJK SC', sans-serif; color: #F2F1EC; }
+  #lock { position: absolute; left: 50%; top: 300px; width: 440px; margin-left: -220px; overflow: visible; }
+  #tag { position: absolute; left: 0; right: 0; top: 920px; text-align: center; font-weight: 800; font-size: 150px; letter-spacing: -4px; }
+  #card { position: absolute; left: 120px; right: 120px; top: 1170px; background: #F2F1EC; color: #0A0A0A;
+          border: 4px solid #0A0A0A; border-radius: 28px; box-shadow: 14px 14px 0 #FFD43B; padding: 44px 40px 40px; text-align: center; }
+  #cta { font-weight: 800; font-size: 74px; line-height: 1.08; letter-spacing: -1.5px; }
+  #cta b { background: #FFD43B; padding: 0 14px; border-radius: 12px; }
+  #sub { margin-top: 26px; font-family: 'GeistMono', 'Noto Sans CJK SC', monospace; font-weight: 600; font-size: 30px; letter-spacing: 3px; text-transform: uppercase; color: #262626; }
+  .zh #cta { font-family: 'Noto Sans CJK SC', sans-serif; font-weight: 900; letter-spacing: 0; }
+  .zh #cta b { font-family: 'Bricolage', sans-serif; font-weight: 800; }
+  .zh #sub { letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<svg id="lock" viewBox="0 0 200 236">
+  <g id="shackle">
+    <path d="M62 124 V80 A38 38 0 0 1 138 80 V124" fill="none" stroke="#262626" stroke-width="18" stroke-linecap="round"/>
+    <path id="arc" d="M62 124 V80 A38 38 0 0 1 138 80 V124" fill="none" stroke="#FFD43B" stroke-width="18" stroke-linecap="round" pathLength="100" stroke-dasharray="100"/>
+  </g>
+  <g id="body">
+    <rect x="42" y="124" width="140" height="102" rx="24" fill="#FFD43B"/>
+    <rect x="32" y="114" width="140" height="102" rx="24" fill="#F2F1EC"/>
+    <circle cx="102" cy="156" r="13" fill="#0A0A0A"/>
+    <path d="M95 162h14l4 30H91z" fill="#0A0A0A"/>
+  </g>
+</svg>
+<div id="tag">Lock in.</div>
+<div id="card"><div id="cta"></div><div id="sub"></div></div>
+<script>
+  const COPY = {
+    en: { cta: 'Search <b>Kero Lock</b><br>on the App Store', sub: 'First week Pro, free · no card' },
+    zh: { cta: 'App Store 搜<br><b>Kero Lock</b>', sub: '首周 Pro 免费 · 不用绑卡' },
+  };
+  const lang = new URLSearchParams(location.search).get('lang') || 'en';
+  document.body.className = lang;
+  document.getElementById('cta').innerHTML = COPY[lang].cta;
+  document.getElementById('sub').textContent = COPY[lang].sub;
+
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const backOut = (x) => { const c = 2.2; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+  const SNAP = 0.75; // seconds: the shackle closes (audio click lines up with this)
+
+  // Deterministic frame: everything is a function of t (seconds).
+  window.render = (t) => {
+    const fill = easeOut(clamp(t / 0.65));
+    document.getElementById('arc').setAttribute('stroke-dashoffset', String(100 - (62 + 38 * fill)));
+    const s = clamp((t - SNAP + 0.05) / 0.3);
+    const y = -26 * (1 - backOut(s));
+    document.getElementById('shackle').setAttribute('transform', `translate(0 ${y})`);
+    const k = clamp((t - SNAP) / 0.35);
+    const thunk = k < 0.4 ? 5 * (k / 0.4) : 5 * (1 - (k - 0.4) / 0.6);
+    document.getElementById('body').setAttribute('transform', `rotate(-3 102 165) translate(0 ${thunk})`);
+    const g = easeOut(clamp((t - 0.95) / 0.35));
+    const tag = document.getElementById('tag');
+    tag.style.opacity = g; tag.style.transform = `translateY(${40 * (1 - g)}px)`;
+    const c = clamp((t - 1.35) / 0.45);
+    const card = document.getElementById('card');
+    card.style.opacity = clamp(c * 2);
+    card.style.transform = `translateY(${120 * (1 - backOut(c))}px) rotate(${-2 * backOut(c)}deg)`;
+  };
+  render(0);
+</script>
+</body>
+</html>
