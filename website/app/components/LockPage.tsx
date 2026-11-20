@@ -1,6 +1,6 @@
 'use client';
 import { createElement, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { APPSTORE_URL, COPY, type Lang, type T } from './copy';
+import { APPSTORE_URL, COPY, SOCIAL_LINKS, type Lang, type T } from './copy';
 
 /* ── hooks ─────────────────────────────── */
 function useInView<E extends Element>(threshold = 0.2) {
@@ -49,6 +49,9 @@ const I = {
   ),
   check: (s = 16) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+  ),
+  youtube: (s = 18) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 00-1.76-1.77C18.3 5 12 5 12 5s-6.3 0-7.84.43A2.5 2.5 0 002.4 7.2 26 26 0 002 12a26 26 0 00.4 4.8 2.5 2.5 0 001.76 1.77C5.7 19 12 19 12 19s6.3 0 7.84-.43a2.5 2.5 0 001.76-1.77A26 26 0 0022 12a26 26 0 00-.4-4.8zM10 15V9l5.2 3-5.2 3z" /></svg>
   ),
   plus: (s = 16) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
@@ -842,7 +845,14 @@ function Footer({ t }: { t: T }) {
           <a href="#top" className="brand"><img src="/icons/open-lock.png" alt="" width={34} height={34} /><span>Lock</span></a>
           <p>{f.tag}</p>
         </div>
-        <a href={APPSTORE_URL} className="btn btn-accent btn-md">{I.apple(16)}<span>{t.download}</span></a>
+        <div className="foot-cta">
+          <nav className="foot-social" aria-label={f.follow}>
+            {SOCIAL_LINKS.map((l) => (
+              <a key={l.id} href={l.href} target="_blank" rel="noopener noreferrer" aria-label={`${f.follow} ${l.label}`} title={l.label}>{I[l.id](20)}</a>
+            ))}
+          </nav>
+          <a href={APPSTORE_URL} className="btn btn-accent btn-md">{I.apple(16)}<span>{t.download}</span></a>
+        </div>
       </div>
       <div className="wrap foot-links">
         <nav className="foot-row" aria-label={f.product}>
