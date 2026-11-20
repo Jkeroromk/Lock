@@ -1,6 +1,11 @@
 /** App Store campaign link (ct=website), so installs from the site show up under Analytics → Campaigns. */
 export const APPSTORE_URL = 'https://apps.apple.com/app/apple-store/id6762630080?pt=128801549&ct=website&mt=8';
 
+/** Official Kero Lock social accounts (@kerolockapp). Add TikTok / Instagram here once they exist. */
+export const SOCIAL_LINKS = [
+  { id: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@kerolockapp' },
+] as const;
+
 /* Free / Pro lists mirror the in-app pricing copy (i18n freeFeatures / proFeatures)
    and backend/lib/plans.ts in the app repo. Keep them in sync when limits change.
    Pro prices are the US App Store prices (lock.pro.yearly / lock.pro.monthly). */
@@ -213,6 +218,7 @@ export const COPY = {
       product: 'Product',
       company: 'Lock',
       links: { support: 'Support', sources: 'Sources', compare: 'Compare', privacy: 'Privacy', terms: 'Terms' },
+      follow: 'Follow Kero Lock on',
       by: 'Made by',
       rights: '© 2026 Lock',
     },
@@ -424,6 +430,7 @@ export const COPY = {
       product: '产品',
       company: 'Lock',
       links: { support: '支持', sources: '资料来源', compare: '对比', privacy: '隐私', terms: '条款' },
+      follow: '关注 Kero Lock：',
       by: '出品',
       rights: '© 2026 Lock',
     },

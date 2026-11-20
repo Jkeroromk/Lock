@@ -419,6 +419,10 @@
 .foot-brand { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .foot-brand p { color: #B5B4AE; margin: 0; line-height: 1.5; }
 .foot .btn-accent { box-shadow: 3px 3px 0 var(--paper); }
+.foot-cta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.foot-social { display: flex; gap: 8px; }
+.foot-social a { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #2C2C2C; color: var(--paper); transition: color .15s, border-color .15s; }
+.foot-social a:hover { color: var(--accent); border-color: var(--accent); }
 .foot-links { display: flex; justify-content: space-between; align-items: center; gap: 14px 32px; flex-wrap: wrap; padding-top: 20px; padding-bottom: 20px; border-top: 1px solid #2C2C2C; }
 .foot-row { display: flex; flex-wrap: wrap; gap: 8px 26px; }
 .foot-row a { color: var(--paper); text-decoration: none; font-weight: 600; font-size: 15px; }
