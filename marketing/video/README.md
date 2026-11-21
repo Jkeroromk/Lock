@@ -5,7 +5,8 @@ Automatic 1080×1920 videos of the real app (demo account), no phone needed.
 1. **Spec** (`specs/<week>.json`): videos → scenes. A scene is an app screen held for `ms`
    milliseconds with a caption per language (`*word*` = yellow highlight).
    Scenes: `today`, `photo` (sushi photo → AI result card), `save` (taps Save → Today, ring fills),
-   `log`, `train` (live session + rest timer), `buddy` (3D coach), `friends`, `couple` (3D room), `calendar`.
+   `log`, `train` (live session + rest timer), `buddy` (3D coach), `couple` (3D room).
+   `friends` and `calendar` exist but currently record the wrong screen — don't use them yet.
 2. **Record** (`scripts/videos/record.sh`): screenshot-mode build on an iPhone 17 Pro Max simulator,
    launched with `-kclip "today:2200,photo:3200,…"`; the app plays the scenes (`screenshot/index.tsx`, `runClip`)
    while `simctl io recordVideo` runs.
