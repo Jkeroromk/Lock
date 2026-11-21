@@ -78,7 +78,7 @@ while read -r id lang clip; do
     if ! wait_file clip-armed 150; then echo "  $name never armed (try $try)"; continue; fi
 
     rm -f "$OUT/$name.mov"
-    xcrun simctl io "$udid" recordVideo --codec=h264 --force "$OUT/$name.mov" > "$OUT/$name.rec.log" 2>&1 &
+    xcrun simctl io "$udid" recordVideo --codec=hevc --force "$OUT/$name.mov" > "$OUT/$name.rec.log" 2>&1 &
     rec=$!
     t_rec=$(now)
     # recordVideo prints "Recording started" once frames flow.
