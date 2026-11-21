@@ -101,7 +101,7 @@ for (const v of spec.videos) {
   for (const lang of v.langs ?? ['en', 'zh']) {
     const name = `${v.id}-${lang}`;
     const mov = path.join(recDir, `${name}.mov`);
-    if (!fs.existsSync(mov)) { console.warn(`skip ${name}: no recording`); continue; }
+    if (!fs.existsSync(path.join(recDir, `${name}.timeline.json`))) { console.warn(`skip ${name}: not recorded`); continue; }
     const tl = JSON.parse(fs.readFileSync(path.join(recDir, `${name}.timeline.json`), 'utf8'));
     const { goOffset } = JSON.parse(fs.readFileSync(path.join(recDir, `${name}.meta.json`), 'utf8'));
     const scenes = tl.filter((s) => s.scene !== 'end');
