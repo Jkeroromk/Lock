@@ -1,0 +1,17 @@
+{
+  "note": "Checks the scenes the sample didn't use. Not for posting.",
+  "videos": [
+    {
+      "id": "check",
+      "langs": ["zh"],
+      "scenes": [
+        { "scene": "today", "ms": 2000, "caption": { "zh": "today" } },
+        { "scene": "train", "ms": 4000, "caption": { "zh": "train" } },
+        { "scene": "couple", "ms": 5000, "caption": { "zh": "couple" } },
+        { "scene": "friends", "ms": 3000, "caption": { "zh": "friends" } },
+        { "scene": "log", "ms": 3000, "caption": { "zh": "log" } },
+        { "scene": "calendar", "ms": 3000, "caption": { "zh": "calendar" } }
+      ]
+    }
+  ]
+}
