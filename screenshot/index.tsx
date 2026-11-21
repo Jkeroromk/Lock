@@ -157,16 +157,13 @@ async function settle() {
   await sleep(SHOT === 'buddy' || SHOT === 'couple' ? 8000 : SHOT === 'photo' ? 4000 : 3000);
 }
 
-/** Promo video: loads every scene's assets, waits for the recording, then plays the scenes. */
+/** Promo video: waits for the recording, then plays the scenes. 3D assets load after their
+ * screen is open (like settle() does for screenshots); loading them earlier leaves the 3D view blank. */
 async function runClip(t: T) {
   await seeded;
   const safe = (load: () => Promise<unknown>) => Promise.resolve().then(load).catch((e) => console.warn('[clip] assets', e));
-  const has = (x: string) => CLIP.some((c) => c.scene === x);
   const coach = () => require('@/components/pet/coachModel').loadCoachAssets();
-  if (has('buddy') || has('couple')) await safe(coach);
-  if (has('buddy')) await safe(() => require('@/components/pet/stage/meadowAssets').loadMeadow());
-  if (has('couple')) await safe(() => require('@/components/couple/room/plushAssets').loadCoupleAssets());
-  await sleep(2500);
+  await sleep(1500);
   writeDoc('clip-armed', '1');
 
   // Never wait forever: record.sh writes clip-go a moment after recording starts.
@@ -185,8 +182,11 @@ async function runClip(t: T) {
         pushed = scene === 'couple' || scene === 'train' || scene === 'calendar';
         if (scene === 'today') router.navigate('/(tabs)/today');
         else await openScene(scene, t);
-        // The photo scene shows the result card, not the spinner: hold starts once it's analysed.
+        // Hold starts once the screen is really there (compose.mjs keeps only the last `ms` of each scene).
         if (scene === 'photo') await Promise.race([visionDone, sleep(60_000)]);
+        if (scene === 'buddy') await Promise.all([safe(coach), safe(() => require('@/components/pet/stage/meadowAssets').loadMeadow())]);
+        if (scene === 'couple') await Promise.all([safe(coach), safe(() => require('@/components/couple/room/plushAssets').loadCoupleAssets())]);
+        if (scene === 'buddy' || scene === 'couple') await sleep(3000); // models animate in
       }
     } catch (e) {
       console.warn('[clip]', scene, e);

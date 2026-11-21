@@ -106,39 +106,43 @@ for (const v of spec.videos) {
     const { goOffset } = JSON.parse(fs.readFileSync(path.join(recDir, `${name}.meta.json`), 'utf8'));
     const scenes = tl.filter((s) => s.scene !== 'end');
     const endMs = tl.find((s) => s.scene === 'end')?.start ?? scenes.at(-1).start + 3000;
-    const start = goOffset + scenes[0].start / 1000;
-    const total = (endMs - scenes[0].start) / 1000;
 
-    // One background (caption + frame) per scene, for as long as that scene lasted.
-    const bgs = [];
-    scenes.forEach((s, i) => {
-      const next = i + 1 < scenes.length ? scenes[i + 1].start : endMs;
-      const specScene = v.scenes[i] ?? {};
-      bgs.push({ caption: specScene.caption?.[lang] ?? '', dur: Math.max(0.1, (next - s.start) / 1000) });
+    // Each scene keeps only its last `ms` (the settled screen): loading, analysis spinners and
+    // 3D warm-up before that are cut, however long they took on the simulator.
+    const segs = scenes.map((s, i) => {
+      const end = (i + 1 < scenes.length ? scenes[i + 1].start : endMs) / 1000;
+      const want = (v.scenes[i]?.ms ?? 3000) / 1000;
+      const from = Math.max(s.start / 1000, end - want);
+      return { from: goOffset + from, dur: Math.max(0.2, end - from), caption: v.scenes[i]?.caption?.[lang] ?? '' };
     });
+    const total = segs.reduce((a, b) => a + b.dur, 0);
+
     const inputs = [];
-    for (const [i, b] of bgs.entries()) {
+    for (const sg of segs) inputs.push('-ss', sg.from.toFixed(3), '-t', sg.dur.toFixed(3), '-i', mov);
+    for (const [i, sg] of segs.entries()) {
       const png = path.join(tmp, `${name}-bg${i}.png`);
-      await page.setContent(frameHtml(b.caption, lang));
+      await page.setContent(frameHtml(sg.caption, lang));
       await page.evaluate('document.fonts.ready');
       await page.screenshot({ path: png });
-      inputs.push('-loop', '1', '-framerate', String(FPS), '-t', b.dur.toFixed(3), '-i', png);
+      inputs.push('-loop', '1', '-framerate', String(FPS), '-t', sg.dur.toFixed(3), '-i', png);
     }
-    const n = bgs.length;
+    const n = segs.length; // inputs: 0..n-1 recording pieces, n..2n-1 backgrounds, 2n mask, 2n+1 silence
     const body = path.join(tmp, `${name}-body.mp4`);
     const graph = [
-      `${bgs.map((_, i) => `[${i + 1}:v]`).join('')}concat=n=${n}:v=1:a=0,fps=${FPS},format=yuv420p[bg]`,
-      `[0:v]fps=${FPS},scale=${PHONE.w}:${PHONE.h}:flags=lanczos,format=rgba[ph]`,
-      `[${n + 1}:v]format=gray,scale=${PHONE.w}:${PHONE.h}[m]`,
+      `${segs.map((_, i) => `[${i}:v]fps=${FPS},setpts=PTS-STARTPTS[r${i}]`).join(';')}`,
+      `${segs.map((_, i) => `[r${i}]`).join('')}concat=n=${n}:v=1:a=0,scale=${PHONE.w}:${PHONE.h}:flags=lanczos,format=rgba[ph]`,
+      `${segs.map((_, i) => `[${n + i}:v]`).join('')}concat=n=${n}:v=1:a=0,fps=${FPS},format=yuv420p[bg]`,
+      `[${2 * n}:v]format=gray,scale=${PHONE.w}:${PHONE.h}[m]`,
       `[ph][m]alphamerge[phm]`,
       `[bg][phm]overlay=${PHONE.x}:${PHONE.y}:shortest=1,format=yuv420p[v]`,
     ].join(';');
-    ff(['-ss', start.toFixed(3), '-t', total.toFixed(3), '-i', mov, ...inputs,
+    ff([...inputs,
       '-loop', '1', '-i', mask,
       '-f', 'lavfi', '-t', total.toFixed(3), '-i', 'anullsrc=r=48000:cl=stereo',
-      '-filter_complex', graph, '-map', '[v]', '-map', `${n + 2}:a`,
+      '-filter_complex', graph, '-map', '[v]', '-map', `${2 * n + 1}:a`,
       '-t', total.toFixed(3), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p',
       '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', body]);
+    const bgs = segs;
 
     const out = path.join(outDir, `${name}.mp4`);
     ff(['-i', body, '-i', cards[lang] ?? cards.en, '-filter_complex',
