@@ -157,6 +157,19 @@ async function settle() {
   await sleep(SHOT === 'buddy' || SHOT === 'couple' ? 8000 : SHOT === 'photo' ? 4000 : 3000);
 }
 
+/** Route each scene ends on (expo-router pathname, groups dropped). */
+const SCENE_PATH: Record<string, string> = {
+  today: '/today', save: '/today', photo: '/log', log: '/log', buddy: '/dashboard', friends: '/dashboard',
+  couple: '/couple', calendar: '/calendar', train: '/workout/session',
+};
+let currentPath = '';
+/** On a recording simulator a navigation can take seconds to land: wait for it, then let it paint. */
+async function untilShown(scene: string) {
+  const want = SCENE_PATH[scene];
+  for (let i = 0; want && i < 150 && currentPath !== want; i++) await sleep(100);
+  await sleep(1500);
+}
+
 /** Promo video: waits for the recording, then plays the scenes. 3D assets load after their
  * screen is open (like settle() does for screenshots); loading them earlier leaves the 3D view blank. */
 async function runClip(t: T) {
@@ -177,12 +190,17 @@ async function runClip(t: T) {
     try {
       if (scene === 'save') {
         await Promise.resolve(shotActions.saveMeal?.());
+        await untilShown('save');
       } else {
-        if (pushed && router.canDismiss()) router.dismissAll();
+        if (pushed && router.canDismiss()) {
+          router.dismissAll();
+          await untilShown('today');
+        }
         pushed = scene === 'couple' || scene === 'train' || scene === 'calendar';
         if (scene === 'today') router.navigate('/(tabs)/today');
         else await openScene(scene, t);
         // Hold starts once the screen is really there (compose.mjs keeps only the last `ms` of each scene).
+        await untilShown(scene);
         if (scene === 'photo') await Promise.race([visionDone, sleep(60_000)]);
         if (scene === 'buddy') await Promise.all([safe(coach), safe(() => require('@/components/pet/stage/meadowAssets').loadMeadow())]);
         if (scene === 'couple') await Promise.all([safe(coach), safe(() => require('@/components/couple/room/plushAssets').loadCoupleAssets())]);
@@ -201,6 +219,7 @@ async function runClip(t: T) {
 /** Waits for the app to land on Today, then opens the requested screen. */
 export function ScreenshotDirector(): null {
   const pathname = usePathname();
+  currentPath = pathname;
   const started = useRef(false);
   const { t } = useTranslation();
   const tRef = useRef<T>(t);
