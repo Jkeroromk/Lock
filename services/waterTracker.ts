@@ -132,10 +132,27 @@ const LIQUID_MAP: { keywords: string[]; ml: number }[] = [
   { keywords: ['energy drink', '能量饮料', 'エナジードリンク', '에너지 드링크', 'red bull', 'monster'], ml: 250 },
 ];
 
+// Foods whose names contain a drink character but aren't drinks (水果 fruit, 水饺 dumplings, 汤圆 …).
+const NOT_A_DRINK = ['水果', '水饺', '水煮', '水晶', '水蜜桃', '口水鸡', '汤圆', '汤包', '茶叶蛋', '奶茶冻'];
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Latin keywords match whole words (an optional plural "s"): "sashimi platter" is not a
+ * latte, "steak" is not tea, "chocolate" is not cola, "watermelon" is not water.
+ * Other scripts have no spaces between words, so they match anywhere.
+ */
+function hasKeyword(text: string, keyword: string): boolean {
+  const k = keyword.toLowerCase();
+  if (!/[a-z]/.test(k)) return text.includes(k);
+  return new RegExp(`(^|[^a-z])${escapeRe(k)}s?([^a-z]|$)`).test(text);
+}
+
 export function detectLiquidMl(foodName: string): number {
-  const lower = foodName.toLowerCase();
+  let lower = foodName.toLowerCase();
+  for (const phrase of NOT_A_DRINK) lower = lower.split(phrase).join(' ');
   for (const { keywords, ml } of LIQUID_MAP) {
-    if (keywords.some((k) => lower.includes(k.toLowerCase()))) return ml;
+    if (keywords.some((k) => hasKeyword(lower, k))) return ml;
   }
   return 0;
 }

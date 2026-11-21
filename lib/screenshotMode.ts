@@ -11,3 +11,9 @@ export const SCREENSHOT_MODE = false;
 export function ScreenshotDirector(): null {
   return null;
 }
+
+/**
+ * Lets a screen hand one of its own actions (e.g. the log screen's "save meal")
+ * to the screenshot/video director. No-op outside screenshot builds.
+ */
+export function registerShotAction(_name: string, _fn: () => unknown): void {}
