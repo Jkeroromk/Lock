@@ -6,8 +6,9 @@
 # `videos-output` branch (latest run only): videos/<spec name>/<id>-<lang>.mp4
 # (+ a still per scene).
 #
-# Run: Actions → "Promo videos" → Run workflow (pick a spec), or push to a
-# videos/** branch (renders marketing/video/specs/sample.json unless VIDEO_SPEC is set).
+# Run: Actions → "Promo videos" → Run workflow (pick a spec), or push a branch
+# videos/<name> that contains marketing/video/specs/<name>.json (the weekly
+# script task pushes videos/YYYY-MM-DD); other videos/** branches render sample.json.
 name: Promo videos
 
 on:
@@ -38,9 +39,20 @@ jobs:
       EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ
       EXPO_PUBLIC_REVENUECAT_IOS_KEY: appl_xujnPHwLbUdCCSVIRMNLCcsBroN
       EXPO_PUBLIC_SCREENSHOT_MODE: '1'
-      SPEC: ${{ inputs.spec || 'marketing/video/specs/sample.json' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Pick the spec
+        run: |
+          spec="${{ inputs.spec }}"
+          if [ -z "$spec" ]; then
+            week="${GITHUB_REF_NAME#videos/}"
+            spec="marketing/video/specs/$week.json"
+            [ -f "$spec" ] || spec=marketing/video/specs/sample.json
+          fi
+          [ -f "$spec" ] || { echo "::error::No spec at $spec"; exit 1; }
+          echo "SPEC=$spec" >> "$GITHUB_ENV"
+          echo "Spec: $spec" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Select Xcode 27.1
         run: |
