@@ -8,7 +8,8 @@ import {
   requestNotificationPermissions, scheduleDailyMealReminders, cancelAllNotifications, getNotificationPermissionStatus,
 } from '@/services/notifications';
 import {
-  requestHealthPermissions, syncHealthData, isHealthConnected, isHealthAvailable, HEALTH_APP_URL,
+  requestHealthPermissions, syncHealthData, isHealthConnected, isHealthAvailable, openHealthSettings,
+  healthNeedsInstall, installHealthConnect,
 } from '@/services/health';
 import { getAppIconOption, getCurrentAppIcon } from '@/lib/appIcon';
 import { Segmented } from '@/components/ui/bxc';
@@ -70,18 +71,29 @@ export default function PreferencesScreen() {
     }
   };
 
-  // iOS keeps Health permissions in the Health app, not in this app's page in
-  // Settings, so point people there instead of Linking.openSettings().
-  const openHealthApp = () => Linking.openURL(HEALTH_APP_URL).catch(() => {});
-
-  const showHealthManageHint = () => Alert.alert(t('settings.healthConnections'), t('settings.healthManageHint' as any), [
-    { text: t('settings.cancel'), style: 'cancel' },
-    { text: t('settings.openHealth' as any), onPress: openHealthApp },
-  ]);
+  // iOS keeps Health permissions in the Health app and Android in Health
+  // Connect, not in this app's page in Settings, so point people there
+  // instead of Linking.openSettings().
+  const isAndroid = Platform.OS === 'android';
+  const showHealthManageHint = () => Alert.alert(
+    t('settings.healthConnections'),
+    t((isAndroid ? 'settings.healthManageHintAndroid' : 'settings.healthManageHint') as any),
+    [
+      { text: t('settings.cancel'), style: 'cancel' },
+      { text: t((isAndroid ? 'settings.openHealthConnect' : 'settings.openHealth') as any), onPress: () => { openHealthSettings(); } },
+    ],
+  );
 
   const handleHealthConnect = async () => {
     if (!isHealthAvailable()) {
       Alert.alert(t('settings.healthConnections'), t('settings.healthUnavailable' as any));
+      return;
+    }
+    if (await healthNeedsInstall()) {
+      Alert.alert(t('settings.healthConnections'), t('settings.healthUnavailableAndroid' as any), [
+        { text: t('settings.cancel'), style: 'cancel' },
+        { text: 'Google Play', onPress: installHealthConnect },
+      ]);
       return;
     }
     if (healthConnected) {
@@ -156,7 +168,7 @@ export default function PreferencesScreen() {
         showChevron={false}
       />
 
-      {Platform.OS === 'ios' && (
+      {(Platform.OS === 'ios' || Platform.OS === 'android') && (
         <>
           <SettingsSection label={t('settings.groupConnections' as any)} />
           <SettingItem

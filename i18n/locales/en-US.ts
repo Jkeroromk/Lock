@@ -5,7 +5,7 @@ const enUS = {
   today: {
     snapMeal: 'Snap this meal', snapMealSub: 'Photo, nutrition label or barcode',
     openCalendar: 'Calendar',
-    connectHealthTitle: 'Steps from Apple Health', connectHealthBody: 'See your steps and active energy here, synced automatically.', connectHealthCta: 'Continue',
+    connectHealthTitle: 'Steps from Apple Health', connectHealthTitleAndroid: 'Steps from Health Connect', connectHealthBody: 'See your steps and active energy here, synced automatically.', connectHealthCta: 'Continue',
     todayCalories: "Today's Calories", target: 'Target', remaining: 'Remaining',
     kcal: 'kcal', steps: 'Steps', stepsUnit: 'steps', energy: 'Energy',
     heartRate: 'Heart Rate', bpm: 'bpm', meals: 'Meals', recorded: 'Recorded',
@@ -158,7 +158,7 @@ const enUS = {
   },
   settings: {
     friendCodeShort: 'For adding friends', inviteCodeShort: 'Sign-ups: 5 scans each', bonusScansShort: 'Invite bonus: {n} scans left', removePhoto: 'Remove photo', status: 'Status', noStatus: 'No status', statusHint: 'Your status shows on the corner of your avatar, friends see it too', weightUnit: 'Weight unit', unitKg: 'Kilograms (kg)', unitLb: 'Pounds (lb)',
-    groupGoals: 'Goals & body', groupPreferences: 'Preferences', groupFriends: 'Friends & privacy', groupAccount: 'Account & subscription', groupGeneral: 'General', groupConnections: 'Connections', groupData: 'Your data', themeAuto: 'Auto', openSettings: 'Open Settings', openHealth: 'Open Health', healthManageHint: 'iOS manages Health access in the Health app: tap your profile → Apps → Lock, then turn on Steps and Active Energy.', healthUnavailable: 'Apple Health isn’t available in this build.',
+    groupGoals: 'Goals & body', groupPreferences: 'Preferences', groupFriends: 'Friends & privacy', groupAccount: 'Account & subscription', groupGeneral: 'General', groupConnections: 'Connections', groupData: 'Your data', themeAuto: 'Auto', openSettings: 'Open Settings', openHealth: 'Open Health', healthManageHint: 'iOS manages Health access in the Health app: tap your profile → Apps → Lock, then turn on Steps and Active Energy.', healthManageHintAndroid: 'Android manages this in Health Connect: open it → App permissions → Lock, then allow Steps and Active calories burned.', healthUnavailableAndroid: 'Health Connect isn’t on this phone yet. Install or update it from Google Play, then try again.', openHealthConnect: 'Open Health Connect', healthUnavailable: 'Apple Health isn’t available in this build.',
     title: 'Settings',
     goals: 'Goals', clickToEdit: 'Click to edit daily goals', editGoals: 'Edit Goals',
     dailyGoalsSummary: 'Daily {calories} kcal · {steps} steps',
@@ -219,7 +219,7 @@ const enUS = {
     privacyControls: 'Privacy Controls',
     privacyControlsDescription: 'Allow anonymous data for personalization',
     healthConnections: 'Health Connections',
-    healthConnectionsDescription: 'Sync steps & energy from Apple Health / Google Fit (data stored on your account)',
+    healthConnectionsDescription: 'Sync steps & energy from Apple Health / Health Connect (data stored on your account)',
     connectedTo: 'Connected to', notConnected: 'Not connected',
     connectionEnabled: 'Health data sync enabled', connectionDisabled: 'Health data sync disabled',
     accountSecurity: 'Account & Security',

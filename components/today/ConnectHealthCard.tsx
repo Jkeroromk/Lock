@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { useTheme } from '@/hooks/useTheme';
@@ -6,7 +6,8 @@ import { useTranslation } from '@/i18n';
 import { Button, Card } from '@/components/ui/bxc';
 
 /**
- * Shown on Today instead of "0 steps / 0 kcal" until Apple Health is connected,
+ * Shown on Today instead of "0 steps / 0 kcal" until Apple Health (iOS) or
+ * Health Connect (Android) is connected,
  * so empty numbers never look like a bug.
  */
 export default function ConnectHealthCard({ onConnect, connecting }: { onConnect: () => void; connecting?: boolean }) {
@@ -19,7 +20,7 @@ export default function ConnectHealthCard({ onConnect, connecting }: { onConnect
           <Ionicons name="heart" size={20} color={c.onAccent} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 17, fontWeight: '800', color: c.textPrimary }}>{t('today.connectHealthTitle' as any)}</Text>
+          <Text style={{ fontSize: 17, fontWeight: '800', color: c.textPrimary }}>{t((Platform.OS === 'android' ? 'today.connectHealthTitleAndroid' : 'today.connectHealthTitle') as any)}</Text>
           <Text style={{ fontSize: 14, lineHeight: 19, color: c.textSecondary, marginTop: 2 }}>{t('today.connectHealthBody' as any)}</Text>
         </View>
       </View>

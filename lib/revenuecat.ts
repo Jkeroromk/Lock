@@ -11,15 +11,24 @@ export type Plan = 'free' | 'pro' | 'max';
 export type { PurchasesPackage, CustomerInfo, PurchasesOffering };
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? '';
+// RevenueCat → Project → Apps → Google Play app → Public API key (goog_…).
+// Empty until the Play app exists; Android then runs without purchases.
+const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? '';
+
+let configured = false;
+/** RevenueCat was set up on this device (false on Android until the Play key is in eas.json). */
+export const isPurchasesConfigured = (): boolean => configured;
 
 export function initRevenueCat(platform: 'ios' | 'android'): void {
-  const key = platform === 'ios' ? IOS_KEY : '';
+  const key = platform === 'ios' ? IOS_KEY : ANDROID_KEY;
   if (!key) return;
   Purchases.setLogLevel(LOG_LEVEL.WARN);
   Purchases.configure({ apiKey: key });
+  configured = true;
 }
 
 export async function identifyUser(userId: string): Promise<void> {
+  if (!configured) return;
   await Purchases.logIn(userId);
 }
 

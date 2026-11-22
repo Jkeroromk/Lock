@@ -75,7 +75,6 @@
       "reactNativeDirectoryCheck": {
         "exclude": [
           "react-native-health",
-          "react-native-google-fit",
           "lock-workout"
         ],
         "listUnknownPackages": false

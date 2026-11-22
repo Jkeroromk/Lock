@@ -9,7 +9,7 @@ const zhCN = {
   today: {
     snapMeal: '拍这一餐', snapMealSub: '拍照、营养标签或扫码',
     openCalendar: '日历',
-    connectHealthTitle: '来自 Apple 健康的步数', connectHealthBody: '自动同步步数和活动消耗，直接显示在这里。', connectHealthCta: '继续',
+    connectHealthTitle: '来自 Apple 健康的步数', connectHealthTitleAndroid: '来自 Health Connect 的步数', connectHealthBody: '自动同步步数和活动消耗，直接显示在这里。', connectHealthCta: '继续',
     todayCalories: '今日卡路里',
     target: '目标',
     remaining: '剩余',
@@ -199,7 +199,7 @@ const zhCN = {
   },
   settings: {
     friendCodeShort: '加好友用', inviteCodeShort: '新朋友注册，各得 5 次识别', bonusScansShort: '邀请奖励：还剩 {n} 次', removePhoto: '移除照片', status: '状态', noStatus: '不显示状态', statusHint: '状态会显示在头像右下角，好友也能看到', weightUnit: '重量单位', unitKg: '公斤 kg', unitLb: '磅 lb',
-    groupGoals: '目标与身体', groupPreferences: '偏好设置', groupFriends: '好友与隐私', groupAccount: '账号与订阅', groupGeneral: '通用', groupConnections: '连接', groupData: '你的数据', themeAuto: '跟随系统', openSettings: '打开设置', openHealth: '打开健康', healthManageHint: 'iOS 的健康权限在「健康」App 里管理：点右上角头像 → App → Lock，打开「步数」和「活动能量」。', healthUnavailable: '当前版本暂不支持 Apple 健康。',
+    groupGoals: '目标与身体', groupPreferences: '偏好设置', groupFriends: '好友与隐私', groupAccount: '账号与订阅', groupGeneral: '通用', groupConnections: '连接', groupData: '你的数据', themeAuto: '跟随系统', openSettings: '打开设置', openHealth: '打开健康', healthManageHint: 'iOS 的健康权限在「健康」App 里管理：点右上角头像 → App → Lock，打开「步数」和「活动能量」。', healthManageHintAndroid: '安卓的健康权限在 Health Connect 里管理：打开后点「应用权限」→ Lock，允许「步数」和「活动消耗的卡路里」。', healthUnavailableAndroid: '这台手机还没有 Health Connect。请先在 Google Play 安装或更新，再试一次。', openHealthConnect: '打开 Health Connect', healthUnavailable: '当前版本暂不支持 Apple 健康。',
     title: '设置',
     goals: '目标',
     clickToEdit: '点击编辑每日目标',
@@ -264,7 +264,7 @@ const zhCN = {
     privacyControls: '隐私控制',
     privacyControlsDescription: '允许匿名数据用于个性化体验',
     healthConnections: '健康数据源',
-    healthConnectionsDescription: '同步 Apple Health / Google Fit 的步数与消耗热量（数据将保存至您的账户）',
+    healthConnectionsDescription: '同步 Apple Health / Health Connect 的步数与消耗热量（数据将保存至您的账户）',
     connectedTo: '已连接至',
     notConnected: '未连接',
     connectionEnabled: '健康数据同步已启用',

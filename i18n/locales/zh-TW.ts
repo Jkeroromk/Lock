@@ -5,7 +5,7 @@ const zhTW = {
   today: {
     snapMeal: '拍這一餐', snapMealSub: '拍照、營養標示或掃碼',
     openCalendar: '日曆',
-    connectHealthTitle: '來自 Apple 健康的步數', connectHealthBody: '自動同步步數和活動消耗，直接顯示在這裡。', connectHealthCta: '繼續',
+    connectHealthTitle: '來自 Apple 健康的步數', connectHealthTitleAndroid: '來自 Health Connect 的步數', connectHealthBody: '自動同步步數和活動消耗，直接顯示在這裡。', connectHealthCta: '繼續',
     todayCalories: '今日卡路里', target: '目標', remaining: '剩餘', kcal: '大卡',
     steps: '步數', stepsUnit: '步', energy: '能量', heartRate: '心率', bpm: '次/分',
     meals: '餐食', recorded: '已記錄', noMeals: '尚未記錄餐食',
@@ -149,7 +149,7 @@ const zhTW = {
   },
   settings: {
     friendCodeShort: '加好友用', inviteCodeShort: '新朋友註冊，各得 5 次辨識', bonusScansShort: '邀請獎勵：還剩 {n} 次', removePhoto: '移除照片', status: '狀態', noStatus: '不顯示狀態', statusHint: '狀態會顯示在頭像右下角，好友也看得到', weightUnit: '重量單位', unitKg: '公斤 kg', unitLb: '磅 lb',
-    groupGoals: '目標與身體', groupPreferences: '偏好設定', groupFriends: '好友與隱私', groupAccount: '帳號與訂閱', groupGeneral: '一般', groupConnections: '連結', groupData: '你的資料', themeAuto: '跟隨系統', openSettings: '打開設定', openHealth: '打開健康', healthManageHint: 'iOS 的健康權限在「健康」App 裡管理：點右上角頭像 → App → Lock，打開「步數」和「活動能量」。', healthUnavailable: '目前版本暫不支援 Apple 健康。',
+    groupGoals: '目標與身體', groupPreferences: '偏好設定', groupFriends: '好友與隱私', groupAccount: '帳號與訂閱', groupGeneral: '一般', groupConnections: '連結', groupData: '你的資料', themeAuto: '跟隨系統', openSettings: '打開設定', openHealth: '打開健康', healthManageHint: 'iOS 的健康權限在「健康」App 裡管理：點右上角頭像 → App → Lock，打開「步數」和「活動能量」。', healthManageHintAndroid: 'Android 的健康權限在 Health Connect 裡管理：打開後點「應用程式權限」→ Lock，允許「步數」和「活動消耗的卡路里」。', healthUnavailableAndroid: '這支手機還沒有 Health Connect。請先在 Google Play 安裝或更新，再試一次。', openHealthConnect: '打開 Health Connect', healthUnavailable: '目前版本暫不支援 Apple 健康。',
     title: '設定',
     goals: '目標', clickToEdit: '點擊編輯每日目標', editGoals: '編輯目標',
     dailyGoalsSummary: '每日 {calories} 大卡 · {steps} 步',
@@ -205,7 +205,7 @@ const zhTW = {
     theme: '主題模式', themeDescription: '切換深色 / 淺色介面',
     themeLight: '淺色', themeDark: '深色',
     privacyControls: '隱私控制', privacyControlsDescription: '允許匿名數據用於個人化體驗',
-    healthConnections: '健康數據源', healthConnectionsDescription: '同步 Apple Health / Google Fit',
+    healthConnections: '健康數據源', healthConnectionsDescription: '同步 Apple Health / Health Connect',
     connectedTo: '已連結至', notConnected: '未連結',
     connectionEnabled: '健康數據同步已啟用', connectionDisabled: '健康數據同步已關閉',
     accountSecurity: '帳號與安全', accountSecurityDescription: '管理登入、密碼與安全設定',

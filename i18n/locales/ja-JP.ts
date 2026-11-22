@@ -5,7 +5,7 @@ const jaJP = {
   today: {
     snapMeal: 'この食事を撮る', snapMealSub: '写真・栄養成分表示・バーコード',
     openCalendar: 'カレンダー',
-    connectHealthTitle: 'Apple ヘルスケアの歩数', connectHealthBody: '歩数とアクティブエネルギーを自動で同期してここに表示します。', connectHealthCta: '続ける',
+    connectHealthTitle: 'Apple ヘルスケアの歩数', connectHealthTitleAndroid: 'Health Connect の歩数', connectHealthBody: '歩数とアクティブエネルギーを自動で同期してここに表示します。', connectHealthCta: '続ける',
     todayCalories: '今日のカロリー', target: '目標', remaining: '残り', kcal: 'kcal',
     steps: '歩数', stepsUnit: '歩', energy: 'エネルギー', heartRate: '心拍数', bpm: '回/分',
     meals: '食事', recorded: '記録済み', noMeals: '食事が記録されていません',
@@ -149,7 +149,7 @@ const jaJP = {
   },
   settings: {
     friendCodeShort: '友達追加用', inviteCodeShort: '新規登録で両方に 5 回', bonusScansShort: '招待ボーナス：残り {n} 回', removePhoto: '写真を削除', status: 'ステータス', noStatus: '表示しない', statusHint: 'ステータスはアイコンの右下に表示され、友達にも見えます', weightUnit: '重さの単位', unitKg: 'キログラム (kg)', unitLb: 'ポンド (lb)',
-    groupGoals: '目標とからだ', groupPreferences: '環境設定', groupFriends: '友だちとプライバシー', groupAccount: 'アカウントとサブスク', groupGeneral: '一般', groupConnections: '連携', groupData: 'データ', themeAuto: '自動', openSettings: '設定を開く', openHealth: 'ヘルスケアを開く', healthManageHint: 'iOS ではヘルスケアの権限はヘルスケアアプリで管理します：右上のプロフィール → App → Lock で「歩数」と「アクティブエネルギー」をオンにしてください。', healthUnavailable: 'このビルドでは Apple ヘルスケアを利用できません。',
+    groupGoals: '目標とからだ', groupPreferences: '環境設定', groupFriends: '友だちとプライバシー', groupAccount: 'アカウントとサブスク', groupGeneral: '一般', groupConnections: '連携', groupData: 'データ', themeAuto: '自動', openSettings: '設定を開く', openHealth: 'ヘルスケアを開く', healthManageHint: 'iOS ではヘルスケアの権限はヘルスケアアプリで管理します：右上のプロフィール → App → Lock で「歩数」と「アクティブエネルギー」をオンにしてください。', healthManageHintAndroid: 'Android では Health Connect で管理します。開いて「アプリの権限」→ Lock を選び、「歩数」と「アクティブ消費カロリー」を許可してください。', healthUnavailableAndroid: 'この端末にはまだ Health Connect がありません。Google Play でインストールまたは更新してから、もう一度お試しください。', openHealthConnect: 'Health Connect を開く', healthUnavailable: 'このビルドでは Apple ヘルスケアを利用できません。',
     title: '設定',
     goals: '目標', clickToEdit: 'クリックして毎日の目標を編集', editGoals: '目標を編集',
     dailyGoalsSummary: '毎日 {calories} kcal · {steps} 歩',
@@ -209,7 +209,7 @@ const jaJP = {
     theme: 'テーマ', themeDescription: 'ダークモードを切り替え',
     themeLight: 'ライト', themeDark: 'ダーク',
     privacyControls: 'プライバシー設定', privacyControlsDescription: '匿名データの個人化利用を許可',
-    healthConnections: 'ヘルス連携', healthConnectionsDescription: 'Apple Health / Google Fit を同期',
+    healthConnections: 'ヘルス連携', healthConnectionsDescription: 'Apple Health / Health Connect を同期',
     connectedTo: '接続先', notConnected: '未接続',
     connectionEnabled: '健康データ同期を有効にしました', connectionDisabled: '健康データ同期を無効にしました',
     accountSecurity: 'アカウントとセキュリティ', accountSecurityDescription: 'ログインやパスワードの設定を管理',

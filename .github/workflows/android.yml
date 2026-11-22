@@ -1,0 +1,171 @@
+# Build the Android app on a GitHub Linux runner.
+#
+# Same idea as "iOS → TestFlight": `eas build --local` on the runner, with the
+# signing key and the versionCode counter stored on EAS, so it doesn't count
+# against the EAS build quota.
+#
+# Trigger: add the "android" label to a PR (later pushes rebuild it), or run it
+# by hand from Actions → "Android" → Run workflow.
+#
+# Output:
+#   apk (default) — an installable APK, attached to the "android-preview"
+#                   pre-release (open its link on the phone to install) and
+#                   kept as a workflow artifact.
+#   aab           — the Play Store bundle, as a workflow artifact. When the
+#                   GOOGLE_PLAY_SERVICE_ACCOUNT secret is set it's also
+#                   uploaded to the Play Console internal testing track.
+#
+# Secrets (repo → Settings → Secrets and variables → Actions):
+#   EXPO_TOKEN                   required (already used by the iOS builds)
+#   GOOGLE_PLAY_SERVICE_ACCOUNT  optional — Play Console service account JSON
+#
+# The first run creates the Android upload keystore on EAS (EAS can't do that
+# with --non-interactive, so that one prompt is answered by `expect`). Every
+# later build signs with the same key; download a backup from expo.dev →
+# Project → Credentials → Android.
+name: Android
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+  workflow_dispatch:
+    inputs:
+      output:
+        description: apk (install on a phone) or aab (Google Play)
+        type: choice
+        options: [apk, aab]
+        default: apk
+
+concurrency:
+  group: android-${{ github.event.pull_request.number || github.ref }}-${{ inputs.output || 'apk' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android (${{ inputs.output || 'apk' }})
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (contains(github.event.pull_request.labels.*.name, 'android') &&
+       (github.event.action != 'labeled' || github.event.label.name == 'android'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      GOOGLE_PLAY_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+      OUTPUT: ${{ inputs.output || 'apk' }}
+    steps:
+      - name: Check EXPO_TOKEN
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add an EXPO_TOKEN repository secret (expo.dev → Account settings → Access tokens)."
+            exit 1
+          fi
+
+      # A React Native release build needs more than the ~14 GB the image leaves free.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL || true
+          df -h /
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install EAS CLI
+        run: |
+          npm install -g eas-cli@latest
+          eas --version
+          eas whoami
+          sudo apt-get install -y -qq expect >/dev/null
+
+      - name: Build
+        run: |
+          set -o pipefail
+          if [ "$OUTPUT" = "aab" ]; then profile=production; out="$RUNNER_TEMP/lock.aab"; else profile=android-apk; out="$RUNNER_TEMP/lock.apk"; fi
+          export PROFILE="$profile" ARTIFACT="$out"
+          echo "ARTIFACT=$out" >> "$GITHUB_ENV"
+          # Interactive only so EAS may generate the keystore on the first run;
+          # any other question fails the build instead of guessing.
+          cat > "$RUNNER_TEMP/build.exp" <<'EXP'
+          set timeout -1
+          log_user 1
+          spawn eas build --platform android --profile $env(PROFILE) --local --output $env(ARTIFACT)
+          expect {
+            -re {Generate a new Android Keystore\?} { send "y\r"; exp_continue }
+            -re {\? .*\(Y/n\)} { puts "\nUnexpected question, stopping."; exit 2 }
+            eof
+          }
+          catch wait result
+          exit [lindex $result 3]
+          EXP
+          expect "$RUNNER_TEMP/build.exp" 2>&1 | tee "$RUNNER_TEMP/eas.log"
+          ls -la "$out"
+
+      - name: Build errors
+        if: failure()
+        run: |
+          log="$RUNNER_TEMP/eas.log"
+          [ -f "$log" ] || exit 0
+          grep -E -A8 "FAILURE:|What went wrong|error:|Error:|❌|e: " "$log" | sed -E 's#/home/runner/work/[^ ]*/##g' | awk '!seen[$0]++' | head -60 > "$RUNNER_TEMP/errors.txt" || true
+          tail -30 "$log" >> "$RUNNER_TEMP/errors.txt"
+          split -l 6 "$RUNNER_TEMP/errors.txt" "$RUNNER_TEMP/err-"
+          for f in $(ls "$RUNNER_TEMP"/err-* | head -10); do
+            echo "::error title=Android build::$(sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g' "$f")"
+          done
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-log-${{ github.run_number }}
+          path: ${{ runner.temp }}/eas.log
+          if-no-files-found: ignore
+
+      - name: Upload ${{ env.OUTPUT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lock-android-${{ env.OUTPUT }}-${{ github.run_number }}
+          path: ${{ env.ARTIFACT }}
+
+      # A stable link to open on the phone: .../releases/download/android-preview/Lock.apk
+      - name: Publish APK to the android-preview pre-release
+        if: env.OUTPUT == 'apk'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ref="${{ github.event.pull_request.head.ref || github.ref_name }}"
+          notes="Built from \`$ref\` (${GITHUB_SHA::7}) on $(date -u '+%Y-%m-%d %H:%M UTC'). Open this page on an Android phone and tap Lock.apk to install (allow installs from your browser when asked)."
+          cp "$ARTIFACT" "$RUNNER_TEMP/Lock.apk"
+          if gh release view android-preview >/dev/null 2>&1; then
+            gh release edit android-preview --notes "$notes" --prerelease
+            gh release upload android-preview "$RUNNER_TEMP/Lock.apk" --clobber
+          else
+            gh release create android-preview "$RUNNER_TEMP/Lock.apk" --prerelease --title "Kero Lock — Android preview" --notes "$notes" --target "$GITHUB_SHA"
+          fi
+          url="https://github.com/${{ github.repository }}/releases/download/android-preview/Lock.apk"
+          echo "### Android APK" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload to Google Play (internal testing)
+        if: env.OUTPUT == 'aab' && env.GOOGLE_PLAY_SERVICE_ACCOUNT != ''
+        # Google only accepts API uploads after the first bundle was uploaded
+        # by hand in Play Console (App bundle explorer → Upload).
+        run: |
+          key="$RUNNER_TEMP/play.json"
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT" > "$key"
+          eas submit --platform android --profile production --path "$ARTIFACT" --non-interactive
+        env:
+          EXPO_ANDROID_SERVICE_ACCOUNT_KEY_PATH: ${{ runner.temp }}/play.json

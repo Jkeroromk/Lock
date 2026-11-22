@@ -45,8 +45,16 @@
       "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED"
+      ],
+      "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.RECORD_AUDIO",
         "android.permission.ACTIVITY_RECOGNITION"
       ]
     },
@@ -64,7 +72,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Lock uses the camera to photograph meals for calorie analysis."
+          "cameraPermission": "Lock uses the camera to photograph meals for calorie analysis.",
+          "recordAudioAndroid": false
         }
       ],
       [
@@ -113,6 +122,17 @@
           "motionPermission": "Lock uses motion to make the water in your hydration bottle move as you tilt the phone."
         }
       ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      "react-native-health-connect",
       "expo-asset",
       "expo-status-bar"
     ],

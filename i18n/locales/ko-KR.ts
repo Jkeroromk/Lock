@@ -5,7 +5,7 @@ const koKR = {
   today: {
     snapMeal: '이 식사 찍기', snapMealSub: '사진, 영양성분표 또는 바코드',
     openCalendar: '캘린더',
-    connectHealthTitle: 'Apple 건강의 걸음 수', connectHealthBody: '걸음 수와 활동 에너지를 자동으로 동기화해 여기에 보여줘요.', connectHealthCta: '계속',
+    connectHealthTitle: 'Apple 건강의 걸음 수', connectHealthTitleAndroid: 'Health Connect의 걸음 수', connectHealthBody: '걸음 수와 활동 에너지를 자동으로 동기화해 여기에 보여줘요.', connectHealthCta: '계속',
     todayCalories: '오늘의 칼로리', target: '목표', remaining: '남음', kcal: 'kcal',
     steps: '걸음', stepsUnit: '걸음', energy: '에너지', heartRate: '심박수', bpm: '회/분',
     meals: '식사', recorded: '기록됨', noMeals: '식사가 기록되지 않았습니다',
@@ -149,7 +149,7 @@ const koKR = {
   },
   settings: {
     friendCodeShort: '친구 추가용', inviteCodeShort: '신규 가입 시 각각 5회', bonusScansShort: '초대 보너스: {n}회 남음', removePhoto: '사진 삭제', status: '상태', noStatus: '상태 없음', statusHint: '상태는 프로필 사진 오른쪽 아래에 표시되고 친구도 볼 수 있어요', weightUnit: '무게 단위', unitKg: '킬로그램 (kg)', unitLb: '파운드 (lb)',
-    groupGoals: '목표와 신체', groupPreferences: '환경설정', groupFriends: '친구 및 개인정보', groupAccount: '계정 및 구독', groupGeneral: '일반', groupConnections: '연결', groupData: '내 데이터', themeAuto: '자동', openSettings: '설정 열기', openHealth: '건강 앱 열기', healthManageHint: 'iOS에서는 건강 권한을 건강 앱에서 관리합니다: 오른쪽 위 프로필 → 앱 → Lock에서 걸음 수와 활동 에너지를 켜 주세요.', healthUnavailable: '이 빌드에서는 Apple 건강을 사용할 수 없습니다.',
+    groupGoals: '목표와 신체', groupPreferences: '환경설정', groupFriends: '친구 및 개인정보', groupAccount: '계정 및 구독', groupGeneral: '일반', groupConnections: '연결', groupData: '내 데이터', themeAuto: '자동', openSettings: '설정 열기', openHealth: '건강 앱 열기', healthManageHint: 'iOS에서는 건강 권한을 건강 앱에서 관리합니다: 오른쪽 위 프로필 → 앱 → Lock에서 걸음 수와 활동 에너지를 켜 주세요.', healthManageHintAndroid: 'Android에서는 Health Connect에서 관리해요. 열고 「앱 권한」→ Lock에서 「걸음 수」와 「활동 소모 칼로리」를 허용하세요.', healthUnavailableAndroid: '이 휴대폰에는 아직 Health Connect가 없어요. Google Play에서 설치하거나 업데이트한 뒤 다시 시도하세요.', openHealthConnect: 'Health Connect 열기', healthUnavailable: '이 빌드에서는 Apple 건강을 사용할 수 없습니다.',
     title: '설정',
     goals: '목표', clickToEdit: '클릭하여 일일 목표 편집', editGoals: '목표 편집',
     dailyGoalsSummary: '매일 {calories} kcal · {steps} 걸음',
@@ -209,7 +209,7 @@ const koKR = {
     'theme.dark': '다크', 'theme.darkDescription': '눈에 편안한 다크 테마',
     'theme.auto': '자동', 'theme.autoDescription': '시스템 설정 따르기',
     privacyControls: '개인정보 제어', privacyControlsDescription: '개인화를 위한 익명 데이터 공유',
-    healthConnections: '건강 데이터 연동', healthConnectionsDescription: 'Apple Health / Google Fit 동기화',
+    healthConnections: '건강 데이터 연동', healthConnectionsDescription: 'Apple Health / Health Connect 동기화',
     connectedTo: '연동 대상', notConnected: '연동되지 않음',
     connectionEnabled: '건강 데이터 연동이 활성화되었습니다', connectionDisabled: '건강 데이터 연동이 비활성화되었습니다',
     accountSecurity: '계정 및 보안', accountSecurityDescription: '로그인과 비밀번호 등 보안 설정 관리',

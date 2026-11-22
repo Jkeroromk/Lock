@@ -17,7 +17,7 @@ import DateHeader from '@/components/today/DateHeader';
 import HealthStatsCard from '@/components/today/HealthStatsCard';
 import MealsList from '@/components/today/MealsList';
 import WaterCard from '@/components/today/WaterCard';
-import { getHealthData, syncHealthData, isHealthAvailable, isHealthConnected, requestHealthPermissions } from '@/services/health';
+import { getHealthData, syncHealthData, isHealthAvailable, isHealthConnected, requestHealthPermissions, healthNeedsInstall, installHealthConnect } from '@/services/health';
 import ConnectHealthCard from '@/components/today/ConnectHealthCard';
 import TrainingEntryCard from '@/components/today/TrainingEntryCard';
 import TabFocusFade from '@/components/ui/TabFocusFade';
@@ -45,7 +45,7 @@ export default function TodayScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [healthData, setHealthData] = useState({ steps: 0, activeEnergy: 0 });
   // iOS: until Apple Health is connected, show a "Connect" card instead of zeros.
-  const healthNeedsSetup = Platform.OS === 'ios' && isHealthAvailable();
+  const healthNeedsSetup = isHealthAvailable();
   const [healthConnected, setHealthConnected] = useState<boolean | null>(healthNeedsSetup ? null : true);
   const [connectingHealth, setConnectingHealth] = useState(false);
   const [waterMl, setWaterMl] = useState(0);
@@ -114,6 +114,11 @@ export default function TodayScreen() {
   const handleConnectHealth = async () => {
     setConnectingHealth(true);
     try {
+      // Android 13 and older: Health Connect is a separate Play Store app.
+      if (await healthNeedsInstall()) {
+        installHealthConnect();
+        return;
+      }
       if (await requestHealthPermissions()) {
         setHealthConnected(true);
         await loadHealthData();

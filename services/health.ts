@@ -1,10 +1,10 @@
-import { NativeModules, Platform } from 'react-native';
+import { Linking, NativeModules, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { syncHealthDataToBackend } from './api';
 
 let AppleHealthKit: any = null;
-let GoogleFit: any = null;
-let Scopes: any = null;
+// Android: Health Connect (Google Fit's APIs are shut down at the end of 2026).
+let HC: any = null;
 
 try {
   if (Platform.OS === 'ios') {
@@ -22,9 +22,7 @@ try {
     }
   }
   if (Platform.OS === 'android') {
-    const googleFitModule = require('react-native-google-fit');
-    GoogleFit = googleFitModule.default || googleFitModule;
-    Scopes = googleFitModule.Scopes;
+    HC = require('react-native-health-connect');
   }
 } catch {}
 
@@ -34,12 +32,107 @@ const CONNECTED_KEY = 'lock_health_connected';
 export const isHealthConnected = async (): Promise<boolean> =>
   (await AsyncStorage.getItem(CONNECTED_KEY).catch(() => null)) === 'true';
 
-/** Whether this build can talk to Apple Health at all. */
+/** Whether this build can talk to Apple Health / Health Connect at all. */
 export const isHealthAvailable = (): boolean =>
-  Platform.OS === 'ios' && typeof AppleHealthKit?.initHealthKit === 'function';
+  Platform.OS === 'ios'
+    ? typeof AppleHealthKit?.initHealthKit === 'function'
+    : Platform.OS === 'android' && typeof HC?.initialize === 'function';
 
 /** Opens the Health app, where iOS keeps per-app Health permissions. */
 export const HEALTH_APP_URL = 'x-apple-health://';
+
+/** Play Store page of the Health Connect app (Android 13 and older install it separately). */
+const HEALTH_CONNECT_STORE_URL = 'market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding';
+
+/**
+ * Where the user manages Lock's Health access: the Health app on iOS,
+ * Health Connect's settings on Android.
+ */
+export const openHealthSettings = async (): Promise<void> => {
+  if (Platform.OS === 'android') {
+    try { HC?.openHealthConnectSettings?.(); return; } catch {}
+    Linking.openURL(HEALTH_CONNECT_STORE_URL).catch(() => {});
+    return;
+  }
+  Linking.openURL(HEALTH_APP_URL).catch(() => {});
+};
+
+/** What Lock reads from Health Connect. Must match the android.permission.health.* entries in app.json. */
+const HC_PERMISSIONS = [
+  { accessType: 'read', recordType: 'Steps' },
+  { accessType: 'read', recordType: 'ActiveCaloriesBurned' },
+] as const;
+
+/** Health Connect's SdkAvailabilityStatus values (kept here so the enum import can't drift). */
+const HC_SDK_AVAILABLE = 3;
+
+let hcInit: Promise<boolean> | null = null;
+/** Health Connect is installed and its client is ready. */
+const hcReady = (): Promise<boolean> => {
+  if (!isHealthAvailable()) return Promise.resolve(false);
+  if (hcInit) return hcInit;
+  hcInit = (async () => {
+    try {
+      const status = await HC.getSdkStatus();
+      if (status !== (HC.SdkAvailabilityStatus?.SDK_AVAILABLE ?? HC_SDK_AVAILABLE)) return false;
+      return !!(await HC.initialize());
+    } catch (e) {
+      console.warn('[health] Health Connect init failed:', e);
+      return false;
+    }
+  })().then((ok) => {
+    if (!ok) hcInit = null; // the user may install / update Health Connect, then retry
+    return ok;
+  });
+  return hcInit;
+};
+
+/** Android: Health Connect is missing or outdated, so it has to come from the Play Store first. */
+export const healthNeedsInstall = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android' || !isHealthAvailable()) return false;
+  try {
+    const status = await HC.getSdkStatus();
+    return status !== (HC.SdkAvailabilityStatus?.SDK_AVAILABLE ?? HC_SDK_AVAILABLE);
+  } catch {
+    return false;
+  }
+};
+
+/** Sends the user to the Play Store to install or update Health Connect. */
+export const installHealthConnect = (): void => {
+  Linking.openURL(HEALTH_CONNECT_STORE_URL).catch(() => {});
+};
+
+const hcHasStepsPermission = async (): Promise<boolean> => {
+  try {
+    const granted: { recordType: string; accessType: string }[] = await HC.getGrantedPermissions();
+    return granted.some((p) => p.recordType === 'Steps' && p.accessType === 'read');
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Android: shows Health Connect's permission screen unless Steps is already
+ * allowed. Unlike iOS, Android tells us what was granted, so `true` really
+ * means Lock can read steps.
+ */
+const requestHealthConnectPermissions = async (): Promise<boolean> => {
+  if (!(await hcReady())) return false;
+  try {
+    let ok = await hcHasStepsPermission();
+    if (!ok) {
+      const granted: { recordType: string; accessType: string }[] = await HC.requestPermission(HC_PERMISSIONS);
+      ok = Array.isArray(granted) && granted.some((p) => p.recordType === 'Steps');
+    }
+    if (ok) AsyncStorage.setItem(CONNECTED_KEY, 'true').catch(() => {});
+    else AsyncStorage.removeItem(CONNECTED_KEY).catch(() => {});
+    return ok;
+  } catch (e) {
+    console.warn('[health] Health Connect permission request failed:', e);
+    return false;
+  }
+};
 
 interface HealthValue {
   value: number;
@@ -64,6 +157,7 @@ let initPromise: Promise<boolean> | null = null;
  * `true` means "HealthKit is set up", not "the user allowed everything".
  */
 export const requestHealthPermissions = (): Promise<boolean> => {
+  if (Platform.OS === 'android') return requestHealthConnectPermissions();
   if (!isHealthAvailable()) return Promise.resolve(false);
   if (initPromise) return initPromise;
 
@@ -100,7 +194,7 @@ export const getHealthData = async (): Promise<HealthData> => {
   if (Platform.OS === 'ios') {
     return await getAppleHealthData();
   } else if (Platform.OS === 'android') {
-    return await getGoogleFitData();
+    return await getHealthConnectData();
   }
   return { steps: 0, activeEnergy: 0 };
 };
@@ -148,33 +242,42 @@ const getAppleHealthData = async (): Promise<HealthData> => {
   }
 };
 
-const getGoogleFitData = async (): Promise<HealthData> => {
-  if (!GoogleFit || !Scopes) {
-    return { steps: 0, activeEnergy: 0 };
-  }
+/** Local midnight → next local midnight for the day `offset` days from today, as ISO strings. */
+const dayRange = (offset: number): { startTime: string; endTime: string } => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset, 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset + 1, 0, 0, 0, 0);
+  return { startTime: start.toISOString(), endTime: (offset === 0 ? now : end).toISOString() };
+};
 
+const hcSteps = async (range: { startTime: string; endTime: string }): Promise<number> => {
+  const r = await HC.aggregateRecord({
+    recordType: 'Steps',
+    timeRangeFilter: { operator: 'between', ...range },
+  });
+  return Math.round(Number(r?.COUNT_TOTAL) || 0);
+};
+
+const getHealthConnectData = async (): Promise<HealthData> => {
+  // Never opens the permission screen from here: that only happens from an
+  // explicit "Connect" tap (Today card / Settings).
+  if (!(await isHealthConnected()) || !(await hcReady())) return { steps: 0, activeEnergy: 0 };
   try {
-    const isAuthorized = await GoogleFit.checkIsAuthorized();
-    if (!isAuthorized) {
-      await GoogleFit.authorize({
-        scopes: [Scopes.FITNESS_ACTIVITY_READ],
-      });
-    }
-
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-
-    const [stepsData, caloriesData] = await Promise.all([
-      GoogleFit.getDailyStepCountSamples({ startDate: startOfDay.toISOString(), endDate: endOfDay.toISOString() }),
-      GoogleFit.getDailyCalorieSamples({ startDate: startOfDay.toISOString(), endDate: endOfDay.toISOString() }),
+    const range = dayRange(0);
+    const [steps, energy] = await Promise.all([
+      hcSteps(range),
+      HC.aggregateRecord({
+        recordType: 'ActiveCaloriesBurned',
+        timeRangeFilter: { operator: 'between', ...range },
+      }).catch(() => null),
     ]);
-
     return {
-      steps: stepsData?.[0]?.steps?.[0]?.value || 0,
-      activeEnergy: caloriesData?.[0]?.calorie || 0,
+      steps,
+      activeEnergy: Math.round(Number(energy?.ACTIVE_CALORIES_TOTAL?.inKilocalories) || 0),
     };
-  } catch {
+  } catch (e) {
+    // Most often: the user took the permission back in Health Connect.
+    if (!(await hcHasStepsPermission())) AsyncStorage.removeItem(CONNECTED_KEY).catch(() => {});
     return { steps: 0, activeEnergy: 0 };
   }
 };
@@ -186,9 +289,19 @@ export const syncHealthData = async (): Promise<void> => {
 
 /**
  * Step totals for each of the last `days` full days (not today), oldest first.
- * Days without data are 0. iOS only; other platforms return [].
+ * Days without data are 0. iOS and Android; other platforms return [].
  */
 export const getDailySteps = async (days = 14): Promise<number[]> => {
+  if (Platform.OS === 'android') {
+    if (!(await isHealthConnected()) || !(await hcReady())) return [];
+    try {
+      const out: number[] = [];
+      for (let i = days; i >= 1; i--) out.push(await hcSteps(dayRange(-i)));
+      return out;
+    } catch {
+      return [];
+    }
+  }
   if (Platform.OS !== 'ios' || !(await requestHealthPermissions())) return [];
   const now = new Date();
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);

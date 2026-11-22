@@ -52,6 +52,9 @@
         "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ",
         "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
+      },
+      "android": {
+        "buildType": "app-bundle"
       }
     },
     "screenshots": {
@@ -67,6 +70,14 @@
         "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN",
         "EXPO_PUBLIC_SCREENSHOT_MODE": "1"
       }
+    },
+    "android-apk": {
+      "extends": "production",
+      "autoIncrement": false,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
@@ -75,6 +86,10 @@
         "appleId": "zzou2000@yahoo.com",
         "ascAppId": "6762630080",
         "appleTeamId": "KBBN9626H9"
+      },
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
       }
     }
   }
