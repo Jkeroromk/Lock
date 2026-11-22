@@ -1,2 +1,2 @@
-react-native-health-connect
 expo-build-properties
+react-native-health-connect
