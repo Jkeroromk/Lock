@@ -4,8 +4,9 @@
 # signing key and the versionCode counter stored on EAS, so it doesn't count
 # against the EAS build quota.
 #
-# Trigger: add the "android" label to a PR (later pushes rebuild it), or run it
-# by hand from Actions → "Android" → Run workflow.
+# Trigger: add the "android" label to a PR (later pushes rebuild it), push to a
+# branch named android-* (APK on every push), or run it by hand from
+# Actions → "Android" → Run workflow.
 #
 # Output:
 #   apk (default) — an installable APK, attached to the "android-preview"
@@ -28,6 +29,9 @@ name: Android
 on:
   pull_request:
     types: [labeled, synchronize]
+  push:
+    branches: ['android-*']
+    paths-ignore: ['.github/expo-install.txt', '.github/npm-uninstall.txt', 'website/**', 'marketing/**']
   workflow_dispatch:
     inputs:
       output:
@@ -47,7 +51,7 @@ jobs:
   build:
     name: Build Android (${{ inputs.output || 'apk' }})
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'workflow_dispatch' || github.event_name == 'push' ||
       (contains(github.event.pull_request.labels.*.name, 'android') &&
        (github.event.action != 'labeled' || github.event.label.name == 'android'))
     runs-on: ubuntu-latest
