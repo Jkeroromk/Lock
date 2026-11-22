@@ -5,6 +5,8 @@ name: Typecheck
 
 on:
   pull_request:
+  push:
+    branches: ['android-*']
   workflow_dispatch:
 
 concurrency:
