@@ -1,0 +1,72 @@
+480:Error: npx -y expo-doctor exited with non-zero code: 1
+481-    at ChildProcess.completionListener (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/spawn-async/build/spawnAsync.js:113:23)
+482-    at Object.onceWrapper (node:events:634:26)
+483-    at ChildProcess.emit (node:events:519:28)
+484-    at ChildProcess.emit (node:domain:489:12)
+485-    at maybeClose (node:internal/child_process:1101:16)
+486-    at ChildProcess._handle.onexit (node:internal/child_process:304:5)
+487-    ...
+488-    at spawnAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/spawn-async/build/spawnAsync.js:9:23)
+489-    at spawn (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/turtle-spawn/dist/index.js:16:47)
+490-    at runExpoDoctor (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/common/setup.js:163:52)
+491-    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+492-    at async /home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/common/setup.js:142:17
+493-    at async BuildContext.runBuildPhase (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/context.js:131:28)
+494-    at async setupAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/common/setup.js:140:9)
+495-    at async buildInnerAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:57:5)
+496-    at async buildAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:48:9)
+497-    at async runBuilderWithHooksAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/common.js:13:13)
+498-[PREBUILD] - Creating native directory (./android)
+499-[PREBUILD] ✔ Created native directory
+500-[PREBUILD] - Updating package.json
+--
+2074:[RUN_GRADLEW] FAILURE: Build failed with an exception.
+2075:[RUN_GRADLEW] * What went wrong:
+2076-[RUN_GRADLEW] Execution failed for task ':expo:checkReleaseAarMetadata'.
+2077-[RUN_GRADLEW] > A failure occurred while executing com.android.build.gradle.internal.tasks.CheckAarMetadataWorkAction
+2078-[RUN_GRADLEW]    > 22 issues were found when checking AAR metadata:
+2079-[RUN_GRADLEW]      
+2080-[RUN_GRADLEW]        1.  Dependency 'host.exp.exponent:expo.modules.application:58.1.2' requires libraries and applications that
+2081-[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+2082-[RUN_GRADLEW]            Android APIs.
+2083-[RUN_GRADLEW]      
+2084-[RUN_GRADLEW]            :expo is currently compiled against android-36.
+2085-[RUN_GRADLEW]      
+2086-[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+2087-[RUN_GRADLEW]            of 37.
+2088-[RUN_GRADLEW]      
+2089-[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+2090-[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+2091-[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+2092-[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+2093-[RUN_GRADLEW]            on).
+2094-[RUN_GRADLEW]      
+2095-[RUN_GRADLEW]        2.  Dependency 'expo.modules.asset:expo.modules.asset:58.0.21' requires libraries and applications that
+--
+2420:[RUN_GRADLEW] Error: Gradle build failed with unknown error. See logs for the "Run gradlew" phase for more information.
+2421-
+2422-Build failed
+2423-Gradle build failed with unknown error. See logs for the "Run gradlew" phase for more information.
+2424:Error: Gradle build failed with unknown error. See logs for the "Run gradlew" phase for more information.
+2425-    at resolveBuildPhaseErrorAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/buildErrors/detectError.js:61:12)
+2426-    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+2427-    at async BuildContext.handleBuildPhaseErrorAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/context.js:198:28)
+2428-    at async BuildContext.runBuildPhase (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/context.js:143:35)
+2429-    at async buildInnerAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:154:5)
+2430-    at async buildAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:48:9)
+2431-    at async runBuilderWithHooksAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/common.js:13:13)
+2432-    at async Object.androidBuilder (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:33:16)
+2433-    at async buildAndroidAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/eas-cli-local-build-plugin/dist/android.js:43:12)
+2434-    at async buildAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/eas-cli-local-build-plugin/dist/build.js:54:29)
+2435-
+2436-Build context (for debugging this failed local build):
+2437-  Platform: android
+2438-  Build profile: android-apk
+2439-  Workflow: managed
+2440-  Distribution: internal
+2441-  Credentials source: remote
+2442-  Project root directory: .
+2443-  Required package manager: npm
+2444-  eas-cli version: 27.11.0
+--
+2456:    Error: build command failed.

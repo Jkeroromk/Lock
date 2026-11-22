@@ -1,0 +1,2456 @@
+spawn eas build --platform android --profile android-apk --local --output /home/runner/work/_temp/lock.apk
+Resolved "preview" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "preview" environment on EAS.
+Environment variables loaded from the "android-apk" build profile "env" configuration: EXPO_PUBLIC_API_URL, EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY, EXPO_PUBLIC_REVENUECAT_IOS_KEY.
+
+android.versionCode field in app config is ignored when version source is set to remote, but this value will still be in the manifest available via expo-constants. It's recommended to remove this value from app config.
+✔ Using remote Android credentials (Expo server)
+✔ Using Keystore from configuration: Build Credentials FR4kkjrf35 (default)
+- Compressing project files
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated rimraf@2.4.5: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated glob@6.0.4: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+[SETUP_WORKINGDIR] Preparing workingdir /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d
+[START_BUILD] Starting build
+  "job": {
+    "type": "managed",
+    "platform": "android",
+    "projectRootDirectory": ".",
+    "projectArchive": {
+      "type": "PATH",
+      "path": "/tmp/runner/eas-cli-nodejs/21858ad9-31d9-4540-b437-41dcd9fd8d5e.tar.gz"
+    },
+    "builderEnvironment": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
+      }
+    },
+    "cache": {
+      "disabled": false,
+      "paths": [],
+      "clear": false
+    },
+    "updates": {
+      "channel": "production"
+    },
+    "buildType": "apk",
+    "version": {
+      "versionCode": "1"
+    },
+    "experimental": {},
+    "mode": "build",
+    "triggeredBy": "EAS_CLI",
+    "appId": "6bddb492-55a5-4ae0-856d-ec4b27314127",
+    "initiatingUserId": "723d989a-7257-4567-83a5-adf52910e312"
+  }
+[PREPARE_PROJECT] Normalizing project source permissions
+[PREPARE_PROJECT] .npmrc found at .npmrc
+[READ_EAS_JSON] Using eas.json:
+[READ_EAS_JSON] {
+  "cli": {
+    "version": ">= 18.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "channel": "development",
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_aGVscGluZy1wZWdhc3VzLTQ3LmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
+      }
+    },
+    "development-device": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN",
+        "SHARP_IGNORE_GLOBAL_LIBVIPS": "1"
+      }
+    },
+    "preview": {
+      "channel": "preview",
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_aGVscGluZy1wZWdhc3VzLTQ3LmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    },
+    "screenshots": {
+      "extends": "production",
+      "autoIncrement": false,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.jkeroro.com",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsubG9jay5qa2Vyb3JvLmNvbSQ",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_xujnPHwLbUdCCSVIRMNLCcsBroN",
+        "EXPO_PUBLIC_SCREENSHOT_MODE": "1"
+      }
+    },
+    "android-apk": {
+      "extends": "production",
+      "autoIncrement": false,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "android-screenshots": {
+      "extends": "screenshots",
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "zzou2000@yahoo.com",
+        "ascAppId": "6762630080",
+        "appleTeamId": "KBBN9626H9"
+      },
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
+  }
+}
+
+[READ_PACKAGE_JSON] Using package.json:
+[READ_PACKAGE_JSON] {
+  "name": "lock",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "postinstall": "node scripts/patch-native-libs.mjs"
+  },
+  "dependencies": {
+    "@bacons/apple-targets": "5.0.0",
+    "@clerk/clerk-expo": "^2.19.31",
+    "@expo/vector-icons": "^15.0.3",
+    "@quidone/react-native-wheel-picker": "^1.6.1",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-three/fiber": "^9.8.2",
+    "@rozhkov/react-useful-hooks": "^1.0.10",
+    "axios": "^1.6.5",
+    "expo": "~58.0.25",
+    "expo-alternate-app-icons": "^8.0.0",
+    "expo-apple-authentication": "~58.0.3",
+    "expo-asset": "~58.0.19",
+    "expo-auth-session": "~58.0.18",
+    "expo-build-properties": "~58.0.12",
+    "expo-camera": "~58.0.14",
+    "expo-clipboard": "~58.0.4",
+    "expo-constants": "~58.0.14",
+    "expo-dev-client": "~58.0.20",
+    "expo-device": "~58.0.5",
+    "expo-file-system": "~58.0.13",
+    "expo-font": "~58.0.11",
+    "expo-gl": "~58.0.4",
+    "expo-haptics": "~58.0.8",
+    "expo-hinge": "~58.0.2",
+    "expo-image-manipulator": "~58.0.16",
+    "expo-image-picker": "~58.0.10",
+    "expo-linear-gradient": "~58.0.4",
+    "expo-linking": "~58.0.17",
+    "expo-notifications": "~58.1.9",
+    "expo-router": "~58.0.31",
+    "expo-secure-store": "~58.0.3",
+    "expo-sensors": "~58.0.5",
+    "expo-status-bar": "~58.0.5",
+    "expo-updates": "~58.0.22",
+    "expo-web-browser": "~58.0.8",
+    "nativewind": "^4.0.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-health": "^1.19.0",
+    "react-native-health-connect": "^4.1.3",
+    "react-native-purchases": "^10.16.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-svg": "15.16.0",
+    "react-native-wheel-picker-expo": "^0.5.4",
+    "react-native-worklets": "0.13.0",
+    "three": "^0.170.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@types/react": "~19.3.0",
+    "@types/three": "^0.170.0",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^3.4.1",
+    "typescript": "~6.0.3"
+  },
+  "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-health",
+          "lock-workout"
+        ],
+        "listUnknownPackages": false
+      }
+    }
+  },
+  "overrides": {
+    "react-native-health": {
+      "@expo/config-plugins": "~58.0.11"
+    }
+  }
+}
+[INSTALL_DEPENDENCIES] Running "npm ci --include=dev" in /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build directory
+[INSTALL_DEPENDENCIES] npm warn deprecated @xmldom/xmldom@0.7.13: this version has critical issues, please update to the latest version
+[INSTALL_DEPENDENCIES] npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+[INSTALL_DEPENDENCIES] npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+[INSTALL_DEPENDENCIES] > lock@1.0.0 postinstall
+[INSTALL_DEPENDENCIES] > node scripts/patch-native-libs.mjs
+[INSTALL_DEPENDENCIES] [patch-native-libs] patched: node_modules/react-native-health/RCTAppleHealthKit/RCTAppleHealthKit.m
+[INSTALL_DEPENDENCIES] added 963 packages, and audited 964 packages in 10s
+[INSTALL_DEPENDENCIES] 117 packages are looking for funding
+[INSTALL_DEPENDENCIES]   run `npm fund` for details
+[INSTALL_DEPENDENCIES] 27 vulnerabilities (13 moderate, 13 high, 1 critical)
+[INSTALL_DEPENDENCIES] 
+[INSTALL_DEPENDENCIES] To address issues that do not require attention, run:
+[INSTALL_DEPENDENCIES]   npm audit fix
+[INSTALL_DEPENDENCIES] 
+[INSTALL_DEPENDENCIES] To address all issues possible (including breaking changes), run:
+[INSTALL_DEPENDENCIES]   npm audit fix --force
+[INSTALL_DEPENDENCIES] 
+[INSTALL_DEPENDENCIES] Some issues need review, and may require choosing
+[INSTALL_DEPENDENCIES] a different dependency.
+[INSTALL_DEPENDENCIES] 
+[INSTALL_DEPENDENCIES] Run `npm audit` for details.
+The NODE_ENV environment variable is required but was not specified. Ensure the project is bundled with Expo CLI or NODE_ENV is set.
+Proceeding without mode-specific .env
+[READ_APP_CONFIG] Using app configuration:
+[READ_APP_CONFIG] {
+  "name": "Lock",
+  "slug": "lock",
+  "version": "1.1.1",
+  "runtimeVersion": {
+    "policy": "fingerprint"
+  },
+  "updates": {
+    "url": "https://u.expo.dev/6bddb492-55a5-4ae0-856d-ec4b27314127",
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 0
+  },
+  "orientation": "portrait",
+  "userInterfaceStyle": "automatic",
+  "icon": "./assets/icons/icon-open-lock.png",
+  "assetBundlePatterns": [
+    "**/*"
+  ],
+  "ios": {
+    "supportsTablet": false,
+    "bundleIdentifier": "com.jkeroro.lockin",
+    "appleTeamId": "KBBN9626H9",
+    "buildNumber": "1",
+    "usesAppleSignIn": true,
+    "entitlements": {
+      "com.apple.developer.healthkit": true
+    },
+    "infoPlist": {
+      "NSHealthShareUsageDescription": "Lock reads your step count and active energy to display daily activity and sync it to your personal account.",
+      "NSHealthUpdateUsageDescription": "Lock reads your step count and active energy from Apple Health to display your daily activity.",
+      "NSCameraUsageDescription": "Lock uses the camera to photograph meals for AI-powered calorie analysis.",
+      "NSPhotoLibraryUsageDescription": "Lock accesses your photo library to choose a meal photo or profile picture.",
+      "NSPhotoLibraryAddUsageDescription": "Lock saves meal photos to your photo library.",
+      "ITSAppUsesNonExemptEncryption": false,
+      "NSSupportsLiveActivities": true
+    }
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/icons/android-fg-open-lock.png",
+      "backgroundColor": "#0A0A0A"
+    },
+    "package": "com.jkeroro.lockin",
+    "versionCode": 1,
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.health.READ_STEPS",
+      "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+      "android.permission.RECORD_AUDIO"
+    ],
+    "blockedPermissions": [
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_MEDIA_IMAGES",
+      "android.permission.READ_MEDIA_VIDEO",
+      "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+      "android.permission.RECORD_AUDIO",
+      "android.permission.ACTIVITY_RECOGNITION"
+    ]
+  },
+  "web": {
+    "favicon": "./assets/icons/preview-open-lock.png"
+  },
+  "plugins": [
+    "expo-router",
+    [
+      "expo-image-picker",
+      {
+        "photosPermission": "Lock accesses your photo library to choose meal photos."
+      }
+    ],
+    [
+      "expo-camera",
+      {
+        "cameraPermission": "Lock uses the camera to photograph meals for calorie analysis.",
+        "recordAudioAndroid": false
+      }
+    ],
+    [
+      "expo-notifications",
+      {
+        "color": "#007AFF",
+        "defaultChannel": "default"
+      }
+    ],
+    "expo-web-browser",
+    "expo-apple-authentication",
+    "expo-secure-store",
+    [
+      "expo-alternate-app-icons",
+      [
+        {
+          "name": "RingL",
+          "ios": "./assets/icons/icon-ring-l.png",
+          "android": {
+            "foregroundImage": "./assets/icons/android-fg-ring-l.png",
+            "backgroundColor": "#0A0A0A"
+          }
+        },
+        {
+          "name": "StickerL",
+          "ios": "./assets/icons/icon-sticker-l.png",
+          "android": {
+            "foregroundImage": "./assets/icons/android-fg-sticker-l.png",
+            "backgroundColor": "#FFD43B"
+          }
+        },
+        {
+          "name": "KeyholeDial",
+          "ios": "./assets/icons/icon-keyhole-dial.png",
+          "android": {
+            "foregroundImage": "./assets/icons/android-fg-keyhole-dial.png",
+            "backgroundColor": "#0A0A0A"
+          }
+        }
+      ]
+    ],
+    "@bacons/apple-targets",
+    [
+      "expo-sensors",
+      {
+        "motionPermission": "Lock uses motion to make the water in your hydration bottle move as you tilt the phone."
+      }
+    ],
+    [
+      "expo-build-properties",
+      {
+        "android": {
+          "compileSdkVersion": 36,
+          "targetSdkVersion": 36,
+          "minSdkVersion": 26
+        }
+      }
+    ],
+    "react-native-health-connect",
+    "expo-asset",
+    "expo-status-bar"
+  ],
+  "scheme": "lock",
+  "extra": {
+    "eas": {
+      "projectId": "6bddb492-55a5-4ae0-856d-ec4b27314127",
+      "build": {
+        "experimental": {
+          "ios": {
+            "appExtensions": [
+              {
+                "bundleIdentifier": "com.jkeroro.lockin.watchkitapp",
+                "targetName": "LockWatch",
+                "entitlements": {
+                  "com.apple.developer.healthkit": true
+                }
+              },
+              {
+                "bundleIdentifier": "com.jkeroro.lockin.liveactivity",
+                "targetName": "LockLive"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "router": {
+      "asyncRoutes": {
+        "web": true
+      }
+    }
+  },
+  "owner": "jkeroro",
+  "sdkVersion": "58.0.0",
+  "platforms": [
+    "ios",
+    "android",
+    "web"
+  ]
+}
+[RUN_EXPO_DOCTOR] Running "expo doctor"
+[RUN_EXPO_DOCTOR] Running 20 checks on your project...
+[RUN_EXPO_DOCTOR] 19/20 checks passed. 1 checks failed. Possible issues detected:
+[RUN_EXPO_DOCTOR] Use the --verbose flag to see more details about passed checks.
+[RUN_EXPO_DOCTOR] ✖ Check that packages match versions required by installed Expo SDK
+[RUN_EXPO_DOCTOR] 
+[RUN_EXPO_DOCTOR] ⚠️ Minor version mismatches
+[RUN_EXPO_DOCTOR] package            expected  found    
+[RUN_EXPO_DOCTOR] expo-web-browser   ~58.1.0   58.0.8   
+[RUN_EXPO_DOCTOR] 
+[RUN_EXPO_DOCTOR] 🔧 Patch version mismatches
+[RUN_EXPO_DOCTOR] package            expected  found    
+[RUN_EXPO_DOCTOR] expo               ~58.0.26  58.0.25  
+[RUN_EXPO_DOCTOR] expo-auth-session  ~58.0.19  58.0.18  
+[RUN_EXPO_DOCTOR] expo-dev-client    ~58.0.21  58.0.20  
+[RUN_EXPO_DOCTOR] expo-file-system   ~58.0.14  58.0.13  
+[RUN_EXPO_DOCTOR] expo-router        ~58.0.32  58.0.31  
+[RUN_EXPO_DOCTOR] 
+[RUN_EXPO_DOCTOR] Changelogs:
+[RUN_EXPO_DOCTOR] - expo-auth-session → https://github.com/expo/expo/blob/sdk-58/packages/expo-auth-session/CHANGELOG.md
+[RUN_EXPO_DOCTOR] - expo-dev-client → https://github.com/expo/expo/blob/sdk-58/packages/expo-dev-client/CHANGELOG.md
+[RUN_EXPO_DOCTOR] - expo-file-system → https://github.com/expo/expo/blob/sdk-58/packages/expo-file-system/CHANGELOG.md
+[RUN_EXPO_DOCTOR] - expo-router → https://github.com/expo/expo/blob/sdk-58/packages/expo-router/CHANGELOG.md
+[RUN_EXPO_DOCTOR] - expo-web-browser → https://github.com/expo/expo/blob/sdk-58/packages/expo-web-browser/CHANGELOG.md
+[RUN_EXPO_DOCTOR] 
+[RUN_EXPO_DOCTOR] 6 packages out of date.
+[RUN_EXPO_DOCTOR] Advice:
+[RUN_EXPO_DOCTOR] Use 'npx expo install --check' to review and upgrade your dependencies.
+[RUN_EXPO_DOCTOR] To ignore specific packages, add them to "expo.install.exclude" in package.json. Learn more: https://expo.fyi/dependency-validation
+[RUN_EXPO_DOCTOR] 1 check failed, indicating possible issues with the project.
+[RUN_EXPO_DOCTOR] Command "expo doctor" failed.
+Error: npx -y expo-doctor exited with non-zero code: 1
+    at ChildProcess.completionListener (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/spawn-async/build/spawnAsync.js:113:23)
+    at Object.onceWrapper (node:events:634:26)
+    at ChildProcess.emit (node:events:519:28)
+    at ChildProcess.emit (node:domain:489:12)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:304:5)
+    ...
+    at spawnAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/spawn-async/build/spawnAsync.js:9:23)
+    at spawn (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/turtle-spawn/dist/index.js:16:47)
+    at runExpoDoctor (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/common/setup.js:163:52)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/common/setup.js:142:17
+    at async BuildContext.runBuildPhase (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/context.js:131:28)
+    at async setupAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/common/setup.js:140:9)
+    at async buildInnerAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:57:5)
+    at async buildAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:48:9)
+    at async runBuilderWithHooksAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/common.js:13:13)
+[PREBUILD] - Creating native directory (./android)
+[PREBUILD] ✔ Created native directory
+[PREBUILD] - Updating package.json
+[PREBUILD] ✔ Updated package.json
+[PREBUILD] - Running prebuild
+[PREBUILD] » android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature.
+[PREBUILD] - Running prebuild
+[PREBUILD] ✔ Finished prebuild
+[PREBUILD] Running "npm install --include=dev" in /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build directory
+[PREBUILD] > lock@1.0.0 postinstall
+[PREBUILD] > node scripts/patch-native-libs.mjs
+[PREBUILD] [patch-native-libs] already patched: node_modules/react-native-health/RCTAppleHealthKit/RCTAppleHealthKit.m
+[PREBUILD] up to date, audited 964 packages in 2s
+[PREBUILD] 117 packages are looking for funding
+[PREBUILD]   run `npm fund` for details
+[PREBUILD] 27 vulnerabilities (13 moderate, 13 high, 1 critical)
+[PREBUILD] 
+[PREBUILD] To address issues that do not require attention, run:
+[PREBUILD]   npm audit fix
+[PREBUILD] 
+[PREBUILD] To address all issues possible (including breaking changes), run:
+[PREBUILD]   npm audit fix --force
+[PREBUILD] 
+[PREBUILD] Some issues need review, and may require choosing
+[PREBUILD] a different dependency.
+[PREBUILD] 
+[PREBUILD] Run `npm audit` for details.
+[RESTORE_CACHE] Local builds do not support restoring cache
+[CALCULATE_EXPO_UPDATES_RUNTIME_VERSION] Resolved runtime version: aa94390d89d18f06d8c9cd882817b3ef6f48ead0
+[PREPARE_CREDENTIALS] Writing secrets to the project's directory
+[PREPARE_CREDENTIALS] Injecting signing config into build.gradle
+[PREPARE_CREDENTIALS] Signing config injected
+[CONFIGURE_ANDROID_VERSION] Injecting version config into build.gradle
+[CONFIGURE_ANDROID_VERSION] Version code: 1
+[CONFIGURE_ANDROID_VERSION] Version config injected
+[CONFIGURE_EXPO_UPDATES] Setting the update request headers in 'AndroidManifest.xml' to '{"expo-channel-name":"production"}'
+[EAGER_BUNDLE] Starting Metro Bundler
+[EAGER_BUNDLE] Android Bundled 21864ms node_modules/expo-router/entry.js (2861 modules)
+[EAGER_BUNDLE] Writing bundle output to: /tmp/ymkvtzg1e5/index.js
+[EAGER_BUNDLE] Copying 131 asset files
+[EAGER_BUNDLE] Done writing bundle output
+[RUN_GRADLEW] Running 'gradlew :app:assembleRelease' in /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/android
+[RUN_GRADLEW] Downloading https://services.gradle.org/distributions/gradle-9.4.1-bin.zip
+[RUN_GRADLEW] 10%
+[RUN_GRADLEW] 20%
+[RUN_GRADLEW] 30%
+[RUN_GRADLEW] 40%.
+[RUN_GRADLEW] 50%.
+[RUN_GRADLEW] 60%.
+[RUN_GRADLEW] 70%.
+[RUN_GRADLEW] 80%.
+[RUN_GRADLEW] 90%.
+[RUN_GRADLEW] 100%
+[RUN_GRADLEW] Welcome to Gradle 9.4.1!
+[RUN_GRADLEW] Here are the highlights of this release:
+[RUN_GRADLEW] - Java 26 support
+[RUN_GRADLEW]  - Non-class-based JVM tests
+[RUN_GRADLEW] - Enhanced console progress bar
+[RUN_GRADLEW] For more details see https://docs.gradle.org/9.4.1/release-notes.html
+[RUN_GRADLEW] Starting a Gradle Daemon (subsequent builds will be faster)
+[RUN_GRADLEW] > Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :gradle-plugin:settings-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:processResources
+[RUN_GRADLEW] > Task :gradle-plugin:settings-plugin:processResources
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources NO-SOURCE
+[RUN_GRADLEW] > Task :gradle-plugin:shared:processResources NO-SOURCE
+[RUN_GRADLEW] > Task :gradle-plugin:shared:compileKotlin
+[RUN_GRADLEW] > Task :gradle-plugin:shared:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :gradle-plugin:shared:classes UP-TO-DATE
+[RUN_GRADLEW] > Task :gradle-plugin:shared:jar
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:classes UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:jar
+[RUN_GRADLEW] > Task :gradle-plugin:settings-plugin:compileKotlin
+[RUN_GRADLEW] > Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :gradle-plugin:settings-plugin:classes
+[RUN_GRADLEW] > Task :gradle-plugin:settings-plugin:jar
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:classes
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:jar
+[RUN_GRADLEW] > Task :expo-dev-launcher-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-module-gradle-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :expo-dev-launcher-gradle-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :expo-module-gradle-plugin:processResources
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-max-sdk-override-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-dev-launcher-gradle-plugin:processResources
+[RUN_GRADLEW] > Task :expo-updates-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-updates-gradle-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :expo-updates-gradle-plugin:processResources
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-max-sdk-override-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-max-sdk-override-plugin:processResources
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin:processResources
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-max-sdk-override-plugin:compileKotlin
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-max-sdk-override-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-max-sdk-override-plugin:classes
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-max-sdk-override-plugin:jar
+[RUN_GRADLEW] > Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+[RUN_GRADLEW] > Task :gradle-plugin:react-native-gradle-plugin:processResources
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin:classes
+[RUN_GRADLEW] > Task :expo-gradle-plugin:expo-autolinking-plugin:jar
+[RUN_GRADLEW] > Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+[RUN_GRADLEW] > Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :gradle-plugin:react-native-gradle-plugin:classes
+[RUN_GRADLEW] > Task :gradle-plugin:react-native-gradle-plugin:jar
+[RUN_GRADLEW] > Task :expo-module-gradle-plugin:compileKotlin
+[RUN_GRADLEW] > Task :expo-module-gradle-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :expo-module-gradle-plugin:classes
+[RUN_GRADLEW] > Task :expo-module-gradle-plugin:jar
+[RUN_GRADLEW] > Task :expo-dev-launcher-gradle-plugin:compileKotlin
+[RUN_GRADLEW] > Task :expo-dev-launcher-gradle-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-launcher-gradle-plugin:classes
+[RUN_GRADLEW] > Task :expo-dev-launcher-gradle-plugin:jar
+[RUN_GRADLEW] > Task :expo-updates-gradle-plugin:compileKotlin
+[RUN_GRADLEW] > Task :expo-updates-gradle-plugin:compileJava NO-SOURCE
+[RUN_GRADLEW] > Task :expo-updates-gradle-plugin:classes
+[RUN_GRADLEW] > Task :expo-updates-gradle-plugin:jar
+[RUN_GRADLEW] > Configure project :
+[RUN_GRADLEW] [ExpoRootProject] The Kotlin Gradle plugin used by this build is 2.2.10, but the version catalog declares 2.2.0. Using the plugin version.
+[RUN_GRADLEW] [ExpoRootProject] Using the following versions:
+[RUN_GRADLEW]   - buildTools:  37.0.0
+[RUN_GRADLEW]   - minSdk:      26
+[RUN_GRADLEW]   - compileSdk:  36
+[RUN_GRADLEW]   - targetSdk:   36
+[RUN_GRADLEW]   - ndk:         27.1.12297006
+[RUN_GRADLEW]   - kotlin:      2.2.10
+[RUN_GRADLEW]   - ksp:         2.2.10-2.0.2
+[RUN_GRADLEW] > Configure project :app
+[RUN_GRADLEW] WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+[RUN_GRADLEW] The current default is 'true'.
+[RUN_GRADLEW] It will be removed in version 10.0 of the Android Gradle plugin.
+[RUN_GRADLEW] WARNING: The option setting 'android.newDsl=false' is deprecated.
+[RUN_GRADLEW] The current default is 'true'.
+[RUN_GRADLEW] It will be removed in version 10.0 of the Android Gradle plugin.
+[RUN_GRADLEW]  ℹ️  Applying gradle plugin 'expo-max-sdk-override-plugin'
+[RUN_GRADLEW]   [expo-max-sdk-override-plugin] This plugin will find all permissions declared with `android:maxSdkVersion`. If there exists a declaration with the `android:maxSdkVersion` annotation and another one without, the plugin will remove the annotation from the final merged manifest. In order to see a log with the changes run a clean build of the app.
+[RUN_GRADLEW] WARNING: API 'applicationVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+[RUN_GRADLEW] It will be removed in version 10.0 of the Android Gradle plugin.
+[RUN_GRADLEW] The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+[RUN_GRADLEW]     android.newDsl=false
+[RUN_GRADLEW] to this project's gradle.properties file.
+[RUN_GRADLEW] For more information, see http://developer.android.com/build/r/new-dsl.
+[RUN_GRADLEW] To determine what is calling applicationVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+[RUN_GRADLEW] WARNING: API 'testVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+[RUN_GRADLEW] It will be removed in version 10.0 of the Android Gradle plugin.
+[RUN_GRADLEW] The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+[RUN_GRADLEW]     android.newDsl=false
+[RUN_GRADLEW] to this project's gradle.properties file.
+[RUN_GRADLEW] For more information, see http://developer.android.com/build/r/new-dsl.
+[RUN_GRADLEW] To determine what is calling testVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+[RUN_GRADLEW] WARNING: API 'unitTestVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+[RUN_GRADLEW] It will be removed in version 10.0 of the Android Gradle plugin.
+[RUN_GRADLEW] The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+[RUN_GRADLEW]     android.newDsl=false
+[RUN_GRADLEW] to this project's gradle.properties file.
+[RUN_GRADLEW] For more information, see http://developer.android.com/build/r/new-dsl.
+[RUN_GRADLEW] To determine what is calling unitTestVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+[RUN_GRADLEW]  ℹ️  Applying gradle plugin 'expo-dev-launcher-gradle-plugin'
+[RUN_GRADLEW]  ℹ️  Applying gradle plugin 'expo-updates-gradle-plugin'
+[RUN_GRADLEW] Checking the license for package NDK (Side by side) 27.1.12297006 in /usr/local/lib/android/sdk/licenses
+[RUN_GRADLEW] License for package NDK (Side by side) 27.1.12297006 accepted.
+[RUN_GRADLEW] Preparing "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006".
+[RUN_GRADLEW] "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" ready.
+[RUN_GRADLEW] Installing NDK (Side by side) 27.1.12297006 in /usr/local/lib/android/sdk/ndk/27.1.12297006
+[RUN_GRADLEW] "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" complete.
+[RUN_GRADLEW] "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" finished.
+[RUN_GRADLEW] > Configure project :expo
+[RUN_GRADLEW] WARNING: API 'libraryVariants' is obsolete and has been replaced with 'AndroidComponentsExtension'.
+[RUN_GRADLEW] It will be removed in version 10.0 of the Android Gradle plugin.
+[RUN_GRADLEW] The legacy variant API is disabled by default in AGP 9.0, but can be re-enabled by adding 
+[RUN_GRADLEW]     android.newDsl=false
+[RUN_GRADLEW] to this project's gradle.properties file.
+[RUN_GRADLEW] For more information, see http://developer.android.com/build/r/new-dsl.
+[RUN_GRADLEW] To determine what is calling libraryVariants, use -Pandroid.debug.obsoleteApi=true on the command line to display more information.
+[RUN_GRADLEW] Using expo modules
+[RUN_GRADLEW]   - expo-dom-webview (58.0.2)
+[RUN_GRADLEW]   - expo-log-box (58.0.15)
+[RUN_GRADLEW]   - expo-alternate-app-icons (0.1.0)
+[RUN_GRADLEW]   - expo-constants (58.0.16)
+[RUN_GRADLEW]   - expo-dev-client (58.0.20)
+[RUN_GRADLEW] - expo-dev-launcher (58.0.20)
+[RUN_GRADLEW] - expo-dev-menu (58.0.13)
+[RUN_GRADLEW]   - expo-dev-menu-interface (58.0.2)
+[RUN_GRADLEW] - expo-eas-client (58.0.2)
+[RUN_GRADLEW] - expo-hinge (58.0.2)
+[RUN_GRADLEW] - expo-json-utils (58.0.1)
+[RUN_GRADLEW] - expo-manifests (58.0.1)
+[RUN_GRADLEW] > Configure project :react-native-worklets
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-worklets/android/build.gradle.kts:162:1: 'fun Project.android(configure: Action<LibraryExtension>): Unit' is deprecated. Replaced by com.android.build.api.dsl.LibraryExtension.
+[RUN_GRADLEW] This class is not used for the public extensions in AGP when android.newDsl=true, which is the default in AGP 9.0, and will be removed in AGP 10.0.
+[RUN_GRADLEW] > Configure project :expo-modules-core
+[RUN_GRADLEW] Linking react-native-worklets native libs into expo-modules-core build tasks
+[RUN_GRADLEW] task ':react-native-worklets:mergeDebugNativeLibs'
+[RUN_GRADLEW] task ':react-native-worklets:mergeReleaseNativeLibs'
+[RUN_GRADLEW] > Configure project :expo
+[RUN_GRADLEW]   - expo-modules-core (58.1.0)
+[RUN_GRADLEW] - expo-structured-headers (58.0.1)
+[RUN_GRADLEW] - expo-updates (58.0.22)
+[RUN_GRADLEW] - expo-updates-interface (58.0.1)
+[RUN_GRADLEW] - react-native-health-connect-expo (4.1.3)
+[RUN_GRADLEW] - [📦] expo-application (58.1.2)
+[RUN_GRADLEW]   - [📦] expo-asset (58.0.21)
+[RUN_GRADLEW]   - [📦] expo-camera (58.0.14)
+[RUN_GRADLEW]   - [📦] expo-clipboard (58.0.4)
+[RUN_GRADLEW]   - [📦] expo-crypto (58.0.8)
+[RUN_GRADLEW]   - [📦] expo-device (58.0.5)
+[RUN_GRADLEW]   - [📦] expo-file-system (58.0.13)
+[RUN_GRADLEW]   - [📦] expo-font (58.0.12)
+[RUN_GRADLEW]   - [📦] expo-gl (58.0.4)
+[RUN_GRADLEW]   - [📦] expo-haptics (58.0.8)
+[RUN_GRADLEW]   - [📦] expo-image-loader (58.0.3)
+[RUN_GRADLEW]   - [📦] expo-image-manipulator (58.0.16)
+[RUN_GRADLEW]   - [📦] expo-image-picker (58.0.10)
+[RUN_GRADLEW]   - [📦] expo-keep-awake (58.0.4)
+[RUN_GRADLEW]   - [📦] expo-linear-gradient (58.0.4)
+[RUN_GRADLEW]   - [📦] expo-linking (58.0.17)
+[RUN_GRADLEW]   - [📦] expo-notifications (58.1.9)
+[RUN_GRADLEW]   - [📦] expo-router (58.0.31)
+[RUN_GRADLEW]   - [📦] expo-secure-store (58.0.3)
+[RUN_GRADLEW]   - [📦] expo-sensors (58.0.5)
+[RUN_GRADLEW]   - [📦] expo-status-bar (58.0.5)
+[RUN_GRADLEW]   - [📦] expo-web-browser (58.0.8)
+[RUN_GRADLEW] > Configure project :react-native-reanimated
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-reanimated/android/build.gradle.kts:168:1: 'fun Project.android(configure: Action<LibraryExtension>): Unit' is deprecated. Replaced by com.android.build.api.dsl.LibraryExtension.
+[RUN_GRADLEW] This class is not used for the public extensions in AGP when android.newDsl=true, which is the default in AGP 9.0, and will be removed in AGP 10.0.
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-client:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-launcher:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-constants:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-menu:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dom-webview:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-eas-client:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-hinge:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-json-utils:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-log-box:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-manifests:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-structured-headers:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-updates:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-updates-interface:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :app:generateAutolinkingNewArchitectureFiles
+[RUN_GRADLEW] > Task :app:generateAutolinkingPackageList
+[RUN_GRADLEW] > Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+[RUN_GRADLEW] > Task :app:generateCodegenArtifactsFromSchema SKIPPED
+[RUN_GRADLEW] > Task :app:generateReactNativeEntryPoint
+[RUN_GRADLEW] > Task :expo:generateInlineModules
+[RUN_GRADLEW] > Task :expo:generatePackagesList
+[RUN_GRADLEW] > Task :expo:preBuild
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :react-native-health-connect:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :react-native-gesture-handler:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :expo-modules-core:decompressPrebuiltNativeLibs
+[RUN_GRADLEW] > Task :expo-modules-core:preBuild
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:preBuild
+[RUN_GRADLEW] > Task :react-native-purchases:preBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-health-connect:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :react-native-health-connect:preBuild
+[RUN_GRADLEW] > Task :react-native-reanimated:assertMinimalReactNativeVersionTask
+[RUN_GRADLEW] > Task :react-native-gesture-handler:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :react-native-gesture-handler:preBuild
+[RUN_GRADLEW] > Task :react-native-reanimated:assertWorkletsVersionTask
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :react-native-reanimated:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :react-native-screens:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :react-native-svg:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :react-native-safe-area-context:preBuild
+[RUN_GRADLEW] > Task :react-native-worklets:assertMinimalReactNativeVersionTask
+[RUN_GRADLEW] > Task :react-native-reanimated:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :react-native-screens:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :react-native-screens:preBuild
+[RUN_GRADLEW] > Task :react-native-svg:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :react-native-svg:preBuild
+[RUN_GRADLEW] > Task :expo:preReleaseBuild
+[RUN_GRADLEW] > Task :react-native-worklets:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :expo:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-reanimated:prepareReanimatedHeadersForPrefabs
+[RUN_GRADLEW] > Task :react-native-reanimated:preBuild
+[RUN_GRADLEW] > Task :react-native-reanimated:preReleaseBuild
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateCodegenSchemaFromJavaScript
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-dev-client:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-client:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-dev-client:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-client:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-dev-launcher:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-launcher:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-dev-launcher:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-launcher:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-dev-menu:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-menu:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-dev-menu:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-menu:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-dom-webview:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dom-webview:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-dom-webview:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dom-webview:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-eas-client:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-eas-client:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-eas-client:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-eas-client:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-hinge:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-hinge:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-hinge:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-hinge:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-json-utils:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-json-utils:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-worklets:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :expo-json-utils:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-json-utils:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-log-box:preReleaseBuild
+[RUN_GRADLEW] UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-log-box:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-log-box:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-log-box:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-manifests:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-manifests:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-manifests:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-manifests:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-modules-core:preReleaseBuild
+[RUN_GRADLEW] > Task :react-native-worklets:prepareWorkletsHeadersForPrefabs
+[RUN_GRADLEW] > Task :react-native-worklets:preBuild
+[RUN_GRADLEW] > Task :react-native-worklets:preReleaseBuild
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateCodegenArtifactsFromSchema
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:preBuild
+[RUN_GRADLEW] > Task :app:preBuild
+[RUN_GRADLEW] > Task :app:preReleaseBuild
+[RUN_GRADLEW] > Task :app:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-structured-headers:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-structured-headers:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-structured-headers:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-structured-headers:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-updates:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-modules-core:unpackExpoModulesV2Cpp
+[RUN_GRADLEW] > Task :expo-modules-core:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-updates-interface:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-updates-interface:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-updates-interface:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-updates-interface:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:preReleaseBuild
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-gesture-handler:preReleaseBuild
+[RUN_GRADLEW] > Task :react-native-gesture-handler:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-health-connect:preReleaseBuild
+[RUN_GRADLEW] > Task :react-native-health-connect:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-health-connect:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-health-connect:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-purchases:preReleaseBuild UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-purchases:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-purchases:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-purchases:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-reanimated:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-safe-area-context:preReleaseBuild
+[RUN_GRADLEW] > Task :expo-constants:createReleaseExpoConfig
+[RUN_GRADLEW] > Task :expo-constants:preReleaseBuild
+[RUN_GRADLEW] > Task :expo-constants:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-safe-area-context:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-constants:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-safe-area-context:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :expo-constants:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-screens:preReleaseBuild
+[RUN_GRADLEW] > Task :react-native-safe-area-context:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-svg:preReleaseBuild
+[RUN_GRADLEW] > Task :react-native-svg:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-svg:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-svg:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:preReleaseBuild
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:mergeReleaseNativeLibs NO-SOURCE
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateReleaseResources
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:packageReleaseResources
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-worklets:configureCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] Checking the license for package CMake 3.22.1 in /usr/local/lib/android/sdk/licenses
+[RUN_GRADLEW] License for package CMake 3.22.1 accepted.
+[RUN_GRADLEW] Preparing "Install CMake 3.22.1 v.3.22.1".
+[RUN_GRADLEW] "Install CMake 3.22.1 v.3.22.1" ready.
+[RUN_GRADLEW] Installing CMake 3.22.1 in /usr/local/lib/android/sdk/cmake/3.22.1
+[RUN_GRADLEW] "Install CMake 3.22.1 v.3.22.1" complete.
+[RUN_GRADLEW] "Install CMake 3.22.1 v.3.22.1" finished.
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-screens:configureCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :expo-updates:configureCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :expo-updates:buildCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :expo-updates:configureCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :expo-updates:buildCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :expo-updates:configureCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :expo-updates:buildCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :react-native-screens:buildCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :expo-updates:configureCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :react-native-screens:configureCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :expo-updates:buildCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :expo-updates:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :expo-updates:mergeReleaseNativeLibs
+[RUN_GRADLEW] > Task :expo-updates:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-gesture-handler:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-gesture-handler:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-gesture-handler:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-gesture-handler:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-gesture-handler:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-gesture-handler:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-gesture-handler:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-reanimated:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-reanimated:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-reanimated:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-reanimated:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-reanimated:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-reanimated:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-reanimated:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-reanimated:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-svg:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-svg:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-svg:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-svg:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-svg:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-svg:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-svg:javaPreCompileRelease
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:compileReleaseKotlin
+[RUN_GRADLEW] > Task :react-native-screens:buildCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :react-native-worklets:buildCMakeRelWithDebInfo[arm64-v8a][worklets]
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/src/main/java/com/solanamobile/mobilewalletadapter/reactnative/SolanaMobileWalletAdapterPackage.kt:3:8 'class TurboReactPackage : BaseReactPackage' is deprecated. Use BaseReactPackage instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/src/main/java/com/solanamobile/mobilewalletadapter/reactnative/SolanaMobileWalletAdapterPackage.kt:10:48 'class TurboReactPackage : BaseReactPackage' is deprecated. Use BaseReactPackage instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/src/main/java/com/solanamobile/mobilewalletadapter/reactnative/SolanaMobileWalletAdapterPackage.kt:23:21 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+[RUN_GRADLEW] > Task :react-native-screens:configureCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :react-native-svg:compileReleaseJavaWithJavac
+[RUN_GRADLEW] Note: Some input files use or override a deprecated API.
+[RUN_GRADLEW] Note: Recompile with -Xlint:deprecation for details.
+[RUN_GRADLEW] Note: Some input files use unchecked or unsafe operations.
+[RUN_GRADLEW] Note: Recompile with -Xlint:unchecked for details.
+[RUN_GRADLEW] > Task :react-native-worklets:configureCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-gesture-handler:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo:generateReleaseResources
+[RUN_GRADLEW] > Task :expo:packageReleaseResources
+[RUN_GRADLEW] > Task :expo:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-svg:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-modules-core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-modules-core:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-constants:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-modules-core:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-constants:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-modules-core:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-modules-core:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-constants:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-constants:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-modules-core:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-modules-core:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-constants:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-modules-core:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-constants:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-dev-client:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-constants:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-screens:buildCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :expo-dev-client:dataBindingMergeDependencyArtifactsRelease
+[RUN_GRADLEW] > Task :react-native-screens:configureCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :expo-dev-client:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-client:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-client:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-dev-client:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-dev-launcher:dataBindingMergeDependencyArtifactsRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-launcher:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-launcher:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-dev-launcher:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-dev-client:dataBindingGenBaseClassesRelease
+[RUN_GRADLEW] > Task :expo-dev-client:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :expo-dev-client:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-dev-client:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-dev-menu:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-dev-menu:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :expo-dev-menu:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-menu:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-menu:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-dev-menu:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-dev-launcher:dataBindingGenBaseClassesRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :expo-dev-menu:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-dev-menu:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-dev-launcher:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-dom-webview:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-dom-webview:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-dom-webview:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-dom-webview:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-dom-webview:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-eas-client:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-eas-client:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-dom-webview:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-eas-client:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-eas-client:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-eas-client:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-dom-webview:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-hinge:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-eas-client:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-hinge:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-eas-client:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-json-utils:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-json-utils:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-hinge:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-hinge:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-json-utils:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-hinge:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-hinge:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-json-utils:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-json-utils:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-hinge:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-log-box:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-log-box:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :expo-json-utils:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-json-utils:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-manifests:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-log-box:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-manifests:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-log-box:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-log-box:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-manifests:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-log-box:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-manifests:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-log-box:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-manifests:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-log-box:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-structured-headers:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-structured-headers:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-manifests:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-manifests:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-structured-headers:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-updates:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-structured-headers:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-updates:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :expo-updates:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-structured-headers:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-structured-headers:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo-structured-headers:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-updates-interface:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :expo-updates-interface:generateReleaseResources
+[RUN_GRADLEW] > Task :expo-updates:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-updates:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-updates-interface:packageReleaseResources
+[RUN_GRADLEW] > Task :expo-updates-interface:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :expo-updates:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-updates-interface:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :expo-updates:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-updates-interface:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-updates-interface:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-health-connect:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-health-connect:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-health-connect:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-health-connect:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-health-connect:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-health-connect:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-updates:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:javaPreCompileRelease
+[RUN_GRADLEW] > Task :expo:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-safe-area-context:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-safe-area-context:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-safe-area-context:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-screens:buildCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :react-native-screens:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-screens:mergeReleaseNativeLibs
+[RUN_GRADLEW] > Task :react-native-screens:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-safe-area-context:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-screens:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-screens:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-screens:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-screens:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-screens:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-screens:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-screens:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-safe-area-context:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaProviderManager.kt:46:19 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:12:8 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:55:54 'class UIManagerModule : ReactContextBaseJavaModule, LifecycleEventListener, UIManager' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:9:32 'class LayoutShadowNode : ReactShadowNodeImpl' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:110:61 'class NativeViewHierarchyOptimizer : Any' is deprecated. This class is part of Legacy Architecture and will be removed in a future release.
+[RUN_GRADLEW] > Task :react-native-safe-area-context:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :react-native-safe-area-context:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-safe-area-context:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :react-native-screens:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] Note: Some input files use or override a deprecated API.
+[RUN_GRADLEW] Note: Recompile with -Xlint:deprecation for details.
+[RUN_GRADLEW] Note: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@react-native-async-storage/async-storage/android/src/javaPackage/java/com/reactnativecommunity/asyncstorage/AsyncStoragePackage.java uses unchecked or unsafe operations.
+[RUN_GRADLEW] Note: Recompile with -Xlint:unchecked for details.
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-purchases:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-purchases:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-purchases:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-purchases:processReleaseNavigationResources
+[RUN_GRADLEW] Note: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@react-native-masked-view/masked-view/android/src/main/java/org/reactnative/maskedview/RNCMaskedViewPackage.java uses or overrides a deprecated API.
+[RUN_GRADLEW] Note: Recompile with -Xlint:deprecation for details.
+[RUN_GRADLEW] > Task :react-native-purchases:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-purchases:generateReleaseRFile
+[RUN_GRADLEW] > Task :react-native-purchases:compileReleaseKotlin
+[RUN_GRADLEW] > Task :react-native-purchases:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-worklets:buildCMakeRelWithDebInfo[armeabi-v7a][worklets]
+[RUN_GRADLEW] > Task :react-native-purchases:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :react-native-purchases:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-purchases:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-svg:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-svg:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-purchases/android/src/main/java/com/revenuecat/purchases/react/RNPurchasesModule.java:70: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+[RUN_GRADLEW]     public void onCatalystInstanceDestroy() {
+[RUN_GRADLEW]                 ^
+[RUN_GRADLEW] Note: Some input files use or override a deprecated API.
+[RUN_GRADLEW] Note: Recompile with -Xlint:deprecation for details.
+[RUN_GRADLEW] Note: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-purchases/android/src/main/java/com/revenuecat/purchases/react/RNPurchasesModule.java uses unchecked or unsafe operations.
+[RUN_GRADLEW] Note: Recompile with -Xlint:unchecked for details.
+[RUN_GRADLEW] 1 warning
+[RUN_GRADLEW] > Task :app:buildKotlinToolingMetadata
+[RUN_GRADLEW] > Task :react-native-worklets:configureCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :react-native-health-connect:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/HealthConnectPackage.kt:3:8 'class TurboReactPackage : BaseReactPackage' is deprecated. Use BaseReactPackage instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/HealthConnectPackage.kt:10:30 'class TurboReactPackage : BaseReactPackage' is deprecated. Use BaseReactPackage instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/HealthConnectPackage.kt:23:47 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:34:26 'fun newInstance(): CapturedType(out ReactHealthRecordImpl<*>)!' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:34:40 Unchecked cast of 'ReactHealthRecordImpl<*>?' to 'ReactHealthRecordImpl<T (of fun <T : Record> createReactHealthRecordInstance)>'.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:43:26 'fun newInstance(): CapturedType(out ReactHealthRecordImpl<out Record>)!' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/records/ReactHealthRecord.kt:43:40 Unchecked cast of 'ReactHealthRecordImpl<out Record>?' to 'ReactHealthRecordImpl<T (of fun <T : Record> createReactHealthRecordInstance)>'.
+[RUN_GRADLEW] > Task :react-native-health-connect:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :react-native-health-connect:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-health-connect:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-purchases:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-safe-area-context:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :app:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :app:checkReleaseDuplicateClasses
+[RUN_GRADLEW] > Task :expo:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-constants:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-dev-client:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-dev-launcher:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-dev-menu:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-dom-webview:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-eas-client:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-hinge:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-json-utils:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-log-box:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-manifests:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-modules-core:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-structured-headers:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-updates:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo-updates-interface:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-gesture-handler:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-health-connect:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-purchases:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-reanimated:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-safe-area-context:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-screens:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-svg:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :expo:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-constants:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-client:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-launcher:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-menu:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dom-webview:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-eas-client:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-hinge:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-json-utils:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-log-box:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-manifests:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-modules-core:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-structured-headers:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-updates:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-updates-interface:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-gesture-handler:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-health-connect:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-purchases:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-reanimated:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-safe-area-context:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-screens:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-svg:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-constants:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-constants:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-dev-client:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-dev-client:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-dev-launcher:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-dev-menu:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-dev-menu:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-dom-webview:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-dom-webview:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-eas-client:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-eas-client:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-hinge:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-hinge:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-json-utils:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-json-utils:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-log-box:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-log-box:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-manifests:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-manifests:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-modules-core:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-modules-core:processReleaseManifest
+[RUN_GRADLEW] /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/AndroidManifest.xml:8:9-11:45 Warning:
+[RUN_GRADLEW] 	meta-data#com.facebook.soloader.enabled@android:value was tagged at AndroidManifest.xml:8 to replace other declarations but no other declaration present
+[RUN_GRADLEW] > Task :expo-structured-headers:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-structured-headers:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-updates:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-updates:processReleaseManifest
+[RUN_GRADLEW] > Task :expo-updates-interface:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :expo-updates-interface:processReleaseManifest
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:processReleaseManifest
+[RUN_GRADLEW] package="com.reactnativecommunity.asyncstorage" found in source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+[RUN_GRADLEW] Recommendation: remove package="com.reactnativecommunity.asyncstorage" from the source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] > Task :react-native-gesture-handler:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-gesture-handler:processReleaseManifest
+[RUN_GRADLEW] > Task :react-native-health-connect:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:processReleaseManifest
+[RUN_GRADLEW] package="dev.matinzd.healthconnect" found in source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+[RUN_GRADLEW] Recommendation: remove package="dev.matinzd.healthconnect" from the source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-health-connect/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:processReleaseManifest
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:processReleaseManifest
+[RUN_GRADLEW] > Task :react-native-purchases:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-purchases:processReleaseManifest
+[RUN_GRADLEW] package="com.revenuecat.purchases.react" found in source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-purchases/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+[RUN_GRADLEW] Recommendation: remove package="com.revenuecat.purchases.react" from the source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-purchases/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] > Task :react-native-reanimated:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-reanimated:processReleaseManifest
+[RUN_GRADLEW] > Task :react-native-safe-area-context:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-safe-area-context:processReleaseManifest
+[RUN_GRADLEW] package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+[RUN_GRADLEW] Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] > Task :react-native-screens:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-screens:processReleaseManifest
+[RUN_GRADLEW] > Task :react-native-svg:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-svg:processReleaseManifest
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:processReleaseManifest
+[RUN_GRADLEW] package="com.solanamobile.mobilewalletadapter.reactnative" found in source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+[RUN_GRADLEW] Recommendation: remove package="com.solanamobile.mobilewalletadapter.reactnative" from the source AndroidManifest.xml: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/src/main/AndroidManifest.xml.
+[RUN_GRADLEW] > Task :expo:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-constants:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-constants:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-dev-client:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-dev-client:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-dev-launcher:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-dev-launcher:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-dev-menu:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-dev-menu:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-dom-webview:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-dom-webview:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-eas-client:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-eas-client:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-hinge:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-hinge:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-json-utils:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-json-utils:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-log-box:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-log-box:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-manifests:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-manifests:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-modules-core:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-modules-core:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-structured-headers:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-structured-headers:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-updates:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-updates:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :expo-updates-interface:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :expo-updates-interface:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-gesture-handler:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-gesture-handler:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-health-connect:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-health-connect:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-purchases:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-purchases:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-reanimated:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-reanimated:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-safe-area-context:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-safe-area-context:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-screens:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-screens:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-svg:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-svg:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-purchases:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-safe-area-context:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-svg:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:processReleaseJavaRes NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-health-connect:processReleaseJavaRes
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:processReleaseJavaRes NO-SOURCE
+[RUN_GRADLEW] > Task :app:createBundleReleaseJsAndAssets
+[RUN_GRADLEW] Starting Metro Bundler
+[RUN_GRADLEW] > Task :react-native-purchases:processReleaseJavaRes
+[RUN_GRADLEW] > Task :react-native-safe-area-context:processReleaseJavaRes
+[RUN_GRADLEW] > Task :react-native-svg:processReleaseJavaRes NO-SOURCE
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-constants:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-constants:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-dev-client:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-client:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-dev-launcher:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-launcher:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-dev-menu:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-menu:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-dom-webview:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-dom-webview:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-eas-client:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-eas-client:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-hinge:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-hinge:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-json-utils:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-json-utils:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-log-box:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-log-box:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-manifests:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-manifests:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-modules-core:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-modules-core:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-structured-headers:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-structured-headers:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-updates:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-updates:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo-updates-interface:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :expo-updates-interface:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-gesture-handler:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-gesture-handler:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-health-connect:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-health-connect:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-purchases:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-purchases:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-reanimated:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-reanimated:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-safe-area-context:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-screens:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-screens:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-svg:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-svg:mergeReleaseAssets
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:mergeReleaseAssets
+[RUN_GRADLEW] > Task :expo:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-modules-core:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-modules-core:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-constants:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-constants:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-dev-client:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-client:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-dev-launcher:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-launcher:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-dev-menu:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-menu:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-dom-webview:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-dom-webview:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-eas-client:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-eas-client:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-hinge:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-hinge:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-json-utils:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-json-utils:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-log-box:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-log-box:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-manifests:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-manifests:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-structured-headers:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-structured-headers:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-updates:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-updates-interface:extractProguardFiles
+[RUN_GRADLEW] > Task :expo-updates-interface:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-updates:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-health-connect:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-screens:compileReleaseKotlin
+[RUN_GRADLEW] > Task :react-native-health-connect:generateReleaseLintModel
+[RUN_GRADLEW] > Task :react-native-health-connect:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:extractProguardFiles
+[RUN_GRADLEW] > Task :app:createBundleReleaseJsAndAssets
+[RUN_GRADLEW] Android Bundled 8532ms node_modules/expo-router/entry.js (2861 modules)
+[RUN_GRADLEW] Writing bundle output to: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/android/app/build/generated/assets/react/release/index.android.bundle
+[RUN_GRADLEW] Writing sourcemap output to: /tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map
+[RUN_GRADLEW] Copying 131 asset files
+[RUN_GRADLEW] Done writing bundle output
+[RUN_GRADLEW] Done writing sourcemap output
+[RUN_GRADLEW] > Task :react-native-worklets:buildCMakeRelWithDebInfo[x86][worklets]
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateReleaseLintModel
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-gesture-handler:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-reanimated:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-reanimated:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-svg:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-svg:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-svg:generateReleaseLintModel
+[RUN_GRADLEW] > Task :react-native-svg:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-gesture-handler:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:generateReleaseLintModel
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-purchases:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-purchases:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-worklets:configureCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :react-native-purchases:generateReleaseLintModel
+[RUN_GRADLEW] > Task :react-native-purchases:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-safe-area-context:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-safe-area-context:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateReleaseLintModel
+[RUN_GRADLEW] > Task :react-native-safe-area-context:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :react-native-screens:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-screens:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:createFullJarRelease
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:extractProguardFiles
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateReleaseLintModel
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-screens:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:70:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'name'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:71:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'reactContext'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:83:17 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:54:77 Unchecked cast of '(CoordinatorLayout.Behavior<View!>?..CoordinatorLayout.Behavior<*>?)' to 'BottomSheetBehavior<Screen>'.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:59:33 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:534:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenContainer.kt:252:18 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenContainer.kt:262:18 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:225:37 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:242:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:258:22 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenFragment.kt:327:22 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStack.kt:120:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:179:18 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:236:31 'var targetElevation: Float' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:239:13 'fun setHasOptionsMenu(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:450:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:457:22 'fun onPrepareOptionsMenu(p0: Menu): Unit' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:460:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:465:22 'fun onCreateOptionsMenu(p0: Menu, p1: MenuInflater): Unit' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:199:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:209:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:48:42 'fun replaceSystemWindowInsets(p0: Int, p1: Int, p2: Int, p3: Int): @NonNull() WindowInsetsCompat' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:49:39 'val systemWindowInsetLeft: Int' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:51:39 'val systemWindowInsetRight: Int' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:52:39 'val systemWindowInsetBottom: Int' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreensModule.kt:104:14 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/SearchBarView.kt:137:29 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:66:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchX'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:67:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchY'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:71:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchX'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:72:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchY'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/common/event/BaseEventEmitter.kt:12:38 'fun getEventDispatcherForReactTag(context: ReactContext, reactTag: Int): EventDispatcher?' is deprecated. reactTag is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:64:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchX'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:65:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchY'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:69:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchX'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/dimmingview/DimmingView.kt:70:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchY'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetContentView.kt:11:8 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetContentView.kt:39:33 'fun getEventDispatcher(context: ReactContext, uiManagerType: Int): EventDispatcher?' is deprecated. UIManagerType is no longer needed.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetContentView.kt:44:13 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/modals/formsheet/FormSheetHostViewManager.kt:38:9 The corresponding parameter in the supertype 'ViewGroupManager' is named 'view'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/tabs/host/TabsHostViewManager.kt:44:9 The corresponding parameter in the supertype 'ViewGroupManager' is named 'view'. This may cause problems when calling this function with named arguments.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/safearea/SafeAreaView.kt:143:45 'fun consumeDisplayCutout(): @NonNull() WindowInsetsCompat' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] > Task :react-native-screens:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :react-native-screens:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-screens:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-screens:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-screens:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-screens:processReleaseJavaRes
+[RUN_GRADLEW] > Task :react-native-screens:createFullJarRelease
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :react-native-screens:generateReleaseLintModel
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-gesture-handler:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-reanimated:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-health-connect:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-health-connect:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-safe-area-context:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-health-connect:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-safe-area-context:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-safe-area-context:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-safe-area-context:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :react-native-health-connect:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-safe-area-context:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :react-native-health-connect:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :react-native-safe-area-context:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-safe-area-context:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :react-native-safe-area-context:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-health-connect:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-safe-area-context:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :react-native-health-connect:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-modules-core:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-screens:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-screens:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-screens:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :react-native-screens:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-screens:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :react-native-screens:stripReleaseDebugSymbols
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :react-native-purchases:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-purchases:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-purchases:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-purchases:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-purchases:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :react-native-purchases:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-screens:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-purchases:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :react-native-screens:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-purchases:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-purchases:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :react-native-screens:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :react-native-svg:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-svg:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-svg:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :react-native-svg:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-svg:extractReleaseAnnotations
+[RUN_GRADLEW] > Task :react-native-svg:mergeReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-svg:mergeReleaseJavaResource
+[RUN_GRADLEW] > Task :expo-log-box:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-log-box:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-log-box:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-log-box:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :react-native-svg:syncReleaseLibJars
+[RUN_GRADLEW] > Task :react-native-svg:bundleReleaseLocalLintAar
+[RUN_GRADLEW] > Task :expo-dev-launcher:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-launcher:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-launcher:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-dev-launcher:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-dom-webview:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dom-webview:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dom-webview:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-dom-webview:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-constants:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-constants:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-constants:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-constants:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-dev-client:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-client:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-client:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-dev-client:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-dev-menu:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-menu:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-dev-menu:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-eas-client:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-eas-client:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-eas-client:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-eas-client:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-updates:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-updates:stripReleaseDebugSymbols
+[RUN_GRADLEW] > Task :expo-updates:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-updates:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-manifests:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-manifests:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-manifests:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-manifests:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-json-utils:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-json-utils:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-json-utils:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-json-utils:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-structured-headers:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-structured-headers:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-structured-headers:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-structured-headers:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-updates-interface:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-updates-interface:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-updates-interface:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-updates-interface:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-constants:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-dev-client:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-dev-launcher:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-dev-menu:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-dom-webview:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-eas-client:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-json-utils:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-log-box:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-manifests:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-modules-core:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-structured-headers:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-updates:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo-updates-interface:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-health-connect:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :expo:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-reanimated:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-svg:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-gesture-handler:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-health-connect:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-purchases:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :react-native-purchases:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-safe-area-context:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :react-native-safe-area-context:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-screens:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :react-native-screens:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-svg:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:lintVitalAnalyzeRelease SKIPPED
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-async-storage_async-storage:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :react-native-health-connect:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :react-native-masked-view_masked-view:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :react-native-purchases:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :react-native-safe-area-context:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :react-native-screens:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :react-native-svg:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :solana-mobile_mobile-wallet-adapter-protocol:generateReleaseLintVitalModel
+[RUN_GRADLEW] > Task :expo-hinge:checkReleaseAarMetadata
+[RUN_GRADLEW] > Task :expo-hinge:stripReleaseDebugSymbols NO-SOURCE
+[RUN_GRADLEW] > Task :expo-hinge:extractDeepLinksForAarRelease
+[RUN_GRADLEW] > Task :expo-hinge:copyReleaseJniLibsProjectAndLocalJars
+[RUN_GRADLEW] > Task :expo-hinge:writeReleaseLintModelMetadata
+[RUN_GRADLEW] > Task :react-native-worklets:buildCMakeRelWithDebInfo[x86_64][worklets]
+[RUN_GRADLEW] > Task :react-native-worklets:externalNativeBuildRelease
+[RUN_GRADLEW] > Task :react-native-worklets:generateJsonModelRelease
+[RUN_GRADLEW] > Task :react-native-worklets:prefabReleaseConfigurePackage
+[RUN_GRADLEW] > Task :react-native-worklets:prefabReleasePackage
+[RUN_GRADLEW] > Task :react-native-worklets:mergeReleaseJniLibFolders
+[RUN_GRADLEW] > Task :react-native-worklets:mergeReleaseNativeLibs
+[RUN_GRADLEW] > Task :react-native-worklets:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :react-native-worklets:checkKotlinGradlePluginConfigurationErrors SKIPPED
+[RUN_GRADLEW] > Task :react-native-worklets:generateReleaseBuildConfig
+[RUN_GRADLEW] > Task :react-native-worklets:generateReleaseResources
+[RUN_GRADLEW] > Task :react-native-worklets:packageReleaseResources
+[RUN_GRADLEW] > Task :react-native-worklets:processReleaseNavigationResources
+[RUN_GRADLEW] > Task :react-native-worklets:parseReleaseLocalResources
+[RUN_GRADLEW] > Task :react-native-worklets:generateReleaseRFile
+[RUN_GRADLEW] > Task :expo-modules-core:configureCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :react-native-reanimated:configureCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :react-native-worklets:compileReleaseKotlin
+[RUN_GRADLEW] > Task :react-native-worklets:javaPreCompileRelease
+[RUN_GRADLEW] > Task :react-native-reanimated:configureCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :react-native-worklets:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :react-native-worklets:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-worklets:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-worklets:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-worklets:prepareReleaseArtProfile
+[RUN_GRADLEW] > Task :react-native-worklets:writeReleaseAarMetadata
+[RUN_GRADLEW] > Task :react-native-worklets:extractDeepLinksRelease
+[RUN_GRADLEW] > Task :react-native-worklets:processReleaseManifest
+[RUN_GRADLEW] > Task :react-native-worklets:mapReleaseSourceSetPaths
+[RUN_GRADLEW] > Task :react-native-worklets:compileReleaseLibraryResources
+[RUN_GRADLEW] > Task :react-native-worklets:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-worklets:processReleaseJavaRes
+[RUN_GRADLEW] > Task :react-native-worklets:generateReleaseAssets UP-TO-DATE
+[RUN_GRADLEW] > Task :react-native-worklets:mergeReleaseAssets
+[RUN_GRADLEW] > Task :react-native-worklets:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-worklets:extractProguardFiles
+[RUN_GRADLEW] > Task :react-native-reanimated:configureCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :react-native-reanimated:configureCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :react-native-reanimated:generateJsonModelRelease
+[RUN_GRADLEW] > Task :react-native-reanimated:prefabReleaseConfigurePackage
+[RUN_GRADLEW] > Task :react-native-worklets:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-modules-core:buildCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :react-native-reanimated:buildCMakeRelWithDebInfo[arm64-v8a][reanimated]
+[RUN_GRADLEW] > Task :react-native-gesture-handler:configureCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :expo-modules-core:configureCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :expo-modules-core:buildCMakeRelWithDebInfo[armeabi-v7a]
+[RUN_GRADLEW] > Task :expo-modules-core:configureCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :app:configureCMakeRelWithDebInfo[arm64-v8a]
+[RUN_GRADLEW] > Task :expo-modules-core:buildCMakeRelWithDebInfo[x86]
+[RUN_GRADLEW] > Task :expo-modules-core:configureCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :react-native-reanimated:buildCMakeRelWithDebInfo[armeabi-v7a][reanimated]
+[RUN_GRADLEW] > Task :expo-modules-core:buildCMakeRelWithDebInfo[x86_64]
+[RUN_GRADLEW] > Task :expo-modules-core:mergeReleaseNativeLibs
+[RUN_GRADLEW] > Task :expo-modules-core:copyReleaseJniLibsProjectOnly
+[RUN_GRADLEW] > Task :expo-modules-core:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/CppType.kt:42:23 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/JavaCallback.kt:38:10 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/JavaCallback.kt:96:45 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:49:15 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:64:30 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:66:14 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:74:39 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:75:7 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:80:37 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:86:47 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:92:23 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:92:43 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:95:41 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/NativeArrayBuffer.kt:105:14 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/ColorCompat.kt:115:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+[RUN_GRADLEW] - To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+[RUN_GRADLEW] - To keep applying to the value parameter only, use the '@param:' annotation target.
+[RUN_GRADLEW] See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/JSTypeConverter.kt:7:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/JSTypeConverter.kt:245:55 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/JSTypeConverter.kt:247:19 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/ReturnType.kt:6:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/ReturnType.kt:45:5 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/TypeConverterProvider.kt:19:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/types/TypeConverterProvider.kt:254:7 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] > Task :expo-modules-core:compileReleaseJavaWithJavac
+[RUN_GRADLEW] Note: Some input files use or override a deprecated API.
+[RUN_GRADLEW] Note: Recompile with -Xlint:deprecation for details.
+[RUN_GRADLEW] > Task :expo-modules-core:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-alternate-app-icons/android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt:17:5 'fun Constants(vararg constants: Pair<String, Any?>): Unit' is deprecated. Use `Constant` or `Property` instead.
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-constants:compileReleaseKotlin
+[RUN_GRADLEW] > Task :expo-constants:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-constants:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-client:compileReleaseKotlin NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-client:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :expo-dev-client:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-dev-launcher/android/src/main/java/expo/modules/devlauncher/DevLauncherPackage.kt:15:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] > Task :expo-dev-launcher:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :expo-dev-launcher:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu:compileReleaseKotlin
+[RUN_GRADLEW] > Task :expo-dev-menu:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :expo-dev-menu:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:compileReleaseKotlin NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-dom-webview:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@expo/dom-webview/android/src/main/java/expo/modules/webview/DomWebView.kt:200:16 'var allowFileAccessFromFileURLs: Boolean' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/@expo/dom-webview/android/src/main/java/expo/modules/webview/DomWebView.kt:254:18 'fun executeOnJavaScriptThread(runnable: Runnable): Unit' is deprecated. Use RuntimeContext.schedule instead.
+[RUN_GRADLEW] > Task :expo-dom-webview:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dom-webview:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-eas-client:compileReleaseKotlin
+[RUN_GRADLEW] > Task :expo-eas-client:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-eas-client:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-hinge:compileReleaseKotlin
+[RUN_GRADLEW] > Task :expo-hinge:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-hinge:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-json-utils:compileReleaseKotlin
+[RUN_GRADLEW] > Task :expo-json-utils:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-json-utils:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-log-box:compileReleaseKotlin
+[RUN_GRADLEW] > Task :expo-log-box:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :expo-log-box:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-manifests:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/EmbeddedManifest.kt:19:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/EmbeddedManifest.kt:19:86 'fun getLegacyID(): String' is deprecated. Prefer scopeKey or projectId depending on use case.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/ExpoUpdatesManifest.kt:16:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/Manifest.kt:13:3 Deprecations and opt-ins on a method overridden from 'Any' may not be reported.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-manifests/android/src/main/java/expo/modules/manifests/core/Manifest.kt:15:12 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] > Task :expo-manifests:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-manifests:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-structured-headers:compileReleaseKotlin NO-SOURCE
+[RUN_GRADLEW] > Task :expo-structured-headers:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :expo-structured-headers:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo-updates-interface:compileReleaseKotlin
+[RUN_GRADLEW] > Task :expo-updates-interface:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo-updates-interface:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-reanimated:buildCMakeRelWithDebInfo[x86][reanimated]
+[RUN_GRADLEW] > Task :expo-updates:kspReleaseKotlin
+[RUN_GRADLEW] > Task :expo-updates:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesConfiguration.kt:345:13 'fun get(p0: String!): Any?' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesDevLauncherController.kt:221:133 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesModule.kt:48:5 'fun Constants(legacyConstantsProvider: () -> Map<String, Any?>): Unit' is deprecated. Use `Constant` or `Property` instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/UpdatesModule.kt:101:38 'fun toString(): String' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/db/Converters.kt:64:30 Java type mismatch: inferred type is 'ByteArray?', but 'ByteArray' was expected.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/db/DatabaseIntegrityCheck.kt:38:39 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/db/Reaper.kt:83:41 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/loader/Loader.kt:269:65 Java type mismatch: inferred type is 'String?', but 'String' was expected.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/loader/LoaderTask.kt:370:101 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/manifest/EmbeddedUpdate.kt:33:89 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/manifest/ExpoUpdatesUpdate.kt:39:92 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/manifest/ExpoUpdatesUpdate.kt:107:43 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/CheckForUpdateProcedure.kt:143:100 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/CheckForUpdateProcedure.kt:176:100 'fun getRawJson(): JSONObject' is deprecated. Prefer to use specific field getters.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/StartupProcedure.kt:164:36 'fun getCurrentState(): UpdatesStateValue' is deprecated. Avoid needing to access current state to know how to transition to next state.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/StartupProcedure.kt:198:34 'fun getCurrentState(): UpdatesStateValue' is deprecated. Avoid needing to access current state to know how to transition to next state.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo-updates/android/src/main/java/expo/modules/updates/procedures/StateMachineSerialExecutorQueue.kt:64:45 'fun getCurrentState(): UpdatesStateValue' is deprecated. Avoid needing to access current state to know how to transition to next state.
+[RUN_GRADLEW] > Task :expo-updates:compileReleaseJavaWithJavac
+[RUN_GRADLEW] > Task :expo-updates:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:compileReleaseKotlin
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo:compileReleaseKotlin
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/ExpoModulesPackage.kt:34:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:22:8 'class ReactInstanceManager : Any' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:103:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:103:43 'class ReactInstanceManager : Any' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:104:21 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:15:8 'class NativeArrayBuffer : Destructible' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:33:39 'constructor(reactContext: ReactContext): ForwardingCookieHandler' is deprecated. Use the default constructor.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:111:27 'constructor(byteBuffer: ByteBuffer): NativeArrayBuffer' is deprecated. Use ArrayBuffer instead.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:44:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+[RUN_GRADLEW] w: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:46:11 'fun deallocate(): Unit' is deprecated. Use sharedObjectDidRelease() instead.
+[RUN_GRADLEW] > Task :expo:compileReleaseJavaWithJavac NO-SOURCE
+[RUN_GRADLEW] > Task :expo:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-modules-core:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-modules-core:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-log-box:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-log-box:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-launcher:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-launcher:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-updates:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-updates:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-dom-webview:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-dom-webview:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-constants:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-constants:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-client:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-client:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-menu:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-dev-menu:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-eas-client:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-eas-client:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-hinge:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-hinge:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-manifests:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-manifests:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-json-utils:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-json-utils:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-structured-headers:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-structured-headers:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo-updates-interface:mergeReleaseGeneratedProguardFiles
+[RUN_GRADLEW] > Task :expo-updates-interface:exportReleaseConsumerProguardFiles
+[RUN_GRADLEW] > Task :expo:bundleLibCompileToJarRelease
+[RUN_GRADLEW] > Task :expo:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-constants:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-client:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-dom-webview:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-eas-client:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-hinge:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-json-utils:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-log-box:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-manifests:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-modules-core:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-structured-headers:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-updates:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo-updates-interface:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:bundleLibRuntimeToJarRelease
+[RUN_GRADLEW] > Task :expo:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-constants:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-dev-client:processReleaseJavaRes NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dev-launcher:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-dev-menu:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:processReleaseJavaRes NO-SOURCE
+[RUN_GRADLEW] > Task :expo-dom-webview:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-eas-client:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-hinge:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-json-utils:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-log-box:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-manifests:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-modules-core:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-structured-headers:processReleaseJavaRes NO-SOURCE
+[RUN_GRADLEW] > Task :expo-updates:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo-updates-interface:processReleaseJavaRes
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:processReleaseJavaRes
+[RUN_GRADLEW] > Task :expo:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-modules-core:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-worklets:prepareLintJarForPublish
+[RUN_GRADLEW] > Task :expo-modules-core:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-alternate-app-icons:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-constants:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-constants:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-dev-client:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-dev-client:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-dev-launcher:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-dev-launcher:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-dev-menu:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-dev-menu-interface:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-dom-webview:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-dom-webview:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-eas-client:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-eas-client:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-hinge:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-hinge:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-json-utils:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-json-utils:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-log-box:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-log-box:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-manifests:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-manifests:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-structured-headers:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-structured-headers:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-updates:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-updates-interface:createFullJarRelease
+[RUN_GRADLEW] > Task :expo-updates-interface:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo-updates:generateReleaseLintModel
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:createFullJarRelease
+[RUN_GRADLEW] > Task :react-native-health-connect-expo:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo:generateReleaseLintModel
+[RUN_GRADLEW] > Task :expo:checkReleaseAarMetadata
+[RUN_GRADLEW] FAILED
+[RUN_GRADLEW] [Incubating] Problems report is available at: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/android/build/reports/problems/problems-report.html
+[RUN_GRADLEW] FAILURE: Build failed with an exception.
+[RUN_GRADLEW] * What went wrong:
+[RUN_GRADLEW] Execution failed for task ':expo:checkReleaseAarMetadata'.
+[RUN_GRADLEW] > A failure occurred while executing com.android.build.gradle.internal.tasks.CheckAarMetadataWorkAction
+[RUN_GRADLEW]    > 22 issues were found when checking AAR metadata:
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        1.  Dependency 'host.exp.exponent:expo.modules.application:58.1.2' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        2.  Dependency 'expo.modules.asset:expo.modules.asset:58.0.21' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        3.  Dependency 'host.exp.exponent:expo.modules.camera:58.0.14' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        4.  Dependency 'host.exp.exponent:expo.modules.clipboard:58.0.4' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        5.  Dependency 'host.exp.exponent:expo.modules.crypto:58.0.8' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        6.  Dependency 'host.exp.exponent:expo.modules.device:58.0.5' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW] Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        7.  Dependency 'host.exp.exponent:expo.modules.filesystem:58.0.13' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        8.  Dependency 'host.exp.exponent:expo.modules.font:58.0.12' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]        9.  Dependency 'host.exp.exponent:expo.modules.gl:58.0.4' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       10.  Dependency 'host.exp.exponent:expo.modules.haptics:58.0.8' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       11.  Dependency 'host.exp.exponent:expo.modules.imageloader:58.0.3' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW] minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       12.  Dependency 'host.exp.exponent:expo.modules.imagemanipulator:58.0.16' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       13.  Dependency 'host.exp.exponent:expo.modules.imagepicker:58.0.10' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       14.  Dependency 'host.exp.exponent:expo.modules.keepawake:58.0.4' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       15.  Dependency 'host.exp.exponent:expo.modules.lineargradient:58.0.4' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       16.  Dependency 'host.exp.exponent:expo.modules.linking:58.0.17' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       17.  Dependency 'host.exp.exponent:expo.modules.notifications:58.1.9' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW] Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       18.  Dependency 'expo.modules.router:expo.modules.router:58.0.31' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       19.  Dependency 'host.exp.exponent:expo.modules.securestore:58.0.3' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       20.  Dependency 'host.exp.exponent:expo.modules.sensors:58.0.5' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       21.  Dependency 'host.exp.exponent:expo.modules.statusbar:58.0.5' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW]      
+[RUN_GRADLEW]       22.  Dependency 'host.exp.exponent:expo.modules.webbrowser:58.0.8' requires libraries and applications that
+[RUN_GRADLEW]            depend on it to compile against version 37 or later of the
+[RUN_GRADLEW]            Android APIs.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            :expo is currently compiled against android-36.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Recommended action: Update this project to use a newer compileSdk
+[RUN_GRADLEW]            of 37.
+[RUN_GRADLEW]      
+[RUN_GRADLEW]            Note that updating a library or application's compileSdk (which
+[RUN_GRADLEW]            allows newer APIs to be used) can be done separately from updating
+[RUN_GRADLEW]            targetSdk (which opts the app in to new runtime behavior) and
+[RUN_GRADLEW]            minSdk (which determines which devices the app can be installed
+[RUN_GRADLEW]            on).
+[RUN_GRADLEW] * Try:
+[RUN_GRADLEW] > Run with --stacktrace option to get the stack trace.
+[RUN_GRADLEW] > Run with --info or --debug option to get more log output.
+[RUN_GRADLEW] > Run with --scan to get full insights from a Build Scan (powered by Develocity).
+[RUN_GRADLEW] > Get more help at https://help.gradle.org.
+[RUN_GRADLEW] BUILD FAILED in 9m 7s
+[RUN_GRADLEW] Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+[RUN_GRADLEW] You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+[RUN_GRADLEW] For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+[RUN_GRADLEW] 1006 actionable tasks: 1006 executed
+[RUN_GRADLEW] See the profiling report at: file:///tmp/runner/eas-build-local-nodejs/e60dd22f-0d2c-4873-9961-ae7689cc978d/build/android/build/reports/profile/profile-2026-11-22-16-54-30.html
+[RUN_GRADLEW] A fine-grained performance profile is available: use the --scan option.
+[RUN_GRADLEW] Error: Gradle build failed with unknown error. See logs for the "Run gradlew" phase for more information.
+
+Build failed
+Gradle build failed with unknown error. See logs for the "Run gradlew" phase for more information.
+Error: Gradle build failed with unknown error. See logs for the "Run gradlew" phase for more information.
+    at resolveBuildPhaseErrorAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/buildErrors/detectError.js:61:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async BuildContext.handleBuildPhaseErrorAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/context.js:198:28)
+    at async BuildContext.runBuildPhase (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/context.js:143:35)
+    at async buildInnerAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:154:5)
+    at async buildAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:48:9)
+    at async runBuilderWithHooksAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/common.js:13:13)
+    at async Object.androidBuilder (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/@expo/build-tools/dist/builders/android.js:33:16)
+    at async buildAndroidAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/eas-cli-local-build-plugin/dist/android.js:43:12)
+    at async buildAsync (/home/runner/.npm/_npx/df4780d18ef17ad1/node_modules/eas-cli-local-build-plugin/dist/build.js:54:29)
+
+Build context (for debugging this failed local build):
+  Platform: android
+  Build profile: android-apk
+  Workflow: managed
+  Distribution: internal
+  Credentials source: remote
+  Project root directory: .
+  Required package manager: npm
+  eas-cli version: 27.11.0
+  SDK version: 58.0.0
+  Runtime version: aa94390d89d18f06d8c9cd882817b3ef6f48ead0
+  React Native version: 0.88.1
+  Expo package version: 58.0.25
+  App version: 1.1.1
+  Fingerprint hash: aa94390d89d18f06d8c9cd882817b3ef6f48ead0
+  Git commit: 851f4765915c3fa605f693ec368823fd5dd8d693
+  Git working tree dirty: false
+  Build tracking ID: c35b8d3b-f5e2-4196-9d88-bf936757d68b
+  Project ID: 6bddb492-55a5-4ae0-856d-ec4b27314127
+npx -y eas-cli-local-build-plugin@27.11.0 exited with non-zero code: 1
+    Error: build command failed.
