@@ -43,6 +43,7 @@
     "expo-secure-store": "~58.0.3",
     "expo-sensors": "~58.0.5",
     "expo-status-bar": "~58.0.5",
+    "expo-system-ui": "~58.0.7",
     "expo-updates": "~58.0.22",
     "expo-web-browser": "~58.0.8",
     "nativewind": "^4.0.1",
