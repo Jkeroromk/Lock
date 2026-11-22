@@ -5,10 +5,13 @@
  * screenshot/fixtures.ts. Which screen to open and in which language come from
  * launch arguments, e.g.
  *   xcrun simctl launch booted com.jkeroro.lockin -kshot buddy -klang zh-CN
+ * Android has no launch arguments, so the same two values come from the URL the
+ * app is opened with (scripts/android/emulator.sh):
+ *   adb shell am start -a android.intent.action.VIEW -d 'lock:///?kshot=buddy&klang=zh-CN' com.jkeroro.lockin
  * Shots: today, photo, log, train, buddy, friends, couple, calendar.
  */
 import { useEffect, useRef } from 'react';
-import { Platform, Settings } from 'react-native';
+import { Linking, Platform, Settings } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Asset } from 'expo-asset';
 import { File, Paths } from 'expo-file-system';
@@ -37,8 +40,22 @@ function launchArg(key: string, fallback: string): string {
   }
 }
 
-const SHOT = launchArg('kshot', 'today');
-const LANG = launchArg('klang', 'en-US') === 'zh-CN' ? 'zh-CN' : 'en-US';
+let SHOT = launchArg('kshot', 'today');
+let LANG: 'en-US' | 'zh-CN' = launchArg('klang', 'en-US') === 'zh-CN' ? 'zh-CN' : 'en-US';
+
+/** Android: kshot / klang from the opening URL's query string. */
+const argsReady: Promise<void> = Platform.OS !== 'android'
+  ? Promise.resolve()
+  : Linking.getInitialURL()
+    .then((url) => {
+      const q = (url ?? '').split('?')[1] ?? '';
+      for (const pair of q.split('&')) {
+        const [k, v = ''] = pair.split('=').map((x) => decodeURIComponent(x));
+        if (k === 'kshot' && v) SHOT = v;
+        if (k === 'klang') LANG = v === 'zh-CN' ? 'zh-CN' : 'en-US';
+      }
+    })
+    .catch(() => {});
 
 // capture.sh polls for this file instead of guessing how long a screen takes.
 const readyFile = () => new File(Paths.document, 'shot-ready');
@@ -46,6 +63,8 @@ try { if (readyFile().exists) readyFile().delete(); } catch {}
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function markReady() {
   try { readyFile().write(SHOT); } catch (e) { console.warn('[screenshot] ready marker', e); }
+  // Android: the emulator script watches logcat (the app's files aren't readable from adb).
+  console.log(`LOCK_SHOT_READY ${SHOT}`);
 }
 
 // Local state the demo day needs, and every first-run prompt already dismissed.
@@ -67,11 +86,20 @@ const seeded = Promise.all([
 function applyPrefs() {
   useStore.setState({ language: LANG, hasSelectedLanguage: true, themeMode: 'light', weightUnit: 'kg', calorieWarnings: true });
 }
-if (useStore.persist.hasHydrated()) applyPrefs();
-else useStore.persist.onFinishHydration(applyPrefs);
+if (Platform.OS !== 'android') {
+  if (useStore.persist.hasHydrated()) applyPrefs();
+  else useStore.persist.onFinishHydration(applyPrefs);
+} else {
+  // Register before hydration can finish, apply once the URL has been read too.
+  const hydrated = new Promise<void>((resolve) => {
+    if (useStore.persist.hasHydrated()) resolve();
+    else useStore.persist.onFinishHydration(() => resolve());
+  });
+  Promise.all([hydrated, argsReady]).then(applyPrefs);
+}
 
 async function openShot(t: T) {
-  await seeded;
+  await Promise.all([seeded, argsReady]);
   const ws = useWorkoutStore.getState();
   ws.ensureUser(DEMO_USER_ID);
   if (SHOT !== 'train' && useWorkoutStore.getState().active) useWorkoutStore.getState().discard();

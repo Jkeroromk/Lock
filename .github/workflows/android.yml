@@ -173,3 +173,103 @@ jobs:
           eas submit --platform android --profile production --path "$ARTIFACT" --non-interactive
         env:
           EXPO_ANDROID_SERVICE_ACCOUNT_KEY_PATH: ${{ runner.temp }}/play.json
+
+  # Installs the APK on an Android emulator (Pixel 7, Android 15) and checks
+  # that it starts. Screenshots + logcat go to the android-output branch
+  # (smoke/) and to a workflow artifact.
+  smoke:
+    name: Emulator smoke test
+    needs: build
+    if: needs.build.result == 'success' && (inputs.output || 'apk') == 'apk'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: lock-android-apk-${{ github.run_number }}
+          path: ${{ runner.temp }}/apk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash scripts/android/emulator.sh smoke ${{ runner.temp }}/apk/lock.apk ${{ runner.temp }}/out
+      - name: Publish results
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: '[ -d "$RUNNER_TEMP/out" ] && scripts/android/publish-output.sh "$RUNNER_TEMP/out" smoke || true'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-smoke-${{ github.run_number }}
+          path: ${{ runner.temp }}/out
+          if-no-files-found: ignore
+
+  # Screenshot build (demo account, like the App Store screenshots) on the
+  # emulator: every main screen in English and Chinese, to android-output
+  # (shots/) and a workflow artifact.
+  screenshots:
+    name: Emulator screenshots
+    # After the main build, which creates the signing key on the first run.
+    needs: build
+    if: needs.build.result == 'success' && (inputs.output || 'apk') == 'apk'
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL || true
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install EAS CLI
+        run: npm install -g eas-cli@latest && eas whoami
+      - name: Build (screenshot mode)
+        run: |
+          set -o pipefail
+          eas build --platform android --profile android-screenshots --local --non-interactive --output "$RUNNER_TEMP/shots.apk" 2>&1 | tee "$RUNNER_TEMP/eas.log" | tail -400
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash scripts/android/emulator.sh shots ${{ runner.temp }}/shots.apk ${{ runner.temp }}/out
+      - name: Publish results
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: '[ -d "$RUNNER_TEMP/out" ] && scripts/android/publish-output.sh "$RUNNER_TEMP/out" shots || true'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-screenshots-${{ github.run_number }}
+          path: ${{ runner.temp }}/out
+          if-no-files-found: ignore

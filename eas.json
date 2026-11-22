@@ -78,6 +78,12 @@
       "android": {
         "buildType": "apk"
       }
+    },
+    "android-screenshots": {
+      "extends": "screenshots",
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
