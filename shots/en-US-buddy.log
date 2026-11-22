@@ -1,0 +1,9 @@
+--------- beginning of main
+11-22 18:07:05.951  5468  5504 I ReactNativeJS: Running "main"
+11-22 18:07:08.742  5468  5504 W ReactNativeJS: WARNING: Multiple instances of Three.js being imported.
+11-22 18:07:08.751  5468  5504 W ReactNativeJS: THREE.Material: parameter 'map' has value of undefined.
+11-22 18:07:08.751  5468  5504 W ReactNativeJS: THREE.Material: parameter 'map' has value of undefined.
+11-22 18:07:08.751  5468  5504 W ReactNativeJS: THREE.Material: parameter 'map' has value of undefined.
+11-22 18:07:08.751  5468  5504 W ReactNativeJS: THREE.Material: parameter 'map' has value of undefined.
+11-22 18:07:08.751  5468  5504 W ReactNativeJS: THREE.Material: parameter 'map' has value of undefined.
+11-22 18:07:08.751  5468  5504 W ReactNativeJS: THREE.Material: parameter 'map' has value of undefined.
