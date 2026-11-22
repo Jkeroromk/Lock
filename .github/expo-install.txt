@@ -1,2 +1,1 @@
-expo-build-properties
-react-native-health-connect
+expo-system-ui

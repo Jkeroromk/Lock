@@ -130,6 +130,18 @@ jobs:
             echo "::error title=Android build::$(sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g' "$f")"
           done
 
+      # Readable without signing in (git fetch of android-output), unlike logs.
+      - name: Publish build log
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/log"
+          [ -f "$RUNNER_TEMP/eas.log" ] || exit 0
+          sed -E 's/\x1b\[[0-9;]*m//g' "$RUNNER_TEMP/eas.log" | tail -3000 > "$RUNNER_TEMP/log/eas-tail.log"
+          grep -n -E -A20 "What went wrong|FAILURE:|^e: |error:|Error:" "$RUNNER_TEMP/log/eas-tail.log" | head -400 > "$RUNNER_TEMP/log/errors.txt" || true
+          scripts/android/publish-output.sh "$RUNNER_TEMP/log" build-log
+
       - name: Upload log
         if: always()
         uses: actions/upload-artifact@v4
