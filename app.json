@@ -126,7 +126,8 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 26
+            "minSdkVersion": 26,
+            "extraProguardRules": "# expo-gl's GLView (3D buddy / couple room) is created by reflection through its\n# (Context, AppContext) constructor and isn't an ExpoView, so R8 removed it in\n# release builds (crash: \"Didn't find a correct constructor\").\n-keep class expo.modules.gl.** { *; }\n-keepclassmembers class * { public <init>(android.content.Context, expo.modules.kotlin.AppContext); }\n"
           }
         }
       ],
